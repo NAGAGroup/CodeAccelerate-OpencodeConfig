@@ -18,116 +18,150 @@
     },
     "build": {
       "model": "github-copilot/claude-sonnet-4.5",
-      "required_skills": ["skill-invocation-policy", "unicode-usage", "callout-boxes"]
+      "required_skills": [
+        "skill-invocation-policy",
+        "unicode-usage",
+        "callout-boxes"
+      ]
     },
-      "tech_lead": {
-        "mode": "primary",
-        "model": "github-copilot/claude-sonnet-4.5",
-        "permission": {
-          "*": "deny",
-          "question": "allow",
-          "read": {
-            "*": "allow",
-            "*.env": "ask",
-            "*.env.*": "ask",
-            "*.env.example": "allow"
-          },
-          "glob": "allow",
-          "grep": "allow",
-          "bash": "ask",
-          "lsp": "allow",
-          "edit": {
-            "*": "deny",
-            "*.md": "allow"
-          },
-          "write": {
-            "*": "deny",
-            "*.md": "allow"
-          },
-          "todowrite": "allow",
-          "todoread": "allow",
-          "task": "allow",
-          "skill": {
-            "*": "allow"
-          },
-          "external_directory": {
-            "*": "ask"
-          },
-          "doom_loop": "ask",
-          "mermaid_*": "allow"
+    "tech_lead": {
+      "mode": "primary",
+      "model": "github-copilot/claude-sonnet-4.5",
+      "permission": {
+        "*": "deny",
+        "question": "allow",
+        "read": {
+          "*": "allow",
+          "*.env": "ask",
+          "*.env.*": "ask",
+          "*.env.example": "allow"
         },
-        "required_skills": ["skill-invocation-policy", "unicode-usage", "callout-boxes", "tech-lead-cli-commands"]
+        "glob": "allow",
+        "grep": "allow",
+        "bash": "ask",
+        "lsp": "allow",
+        "edit": {
+          "*": "deny",
+          "*.md": "allow"
+        },
+        "write": {
+          "*": "deny",
+          "*.md": "allow"
+        },
+        "todowrite": "allow",
+        "todoread": "allow",
+        "task": "allow",
+        "skill": {
+          "*": "allow"
+        },
+        "external_directory": {
+          "*": "ask"
+        },
+        "doom_loop": "ask",
+        "mermaid_*": "allow",
+        "query_required_skills": "allow"
       },
-      "explore": {
-        "mode": "subagent",
-        "model": "github-copilot/claude-haiku-4.5",
-        "permission": {
+      "required_skills": [
+        "skill-invocation-policy",
+        "unicode-usage",
+        "callout-boxes",
+        "tech-lead-cli-commands",
+        "tech-lead-delegation-protocol",
+        "tech-lead-workflow-patterns",
+        "tech-lead-agents-overview",
+        "tech-lead-tool-usage",
+        "tech-lead-questions-protocol",
+        "tech-lead-communication-style"
+      ]
+    },
+    "explore": {
+      "mode": "subagent",
+      "model": "github-copilot/claude-haiku-4.5",
+      "permission": {
+        "*": "deny",
+        "read": { "*": "allow" },
+        "glob": { "*": "allow" },
+        "grep": { "*": "allow" },
+        "lsp": "allow",
+        "skill": {
           "*": "deny",
-          "read": { "*": "allow" },
-          "glob": { "*": "allow" },
-          "grep": { "*": "allow" },
-          "lsp": "allow",
-          "skill": {
-            "*": "deny",
-            "skill-invocation-policy": "allow"
-          }
-        },
-        "required_skills": ["skill-invocation-policy", "unicode-usage", "callout-boxes"]
+          "skill-invocation-policy": "allow"
+        }
       },
-      "librarian": {
-        "mode": "subagent",
-        "model": "github-copilot/claude-sonnet-4.5",
-        "temperature": 0.6,
-        "permission": {
+      "required_skills": [
+        "skill-invocation-policy",
+        "unicode-usage",
+        "callout-boxes"
+      ]
+    },
+    "librarian": {
+      "mode": "subagent",
+      "model": "github-copilot/claude-sonnet-4.5",
+      "temperature": 0.6,
+      "permission": {
+        "*": "deny",
+        "webfetch": "allow",
+        "context7": { "*": "allow" },
+        "skill": {
           "*": "deny",
-          "webfetch": "allow",
-          "context7": { "*": "allow" },
-          "skill": {
-            "*": "deny",
-            "skill-invocation-policy": "allow"
-          }
-        },
-        "required_skills": ["skill-invocation-policy", "unicode-usage", "callout-boxes"]
+          "skill-invocation-policy": "allow",
+          "github-exploration": "allow"
+        }
       },
-      "junior_dev": {
-        "mode": "subagent",
-        "model": "github-copilot/claude-haiku-4.5",
-        "temperature": 0.15,
-        "permission": {
+      "required_skills": [
+        "skill-invocation-policy",
+        "unicode-usage",
+        "callout-boxes",
+        "github-exploration"
+      ]
+    },
+    "junior_dev": {
+      "mode": "subagent",
+      "model": "github-copilot/claude-haiku-4.5",
+      "temperature": 0.15,
+      "permission": {
+        "*": "deny",
+        "read": { "*": "allow" },
+        "edit": { "*": "allow" },
+        "write": { "*": "allow" },
+        "grep": { "*": "allow" },
+        "glob": { "*": "allow" },
+        "lsp": "allow",
+        "todowrite": "allow",
+        "todoread": "allow",
+        "webfetch": "allow",
+        "context7": { "*": "allow" },
+        "skill": {
           "*": "deny",
-          "read": { "*": "allow" },
-          "edit": { "*": "allow" },
-          "write": { "*": "allow" },
-          "grep": { "*": "allow" },
-          "glob": { "*": "allow" },
-          "lsp": "allow",
-           "todowrite": "allow",
-           "todoread": "allow",
-           "webfetch": "allow",
-           "context7": { "*": "allow" },
-           "skill": {
-             "*": "deny",
-             "skill-invocation-policy": "allow"
-           }
-        },
-        "required_skills": ["skill-invocation-policy", "unicode-usage", "callout-boxes"]
+          "skill-invocation-policy": "allow"
+        }
       },
-      "test_runner": {
-        "mode": "subagent",
-        "model": "github-copilot/claude-haiku-4.5",
-        "temperature": 0.3,
-        "permission": {
+      "required_skills": [
+        "skill-invocation-policy",
+        "unicode-usage",
+        "callout-boxes"
+      ]
+    },
+    "test_runner": {
+      "mode": "subagent",
+      "model": "github-copilot/claude-haiku-4.5",
+      "temperature": 0.3,
+      "permission": {
+        "*": "deny",
+        "read": { "*": "allow" },
+        "grep": { "*": "allow" },
+        "glob": { "*": "allow" },
+        "bash": { "*": "allow" },
+        "skill": {
           "*": "deny",
-          "read": { "*": "allow" },
-          "grep": { "*": "allow" },
-          "glob": { "*": "allow" },
-          "bash": { "*": "allow" },
-          "skill": {
-            "*": "deny",
-            "skill-invocation-policy": "allow"
-          }
-        },
-        "required_skills": ["skill-invocation-policy", "unicode-usage", "callout-boxes"]
-      }
+          "skill-invocation-policy": "allow"
+        }
+      },
+      "required_skills": [
+        "skill-invocation-policy",
+        "unicode-usage",
+        "callout-boxes"
+      ]
+    }
   }
 }

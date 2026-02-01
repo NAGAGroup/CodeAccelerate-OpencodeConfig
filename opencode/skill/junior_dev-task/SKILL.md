@@ -9,6 +9,7 @@ description: Template for delegating implementation work to junior_dev agent
 {# spec: Numbered steps with exact locations, function names, line numbers, code blocks #}
 {# acceptance_criteria: What "done" looks like - specific conditions that indicate successful completion #}
 {# constraints: Optional - what NOT to do (style rules, APIs to avoid, patterns to follow) #}
+{# required_skills: REQUIRED - Array of skill names junior_dev should load. Get via: query_required_skills({agent: "junior_dev"}). Pass empty array [] if none. #}
 
 **Task:** {{task|required}}
 
@@ -23,6 +24,9 @@ description: Template for delegating implementation work to junior_dev agent
 
 **Constraints:**
 {{constraints|optional|multiline}}
+
+**Required Skills:**
+{{required_skills|required|list}}
 
 **Important Guidelines:**
 - Junior_dev gets ONE attempt per spec - cannot debug, improvise, or ask questions

@@ -202,6 +202,23 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
       }
     }
 
+    // Also match variables in {% if variable %}, {% for item in variable %}, etc.
+    const controlRegex = /\{%\s*(?:if|for)\s+(?:\w+\s+in\s+)?([a-zA-Z_][a-zA-Z0-9_]*)(?:\s+and\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:\|\w+)?)?/g;
+    while ((match = controlRegex.exec(template)) !== null) {
+      // Add first variable (e.g., 'required_skills' from '{% if required_skills %}')
+      const varName = match[1];
+      if (!optional.has(varName)) {
+        required.add(varName);
+      }
+      // Add second variable if exists (e.g., from '{% if var1 and var2 %}')
+      if (match[2]) {
+        const varName2 = match[2];
+        if (!optional.has(varName2)) {
+          required.add(varName2);
+        }
+      }
+    }
+
     return {
       required: Array.from(required),
       optional: Array.from(optional),
@@ -266,6 +283,9 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
     env.addFilter("list", (val: any) => {
       if (!Array.isArray(val)) {
         throw new Error("Expected array for list filter");
+      }
+      if (val.length === 0) {
+        return "None";
       }
       return val.map((item, i) => `${i + 1}. ${item}`).join("\n");
     });

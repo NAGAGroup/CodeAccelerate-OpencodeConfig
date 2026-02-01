@@ -8,6 +8,7 @@ description: Template for librarian agent task delegation
 {# usage_context: Why you need this information - helps librarian focus the search and understand your use case #}
 {# output_format: What format you want (e.g., "list of flag constants with descriptions and links", "code examples with official docs", "comparison table", "summary of research papers with citations") #}
 {# specific_urls: Optional - User-provided URLs to prioritize in research (comma-separated or list). If provided, librarian should fetch and analyze these first. #}
+{# required_skills: REQUIRED - Array of skill names librarian should load. Get via: query_required_skills({agent: "librarian"}). Pass empty array [] if none. #}
 
 **Research Question:** {{research_question|required}}
 
@@ -18,6 +19,9 @@ description: Template for librarian agent task delegation
 {% if specific_urls %}
 **Specific URLs to Research:** {{specific_urls}}
 {% endif %}
+
+**Required Skills:**
+{{required_skills|required|list}}
 
 **Important Guidelines:**
 - Keep questions narrow and specific (not broad like "explain all of X")

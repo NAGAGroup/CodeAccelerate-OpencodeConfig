@@ -1,161 +1,78 @@
-import { type Plugin } from "@opencode-ai/plugin";
+import type { Plugin } from "@opencode-ai/plugin";
+import { readFile } from "fs/promises";
+import { join } from "path";
+import { homedir } from "os";
 
 /**
- * SkillLoaderPlugin - Auto-loads required skills for agents before their first message
- *
- * This plugin automatically loads skills that agents require, reducing manual setup.
- * It reads the opencode.json configuration file to discover which skills each agent needs,
- * then loads those skills before the agent receives its first user message.
- *
- * Configuration example in opencode.json:
- * ```json
- * {
- *   "agent": {
- *     "my_agent": {
- *       "mode": "subagent",
- *       "required_skills": ["explore-task", "librarian-task"]
- *     }
- *   }
- * }
- * ```
- *
- * Behavior:
- * - Tracks loaded sessions to avoid reloading skills for the same agent session
- * - Skips loading if no skills are required for the agent
- * - Loads all required skills concurrently using Promise.all
- * - Logs successful skill loads and warnings for failures
- * - Gracefully handles skill load failures (does not throw, allowing agent to proceed)
- * - Only processes messages from user role (skips assistant messages)
+ * SkillLoaderPlugin - Loads required skills for coordinator agents
+ * 
+ * Uses chat.message hook to inject skill loading instructions once per session.
+ * Only applies to tech_lead and build agents.
  */
-export const SkillLoaderPlugin: Plugin = async ({ client, directory }) => {
-  // Track which sessions have had their skills loaded to avoid reloading
-  const loadedSessions = new Set<string>();
+export const SkillLoaderPlugin: Plugin = async ({ client, worktree }) => {
+  const injectedSessions = new Set<string>();
 
-  // Lazy config loading - fetch on first access, then cache
-  let cachedConfig: any = null;
-
-  /**
-   * Fetch and cache the opencode.json configuration
-   * Returns empty agent/skills structure if loading fails
-   */
   async function getConfig() {
-    if (cachedConfig) return cachedConfig;
-
-    try {
-      const configResponse = await client.config.get({ query: { directory } });
-      if (configResponse.error) {
-        console.warn("[skill-loader] Failed to load config:", configResponse.error);
-        cachedConfig = { agent: {}, skills: {} };
-      } else {
-        cachedConfig = configResponse.data ?? { agent: {}, skills: {} };
+    const globalPath = join(homedir(), '.config', 'opencode', 'opencode.json');
+    const projectPath = join(worktree, '.opencode', 'opencode.json');
+    
+    const readJson = async (path: string) => {
+      try {
+        return JSON.parse(await readFile(path, 'utf-8'));
+      } catch {
+        return null;
       }
-    } catch (error) {
-      console.warn("[skill-loader] Exception loading config:", error);
-      cachedConfig = { agent: {}, skills: {} };
-    }
+    };
 
-    return cachedConfig;
-  }
-
-  /**
-   * Get the required skills for an agent from config
-   * @param agentName Name of the agent (e.g., "explore", "librarian")
-   * @param config Configuration object
-   * @returns Array of skill names, or empty array if none required
-   */
-  function getRequiredSkills(agentName: string, config: any): string[] {
-    const agent = config?.agent?.[agentName];
-    if (!agent) return [];
-    return agent.required_skills ?? [];
-  }
-
-  /**
-   * Load a single skill using the client API
-   * @param sessionId Session ID for the skill load request
-   * @param skillName Name of the skill to load (e.g., "explore-task")
-   */
-  async function loadSkill(sessionId: string, skillName: string): Promise<void> {
-    await client.skill.load({
-      body: {
-        sessionID: sessionId,
-        name: skillName,
-      },
-    });
+    const global = await readJson(globalPath);
+    const project = await readJson(projectPath);
+    
+    return {
+      agent: {
+        ...global?.agent,
+        ...project?.agent,
+      }
+    };
   }
 
   return {
-    /**
-     * Hook that runs before each session message
-     * Automatically loads required skills on the first user message
-     */
-    "session.message.before": async ({ session, message }) => {
-      // Skip if not a user message
-      if (message.info.role !== "user") {
-        return;
-      }
+    "chat.message": async (input, output) => {
+      // Get agent name from output.message context (guaranteed to exist)
+      const agent = output.message?.agent;
+      
+      // Only inject for coordinator agents
+      if (agent !== "tech_lead" && agent !== "build") return;
 
-      // Skip if we've already loaded skills for this session
-      if (loadedSessions.has(session.id)) {
-        return;
-      }
+      // Get sessionID from input or output
+      const sessionID = input.sessionID || output.sessionID;
+      if (!sessionID) return;
 
-      // Mark this session as processed to avoid reloading
-      loadedSessions.add(session.id);
+      // Skip if this session already had skills injected
+      if (injectedSessions.has(sessionID)) return;
 
-      // Load config and get required skills for this agent
+      // Mark this session as injected
+      injectedSessions.add(sessionID);
+
       const config = await getConfig();
+      const skills = config.agent?.[agent]?.required_skills;
+      if (!skills?.length) return;
 
-      // Debug: Check if required_skills field exists in config
-      const agentName = session.agent?.name ?? "";
-      console.log(`[skill-loader] Processing session ${session.id}, agent: ${agentName}`);
-      console.log(`[skill-loader] Config has agent field: ${!!config?.agent}`);
+      // Build instruction with all required skills
+      const skillCalls = skills.map((s: string) => `skill({name: "${s}"})`).join('\n');
+      const instruction = `Please load your required skills before responding:\n\n${skillCalls}`;
 
-      if (!agentName) {
-        console.error("[skill-loader] Agent name is undefined, cannot load skills");
-        return;
+      // Inject instruction for this session
+      try {
+        await client.session.prompt({
+          path: { id: sessionID },
+          body: {
+            noReply: true,
+            parts: [{ type: "text", text: instruction }],
+          },
+        });
+      } catch (error) {
+        console.error('[skill-loader] Failed to inject skills:', error);
       }
-
-      if (config?.agent?.[agentName]) {
-        console.log(`[skill-loader] Found config for agent: ${agentName}`);
-        console.log(`[skill-loader] Has required_skills field: ${!!config.agent[agentName].required_skills}`);
-        console.log(`[skill-loader] required_skills value:`, config.agent[agentName].required_skills);
-      } else {
-        console.error(`[skill-loader] No config entry found for agent: ${agentName}`);
-        return;
-      }
-
-      const requiredSkills = getRequiredSkills(agentName, config);
-
-      // Skip if no skills required
-      if (requiredSkills.length === 0) {
-        return;
-      }
-
-      // Load all required skills concurrently
-      const loadPromises = requiredSkills.map((skillName) =>
-        loadSkill(session.id, skillName)
-          .then(() => {
-            console.log(`[skill-loader] Loaded skill: ${skillName} for agent ${session.agent?.name}`);
-          })
-          .catch((error) => {
-            console.warn(
-              `[skill-loader] Failed to load skill ${skillName} for agent ${session.agent?.name}:`,
-              error,
-            );
-            // Continue gracefully - don't throw, let agent proceed without this skill
-          }),
-      );
-
-      // Wait for all skill loads to complete
-      await Promise.all(loadPromises);
-    },
-    /**
-     * Hook that runs when a session ends
-     * Cleans up the session from the tracking Set to prevent memory leaks
-     */
-    "session.end": async ({ session }) => {
-      loadedSessions.delete(session.id);
-      console.log(`[skill-loader] Cleaned up session: ${session.id}`);
     },
   };
 };
