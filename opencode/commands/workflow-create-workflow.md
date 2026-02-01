@@ -7,7 +7,7 @@ Create a new workflow command for the following scenario:
 
 Scenario: $ARGUMENTS
 
-## CRITICAL REQUIREMENTS
+## Critical Requirements
 
 **Todo List Management (REQUIRED for ALL workflows):**
 - Create a comprehensive todo list at the very beginning of workflow execution
@@ -27,10 +27,13 @@ Scenario: $ARGUMENTS
    - Update todo: mark complete, add any new tasks discovered
 
 3. **Define delegation strategy (REQUIRED)**
-   - **CRITICAL:** If the user hasn't already specified who does the work, ask them explicitly:
-     * "Who should perform the actual work in this workflow?"
-     * "Should you (tech_lead) do this work directly, or should it be delegated to a subagent?"
-     * "If delegating, which agent should handle it? (explore, junior_dev, test_runner, librarian)"
+
+   > [!IMPORTANT]
+   > If the user hasn't already specified who does the work, ask them explicitly:
+   > - "Who should perform the actual work in this workflow?"
+   > - "Should you (tech_lead) do this work directly, or should it be delegated to a subagent?"
+   > - "If delegating, which agent should handle it? (explore, junior_dev, test_runner, librarian)"
+   
    - Do NOT assume or suggest - let the user decide based on their understanding
    - Document whatever delegation pattern the user chooses
    - Update todo: mark complete
@@ -50,13 +53,16 @@ Scenario: $ARGUMENTS
 6. **Draft the command file**
    - Choose appropriate workflow name (kebab-case)
    - Write clear description for YAML frontmatter
-   - **CRITICAL**: Specify agent in frontmatter (always "tech_lead" for workflow coordination)
+   
+   > [!IMPORTANT]
+   > - Specify agent in frontmatter (always "tech_lead" for workflow coordination)
+   > - Use correct syntax: `$ARGUMENTS` NOT `{{ARGUMENTS}}`
+   > - Include todo list requirement in "Process" section
+   > - Document the delegation strategy clearly in the workflow:
+   >   - If tech_lead does the work: "You will generate/create/write [X] yourself..."
+   >   - If delegating: "Delegate to [agent] to [specific task]..."
+   
    - Define instruction template with $ARGUMENTS placeholder (use $ARGUMENTS for all user input, or $1, $2, $3 for specific positional arguments)
-   - **CRITICAL**: Use correct syntax: `$ARGUMENTS` NOT `{{ARGUMENTS}}`
-   - **CRITICAL**: Include todo list requirement in "Process" section
-   - **CRITICAL**: Document the delegation strategy clearly in the workflow
-     * If tech_lead does the work: "You will generate/create/write [X] yourself..."
-     * If delegating: "Delegate to [agent] to [specific task]..."
    - Include 2-4 realistic examples showing how $ARGUMENTS gets replaced
    - Document the step-by-step process with clear delegation points
    - Specify the expected output/deliverable
@@ -87,20 +93,20 @@ Scenario: $ARGUMENTS
 ## What Makes a Good Workflow
 
 **Good workflows are:**
-- ✅ Bounded and specific (clear start, middle, end)
-- ✅ Deterministic (same inputs → predictable process)
-- ✅ Multi-step (requires coordination between subagents)
-- ✅ Repeatable (common scenario that happens multiple times)
-- ✅ Structured (follows a clear sequence)
-- ✅ Includes todo list management (create at start, maintain throughout)
+- [OK] Bounded and specific (clear start, middle, end)
+- [OK] Deterministic (same inputs -> predictable process)
+- [OK] Multi-step (requires coordination between subagents)
+- [OK] Repeatable (common scenario that happens multiple times)
+- [OK] Structured (follows a clear sequence)
+- [OK] Includes todo list management (create at start, maintain throughout)
 
 **Bad workflows are:**
-- ❌ Open-ended exploration ("understand the codebase")
-- ❌ Single-step tasks ("read this file")
-- ❌ Too general ("make it better")
-- ❌ Require human decision at every step
-- ❌ One-off scenarios that won't repeat
-- ❌ Missing todo list requirements
+- [X] Open-ended exploration ("understand the codebase")
+- [X] Single-step tasks ("read this file")
+- [X] Too general ("make it better")
+- [X] Require human decision at every step
+- [X] One-off scenarios that won't repeat
+- [X] Missing todo list requirements
 
 ## Workflow Template Structure
 
@@ -128,19 +134,20 @@ You are a tech lead coordinating [X]. Delegate to [agent_name] to [specific task
 
 ## Understanding Command Arguments
 
-**IMPORTANT:** When creating workflows, you need to properly use argument placeholders so user input gets passed to the command.
+> [!TIP]
+> When creating workflows, you need to properly use argument placeholders so user input gets passed to the command.
 
 ### Argument Placeholders
 
 **$ARGUMENTS** - Captures ALL user input after the command name
 - Syntax: `$ARGUMENTS` (dollar sign prefix, NOT `{{ARGUMENTS}}`)
 - Use when you want the entire user input as one string
-- Example: `/workflow-name Create a new feature` → `$ARGUMENTS` = "Create a new feature"
+- Example: `/workflow-name Create a new feature` -> `$ARGUMENTS` = "Create a new feature"
 
 **$1, $2, $3, etc.** - Positional parameters for individual arguments
 - Use when you need to parse specific arguments separately
 - Arguments are space-separated (use quotes for multi-word arguments)
-- Example: `/command arg1 arg2 "arg three"` → `$1`="arg1", `$2`="arg2", `$3`="arg three"
+- Example: `/command arg1 arg2 "arg three"` -> `$1`="arg1", `$2`="arg2", `$3`="arg three"
 
 ### Examples of Proper Usage
 
@@ -181,12 +188,12 @@ Full command context: $ARGUMENTS
 
 ### Common Mistakes to Avoid
 
-❌ **Wrong:** `{{ARGUMENTS}}` (this is Jinja2 syntax, not used for commands)
-❌ **Wrong:** `$ARG` or `$ARGS` (these don't exist)
-❌ **Wrong:** `{$ARGUMENTS}` (no curly braces)
+[X] **Wrong:** `{{ARGUMENTS}}` (this is Jinja2 syntax, not used for commands)
+[X] **Wrong:** `$ARG` or `$ARGS` (these don't exist)
+[X] **Wrong:** `{$ARGUMENTS}` (no curly braces)
 
-✅ **Correct:** `$ARGUMENTS`
-✅ **Correct:** `$1, $2, $3` (for positional args)
+[OK] **Correct:** `$ARGUMENTS`
+[OK] **Correct:** `$1, $2, $3` (for positional args)
 
 ### Documentation Reference
 

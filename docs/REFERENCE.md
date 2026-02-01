@@ -46,26 +46,27 @@ Quick lookup guide for agents, permissions, skills, and configuration.
 
 | Tool | tech_lead | explore | librarian | junior_dev | test_runner |
 |------|-----------|---------|-----------|------------|-------------|
-| read | ✅ (ask for .env) | ✅ | ❌ | ✅ | ✅ |
-| edit | ⚠️ (*.md only) | ❌ | ❌ | ✅ | ❌ |
-| write | ⚠️ (*.md only) | ❌ | ❌ | ✅ | ❌ |
-| bash | ⚠️ (ask) | ❌ | ❌ | ❌ | ✅ |
-| glob | ✅ | ✅ | ❌ | ✅ | ✅ |
-| grep | ✅ | ✅ | ❌ | ✅ | ✅ |
-| lsp | ✅ | ✅ | ❌ | ✅ | ❌ |
-| webfetch | ❌ | ❌ | ✅ | ❌ | ❌ |
-| context7 | ❌ | ❌ | ✅ | ❌ | ❌ |
-| task | ✅ | ❌ | ❌ | ❌ | ❌ |
-| skill | ✅ | ❌ | ❌ | ❌ | ❌ |
-| todowrite | ✅ | ❌ | ❌ | ✅ | ❌ |
-| mermaid_* | ✅ | ❌ | ❌ | ❌ | ❌ |
+| read | [OK] (ask for .env) | [OK] | [X] | [OK] | [OK] |
+| edit | [!] (*.md only) | [X] | [X] | [OK] | [X] |
+| write | [!] (*.md only) | [X] | [X] | [OK] | [X] |
+| bash | [!] (ask) | [X] | [X] | [X] | [OK] |
+| glob | [OK] | [OK] | [X] | [OK] | [OK] |
+| grep | [OK] | [OK] | [X] | [OK] | [OK] |
+| lsp | [OK] | [OK] | [X] | [OK] | [X] |
+| webfetch | [X] | [X] | [OK] | [X] | [X] |
+| context7 | [X] | [X] | [OK] | [X] | [X] |
+| task | [OK] | [X] | [X] | [X] | [X] |
+| skill | [OK] | [X] | [X] | [X] | [X] |
+| todowrite | [OK] | [X] | [X] | [OK] | [X] |
+| mermaid_* | [OK] | [X] | [X] | [X] | [X] |
 
 Legend:
-- ✅ Full access
-- ⚠️ Limited/conditional access
-- ❌ No access
+- [OK] Full access
+- [!] Limited/conditional access
+- [X] No access
 
-> **Source of Truth:** See `opencode/opencode.json` for complete permission definitions
+> [!TIP]
+> See `opencode/opencode.json` for complete permission definitions
 
 ## Skill Templates
 
@@ -119,7 +120,8 @@ Legend:
 | mermaid-render-svg.ts | Renders Mermaid diagrams as SVG files |
 | mermaid-list-themes.ts | Lists available Mermaid themes |
 
-> **Source:** See `opencode/plugins/` directory
+> [!TIP]
+> See `opencode/plugins/` directory
 
 ## Configuration Structure
 
@@ -175,7 +177,8 @@ opencode/
 | Claude Haiku 4.5 | explore, junior_dev, test_runner | Fast and efficient for focused tasks |
 | GPT-4o Mini | small_model | Quick operations |
 
-> **Source:** See `opencode/opencode.json` for model configuration
+> [!TIP]
+> See `opencode/opencode.json` for model configuration
 
 ## Environment & MCP
 
@@ -187,7 +190,8 @@ opencode/
 - **Used By:** librarian agent
 - **Purpose:** Enhanced documentation lookup and research
 
-> **Source:** See `opencode/opencode.json` under "mcp" section
+> [!TIP]
+> See `opencode/opencode.json` under "mcp" section
 
 ## File Paths
 
@@ -309,4 +313,5 @@ Check your OpenCode version:
 opencode --version
 ```
 
-> **Note:** Some features may require specific OpenCode versions. Check the OpenCode documentation for compatibility.
+> [!IMPORTANT]
+> Some features may require specific OpenCode versions. Check the OpenCode documentation for compatibility.

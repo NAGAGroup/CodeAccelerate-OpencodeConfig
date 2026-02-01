@@ -5,9 +5,10 @@ agent: tech_lead
 
 You are a tech lead creating mermaid diagrams for documentation. The user has provided: "$ARGUMENTS"
 
-**IMPORTANT:** You will generate the mermaid diagram code yourself using your understanding of the project context. Do NOT delegate - documentation requires full project understanding.
+> [!TIP]
+> You will generate the mermaid diagram code yourself using your understanding of the project context. Do NOT delegate - documentation requires full project understanding.
 
-## CRITICAL REQUIREMENTS
+## Critical Requirements
 
 **Todo List Management (REQUIRED):**
 - Create a comprehensive todo list at the very beginning
@@ -89,7 +90,10 @@ You are a tech lead creating mermaid diagrams for documentation. The user has pr
    - Update todo: mark complete when valid
 
 8. **Preview with ASCII rendering**
-   - **CRITICAL:** Show the EXACT ASCII output from `mermaid_render_ascii` tool
+
+   > [!IMPORTANT]
+   > Show the EXACT ASCII output from `mermaid_render_ascii` tool
+   
    - **For single diagrams:**
      * Call `mermaid_render_ascii` with the diagram code
      * Display the COMPLETE `asciiContent` field from the tool's response
@@ -102,7 +106,7 @@ You are a tech lead creating mermaid diagrams for documentation. The user has pr
      * This prevents overwhelming the user with too much output at once
    - Example of correct preview:
      ```
-     ## 📊 Preview: Diagram Name
+     ## [Chart] Preview: Diagram Name
      
      [Paste the EXACT asciiContent here - every line, every character]
      
@@ -124,7 +128,7 @@ You are a tech lead creating mermaid diagrams for documentation. The user has pr
 10. **Save according to output choice**
     - Execute based on the format chosen in step 4:
     
-    **If Option A (ASCII → Markdown):**
+    **If Option A (ASCII -> Markdown):**
     - Ask: "Which markdown file should I add this ASCII diagram to?"
     - Get insertion point: "Should I append, prepend, or insert at a specific section?"
     - Read the target file if it exists

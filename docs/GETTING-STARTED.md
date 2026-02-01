@@ -50,7 +50,8 @@ Think of it as having an experienced tech lead on your team who knows when to as
 | **junior_dev** | Implement changes, write code, modify files | "Update all instances of the old API format" |
 | **test_runner** | Run tests, execute builds, verify functionality | "Run the test suite and check for failures" |
 
-> **Note:** For the complete, up-to-date agent capabilities, see `opencode/agent/` directory.
+> [!NOTE]
+> For the complete, up-to-date agent capabilities, see `opencode/agent/` directory.
 
 ## Your First Workflow
 
@@ -93,7 +94,8 @@ then implement it in our API
 ## When to Switch to Build Agent
 
 If tech_lead suggests:
-> "This task requires a full rebuild. Consider switching to the build agent using Tab."
+> [!TIP]
+> This task requires a full rebuild. Consider switching to the build agent using Tab.
 
 It means the task is better suited for OpenCode's built-in `build` agent, which handles:
 - Major refactors across many files
@@ -177,4 +179,5 @@ Run all tests and create a summary of failures with potential causes
 - `plan` - (disabled in this config)
 - `general` - (disabled in this config)
 
-> **Remember:** The subagents are designed to be called by tech_lead, not used directly. Use tech_lead as your main interface!
+> [!IMPORTANT]
+> The subagents are designed to be called by tech_lead, not used directly. Use tech_lead as your main interface!

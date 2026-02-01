@@ -60,11 +60,11 @@ locate the relevant code, implement the middleware, and verify it works.
 
 [Progress updates as each step completes...]
 
-✓ Researched JWT best practices
-✓ Located 8 route files and existing middleware structure
-✓ Implemented auth.js middleware with token validation
-✓ Updated 12 protected routes to use authentication
-✓ Tests passing - authentication working correctly
+[OK] Researched JWT best practices
+[OK] Located 8 route files and existing middleware structure
+[OK] Implemented auth.js middleware with token validation
+[OK] Updated 12 protected routes to use authentication
+[OK] Tests passing - authentication working correctly
 
 The new middleware is at src/middleware/auth.js and includes:
 - Token validation with proper error handling
@@ -143,12 +143,12 @@ Found 3 failures related to validation, missing imports, and database constraint
 Identified the user controller, validation logic, and model schema.
 
 [Makes fixes...]
-✓ Added email validation
-✓ Fixed bcrypt import
-✓ Added database constraint
+[OK] Added email validation
+[OK] Fixed bcrypt import
+[OK] Added database constraint
 
 [Verifies...]
-All user registration tests now passing ✓
+All user registration tests now passing [OK]
 
 Changes made:
 - src/controllers/user.js: Added validator import
@@ -219,12 +219,12 @@ Found inconsistent error handling across 15 route files.
 Identified the Express error middleware pattern as the best approach.
 
 [Implements changes...]
-✓ Created centralized error handler middleware
-✓ Refactored 15 route files to use consistent error throwing
-✓ Added custom error classes for different error types
+[OK] Created centralized error handler middleware
+[OK] Refactored 15 route files to use consistent error throwing
+[OK] Added custom error classes for different error types
 
 [Verifies...]
-All tests passing - error handling now centralized and consistent ✓
+All tests passing - error handling now centralized and consistent [OK]
 
 The new error handler provides:
 - Consistent JSON error responses
@@ -337,25 +337,25 @@ tech_lead response: "I need more context:
 
 ### Be Specific About Goals
 
-❌ **Vague:** "Make the code better"
-✅ **Specific:** "Add input validation to all API endpoints"
+[X] **Vague:** "Make the code better"
+[OK] **Specific:** "Add input validation to all API endpoints"
 
 ### Trust the Workflow
 
-❌ **Micromanaging:** "First use explore to find files, then use junior_dev to..."
-✅ **Goal-oriented:** "Add logging to all error handlers"
+[X] **Micromanaging:** "First use explore to find files, then use junior_dev to..."
+[OK] **Goal-oriented:** "Add logging to all error handlers"
 
 Let tech_lead figure out the workflow.
 
 ### Provide Context When Needed
 
-❌ **Assuming:** "Fix the bug"
-✅ **Context:** "The user registration endpoint returns 500 errors when email is malformed"
+[X] **Assuming:** "Fix the bug"
+[OK] **Context:** "The user registration endpoint returns 500 errors when email is malformed"
 
 ### Use Direct Requests for Simple Tasks
 
-❌ **Over-delegating:** Complex workflow for simple markdown edit
-✅ **Direct:** "Update the README to mention the new authentication feature"
+[X] **Over-delegating:** Complex workflow for simple markdown edit
+[OK] **Direct:** "Update the README to mention the new authentication feature"
 
 tech_lead can handle simple edits directly.
 
@@ -400,10 +400,10 @@ Should I read it to understand the configuration?
 
 Good indicators you're using tech_lead effectively:
 
-✅ **You describe WHAT, not HOW** - Focus on goals, not implementation steps
-✅ **Multi-step tasks complete smoothly** - tech_lead coordinates the workflow
-✅ **You're not context-switching** - Stay in conversation, let agents work
-✅ **Changes are verified** - test_runner confirms work before completion
+[OK] **You describe WHAT, not HOW** - Focus on goals, not implementation steps
+[OK] **Multi-step tasks complete smoothly** - tech_lead coordinates the workflow
+[OK] **You're not context-switching** - Stay in conversation, let agents work
+[OK] **Changes are verified** - test_runner confirms work before completion
 
 ## Next Steps
 

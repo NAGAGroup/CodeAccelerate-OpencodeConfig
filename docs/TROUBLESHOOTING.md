@@ -36,14 +36,14 @@ Common issues and solutions when using tech_lead delegation.
 
 **Be explicit about implementation:**
 ```
-❌ Vague: "How should we handle errors in the API?"
-✅ Specific: "Add error handling middleware to all API endpoints"
+[X] Vague: "How should we handle errors in the API?"
+[OK] Specific: "Add error handling middleware to all API endpoints"
 ```
 
 **Request concrete changes:**
 ```
-❌ Conceptual: "Explain the auth flow"
-✅ Actionable: "Document the auth flow in a new markdown file"
+[X] Conceptual: "Explain the auth flow"
+[OK] Actionable: "Document the auth flow in a new markdown file"
 ```
 
 ### tech_lead Delegates But Subagent Fails
@@ -78,7 +78,8 @@ Common issues and solutions when using tech_lead delegation.
 ### tech_lead Suggests Switching to Build Agent
 
 **Message:**
-> "This task requires extensive changes across the codebase. Consider switching to the build agent using Tab."
+> [!WARNING]
+> This task requires extensive changes across the codebase. Consider switching to the build agent using Tab.
 
 **Why This Happens:**
 - Task scope is too large for delegation workflow
@@ -118,15 +119,16 @@ Common issues and solutions when using tech_lead delegation.
 
 **Example:**
 ```
-❌ Vague: "Add logging to the API"
+[X] Vague: "Add logging to the API"
 
-✅ Specific: "Add debug logging to all Express route handlers in src/api/,
+[OK] Specific: "Add debug logging to all Express route handlers in src/api/,
 logging the request method, path, and response status code"
 ```
 
 #### junior_dev Reports "Spec Unclear"
 
-**This is GOOD!** junior_dev is correctly refusing to guess.
+> [!IMPORTANT]
+> junior_dev is correctly refusing to guess.
 
 **What To Do:**
 1. Read junior_dev's feedback carefully - what's unclear?
@@ -134,14 +136,14 @@ logging the request method, path, and response status code"
 3. tech_lead will re-delegate with updated spec
 
 **Don't:**
-- ❌ Tell junior_dev to "figure it out"
-- ❌ Blame the agent
-- ❌ Provide vague clarification
+- [X] Tell junior_dev to "figure it out"
+- [X] Blame the agent
+- [X] Provide vague clarification
 
 **Do:**
-- ✅ Answer specific questions
-- ✅ Provide file paths or line references
-- ✅ Give concrete examples
+- [OK] Answer specific questions
+- [OK] Provide file paths or line references
+- [OK] Give concrete examples
 
 ### explore Issues
 
@@ -156,8 +158,8 @@ logging the request method, path, and response status code"
 
 **Narrow your request:**
 ```
-❌ Broad: "Find all files using the database"
-✅ Narrow: "Find files that import the UserModel class"
+[X] Broad: "Find all files using the database"
+[OK] Narrow: "Find files that import the UserModel class"
 ```
 
 **Add scope constraints:**
@@ -188,7 +190,8 @@ logging the request method, path, and response status code"
 
 #### Tests Fail After Implementation
 
-**This is normal!** Tests catching issues is their purpose.
+> [!NOTE]
+> Tests catching issues is their purpose.
 
 **What To Do:**
 1. **Review test output carefully** - what specifically failed?
@@ -242,8 +245,8 @@ Fix the validation logic to handle international domain names correctly."
 
 **Rephrase query:**
 ```
-❌ Too specific: "React Server Components in Next.js 15.2"
-✅ Broader: "React Server Components best practices"
+[X] Too specific: "React Server Components in Next.js 15.2"
+[OK] Broader: "React Server Components best practices"
 ```
 
 **Provide known sources:**
@@ -279,8 +282,8 @@ Each agent has specific permissions. This is by design for security.
 
 **Request the right agent:**
 ```
-❌ "junior_dev, run the tests"
-✅ "tech_lead, have test_runner verify the changes"
+[X] "junior_dev, run the tests"
+[OK] "tech_lead, have test_runner verify the changes"
 ```
 
 ### "Ask Permission" Prompts
@@ -291,7 +294,8 @@ tech_lead asks permission before certain operations:
 - Running bash commands
 - Accessing external directories
 
-**This is normal!** Sensitive operations require confirmation.
+> [!NOTE]
+> Sensitive operations require confirmation.
 
 **What To Do:**
 1. **Review the requested operation**
@@ -299,13 +303,13 @@ tech_lead asks permission before certain operations:
 3. **Deny** if unexpected or concerning
 
 **Don't:**
-- ❌ Auto-approve without reading
-- ❌ Get frustrated by security checks
+- [X] Auto-approve without reading
+- [X] Get frustrated by security checks
 
 **Do:**
-- ✅ Understand why permission is needed
-- ✅ Verify it aligns with your request
-- ✅ Appreciate the safety mechanism
+- [OK] Understand why permission is needed
+- [OK] Verify it aligns with your request
+- [OK] Appreciate the safety mechanism
 
 ---
 

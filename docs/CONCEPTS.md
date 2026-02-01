@@ -49,7 +49,7 @@ All coordination flows through tech_lead, which delegates to specialized agents 
 **Design Rationale:**
 The tech_lead is intentionally limited in direct code modification. This forces proper delegation patterns and prevents the orchestrator from trying to do everything itself.
 
-> **Source of Truth:** See `opencode/agent/tech_lead.md` for complete role definition
+> [!TIP] See `opencode/agent/tech_lead.md` for complete role definition
 
 ### explore - The Code Detective
 
@@ -69,7 +69,7 @@ The tech_lead is intentionally limited in direct code modification. This forces 
 **Design Rationale:**
 Explore is a reconnaissance agent. It finds things and reports back. By prohibiting write access, we ensure it stays focused on search rather than attempting fixes.
 
-> **Source of Truth:** See `opencode/agent/explore.md` for complete role definition
+> [!TIP] See `opencode/agent/explore.md` for complete role definition
 
 ### librarian - The Research Specialist
 
@@ -89,7 +89,7 @@ Explore is a reconnaissance agent. It finds things and reports back. By prohibit
 **Design Rationale:**
 Librarian is isolated from the codebase to keep it focused on external research. This separation prevents confusion between "what our code does" and "what best practices suggest."
 
-> **Source of Truth:** See `opencode/agent/librarian.md` for complete role definition
+> [!TIP] See `opencode/agent/librarian.md` for complete role definition
 
 ### junior_dev - The Implementation Specialist
 
@@ -109,7 +109,7 @@ Librarian is isolated from the codebase to keep it focused on external research.
 **Design Rationale:**
 junior_dev is the workhorse for code changes. It runs at lower temperature (0.15) for consistent, conservative edits. Bash access is prohibited to prevent accidental deployments or destructive operations.
 
-> **Source of Truth:** See `opencode/agent/junior_dev.md` for complete role definition
+> [!TIP] See `opencode/agent/junior_dev.md` for complete role definition
 
 ### test_runner - The Verification Specialist
 
@@ -129,7 +129,7 @@ junior_dev is the workhorse for code changes. It runs at lower temperature (0.15
 **Design Rationale:**
 test_runner is the only subagent with bash access. By separating execution from modification, we create a clear verification step. It runs at moderate temperature (0.3) to balance creativity in test interpretation with consistency.
 
-> **Source of Truth:** See `opencode/agent/test_runner.md` for complete role definition
+> [!TIP] See `opencode/agent/test_runner.md` for complete role definition
 
 ## Permission Architecture
 
@@ -163,7 +163,7 @@ restrict within tools (e.g., *.md only)
 3. **Predictability** - You know what each agent can/cannot do
 4. **Audibility** - Permissions are explicit in `opencode/opencode.json`
 
-> **Source of Truth:** See `opencode/opencode.json` for all agent permissions
+> [!TIP] See `opencode/opencode.json` for all agent permissions
 
 ## Delegation Mechanism
 
@@ -191,7 +191,7 @@ Each skill defines:
 - Expected output format (what it should return)
 - Constraints and best practices
 
-> **Source of Truth:** See `opencode/skill/` directory for all skill templates
+> [!TIP] See `opencode/skill/` directory for all skill templates
 
 ### Why Skills Matter
 
@@ -214,7 +214,7 @@ Different agents use different models based on their needs:
 
 **Key Insight:** Not all tasks need the most powerful model. Haiku is faster and cheaper for focused tasks like searching and editing.
 
-> **Source of Truth:** See `opencode/opencode.json` for model assignments
+> [!TIP] See `opencode/opencode.json` for model assignments
 
 ## When to Use Build Agent
 
