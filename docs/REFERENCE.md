@@ -65,8 +65,8 @@ Legend:
 - [!] Limited/conditional access
 - [X] No access
 
-> [!TIP]
-> See `opencode/opencode.json` for complete permission definitions
+> [!NOTE]
+> This permission matrix is provided for informational context only and may not reflect the latest configuration. For authoritative permissions, see `opencode/opencode.json`.
 
 ## Skill Templates
 
