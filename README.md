@@ -25,19 +25,25 @@ The tech_lead orchestrates these agents to handle multi-step workflows that woul
 
 ### Installation
 
-1. **Copy this configuration to your OpenCode config directory:**
+1. **Clone and install this configuration:**
    ```bash
-   cp -r . ~/.config/CodeAccelerate-OpencodeConfig
+   # Clone the repository
+   git clone https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig.git
+   cd CodeAccelerate-OpencodeConfig
+   
+   # Backup existing config if it exists
+   [ -d ~/.config/opencode ] && mv ~/.config/opencode ~/.config/opencode.backup.$(date +%Y%m%d-%H%M%S)
+   
+   # Copy configuration to OpenCode config directory
+   cp -r opencode ~/.config/opencode
    ```
 
-2. **Select this configuration in OpenCode:**
-   - Open OpenCode settings
-   - Navigate to configurations
-   - Select `CodeAccelerate-OpencodeConfig`
+2. **Restart OpenCode** to load the new configuration
 
 3. **Start using the tech_lead agent:**
    ```
-   Switch to tech_lead role using Tab
+   tech_lead is now your default agent - just start chatting!
+   Or press Tab to switch between available agents
    ```
 
 ### Your First Task
