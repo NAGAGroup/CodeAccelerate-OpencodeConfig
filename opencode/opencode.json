@@ -1,0 +1,130 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "small_model": "github-copilot/gpt-5-mini",
+  "mcp": {
+    "context7": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": true
+    }
+  },
+  "default_agent": "tech_lead",
+  "agent": {
+    "plan": {
+      "disable": true
+    },
+    "general": {
+      "disable": true
+    },
+    "build": {
+      "model": "github-copilot/claude-sonnet-4.5"
+    },
+    "tech_lead": {
+      "mode": "primary",
+      "model": "github-copilot/claude-sonnet-4.5",
+      "permission": {
+        "*": "deny",
+        "question": "allow",
+        "read": {
+          "*": "allow",
+          "*.env": "ask",
+          "*.env.*": "ask",
+          "*.env.example": "allow"
+        },
+        "glob": "allow",
+        "grep": "allow",
+        "bash": "ask",
+        "lsp": "allow",
+        "edit": {
+          "*": "deny",
+          "*.md": "allow"
+        },
+        "write": {
+          "*": "deny",
+          "*.md": "allow"
+        },
+        "todowrite": "allow",
+        "todoread": "allow",
+        "task": "allow",
+        "skill": {
+          "*": "allow"
+        },
+        "external_directory": {
+          "*": "ask"
+        },
+        "doom_loop": "ask",
+        "mermaid_*": "allow"
+      },
+      "required_skills": ["skill-invocation-policy"]
+    },
+    "explore": {
+      "mode": "subagent",
+      "model": "github-copilot/claude-haiku-4.5",
+      "permission": {
+        "*": "deny",
+        "read": { "*": "allow" },
+        "glob": { "*": "allow" },
+        "grep": { "*": "allow" },
+        "lsp": "allow",
+        "skill": {
+          "*": "deny",
+          "skill-invocation-policy": "allow"
+        }
+      },
+      "required_skills": ["skill-invocation-policy"]
+    },
+    "librarian": {
+      "mode": "subagent",
+      "model": "github-copilot/claude-sonnet-4.5",
+      "temperature": 0.6,
+      "permission": {
+        "*": "deny",
+        "webfetch": "allow",
+        "context7": { "*": "allow" },
+        "skill": {
+          "*": "deny",
+          "skill-invocation-policy": "allow"
+        }
+      },
+      "required_skills": ["skill-invocation-policy"]
+    },
+    "junior_dev": {
+      "mode": "subagent",
+      "model": "github-copilot/claude-haiku-4.5",
+      "temperature": 0.15,
+      "permission": {
+        "*": "deny",
+        "read": { "*": "allow" },
+        "edit": { "*": "allow" },
+        "write": { "*": "allow" },
+        "grep": { "*": "allow" },
+        "glob": { "*": "allow" },
+        "lsp": "allow",
+        "todowrite": "allow",
+        "todoread": "allow",
+        "skill": {
+          "*": "deny",
+          "skill-invocation-policy": "allow"
+        }
+      },
+      "required_skills": ["skill-invocation-policy"]
+    },
+    "test_runner": {
+      "mode": "subagent",
+      "model": "github-copilot/claude-haiku-4.5",
+      "temperature": 0.3,
+      "permission": {
+        "*": "deny",
+        "read": { "*": "allow" },
+        "grep": { "*": "allow" },
+        "glob": { "*": "allow" },
+        "bash": { "*": "allow" },
+        "skill": {
+          "*": "deny",
+          "skill-invocation-policy": "allow"
+        }
+      },
+      "required_skills": ["skill-invocation-policy"]
+    }
+  }
+}
