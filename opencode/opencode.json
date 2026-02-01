@@ -56,7 +56,7 @@
           "doom_loop": "ask",
           "mermaid_*": "allow"
         },
-        "required_skills": ["skill-invocation-policy", "unicode-usage", "callout-boxes"]
+        "required_skills": ["skill-invocation-policy", "unicode-usage", "callout-boxes", "tech-lead-cli-commands"]
       },
       "explore": {
         "mode": "subagent",
