@@ -104,7 +104,27 @@ export const SkillLoaderPlugin: Plugin = async ({ client, directory }) => {
 
       // Load config and get required skills for this agent
       const config = await getConfig();
-      const requiredSkills = getRequiredSkills(session.agent?.name ?? "", config);
+
+      // Debug: Check if required_skills field exists in config
+      const agentName = session.agent?.name ?? "";
+      console.log(`[skill-loader] Processing session ${session.id}, agent: ${agentName}`);
+      console.log(`[skill-loader] Config has agent field: ${!!config?.agent}`);
+
+      if (!agentName) {
+        console.error("[skill-loader] Agent name is undefined, cannot load skills");
+        return;
+      }
+
+      if (config?.agent?.[agentName]) {
+        console.log(`[skill-loader] Found config for agent: ${agentName}`);
+        console.log(`[skill-loader] Has required_skills field: ${!!config.agent[agentName].required_skills}`);
+        console.log(`[skill-loader] required_skills value:`, config.agent[agentName].required_skills);
+      } else {
+        console.error(`[skill-loader] No config entry found for agent: ${agentName}`);
+        return;
+      }
+
+      const requiredSkills = getRequiredSkills(agentName, config);
 
       // Skip if no skills required
       if (requiredSkills.length === 0) {
@@ -126,16 +146,16 @@ export const SkillLoaderPlugin: Plugin = async ({ client, directory }) => {
           }),
       );
 
-       // Wait for all skill loads to complete
-       await Promise.all(loadPromises);
-     },
-     /**
-      * Hook that runs when a session ends
-      * Cleans up the session from the tracking Set to prevent memory leaks
-      */
-     "session.end": async ({ session }) => {
-       loadedSessions.delete(session.id);
-       console.log(`[skill-loader] Cleaned up session: ${session.id}`);
-     },
-   };
- };
+      // Wait for all skill loads to complete
+      await Promise.all(loadPromises);
+    },
+    /**
+     * Hook that runs when a session ends
+     * Cleans up the session from the tracking Set to prevent memory leaks
+     */
+    "session.end": async ({ session }) => {
+      loadedSessions.delete(session.id);
+      console.log(`[skill-loader] Cleaned up session: ${session.id}`);
+    },
+  };
+};
