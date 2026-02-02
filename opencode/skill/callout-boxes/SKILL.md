@@ -243,44 +243,123 @@ This section covers authentication using JWT tokens.
 To implement authentication, configure the JWT middleware...
 ```
 
-## Agent-Specific Guidance
+## Enforcement: Three Contexts
 
-### For Agents That Can Edit Files (junior_dev, tech_lead on .md)
+> [!IMPORTANT]
+> The callout box policy applies to ALL markdown output: agent responses, markdown files, and reports. Use callout boxes instead of bold emphasis everywhere.
 
-When writing or editing markdown documentation:
-1. **Scan for bold emphasis** - Look for `**CRITICAL:**`, `**IMPORTANT:**`, etc.
-2. **Convert to callouts** - Choose appropriate type based on severity
-3. **Use sparingly** - Reserve for truly important information
-4. **Follow format** - Always use `> ` prefix on all lines
-5. **Choose wisely** - Pick the callout type that matches the intent
+### Context 1: Agent Responses (ALL agents)
 
-**Priority for conversion:**
-1. High: `**CRITICAL:**`, `**IMPORTANT:**` in documentation
-2. Medium: `**NOTE:**`, `**WARNING:**`, `**TIP:**` patterns
-3. Low: Other bold emphasis that might benefit from callouts
+When responding to user or parent agent with markdown:
 
-### For Read-Only Agents (explore, librarian, test_runner)
+**Use callout boxes for:**
+- Important notices or warnings in your response
+- Critical information user shouldn't miss
+- Highlighting key findings or recommendations
 
-When you encounter convertible patterns during your analysis:
+**Don't use:**
+- `**IMPORTANT:**` - Use `> [!IMPORTANT]` instead
+- `**NOTE:**` - Use `> [!NOTE]` instead
+- `**WARNING:**` - Use `> [!WARNING]` instead
+- `**TIP:**` - Use `> [!TIP]` instead
 
-**Report back to tech_lead with:**
-1. **File path and line numbers** - Exact locations of patterns
-2. **Pattern found** - Show the old pattern (e.g., `**IMPORTANT:**`)
-3. **Recommended callout type** - Suggest appropriate `[!TYPE]`
-4. **Count of occurrences** - How many instances in the file
-
-**Example report format:**
+**Example response:**
 ```markdown
-Found convertible patterns in docs/EXAMPLE.md:
+I found 3 authentication patterns in the codebase.
+
+> [!WARNING]
+> The JWT secret is currently hardcoded in config.js.
+> This should be moved to environment variables.
+
+Implementation options:
+1. Use existing auth middleware pattern
+2. Create new OAuth2 flow
+3. Implement custom JWT solution
+
+> [!TIP]
+> Pattern 1 is already tested and follows the project's architecture.
+```
+
+---
+
+### Context 2: Writing Markdown Files (junior_dev, tech_lead)
+
+When using edit or write tools on .md files:
+
+**Scan for prohibited patterns:**
+- `**CRITICAL:**` → Convert to `> [!CAUTION]` or `> [!IMPORTANT]`
+- `**IMPORTANT:**` → Convert to `> [!IMPORTANT]`
+- `**NOTE:**` → Convert to `> [!NOTE]`
+- `**WARNING:**` → Convert to `> [!WARNING]`
+- `**TIP:**` → Convert to `> [!TIP]`
+
+**Conversion priority:**
+1. **High**: `**CRITICAL:**`, `**IMPORTANT:**` - Convert immediately
+2. **Medium**: `**NOTE:**`, `**WARNING:**`, `**TIP:**` - Convert when editing nearby
+3. **Low**: Other bold emphasis - Use judgment based on context
+
+**Don't convert:**
+- Regular bold for emphasis: `**bold text**` is fine
+- Bold in tables or lists for structure
+- Bold for UI element names: `**Save** button`
+
+**Example conversion:**
+
+Before:
+```markdown
+## Setup
+
+**IMPORTANT:** Run npm install before starting.
+
+The application requires Node.js 18+.
+
+**NOTE:** You can use nvm to manage versions.
+```
+
+After:
+```markdown
+## Setup
+
+> [!IMPORTANT]
+> Run npm install before starting.
+
+The application requires Node.js 18+.
+
+> [!NOTE]
+> You can use nvm to manage versions.
+```
+
+---
+
+### Context 3: Reading Markdown Files (explore, librarian, test_runner)
+
+When reading files during your analysis:
+
+**Scan for convertible patterns** and report if significant.
+
+**Report format:**
+```markdown
+[Convertible Callout Patterns] in docs/GUIDE.md:
 - Line 45: **IMPORTANT:** → Recommend [!IMPORTANT]
 - Line 67: **NOTE:** → Recommend [!NOTE]
-- Line 89: > **Remember:** → Recommend [!IMPORTANT]
+- Line 89: **WARNING:** → Recommend [!WARNING]
 Total: 3 conversion opportunities
 ```
 
-**Only report if:**
-- You find 3+ instances in a file, OR
-- You find patterns in multiple related files, OR
-- User explicitly asks about documentation quality
+**Reporting thresholds:**
 
-Do NOT report every single bold statement - focus on the prohibited patterns listed in the Conversion Guide.
+Report convertible patterns when:
+- You find 5+ instances in a single file, OR
+- You find patterns in multiple documentation files, OR
+- User/tech_lead explicitly asks about documentation quality, OR
+- File is critical documentation (README, CONTRIBUTING, API docs)
+
+Do NOT report:
+- 1-2 isolated instances
+- Regular bold emphasis (not the `**LABEL:**` pattern)
+- Files you're not actively analyzing
+
+**Priority in your reports:**
+- Include callout findings at the end of your summary
+- Don't make it the focus unless it's pervasive
+- Frame as "Also found X convertible patterns" after main findings

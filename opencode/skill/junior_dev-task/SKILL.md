@@ -25,14 +25,9 @@ description: Template for delegating implementation work to junior_dev agent
 **Constraints:**
 {{constraints|optional|multiline}}
 
-**Required Skills:**
-{{required_skills|required|list}}
+**Before starting, load your required skills:**
 
-**Important Guidelines:**
-- Junior_dev gets ONE attempt per spec - cannot debug, improvise, or ask questions
-- If they fail, YOU must write a completely new spec
-- Always provide absolute paths for files
-- Use specific locations (function names, line numbers, code anchors) in spec
-- Junior_dev CANNOT run build/test commands - delegate verification to test_runner
-- Never send multiple junior_dev tasks to same workspace simultaneously
+{% for skill in required_skills %}
+skill({name: "{{skill}}"})
+{% endfor %}
 ```

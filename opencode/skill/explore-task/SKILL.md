@@ -19,6 +19,9 @@ description: Template for explore agent task delegation
 
 **Expected Output Format:** {{output_format|optional}}
 
-**Required Skills:**
-{{required_skills|required|list}}
+**Before starting, load your required skills:**
+
+{% for skill in required_skills %}
+skill({name: "{{skill}}"})
+{% endfor %}
 ```

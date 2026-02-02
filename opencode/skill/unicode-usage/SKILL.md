@@ -148,36 +148,109 @@ src/
     └── unicode-usage/
 ```
 
-## Enforcement
+## Enforcement: Three Contexts
 
-### For Agents with Write Permissions (tech_lead, junior_dev)
+> [!IMPORTANT]
+> The unicode policy applies to ALL output: agent responses, file content, and reports. The same strict rules apply everywhere.
 
-Before sending ANY output:
-1. **Check** - Scan your response for prohibited Unicode (emojis)
-2. **Replace** - Use ASCII alternatives for emojis and decorative symbols
-3. **Verify** - Arrows and box-drawing are ALLOWED, keep them
-4. **Never introduce** - Don't add new emojis
+### Context 1: Agent Responses (ALL agents)
 
-When writing or editing files:
-- Replace prohibited Unicode (emojis, smart quotes, decorative symbols)
-- Keep allowed Unicode (arrows, box-drawing) - these are GOOD
-- Use ASCII alternatives for emojis
+Before sending ANY response to user or parent agent:
 
-### For Read-Only Agents (explore, librarian, test_runner)
+1. **Scan your entire response** for prohibited Unicode (emojis, smart quotes, special bullets)
+2. **Replace with ASCII alternatives**:
+   - ✅, ✓, ✔ → `[OK]`, `PASS`, `+`
+   - ❌, ✗, ✘ → `[X]`, `FAIL`, `-`
+   - ⚠️ → `[!]`, `WARNING`
+   - • → `-` or `*`
+   - " " → `"` (straight quotes)
+   - … → `...`
+3. **Keep allowed Unicode** - Arrows (→ ↓ ←) and box-drawing (│ ├ └) are GOOD
+4. **Never introduce new emojis** - Don't add decorative symbols
 
-You cannot edit files, but you MUST report prohibited Unicode findings:
+**Example response:**
+```
+[OK] Analysis complete. Found 3 authentication patterns.
 
-1. **Scan** - When reading files, look for prohibited Unicode (emojis)
-2. **Report** - If you find prohibited Unicode, report it:
-   ```
-   [Prohibited Unicode Found] in /path/to/file.md:
-   - Line 42: Found "✅" (U+2705 WHITE HEAVY CHECK MARK - emoji) - suggest "[OK]"
-   - Line 58: Found "⚠️" (U+26A0 WARNING SIGN - emoji) - suggest "[!]"
-   ```
-3. **Ignore** - Don't report allowed Unicode (arrows ←↑→↓, box-drawing │├└)
-4. **Prioritize** - Include prohibited Unicode findings in your summary
+Flow: User → API → Database
+      ↓
+   Response
 
-Even if Unicode is not directly related to your task, report prohibited Unicode when found.
+Directory structure:
+src/
+├── auth/
+│   ├── middleware.js
+│   └── validator.js
+└── routes/
+
+[!] Warning: Found deprecated pattern in auth.js
+```
+
+---
+
+### Context 2: Writing Files (junior_dev, tech_lead on .md)
+
+When using edit or write tools:
+
+1. **Read file first** to check for existing prohibited Unicode
+2. **Apply all replacements** when modifying content
+3. **Preserve allowed Unicode** (arrows, box-drawing) - these are GOOD
+4. **Don't introduce new emojis** in your edits
+
+**Specific file type rules:**
+
+**Markdown (.md):**
+- Headers: `## Section Name` (no emoji prefixes)
+- Lists: Use `-` or `*` (not •)
+- Flow diagrams: Use arrows freely (→, ↓, ↑, ←)
+- Directory trees: Use box-drawing (│, ├, └, ─)
+- Indicators: Use `[OK]`, `[X]`, `[!]` instead of ✅, ❌, ⚠️
+- Emphasis: Use GitHub callout boxes (see callout-boxes skill)
+
+**Code files (.js, .ts, .py, etc):**
+- Replace emojis in comments: `// ✅ Done` → `// [OK] Done`
+- Replace emojis in strings: `'✅ Success'` → `'[OK] Success'`
+- Fix smart quotes: `"hello"` → `"hello"`
+- Mathematical operators: Use `!=`, `<=`, `>=` (not ≠, ≤, ≥)
+
+---
+
+### Context 3: Reading Files (explore, librarian, test_runner)
+
+You cannot edit files, but you MUST detect and report prohibited Unicode violations.
+
+**When reading files during your analysis:**
+
+1. **Scan for prohibited Unicode** - Emojis, smart quotes, special bullets
+2. **Ignore allowed Unicode** - Don't report arrows (→ ↓) or box-drawing (│ ├)
+3. **Report violations** if significant
+
+**Report format:**
+```
+[Prohibited Unicode Found] in /path/to/file.md:
+- Line 42: Found "✅" (U+2705 WHITE HEAVY CHECK MARK - emoji) → suggest "[OK]"
+- Line 58: Found "⚠️" (U+26A0 WARNING SIGN - emoji) → suggest "[!]"
+- Line 103: Found smart quotes " " → suggest straight quotes " "
+Total: 3 violations
+```
+
+**Reporting thresholds:**
+
+Report prohibited Unicode when:
+- You find 3+ violations in a single file, OR
+- You find violations in multiple related files, OR
+- User/tech_lead explicitly asks about code quality, OR
+- Violations appear in critical documentation (README, API docs, etc.)
+
+Do NOT report:
+- Allowed Unicode (arrows, box-drawing)
+- Single isolated violations in large files
+- Violations in third-party/vendor files you're not analyzing
+
+**Priority in your reports:**
+- Include Unicode findings in your summary alongside other findings
+- Don't make Unicode the focus unless it's pervasive
+- Frame as "Also found X unicode violations" at the end
 
 ## Special Cases
 

@@ -8,11 +8,18 @@ import { homedir } from "os";
  * 
  * Uses chat.message hook to inject skill loading instructions once per session.
  * Only applies to tech_lead and build agents.
+ * 
+ * Note: -task skills (explore-task, librarian-task, junior_dev-task, test_runner-task)
+ * are delegation templates FOR coordinators to load when delegating, not for
+ * subagents themselves. Subagents receive populated template_data directly.
  */
 export const SkillLoaderPlugin: Plugin = async ({ client, worktree }) => {
   const injectedSessions = new Set<string>();
+  let cachedConfig: any = null;
 
   async function getConfig() {
+    if (cachedConfig) return cachedConfig;
+    
     const globalPath = join(homedir(), '.config', 'opencode', 'opencode.json');
     const projectPath = join(worktree, '.opencode', 'opencode.json');
     
@@ -27,12 +34,15 @@ export const SkillLoaderPlugin: Plugin = async ({ client, worktree }) => {
     const global = await readJson(globalPath);
     const project = await readJson(projectPath);
     
-    return {
+    const result = {
       agent: {
         ...global?.agent,
         ...project?.agent,
       }
     };
+    
+    cachedConfig = result;
+    return result;
   }
 
   return {

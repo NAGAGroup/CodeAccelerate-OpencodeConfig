@@ -28,13 +28,9 @@ description: Template for delegating verification, testing, and build validation
 **On Failure:**
 {{diagnostic_commands|optional}}
 
-**Required Skills:**
-{{required_skills|required|list}}
+**Before starting, load your required skills:**
 
-**Important Guidelines:**
-- Test_runner executes commands but doesn't fix issues - they report results only
-- Be specific with test commands (not vague like "run the tests")
-- Always specify what to check if tests fail
-- Test_runner is read-only - send fixes to junior_dev
-- Test_runner works with existing environment (cannot install dependencies)
+{% for skill in required_skills %}
+skill({name: "{{skill}}"})
+{% endfor %}
 ```

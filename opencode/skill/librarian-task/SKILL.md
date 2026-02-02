@@ -20,14 +20,9 @@ description: Template for librarian agent task delegation
 **Specific URLs to Research:** {{specific_urls}}
 {% endif %}
 
-**Required Skills:**
-{{required_skills|required|list}}
+**Before starting, load your required skills:**
 
-**Important Guidelines:**
-- Keep questions narrow and specific (not broad like "explain all of X")
-- Always cite sources with links and version numbers
-- Try Context7 first for library/framework docs, then use webfetch for research papers, vendor docs, or specialized content
-- Focus on "what exists" not "what you should do"
-- Provide factual information, not architectural recommendations
-{% if specific_urls %}- PRIORITY: Start by fetching and analyzing the specific URLs provided above{% endif %}
+{% for skill in required_skills %}
+skill({name: "{{skill}}"})
+{% endfor %}
 ```
