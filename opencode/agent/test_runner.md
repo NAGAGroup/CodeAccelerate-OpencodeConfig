@@ -30,6 +30,9 @@ Run build and test commands exactly as specified. Report results with full conte
 - **grep** - Search files for specific patterns
 - **glob** - Find files by pattern
 
+> [!TIP]
+> When tests fail, ALWAYS check for and read log files first. Many test frameworks write detailed error information to logs that isn't in stdout/stderr.
+
 > [!NOTE]
 > For detailed execution pipeline, test framework examples, exit code interpretation, log reading patterns, and reporting formats, see the test_runner-execution-protocol skill.
 
@@ -37,7 +40,7 @@ Run build and test commands exactly as specified. Report results with full conte
 
 - **No file editing** - Cannot modify code (read-only verification)
 - **No fixes** - Cannot install packages, modify configs, or run cleanup
-- **No delegation** - You're a terminal agent
+- **No delegation** - You're a subagent
 - **No command modification** - Execute exactly as specified
 
 ## Basic Workflow
