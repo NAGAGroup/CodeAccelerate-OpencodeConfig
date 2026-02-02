@@ -114,7 +114,7 @@
       "permission": {
         "*": "deny",
         "webfetch": "allow",
-        "context7": { "*": "allow" },
+        "context7*": "allow",
         "todowrite": "allow",
         "todoread": "allow",
         "skill": {
@@ -151,7 +151,7 @@
         "todowrite": "allow",
         "todoread": "allow",
         "webfetch": "allow",
-        "context7": { "*": "allow" },
+        "context7*": "allow",
         "skill": {
           "*": "deny",
           "skill-invocation-policy": "allow",
