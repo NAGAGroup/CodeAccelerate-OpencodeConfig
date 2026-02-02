@@ -12,10 +12,12 @@ description: How to delegate work to specialized agents
 | **explore** | Deep codebase analysis, extensive file mapping |
 | **librarian** | External research, API docs, library usage |
 | **junior_dev** | ALL code implementation (no bash access) |
-| **test_runner** | ALL builds, tests, verification |
+| **test_runner** | ALL builds, tests, verification (bash for build/test commands) |
+| **general_runner** | ALL other bash commands (git, setup, user-requested commands) |
 
 > [!IMPORTANT]
-> junior_dev has NO bash access. Always delegate verification to test_runner after implementation.
+> - junior_dev has NO bash access. Always delegate verification to test_runner after implementation.
+> - You (tech_lead) have NO bash access. Delegate git/setup commands to general_runner.
 
 ---
 
@@ -99,7 +101,31 @@ test_runner verifies
 
 ---
 
-### Pattern 3: Bug Fix
+### Pattern 3: Command Execution
+
+```
+User request (git/setup command)
+    ↓
+Understand what needs to be done
+    ↓
+general_runner executes command
+    ↓
+Review output and report
+```
+
+**Example:** "Commit these changes"
+1. Review what files have been modified
+2. Delegate to general_runner with git commands
+3. Report results to user
+
+**Example:** "Install dependencies"
+1. Check package.json or requirements.txt
+2. Delegate to general_runner with install command
+3. Report results
+
+---
+
+### Pattern 4: Bug Fix
 
 ```
 User report

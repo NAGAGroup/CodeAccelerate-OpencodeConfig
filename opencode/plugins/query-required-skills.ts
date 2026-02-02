@@ -32,11 +32,30 @@ export const QueryRequiredSkillsPlugin: Plugin = async ({ worktree }) => {
           const global = await readJson(globalPath);
           const project = await readJson(projectPath);
           
+          // Deep merge agent configs with special handling for required_skills arrays
+          const mergedAgents: any = {};
+          const allAgents = new Set([
+            ...Object.keys(global?.agent || {}),
+            ...Object.keys(project?.agent || {})
+          ]);
+          
+          for (const agentName of allAgents) {
+            const globalAgent = global?.agent?.[agentName] || {};
+            const projectAgent = project?.agent?.[agentName] || {};
+            
+            mergedAgents[agentName] = {
+              ...globalAgent,
+              ...projectAgent,
+              // Merge required_skills arrays instead of replacing
+              required_skills: [
+                ...(globalAgent.required_skills || []),
+                ...(projectAgent.required_skills || [])
+              ].filter((skill, index, arr) => arr.indexOf(skill) === index) // Remove duplicates
+            };
+          }
+          
           const config = {
-            agent: {
-              ...global?.agent,
-              ...project?.agent,
-            }
+            agent: mergedAgents
           };
           
           const skills = config.agent?.[args.agent]?.required_skills || [];

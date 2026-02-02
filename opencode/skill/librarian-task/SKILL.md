@@ -20,9 +20,12 @@ description: Template for librarian agent task delegation
 **Specific URLs to Research:** {{specific_urls}}
 {% endif %}
 
-**Before starting, load your required skills:**
+**Before starting:**
 
+1. Load your required skills:
 {% for skill in required_skills %}
-skill({name: "{{skill}}"})
+   skill({name: "{{skill}}"})
 {% endfor %}
+
+2. Create todolist to track your research steps
 ```

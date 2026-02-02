@@ -25,9 +25,12 @@ description: Template for delegating implementation work to junior_dev agent
 **Constraints:**
 {{constraints|optional|multiline}}
 
-**Before starting, load your required skills:**
+**Before starting:**
 
+1. Load your required skills:
 {% for skill in required_skills %}
-skill({name: "{{skill}}"})
+   skill({name: "{{skill}}"})
 {% endfor %}
+
+2. Create todolist breaking down the spec into trackable steps
 ```

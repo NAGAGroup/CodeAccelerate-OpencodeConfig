@@ -28,9 +28,12 @@ description: Template for delegating verification, testing, and build validation
 **On Failure:**
 {{diagnostic_commands|optional}}
 
-**Before starting, load your required skills:**
+**Before starting:**
 
+1. Load your required skills:
 {% for skill in required_skills %}
-skill({name: "{{skill}}"})
+   skill({name: "{{skill}}"})
 {% endfor %}
+
+2. Create todolist to track build, test, and diagnostic steps
 ```

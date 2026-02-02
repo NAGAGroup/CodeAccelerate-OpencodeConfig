@@ -16,17 +16,22 @@
     "general": {
       "disable": true
     },
-     "build": {
-        "model": "github-copilot/claude-sonnet-4.5",
-        "required_skills": [
-          "skill-invocation-policy",
-          "unicode-usage",
-          "callout-boxes",
-          "tech-lead-questions",
-          "tech-lead-tools",
-          "tech-lead-delegation"
-        ]
+    "build": {
+      "model": "github-copilot/claude-sonnet-4.5",
+      "permission": {
+        "todowrite": "allow",
+        "todoread": "allow"
       },
+      "required_skills": [
+        "skill-invocation-policy",
+        "unicode-usage",
+        "callout-boxes",
+        "todo-usage",
+        "tech-lead-questions",
+        "tech-lead-tools",
+        "tech-lead-delegation"
+      ]
+    },
     "tech_lead": {
       "mode": "primary",
       "model": "github-copilot/claude-sonnet-4.5",
@@ -42,7 +47,6 @@
         },
         "glob": "allow",
         "grep": "allow",
-        "bash": "ask",
         "lsp": "allow",
         "edit": {
           "*": "deny",
@@ -64,17 +68,17 @@
         "doom_loop": "ask",
         "mermaid_*": "allow",
         "query_required_skills": "allow"
-       },
-        "required_skills": [
-          "skill-invocation-policy",
-          "unicode-usage",
-          "callout-boxes",
-          "todo-usage",
-          "tech-lead-questions",
-          "tech-lead-tools",
-          "tech-lead-delegation"
-        ]
-     },
+      },
+      "required_skills": [
+        "skill-invocation-policy",
+        "unicode-usage",
+        "callout-boxes",
+        "todo-usage",
+        "tech-lead-questions",
+        "tech-lead-tools",
+        "tech-lead-delegation"
+      ]
+    },
     "explore": {
       "mode": "subagent",
       "model": "github-copilot/claude-haiku-4.5",
@@ -84,11 +88,14 @@
         "glob": { "*": "allow" },
         "grep": { "*": "allow" },
         "lsp": "allow",
+        "todowrite": "allow",
+        "todoread": "allow",
         "skill": {
           "*": "deny",
           "skill-invocation-policy": "allow",
           "unicode-usage": "allow",
           "callout-boxes": "allow",
+          "todo-usage": "allow",
           "explore-tool-patterns": "allow"
         }
       },
@@ -96,6 +103,7 @@
         "skill-invocation-policy",
         "unicode-usage",
         "callout-boxes",
+        "todo-usage",
         "explore-tool-patterns"
       ]
     },
@@ -107,39 +115,43 @@
         "*": "deny",
         "webfetch": "allow",
         "context7": { "*": "allow" },
+        "todowrite": "allow",
+        "todoread": "allow",
         "skill": {
           "*": "deny",
           "skill-invocation-policy": "allow",
           "unicode-usage": "allow",
           "callout-boxes": "allow",
+          "todo-usage": "allow",
           "github-exploration": "allow",
           "librarian-research-protocol": "allow"
         }
       },
-       "required_skills": [
+      "required_skills": [
         "skill-invocation-policy",
         "unicode-usage",
         "callout-boxes",
+        "todo-usage",
         "github-exploration",
         "librarian-research-protocol"
       ]
     },
-     "junior_dev": {
-       "mode": "subagent",
-       "model": "github-copilot/claude-haiku-4.5",
-       "temperature": 0.15,
-       "permission": {
-         "*": "deny",
-         "read": { "*": "allow" },
-         "edit": { "*": "allow" },
-         "write": { "*": "allow" },
-         "grep": { "*": "allow" },
-         "glob": { "*": "allow" },
-         "lsp": "allow",
-         "todowrite": "allow",
-         "todoread": "allow",
-         "webfetch": "allow",
-         "context7": { "*": "allow" },
+    "junior_dev": {
+      "mode": "subagent",
+      "model": "github-copilot/claude-haiku-4.5",
+      "temperature": 0.15,
+      "permission": {
+        "*": "deny",
+        "read": { "*": "allow" },
+        "edit": { "*": "allow" },
+        "write": { "*": "allow" },
+        "grep": { "*": "allow" },
+        "glob": { "*": "allow" },
+        "lsp": "allow",
+        "todowrite": "allow",
+        "todoread": "allow",
+        "webfetch": "allow",
+        "context7": { "*": "allow" },
         "skill": {
           "*": "deny",
           "skill-invocation-policy": "allow",
@@ -149,16 +161,16 @@
           "junior_dev-execution-protocol": "allow",
           "junior_dev-research-policy": "allow"
         }
-       },
-       "required_skills": [
-         "skill-invocation-policy",
-         "unicode-usage",
-         "callout-boxes",
-         "todo-usage",
-         "junior_dev-execution-protocol",
-         "junior_dev-research-policy"
-       ]
-     },
+      },
+      "required_skills": [
+        "skill-invocation-policy",
+        "unicode-usage",
+        "callout-boxes",
+        "todo-usage",
+        "junior_dev-execution-protocol",
+        "junior_dev-research-policy"
+      ]
+    },
     "test_runner": {
       "mode": "subagent",
       "model": "github-copilot/claude-haiku-4.5",
@@ -169,11 +181,14 @@
         "grep": { "*": "allow" },
         "glob": { "*": "allow" },
         "bash": { "*": "allow" },
+        "todowrite": "allow",
+        "todoread": "allow",
         "skill": {
           "*": "deny",
           "skill-invocation-policy": "allow",
           "unicode-usage": "allow",
           "callout-boxes": "allow",
+          "todo-usage": "allow",
           "test_runner-execution-protocol": "allow"
         }
       },
@@ -181,7 +196,32 @@
         "skill-invocation-policy",
         "unicode-usage",
         "callout-boxes",
+        "todo-usage",
         "test_runner-execution-protocol"
+      ]
+    },
+    "general_runner": {
+      "mode": "subagent",
+      "model": "github-copilot/claude-haiku-4.5",
+      "temperature": 0.3,
+      "permission": {
+        "*": "deny",
+        "bash": { "*": "allow" },
+        "todowrite": "allow",
+        "todoread": "allow",
+        "skill": {
+          "*": "deny",
+          "skill-invocation-policy": "allow",
+          "unicode-usage": "allow",
+          "callout-boxes": "allow",
+          "todo-usage": "allow"
+        }
+      },
+      "required_skills": [
+        "skill-invocation-policy",
+        "unicode-usage",
+        "callout-boxes",
+        "todo-usage"
       ]
     }
   }

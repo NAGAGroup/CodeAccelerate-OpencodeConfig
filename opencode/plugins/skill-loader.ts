@@ -34,11 +34,30 @@ export const SkillLoaderPlugin: Plugin = async ({ client, worktree }) => {
     const global = await readJson(globalPath);
     const project = await readJson(projectPath);
     
+    // Deep merge agent configs with special handling for required_skills arrays
+    const mergedAgents: any = {};
+    const allAgents = new Set([
+      ...Object.keys(global?.agent || {}),
+      ...Object.keys(project?.agent || {})
+    ]);
+    
+    for (const agentName of allAgents) {
+      const globalAgent = global?.agent?.[agentName] || {};
+      const projectAgent = project?.agent?.[agentName] || {};
+      
+      mergedAgents[agentName] = {
+        ...globalAgent,
+        ...projectAgent,
+        // Merge required_skills arrays instead of replacing
+        required_skills: [
+          ...(globalAgent.required_skills || []),
+          ...(projectAgent.required_skills || [])
+        ].filter((skill, index, arr) => arr.indexOf(skill) === index) // Remove duplicates
+      };
+    }
+    
     const result = {
-      agent: {
-        ...global?.agent,
-        ...project?.agent,
-      }
+      agent: mergedAgents
     };
     
     cachedConfig = result;
@@ -69,19 +88,40 @@ export const SkillLoaderPlugin: Plugin = async ({ client, worktree }) => {
 
       // Build instruction with all required skills
       const skillCalls = skills.map((s: string) => `skill({name: "${s}"})`).join('\n');
-      const instruction = `Please load your required skills before responding:\n\n${skillCalls}`;
+      
+      // Build startup instruction
+      const instruction = `[Session Initialization]
+
+Before responding to the user, complete these setup steps IN ORDER:
+
+1. Load your required skills:
+${skillCalls}
+
+2. Create todolist immediately (required for all work):
+   - For discussions/planning: Create single stub item like "Discuss approach with user"
+   - For implementation: Break down the work into actionable steps
+   - Even simple tasks need a todolist for progress tracking
+
+Once setup is complete, respond naturally to the user's request.`;
 
       // Inject instruction for this session
+      // Uses synthetic: true so agent sees it but user doesn't (cleaner UX)
       try {
         await client.session.prompt({
           path: { id: sessionID },
           body: {
-            noReply: true,
-            parts: [{ type: "text", text: instruction }],
+            noReply: true,  // Don't trigger AI response yet - just add to context
+            parts: [
+              { 
+                type: "text", 
+                text: instruction,
+                synthetic: true  // Agent sees it, user doesn't
+              }
+            ],
           },
         });
       } catch (error) {
-        console.error('[skill-loader] Failed to inject skills:', error);
+        // Silently fail - don't pollute TUI
       }
     },
   };
