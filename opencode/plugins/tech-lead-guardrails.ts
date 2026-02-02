@@ -237,7 +237,7 @@ If no, proceed with coordinated delegation as planned.`
           });
           
           // Completion checkpoint (for all agents)
-          if (allComplete) {
+          if (agent === "tech_lead" && allComplete) {
             // DON'T await - inject asynchronously to avoid blocking tool completion
             injectReflection(sessionID, `[Completion Checkpoint]
 
