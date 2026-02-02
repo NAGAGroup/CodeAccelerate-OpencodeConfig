@@ -175,61 +175,120 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
   }
 
   /**
-   * Parse template to extract required and optional fields
+   * Parse template to extract required and optional fields using Nunjucks lexer
    */
-  function parseTemplateFields(template: string): {
+  async function parseTemplateFields(template: string): Promise<{
     required: string[];
     optional: string[];
-  } {
+  }> {
     const required = new Set<string>();
     const optional = new Set<string>();
-
-    // Match all {{variable|filter}} patterns
-    const varRegex = /\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\|?\s*([a-zA-Z_]*)/g;
-    let match;
-
-    while ((match = varRegex.exec(template)) !== null) {
-      const varName = match[1];
-      const filter = match[2];
-
-      if (filter === "required") {
-        required.add(varName);
-      } else if (filter === "optional") {
-        optional.add(varName);
-      } else if (!filter) {
-        // No filter specified - assume required
-        required.add(varName);
-      }
+    
+    // Lazy load nunjucks
+    const nunjucks = await import("nunjucks");
+    
+    // Use Nunjucks lexer to tokenize the template
+    const tokenizer = nunjucks.lexer.lex(template);
+    
+    // Convert tokenizer to array by calling nextToken() iteratively
+    const tokens: any[] = [];
+    let tok = tokenizer.nextToken();
+    while (tok) {
+      tokens.push(tok);
+      tok = tokenizer.nextToken();
     }
-
-    // Match {% if expression %} - treat all identifiers in expression as required
-    const ifRegex = /\{%\s*if\s+([^%}]+)%\}/g;
-    while ((match = ifRegex.exec(template)) !== null) {
-      const expression = match[1];
-      const varMatches = expression.match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
+    
+    // PASS 1: Track loop variables to exclude them from required fields
+    const loopVariables = new Set<string>();
+    
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
       
-      for (const varName of varMatches) {
-        if (['if', 'and', 'or', 'not'].includes(varName)) {
-          continue;
+      // Handle block tokens {% for/if %}
+      if (token.type === 'block-start') {
+        let j = i + 1;
+        const blockTokens = [];
+        
+        while (j < tokens.length && tokens[j].type !== 'block-end') {
+          blockTokens.push(tokens[j]);
+          j++;
         }
-        if (!optional.has(varName)) {
-          required.add(varName);
+        
+        // Check if this is a 'for' loop
+        if (blockTokens.length > 0 && blockTokens.some(t => t.type === 'symbol' && t.value === 'for')) {
+          // Extract loop variable and collection
+          // Pattern: for LOOP_VAR in COLLECTION
+          // Collect all symbols in order
+          const symbols = blockTokens.filter(t => t.type === 'symbol').map(t => t.value);
+          
+          // symbols should be: ['for', 'LOOP_VAR', 'in', 'COLLECTION']
+          if (symbols.length >= 4 && symbols[0] === 'for' && symbols[2] === 'in') {
+            const loopVar = symbols[1];
+            const collection = symbols[3];
+            
+            loopVariables.add(loopVar); // Track as loop variable
+            
+            // Collection is required unless it's also a loop variable
+            if (!loopVariables.has(collection)) {
+              required.add(collection);
+            }
+          }
+        }
+        
+        // Check if this is an 'if' statement
+        if (blockTokens.length > 0 && blockTokens.some(t => t.type === 'symbol' && t.value === 'if')) {
+          // Extract all variables from the if expression (skip keywords)
+          const symbols = blockTokens.filter(t => t.type === 'symbol').map(t => t.value);
+          for (const varName of symbols) {
+            // Skip keywords and loop variables
+            if (!['if', 'and', 'or', 'not', 'in'].includes(varName) && 
+                !loopVariables.has(varName)) {
+              required.add(varName);
+            }
+          }
         }
       }
     }
-
-    // Match {% for LOOP_VAR in COLLECTION %} - only COLLECTION is required, not LOOP_VAR
-    const forRegex = /\{%\s*for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+([a-zA-Z_][a-zA-Z0-9_]*)/g;
-    while ((match = forRegex.exec(template)) !== null) {
-      // match[1] is the loop variable (should be ignored)
-      // match[2] is the collection variable (should be added as required)
-      const collectionName = match[2];
+    
+    // PASS 2: Extract variables from {{ }} expressions, excluding loop variables
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
       
-      if (!optional.has(collectionName)) {
-        required.add(collectionName);
+      // Handle variable tokens {{ variable }}
+      if (token.type === 'variable-start') {
+        // Look for the first symbol which is the variable name
+        let j = i + 1;
+        let varName = null;
+        let hasFilter = false;
+        let filterName = null;
+        
+        while (j < tokens.length && tokens[j].type !== 'variable-end') {
+          if (tokens[j].type === 'symbol' && !varName) {
+            // First symbol is the variable name
+            varName = tokens[j].value;
+          } else if (tokens[j].type === 'pipe') {
+            // Found a filter operator
+            hasFilter = true;
+          } else if (hasFilter && tokens[j].type === 'symbol' && !filterName) {
+            // First symbol after pipe is the filter name
+            filterName = tokens[j].value;
+            break; // Stop processing this variable
+          }
+          j++;
+        }
+        
+        // Now classify the variable based on filter (skip loop variables)
+        if (varName && !loopVariables.has(varName)) {
+          if (filterName === 'optional') {
+            optional.add(varName);
+          } else if (filterName === 'required' || !filterName) {
+            // Explicit 'required' filter or no filter means required
+            required.add(varName);
+          }
+        }
       }
     }
-
+    
     return {
       required: Array.from(required),
       optional: Array.from(optional),
@@ -239,11 +298,11 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
   /**
    * Validate template data against template requirements
    */
-  function validateTemplateData(
+  async function validateTemplateData(
     template: string,
     data: Record<string, any>,
-  ): void {
-    const { required, optional } = parseTemplateFields(template);
+  ): Promise<void> {
+    const { required, optional } = await parseTemplateFields(template);
 
     // Check for missing required fields
     const missing = required.filter((field) => !(field in data));
@@ -438,7 +497,7 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
           }
 
           const template = await extractTemplate(skillFile);
-          validateTemplateData(template, args.template_data);
+          await validateTemplateData(template, args.template_data);
           const renderedPrompt = await renderTemplate(
             template,
             args.template_data,
