@@ -202,27 +202,31 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
       }
     }
 
-    // Also match variables in {% if variable %}, {% for item in variable %}, etc.
-    // Enhanced regex to capture the full control flow expression (everything between {% if/for and %})
-    const controlRegex = /\{%\s*(?:if|for)\s+(?:\w+\s+in\s+)?([^%}]+)/g;
-    while ((match = controlRegex.exec(template)) !== null) {
-      // Extract the full expression (e.g., "var1 and var2 and var3" or "(var1 or var2)")
+    // Match {% if expression %} - treat all identifiers in expression as required
+    const ifRegex = /\{%\s*if\s+([^%}]+)%\}/g;
+    while ((match = ifRegex.exec(template)) !== null) {
       const expression = match[1];
-      
-      // Extract all alphanumeric identifiers from the expression
-      // Split on keywords ('and', 'or', 'in') and remove parentheses/filters
       const varMatches = expression.match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
       
       for (const varName of varMatches) {
-        // Skip control flow keywords
-        if (['if', 'for', 'in', 'and', 'or', 'not'].includes(varName)) {
+        if (['if', 'and', 'or', 'not'].includes(varName)) {
           continue;
         }
-        
-        // Add variable to required set if not already in optional
         if (!optional.has(varName)) {
           required.add(varName);
         }
+      }
+    }
+
+    // Match {% for LOOP_VAR in COLLECTION %} - only COLLECTION is required, not LOOP_VAR
+    const forRegex = /\{%\s*for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+([a-zA-Z_][a-zA-Z0-9_]*)/g;
+    while ((match = forRegex.exec(template)) !== null) {
+      // match[1] is the loop variable (should be ignored)
+      // match[2] is the collection variable (should be added as required)
+      const collectionName = match[2];
+      
+      if (!optional.has(collectionName)) {
+        required.add(collectionName);
       }
     }
 
