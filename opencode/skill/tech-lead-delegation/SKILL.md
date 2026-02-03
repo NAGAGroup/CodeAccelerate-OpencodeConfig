@@ -10,7 +10,7 @@ description: How to delegate work to specialized agents
 | Agent | Use For |
 |-------|---------|
 | **explore** | Deep codebase analysis, extensive file mapping |
-| **librarian** | External research, API docs, library usage |
+| **librarian** | External research, API docs, library usage, best practices, standards |
 | **junior_dev** | ALL code implementation (bash for file operations: cp, mv, rm, ln) |
 | **test_runner** | ALL builds, tests, verification (bash for build/test commands) |
 | **general_runner** | Git, setup, user-requested commands (NO file operations) |
@@ -19,6 +19,32 @@ description: How to delegate work to specialized agents
 > - junior_dev has bash access for file operations (cp, mv, rm, ln). Always delegate verification to test_runner after implementation.
 > - general_runner handles git/setup/external commands but NOT file operations (those go to junior_dev).
 > - You (tech_lead) have NO bash access. Delegate all commands to appropriate agents.
+
+---
+
+## When to Use Librarian vs Explore
+
+**Use librarian when you need:**
+- External API/framework documentation
+- Best practices from industry standards or specifications
+- Version compatibility research across dependencies
+- Third-party integration patterns
+- Security standards and authentication patterns
+- Design patterns and architectural approaches
+- Technology selection comparisons
+- Migration strategies for framework upgrades
+
+**Use explore when you need:**
+- Deep analysis of YOUR codebase structure
+- Mapping files, dependencies, and patterns in the project
+- Understanding existing implementations
+- Finding where specific code patterns are used
+- Discovering architectural decisions already made in the code
+
+**Use both in parallel when:**
+- You need external best practices AND existing codebase patterns
+- Comparing industry standards to current implementation
+- Planning refactors that require external research and internal analysis
 
 ---
 
@@ -59,6 +85,8 @@ User request
     ↓
 Analyze codebase (read/grep/glob)
     ↓
+Consider: Do I need external best practices? → librarian (optional)
+    ↓
 Ask clarifying questions if needed
     ↓
 junior_dev implements
@@ -75,6 +103,14 @@ Success or iterate with NEW spec
 4. Delegate to junior_dev with detailed spec
 5. Delegate to test_runner to verify
 6. Report results
+
+**Example with librarian:** "Implement caching layer"
+1. Read current data fetching code
+2. Search for existing cache patterns (if any)
+3. Delegate to librarian: "Research Redis caching best practices for Node.js applications"
+4. Synthesize librarian findings with current architecture
+5. Delegate to junior_dev with detailed spec including best practices
+6. Delegate to test_runner to verify
 
 ---
 
@@ -149,6 +185,43 @@ test_runner verifies fix
 4. Analyze test_runner output to identify root cause
 5. Delegate to junior_dev with specific fix
 6. Delegate to test_runner to verify
+
+---
+
+## Common Librarian Use Cases
+
+> [!TIP]
+> These scenarios often benefit from librarian research before implementation:
+
+**API Design:**
+- "What are REST API versioning best practices?"
+- "How should GraphQL mutations handle errors in Apollo Server?"
+- "What's the standard format for pagination in REST APIs?"
+
+**Security & Authentication:**
+- "What are OWASP recommendations for password hashing in 2026?"
+- "How to implement OAuth2 PKCE flow for single-page applications?"
+- "What are JWT security best practices for token storage?"
+
+**Database & Performance:**
+- "What are database indexing strategies for time-series data?"
+- "How to implement optimistic locking in PostgreSQL?"
+- "What's the recommended connection pooling configuration for MongoDB?"
+
+**Framework Upgrades:**
+- "What breaking changes exist between React 17 and 18?"
+- "How to migrate from Django 3.x to 4.x?"
+- "What's the upgrade path from Vue 2 to Vue 3?"
+
+**Third-Party Integrations:**
+- "How to integrate Stripe webhooks securely?"
+- "What's the API rate limiting policy for GitHub API v4?"
+- "How to implement AWS S3 presigned URLs for direct uploads?"
+
+**Design Patterns:**
+- "What are microservices communication patterns?"
+- "How to implement event sourcing in Node.js?"
+- "What's the repository pattern in TypeScript?"
 
 ---
 

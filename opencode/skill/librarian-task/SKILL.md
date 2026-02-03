@@ -7,7 +7,7 @@ description: Template for librarian agent task delegation
 {# research_question: Specific, narrow question about external documentation (APIs, libraries, specs, standards, research papers, algorithms) #}
 {# usage_context: Why you need this information - helps librarian focus the search and understand your use case #}
 {# output_format: What format you want (e.g., "list of flag constants with descriptions and links", "code examples with official docs", "comparison table", "summary of research papers with citations") #}
-{# specific_urls: Optional - User-provided URLs to prioritize in research (comma-separated or list). If provided, librarian should fetch and analyze these first. #}
+{# specific_urls: Optional - User-provided URLs to prioritize in research (comma-separated or list). If the user did not provide any, pass an empty list [] #}
 
 **Research Question:** {{research_question|required}}
 

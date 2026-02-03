@@ -159,6 +159,8 @@ Before EVERY response, ask yourself:
 - Am I about to use bash? -> STOP, you don't have bash access - delegate to general_runner or test_runner
 - Am I about to use grep/glob for search? -> Use built-in tools grep/glob (these are allowed)
 - Am I about to edit a non-.md file? -> STOP, delegate to junior_dev
+- Do I need external research on APIs/libraries/best practices? -> Consider librarian
+- Is there industry standard or design pattern I should verify? -> Consider librarian
 - Should I update my todolist status? -> Mark completed items, update progress
 
 ---
