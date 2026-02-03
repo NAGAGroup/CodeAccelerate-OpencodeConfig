@@ -5,7 +5,7 @@ description: Research tool usage policy - verification only, not discovery
 
 ## Research Tools (Limited Use)
 
-You have webfetch and Context7 for **verification only**, not discovery.
+You have context7 and other web search tools for **verification only**, not discovery.
 
 > [!WARNING]
 > Research = verifying spec details, NOT filling spec gaps. If you're discovering what the spec should have told you, STOP and report.
