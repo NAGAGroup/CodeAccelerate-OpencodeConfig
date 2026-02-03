@@ -1,114 +1,148 @@
-# CodeAccelerate-OpencodeConfig
+# OpenCode Configuration
 
-An intelligent OpenCode agent configuration featuring a tech lead orchestrator that delegates complex tasks to specialized AI agents.
+## What This Is
 
-## What Is This?
+This is a production-ready OpenCode configuration that provides intelligent multi-agent coordination for AI-assisted development. The tech_lead agent orchestrates complex workflows, automatically delegating to specialized subagents.
 
-This is a sophisticated OpenCode configuration that gives you a **tech_lead agent** capable of breaking down complex development tasks and delegating them to specialized subagents:
+### Why You Need This
 
-- **explore** - Searches your codebase for patterns, files, and implementations
+Managing complex development tasks often requires switching between different tools and mental models. This configuration eliminates that cognitive load by providing a single coordination interface that:
+
+- Understands when to delegate vs handle directly
+- Breaks down complex tasks into specialized subtasks
+- Automatically sequences work in the right order
+- Synthesizes results from multiple agents
+
+> [!TIP]
+> Key benefits include 5 specialized agents, ready-to-use workflows with auto-loaded skills, and enforced best practices through permission-based guardrails.
+
+### Target Audience
+
+Developers using OpenCode for AI-assisted development who want structured task coordination and specialized agent capabilities. This is ideal for teams working on larger codebases where task isolation and clear responsibilities matter.
+
+## Features
+
+### 6 Specialized Agents
+
+Each agent has a specific role and permission set:
+
+- **tech_lead** - Orchestrates and delegates tasks, handles planning and decision-making
+- **junior_dev** - Implements code changes following specifications
+- **test_runner** - Runs tests, builds, and verifies changes work correctly
+- **explore** - Searches codebase for patterns, files, and implementations
 - **librarian** - Fetches documentation and performs web research
-- **junior_dev** - Implements code changes following your specifications
-- **test_runner** - Runs tests, builds, and verifies changes
+- **general_runner** - Executes git operations, dependency installation, and custom scripts
 
-The tech_lead orchestrates these agents to handle multi-step workflows that would be tedious to coordinate manually.
+### 3 Ready-to-Use Workflows
 
-## Key Benefits
+Pre-configured commands that handle multi-step tasks:
 
-- **Intelligent task decomposition** - tech_lead breaks complex requests into manageable subtasks
-- **Specialized expertise** - Each agent is optimized for specific types of work
-- **Reduced cognitive load** - Let the tech_lead figure out the workflow while you focus on requirements
-- **Secure by design** - Permission boundaries prevent agents from overstepping their roles
-- **Extensible** - Add new agents as your needs evolve
+- **workflow-create-agent-skill** - Creates new agent skills with boilerplate and structure
+- **workflow-create-workflow** - Defines custom workflows for your team's patterns
+- **workflow-generate-mermaid-diagram** - Generates flowcharts and architecture diagrams
+
+### Auto-Loaded Skills for Consistent Behavior
+
+Each agent loads an agent-specific set of required skills before executing tasks:
+
+- Consistent behavior across all interactions
+- Built-in guardrails and best practices
+- Task delegation templates that prevent mistakes
+- Permission enforcement at every step
+
+### Guardrails for Guaranteed Agent Behavior
+
+Security and consistency through multiple enforcement layers:
+
+- **Least-privilege security model** - Each agent only has permissions it needs
+- **Role-specific capability boundaries** - Clear separation of concerns
+- **Safe delegation patterns** - Agents can't overstep their roles
+- **Enforced metareflection before tool calls** - Guidance injected at critical decision points
+- **Audit-friendly** - Clear permissions enable traceability
+
+### Build Agent Fallback
+
+When tech_lead delegation isn't the right fit for a task:
+
+- **Available when needed** - Build agent with comprehensive permissions for end-to-end implementation
+- **Use cases** - Rapid prototyping, tight integration across many files, or when delegation overhead doesn't fit
+- **Default to delegation** - tech_lead coordination provides better quality assurance for most tasks
 
 ## Quick Start
 
 ### Installation
 
-1. **Clone and install this configuration:**
+1. **Copy this config to your OpenCode directory:**
    ```bash
-   # Clone the repository
-   git clone https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig.git
-   cd CodeAccelerate-OpencodeConfig
-   
-   # Backup existing config if it exists
-   [ -d ~/.config/opencode ] && mv ~/.config/opencode ~/.config/opencode.backup.$(date +%Y%m%d-%H%M%S)
-   
-   # Copy configuration to OpenCode config directory
    cp -r opencode ~/.config/opencode
    ```
-
-2. **Restart OpenCode** to load the new configuration
-
-3. **Start using the tech_lead agent:**
+   Or for project-local configuration (recommended):
+   ```bash
+   cp -r opencode .opencode/
    ```
-   tech_lead is now your default agent - just start chatting!
-   Or press Tab to switch between available agents
+   
+   > [!NOTE]
+   > Project-local config (.opencode/) takes precedence over global config (~/.config/opencode)
+
+2. **Start OpenCode in your project directory**
+   ```bash
+   opencode
    ```
+   
+   > [!NOTE]
+   > tech_lead is the default agent - you can start chatting immediately without switching agents
 
-### Your First Task
+### Your First Interaction
 
-Try asking tech_lead to help with a multi-step task:
+The tech_lead agent is intelligent about delegation. It automatically analyzes your requests, determines what specialist agents are needed, and orchestrates the workflow without requiring manual coordination.
 
+**Example Request:**
 ```
-Find all API endpoint definitions, update the rate limiting middleware, 
-and verify the changes with tests
-```
-
-The tech_lead will:
-1. Use **explore** to find API endpoints and middleware files
-2. Use **junior_dev** to implement rate limiting updates
-3. Use **test_runner** to verify the changes work
-
-## Documentation
-
-- **[Getting Started](docs/GETTING-STARTED.md)** - First steps, basic concepts, and examples
-- **[Core Concepts](docs/CONCEPTS.md)** - Architecture, delegation patterns, and design philosophy
-- **[Usage Guide](docs/GUIDE.md)** - Practical examples and common workflows
-- **[Reference](docs/REFERENCE.md)** - Quick lookup for agents, permissions, and configuration
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
-
-## Configuration Files
-
-This configuration is built on OpenCode's agent system. Key files:
-
-- `opencode/opencode.json` - Agent definitions, permissions, and model assignments
-- `opencode/agent/*.md` - Agent role prompts and capabilities (5 agents)
-- `opencode/skill/*-task/SKILL.md` - Delegation task templates (5 skills)
-- `opencode/commands/*.md` - Custom workflow commands (2 workflows)
-- `opencode/plugins/*.ts` - Custom functionality extensions (6 plugins)
-
-> **Note:** Instead of documenting every detail here, we reference the source files. They're the source of truth and won't get outdated.
-
-## When to Use Build Agent
-
-For **major refactors, full rebuilds, or cross-cutting changes**, tech_lead will recommend switching to OpenCode's built-in `build` agent via Tab. The build agent handles end-to-end workflows better than delegating to subagents.
-
-**Quick fixes and targeted changes** work great with tech_lead's delegation workflow.
-
-## Project Structure
-
-```
-.
-├── opencode/
-│   ├── opencode.json          # Main configuration
-│   ├── agent/                 # Agent role definitions (5 agents)
-│   ├── skill/                 # Task delegation templates (5 skills)
-│   ├── commands/              # Custom workflow commands (2 workflows)
-│   └── plugins/               # Custom plugins (6 plugins)
-└── docs/                      # Documentation
+Please do deep-review of this custom opencode configuration codebase. Make sure to check for alignment with best practices outlined in online docs and other sources.
 ```
 
-## Contributing
+**What Happens Behind the Scenes:**
 
-Improvements welcome! This configuration demonstrates:
-- Multi-agent orchestration patterns
-- Secure permission boundaries
-- Skill-based task delegation
-- Progressive complexity handling
+1. tech_lead analyzes the request and determines it needs research and exploration
+2. Delegates to librarian to fetch OpenCode best practices from documentation
+3. Delegates to explore (possibly multiple in parallel) to analyze the config structure
+4. Synthesizes findings from both agents
+5. Reports back with alignment analysis and recommendations
 
-Feel free to adapt it for your own workflows.
+> [!IMPORTANT]
+> You always stay in control. tech_lead asks for confirmation before making major changes and reports all delegation decisions transparently.
 
-## License
+### Try a Workflow
 
-MIT License - See LICENSE file for details
+Use workflows to automate common patterns:
+
+```
+/workflow-generate-mermaid-diagram Create orchestration diagram for the tech_lead defined in @opencode config
+```
+
+This workflow generates a diagram showing how tech_lead orchestrates work across specialized agents, helping you visualize the coordination architecture.
+
+> [!NOTE]
+> For more workflow examples and complete command reference, see [Usage Guide](docs/USAGE.md)
+
+## What's Next
+
+### Learn More
+
+Explore the documentation to deepen your understanding:
+
+- **[Core Concepts](docs/CONCEPTS.md)** - Understand the orchestration architecture and design principles behind multi-agent coordination
+- **[Usage Guide](docs/USAGE.md)** - Learn workflows, delegation patterns, and practical usage examples
+
+### Common Starting Points
+
+**If you want to...** → **Read this:**
+
+- Understand how agents collaborate → [Core Concepts](docs/CONCEPTS.md)
+- Learn how to use workflows and direct delegations → [Usage Guide](docs/USAGE.md)
+- Solve a specific problem → [Usage Guide](docs/USAGE.md)
+
+---
+
+**Ready to get started?** Open your project and start chatting with tech_lead. It's designed to learn from your requests and improve its delegation decisions over time.
+
