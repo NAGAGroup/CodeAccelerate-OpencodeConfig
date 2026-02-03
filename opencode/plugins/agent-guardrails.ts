@@ -158,10 +158,7 @@ export const AgentGuardrailsPlugin: Plugin = async ({ client }) => {
               });
             }
 
-            // Don't await - fire and forget to avoid blocking todowrite completion
-            injectReflection(
-              sessionID,
-              `[Todolist Complete]
+            let injectedPrompt = `[Todolist Complete]
 
 All todos are now marked as completed or cancelled. Before finishing:
 
@@ -172,7 +169,9 @@ If you already provided a detailed summary in your previous message, restate it 
 Your summary should include:
 - What was completed
 - Key results or outcomes
-- Any important notes or next steps
+- Any important notes or next steps`;
+
+            const techLeadMemoryPrompt = `
 
 2. Memory check: Would future-you benefit from remembering this?
 
@@ -187,9 +186,14 @@ Worth remembering:
 If yes:
 - First, search existing memories to check if this is already stored
 - If not found or significantly different, add a new memory with clear content and 4-6 technical tags for discoverability
-- If found, consider if your new knowledge adds enough value to warrant updating or adding a complementary memory`,
-              agent,
-            );
+- If found, consider if your new knowledge adds enough value to warrant updating or adding a complementary memory`;
+
+            if (agent === "tech_lead") {
+              injectedPrompt += techLeadMemoryPrompt;
+            }
+
+            // Don't await - fire and forget to avoid blocking todowrite completion
+            injectReflection(sessionID, injectedPrompt, agent);
           }
 
           // Reset todoplan when todos complete (tech_lead only)
