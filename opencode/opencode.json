@@ -32,10 +32,10 @@
         "skill-invocation-policy",
         "unicode-usage",
         "callout-boxes",
-        "todo-usage",
         "tech-lead-questions",
         "tech-lead-tools",
-        "tech-lead-delegation"
+        "tech-lead-delegation",
+        "todo-usage"
       ]
     },
     "tech_lead": {
@@ -111,8 +111,8 @@
         "skill-invocation-policy",
         "unicode-usage",
         "callout-boxes",
-        "todo-usage",
-        "explore-tool-patterns"
+        "explore-tool-patterns",
+        "todo-usage"
       ]
     },
     "librarian": {
@@ -141,9 +141,9 @@
         "skill-invocation-policy",
         "unicode-usage",
         "callout-boxes",
-        "todo-usage",
         "github-exploration",
-        "librarian-research-protocol"
+        "librarian-research-protocol",
+        "todo-usage"
       ]
     },
     "junior_dev": {
@@ -184,9 +184,9 @@
         "skill-invocation-policy",
         "unicode-usage",
         "callout-boxes",
-        "todo-usage",
         "junior_dev-execution-protocol",
-        "junior_dev-research-policy"
+        "junior_dev-research-policy",
+        "todo-usage"
       ]
     },
     "test_runner": {
@@ -214,8 +214,8 @@
         "skill-invocation-policy",
         "unicode-usage",
         "callout-boxes",
-        "todo-usage",
-        "test_runner-execution-protocol"
+        "test_runner-execution-protocol",
+        "todo-usage"
       ]
     },
     "general_runner": {
@@ -269,8 +269,8 @@
         "skill-invocation-policy",
         "unicode-usage",
         "callout-boxes",
-        "todo-usage",
-        "general_runner-commands"
+        "general_runner-commands",
+        "todo-usage"
       ]
     }
   }
