@@ -1,7 +1,7 @@
 import { type Plugin, tool } from "@opencode-ai/plugin";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { createLazyLoader, loadConfig, createConfigLoader } from "../lib/utils";
+import { createLazyLoader, loadConfig, createConfigLoader, createCompactionDetector } from "../lib/utils";
 
 const DESCRIPTION_TEMPLATE = `Launch a new agent to handle complex, multistep tasks autonomously using template-based instructions.
 
@@ -47,6 +47,31 @@ const persistentTitles = new Map<string, string>();
 const loadedSkills = new Map<string, Set<string>>();
 
 export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
+  // Helper: Inject reflection prompt using synthetic message
+  // Uses noReply: true to queue message rather than interrupt current response
+  // CRITICAL: agentName parameter preserves agent context
+  // NOTE: Call this WITHOUT await to fire and forget
+  async function injectReflection(sessionID: string, message: string, agentName?: string) {
+    try {
+      await client.session.prompt({
+        path: { id: sessionID },
+        body: {
+          noReply: true,  // Queue for later - agent sees after completing current response
+          ...(agentName ? { agent: agentName } : {}), // Preserve agent context
+          parts: [
+            {
+              type: "text",
+              text: message,
+              synthetic: true  // Agent sees it, user doesn't - cleaner UX
+            }
+          ],
+        },
+      });
+    } catch (error) {
+      // Silently fail - don't pollute TUI
+    }
+  }
+
   // Map of child sessionId -> task tracking info
   const activeTasks = new Map<string, TaskSession>();
   const loadNunjucks = createLazyLoader("nunjucks");
@@ -367,46 +392,19 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
     return env.renderString(template, data);
   }
 
+  // Use shared compaction detection utility
+  const createCompactionHandler = createCompactionDetector(client);
+
   return {
-    // Event hook to handle session cleanup on compaction
-    event: async ({ event }) => {
-      // Handle post-compaction cleanup in session.idle
-      if (event.type === "session.idle") {
-        const sessionID = event.properties.sessionID;
-        
-        // Fetch session messages to detect compaction
-        let messagesResp;
-        try {
-          messagesResp = await client.session.messages({
-            path: { id: sessionID }
-          });
-        } catch (error) {
-          return; // Silently fail if can't fetch messages
-        }
-        
-        const messages = (messagesResp.data ?? []) as Array<{
-          info?: {
-            agent?: string;
-          };
-        }>;
-        
-        // Walk backwards to find the most recent compaction message
-        let mostRecentCompactionIndex = -1;
-        
-        for (let i = messages.length - 1; i >= 0; i--) {
-          const info = messages[i].info;
-          
-          if (info?.agent === "compaction") {
-            mostRecentCompactionIndex = i;
-            break; // Found most recent compaction, no need to continue
-          }
-        }
-        
+    // Dual event handler: compaction cleanup + message part tracking
+    event: async ({ event }: { event: any }) => {
+      // Handle compaction cleanup using shared utility
+      const compactionHandler = createCompactionHandler(async (sessionID) => {
         // Clear loadedSkills when compaction detected
-        if (mostRecentCompactionIndex !== -1) {
-          loadedSkills.delete(sessionID);
-        }
-      }
+        loadedSkills.delete(sessionID);
+      });
+      
+      await compactionHandler({ event });
       
       // Handle tool part updates for tracked sessions
       if (event.type === "message.part.updated") {
@@ -513,20 +511,29 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
              );
            }
 
-           // Validate that required skill has been loaded
-           const requiredSkill = `${args.subagent_type}-task`;
-           const skills = loadedSkills.get(context.sessionID) || new Set();
-           
-           if (!skills.has(requiredSkill)) {
-             throw new Error(`[Delegation Requires Skill Loading]
+            // Validate that required skill has been loaded
+            const requiredSkill = `${args.subagent_type}-task`;
+            const skills = loadedSkills.get(context.sessionID) || new Set();
+            
+            if (!skills.has(requiredSkill)) {
+              // Inject reflection prompt (fire and forget - no await)
+              const reflectionMessage = `[Delegation Requires Skill Loading]
 
-Before delegating to ${args.subagent_type}, you must:
-1. Load the skill: skill({name: '${requiredSkill}'})
-2. Review the required template_data fields shown in the skill
-3. Then call task with populated template_data
+Before delegating to ${args.subagent_type}, you must load the skill EVEN IF you think you already loaded it.
 
-The -task skill shows exactly what information ${args.subagent_type} needs. Loading it first ensures you provide complete delegation instructions.`);
-           }
+The skill may have been cleared during compaction or session state changes.
+
+Steps to complete:
+1. Load skill({name: '${requiredSkill}'}) - REQUIRED even if you loaded it before
+2. Review all template_data fields shown in the skill
+3. Verify you have values for each required field
+4. Call task with complete template_data
+
+The -task skill shows exactly what information the ${args.subagent_type} agent needs to operate effectively.`;
+              
+              injectReflection(context.sessionID, reflectionMessage);
+              throw new Error("Tool execution blocked by guardrail");
+            }
 
            // Generate consistent title format: "<Agent> Task"
           const formattedTitle = `${agent.name.charAt(0).toUpperCase()}${agent.name.slice(1)} Task`;

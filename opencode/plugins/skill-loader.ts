@@ -3,47 +3,82 @@ import { createConfigLoader } from "../lib/utils";
 
 /**
  * SkillLoaderPlugin - Loads required skills for coordinator agents
- * 
- * Uses chat.message hook to inject skill loading instructions once per session.
- * Only applies to tech_lead and build agents.
- * 
- * Note: -task skills (explore-task, librarian-task, junior_dev-task, test_runner-task)
- * are delegation templates FOR coordinators to load when delegating, not for
- * subagents themselves. Subagents receive populated template_data directly.
  */
 export const SkillLoaderPlugin: Plugin = async (ctx: any) => {
   const { client } = ctx;
   const worktree = ctx.worktree || ctx.directory;
   const injectedSessions = new Set<string>();
+  const compactedSessions = new Set<string>(); // Sessions that just completed compaction
   const getConfig = createConfigLoader(worktree);
 
   return {
-    "chat.message": async (input, output) => {
-      // Get agent name from output.message context (guaranteed to exist)
-      const agent = output.message?.agent;
-      
+    // HOOK 1: Fires BEFORE compaction starts
+    "experimental.session.compacting": async (input, output) => {
+      // input.sessionID is the correct field (output is for context/prompt injection)
+      const sessionID = input.sessionID;
+      if (!sessionID) return;
+
+      // Mark session for re-initialization after compaction completes
+      injectedSessions.delete(sessionID);
+    },
+
+    // HOOK 2: Bus event that fires AFTER compaction completes
+    event: async ({ event }) => {
+      if (event.type !== "session.compacted") return;
+
+      const sessionID = event.properties.sessionID;
+      if (!sessionID) return;
+
+      // Mark that this session just completed compaction
+      // The next message transform should inject init instructions
+      compactedSessions.add(sessionID);
+    },
+
+    // HOOK 3: Fires before messages sent to LLM
+    "experimental.chat.messages.transform": async (input, output) => {
+      if (!output.messages.length) return;
+
+      // Get sessionID from the first message's info
+      const firstMsg = output.messages[0];
+      const sessionID = (firstMsg?.info as any)?.sessionID;
+      if (!sessionID) return;
+
+      // Find the last user message to determine the target agent
+      const lastUserMessage = [...output.messages]
+        .reverse()
+        .find((m) => m.info.role === "user");
+
+      if (!lastUserMessage) return;
+
+      // Get agent from the user message (this is where the agent assignment is)
+      const agent = (lastUserMessage.info as any)?.agent;
+
       // Only inject for coordinator agents
       if (agent !== "tech_lead" && agent !== "build") return;
 
-      // Get sessionID from input or output
-      const sessionID = input.sessionID || output.sessionID;
-      if (!sessionID) return;
+      // Check if this is first prompt OR just after compaction
+      const needsInit =
+        !injectedSessions.has(sessionID) || compactedSessions.has(sessionID);
 
-      // Skip if this session already had skills injected
-      if (injectedSessions.has(sessionID)) return;
+      if (!needsInit) return;
 
-      // Mark this session as injected
+      // Mark as injected and clear compaction flag
       injectedSessions.add(sessionID);
+      compactedSessions.delete(sessionID);
 
       const config = await getConfig();
       const skills = config.agent?.[agent]?.required_skills;
       if (!skills?.length) return;
 
       // Build instruction with all required skills
-      const skillCalls = skills.map((s: string) => `skill({name: "${s}"})`).join('\n');
-      
-       // Build startup instruction
-       const instruction = `[Session Initialization]
+      const skillCalls = skills
+        .map((s: string) => `skill({name: "${s}"})`)
+        .join("\n");
+
+      // Build initialization instruction
+      const instruction = `
+
+[Session Initialization]
 
 Before responding to the user, complete these setup steps IN ORDER:
 
@@ -60,113 +95,15 @@ ${skillCalls}
 
 4. Using the guidance, create your todolist with todowrite()
 
-Once setup is complete, respond naturally to the user's request.`;
+5. Summarize everything learned from the above steps to the user before proceeding with their request.`;
 
-      // Inject instruction for this session
-      // Uses synthetic: true so agent sees it but user doesn't (cleaner UX)
-      try {
-        await client.session.prompt({
-          path: { id: sessionID },
-          body: {
-            noReply: true,  // Don't trigger AI response yet - just add to context
-            parts: [
-              { 
-                type: "text", 
-                text: instruction,
-                synthetic: true  // Agent sees it, user doesn't
-              }
-            ],
-          },
-        });
-      } catch (error) {
-        // Silently fail - don't pollute TUI
-      }
-    },
-    
-    // Re-inject after compaction on session.idle
-    event: async ({ event }) => {
-      if (event.type === "session.idle") {
-        const sessionID = event.properties.sessionID;
-        
-        // Fetch session messages to detect compaction
-        let messagesResp;
-        try {
-          messagesResp = await client.session.messages({
-            path: { id: sessionID }
-          });
-        } catch (error) {
-          return; // Silently fail if can't fetch messages
-        }
-        
-        const messages = (messagesResp.data ?? []) as Array<{
-          info?: {
-            agent?: string;
-            model?: { providerID: string; modelID: string };
-          };
-        }>;
-        
-        // Walk backwards to detect compaction and find pre-compaction agent
-        let hasCompactionMessage = false;
-        let preCompactionAgent: string | undefined;
-        
-        for (let i = messages.length - 1; i >= 0; i--) {
-          const info = messages[i].info;
-          
-          if (info?.agent === "compaction") {
-            hasCompactionMessage = true;
-            continue; // Skip compaction message, keep looking
-          }
-          
-          if (info?.agent) {
-            preCompactionAgent = info.agent;
-            break; // Found the agent that was active before compaction
-          }
-        }
-        
-        // Only proceed if compaction occurred for coordinator agents
-        if (!hasCompactionMessage) return;
-        if (preCompactionAgent !== "tech_lead" && preCompactionAgent !== "build") return;
-        
-         // Clear session from injected tracking - treat as brand new session
-         injectedSessions.delete(sessionID);
-        
-        const config = await getConfig();
-        const skills = config.agent?.[preCompactionAgent]?.required_skills;
-        if (!skills?.length) return;
-        
-        const skillCalls = skills.map((s: string) => `skill({name: "${s}"})`).join('\n');
-        
-        const instruction = `[Session Re-initialization After Compaction]
+      // Append to the last text part of the last user message
+      const lastTextPart = [...lastUserMessage.parts]
+        .reverse()
+        .find((p) => p.type === "text");
 
-The session was recently compacted. Re-initialize:
-
-1. Load your required skills:
-${skillCalls}
-
-2. Call todoplan() to review todolist guidance
-
-3. Create a new todolist for continuing work
-
-Your previous context has been summarized. Continue with full agent capabilities.`;
-        
-        // Inject instruction and trigger immediate response
-        try {
-          await client.session.prompt({
-            path: { id: sessionID },
-            body: {
-              agent: preCompactionAgent, // Preserve agent context
-              parts: [
-                { 
-                  type: "text", 
-                  text: instruction,
-                  synthetic: true
-                }
-              ],
-            },
-          });
-        } catch (error) {
-          // Silently fail - don't pollute TUI
-        }
+      if (lastTextPart && lastTextPart.type === "text") {
+        lastTextPart.text += instruction;
       }
     },
   };

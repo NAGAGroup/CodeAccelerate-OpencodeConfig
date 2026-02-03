@@ -3,13 +3,34 @@ import { loadConfig } from "../lib/utils";
 
 /**
  * TodoplanPlugin - Provides todolist planning guidance for tech_lead
- * 
- * Returns guidance on how to structure todolists effectively before creating them.
- * Includes skill loading instructions and a 4-criteria checklist for planning.
+ *
+ * Injects reflection prompt with guidance on how to structure todolists effectively.
+ * Includes 4 planning criteria: Delegation, Parallelization, Questions, and Agent Reuse.
  */
 export const TodoplanPlugin: Plugin = async (ctx: any) => {
   const workingDirectory = ctx.worktree || ctx.directory;
-  
+  const client = ctx.client;
+
+  // Helper: Inject reflection prompt
+  async function injectReflection(
+    sessionID: string,
+    message: string,
+    agentName?: string,
+  ) {
+    try {
+      await client.session.prompt({
+        path: { id: sessionID },
+        body: {
+          noReply: true,
+          ...(agentName ? { agent: agentName } : {}),
+          parts: [{ type: "text", text: message, synthetic: true }],
+        },
+      });
+    } catch (error) {
+      // Silently fail
+    }
+  }
+
   return {
     tool: {
       todoplan: tool({
@@ -36,24 +57,11 @@ export const TodoplanPlugin: Plugin = async (ctx: any) => {
               });
             }
 
-            // Get config and required skills for tech_lead
-            const config = await loadConfig(workingDirectory);
-            const techLeadConfig = config.agent?.tech_lead || {};
-            const requiredSkills = techLeadConfig.required_skills || [];
-
-            // Build skill loading instructions
-            const skillLoadingInstructions = requiredSkills
-              .map((skill) => `skill({name: "${skill}"})`)
-              .join("\n");
+            // Get config - no longer needed for skill loading
+            // const config = await loadConfig(workingDirectory);
 
             // Build guidance message
             const guidance = `[Todolist Planning Guidance]
-
-Before creating your todolist, load your required skills:
-
-${skillLoadingInstructions}
-
----
 
 ## Planning Checklist
 
@@ -63,7 +71,7 @@ Use these 4 criteria to structure your todolist effectively:
    - Implementation → junior_dev
    - Testing/Verification → test_runner
    - Research/Analysis → explore or librarian
-   - Shell commands → generic_runner
+   - Shell commands → general_runner
    
    Your todos should mention which agent handles each task.
 
@@ -72,22 +80,23 @@ Use these 4 criteria to structure your todolist effectively:
    - You can delegate to multiple agents in the same message
    - This is faster than sequential delegation
    
-   Check if your todos can be reordered for parallel execution.
+   Mark parallel todos with (Parallel) prefix in the todo content.
+   Example: "(Parallel) Delegate to librarian for API research"
 
 3. [Questions] - Do you need to ask the user anything?
    - Use the question tool for structured questions
    - Never ask questions in plain text
    - Ask before delegating if requirements are unclear
    
-   Add a "Ask user" todo if you need clarification.
+   Mark question todos with (Question Tool) prefix in the todo content.
+   Example: "(Question Tool) Ask user about preferred authentication method"
 
-4. [Tool Usage] - Are you using the right tools?
-   - Built-in tools: read, glob, grep, lsp (for analysis)
-   - Delegation: task tool (after loading -task skill)
-   - Coordination: question, skill, todowrite/todoread
-   - Never use bash directly - delegate to generic_runner
+4. [Agent Reuse] - Should you reuse an existing agent session?
+   - Some tasks benefit from session reuse: multi-phase work, iterative refinement, continuing context
+   - Some tasks benefit from fresh sessions: independent work, different contexts
    
-   Verify your todos use proper tool delegation patterns.
+   Mark reuse todos clearly with session_id reference in the todo content.
+   Example: "Delegate to junior_dev for phase 2 (reuse session_id from phase 1)"
 
 ---
 
@@ -95,12 +104,15 @@ Use these 4 criteria to structure your todolist effectively:
 
 1. Review the 4 criteria above
 2. Create your todolist with these patterns in mind
-3. The guardrails plugin will provide reflection checkpoints
-4. Follow the guidance to improve your delegation strategy
+3. Use prefixes (Parallel), (Question Tool), and session_id notes where appropriate
+4. The guardrails plugin will provide reflection checkpoints
 
-This is guidance, not enforcement. Use it to plan more effectively.`;
+Given the above, summarize how it will affect your approach to the user before creating the todolist and continuing.`;
 
-            return guidance;
+            // Inject guidance as reflection prompt
+            await injectReflection(sessionID, guidance, agent);
+
+            return "Todolist planning guidance provided. Review the checklist and create your todolist.";
           } catch (error: any) {
             return JSON.stringify({
               success: false,
