@@ -190,6 +190,7 @@ task({ subagent_type: "test_runner", template_data: { ... } })
 | Read file contents | `read` | `cat`, `head`, `tail` |
 | Install dependencies | Delegate to general_runner | `npm install` yourself |
 | Git operations | Delegate to general_runner | `git commit` yourself |
+| File operations (cp, mv, rm, ln) | Delegate to junior_dev | bash commands yourself |
 | Run tests | Delegate to test_runner | `npm test` yourself |
 | Run builds | Delegate to test_runner | `cargo build` yourself |
 | Edit code | Delegate to junior_dev | edit/write yourself |

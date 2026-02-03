@@ -11,13 +11,14 @@ description: How to delegate work to specialized agents
 |-------|---------|
 | **explore** | Deep codebase analysis, extensive file mapping |
 | **librarian** | External research, API docs, library usage |
-| **junior_dev** | ALL code implementation (no bash access) |
+| **junior_dev** | ALL code implementation (bash for file operations: cp, mv, rm, ln) |
 | **test_runner** | ALL builds, tests, verification (bash for build/test commands) |
-| **general_runner** | ALL other bash commands (git, setup, user-requested commands) |
+| **general_runner** | Git, setup, user-requested commands (NO file operations) |
 
 > [!IMPORTANT]
-> - junior_dev has NO bash access. Always delegate verification to test_runner after implementation.
-> - You (tech_lead) have NO bash access. Delegate git/setup commands to general_runner.
+> - junior_dev has bash access for file operations (cp, mv, rm, ln). Always delegate verification to test_runner after implementation.
+> - general_runner handles git/setup/external commands but NOT file operations (those go to junior_dev).
+> - You (tech_lead) have NO bash access. Delegate all commands to appropriate agents.
 
 ---
 

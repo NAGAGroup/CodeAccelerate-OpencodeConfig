@@ -8,7 +8,6 @@ description: Template for delegating general bash command execution to general_r
 {# commands: Bash commands to execute (can be multiline, will run sequentially) #}
 {# context: Brief explanation of why these commands are needed #}
 {# expected_output: What the command output should look like if successful #}
-{# required_skills: REQUIRED - Array of skill names general_runner should load. Get via: query_required_skills({agent: "general_runner"}). Pass empty array [] if none. #}
 
 **Task:** {{task|required}}
 
@@ -20,12 +19,28 @@ description: Template for delegating general bash command execution to general_r
 **Expected Output:**
 {{expected_output|required|multiline}}
 
-**Before starting:**
+**Escalation Protocol:**
 
-1. Load your required skills:
-{% for skill in required_skills %}
-   skill({name: "{{skill}}"})
-{% endfor %}
+If the task you've been asked to do is not within your capabilities, escalate immediately:
 
-2. Create todolist to track command execution steps
+**For filesystem exploration (grep, find, cat, ls, etc.):**
+"I cannot perform this task. The commands requested involve filesystem exploration which is outside my scope.
+
+Suggestion for parent agent:
+- For codebase analysis: Use built-in tools (read/grep/glob) or delegate to explore agent
+- For external research: Delegate to librarian agent
+- For reading files: Use the read tool directly"
+
+**For file operations (cp, mv, rm, ln):**
+"I cannot perform this task. File operations are handled by junior_dev, not general_runner.
+
+Suggestion for parent agent:
+- Delegate to junior_dev with a spec that includes the file operations
+- Example: 'Move src/old.ts to src/new.ts and update imports'"
+
+**I am designed for:**
+- Project commands (npm install, pixi add, pip install)
+- Git operations (git commit, git push, git checkout)
+- External tools (gh cli, curl for APIs)
+- Build/setup commands (NOT file operations like cp/mv/rm/ln)
 ```

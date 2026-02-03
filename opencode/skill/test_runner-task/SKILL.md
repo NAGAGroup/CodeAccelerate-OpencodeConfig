@@ -10,7 +10,6 @@ description: Template for delegating verification, testing, and build validation
 {# test_commands: Bash commands to run AFTER build completes (or immediately if no build_commands) #}
 {# expected_results: What success looks like (build status, test counts, output patterns, artifact locations) #}
 {# diagnostic_commands: Optional - bash commands to run if tests/build fail to gather diagnostic information #}
-{# required_skills: REQUIRED - Array of skill names test_runner should load. Get via: query_required_skills({agent: "test_runner"}). Pass empty array [] if none. #}
 
 **Task:** {{task|required}}
 
@@ -27,13 +26,4 @@ description: Template for delegating verification, testing, and build validation
 
 **On Failure:**
 {{diagnostic_commands|optional}}
-
-**Before starting:**
-
-1. Load your required skills:
-{% for skill in required_skills %}
-   skill({name: "{{skill}}"})
-{% endfor %}
-
-2. Create todolist to track build, test, and diagnostic steps
 ```
