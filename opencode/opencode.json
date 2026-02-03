@@ -58,6 +58,7 @@
         },
         "todowrite": "allow",
         "todoread": "allow",
+        "todoplan": "allow",
         "task": "allow",
         "skill": {
           "*": "allow"
@@ -66,8 +67,7 @@
           "*": "ask"
         },
         "doom_loop": "ask",
-        "mermaid_*": "allow",
-        "query_required_skills": "allow"
+        "mermaid_*": "allow"
       },
       "required_skills": [
         "skill-invocation-policy",
@@ -142,6 +142,13 @@
       "temperature": 0.15,
       "permission": {
         "*": "deny",
+        "bash": {
+          "*": "deny",
+          "cp *": "allow",
+          "mv *": "allow",
+          "ln *": "allow",
+          "rm *": "allow"
+        },
         "read": { "*": "allow" },
         "edit": { "*": "allow" },
         "write": { "*": "allow" },
@@ -206,7 +213,33 @@
       "temperature": 0.3,
       "permission": {
         "*": "deny",
-        "bash": { "*": "allow" },
+        "bash": {
+          "*": "allow",
+          "grep *": "deny",
+          "egrep *": "deny",
+          "fgrep *": "deny",
+          "rg *": "deny",
+          "ag *": "deny",
+          "ack *": "deny",
+          "find *": "deny",
+          "locate *": "deny",
+          "cat *": "deny",
+          "head *": "deny",
+          "tail *": "deny",
+          "less *": "deny",
+          "more *": "deny",
+          "ls *": "deny",
+          "tree *": "deny",
+          "awk *": "deny",
+          "sed *": "deny",
+          "cp *": "deny",
+          "mv *": "deny",
+          "ln *": "deny",
+          "rm *": "deny"
+        },
+        "read": { "*": "deny", "/tmp/*": "allow" },
+        "glob": { "*": "deny", "/tmp/*": "allow" },
+        "grep": { "*": "deny", "/tmp/*": "allow" },
         "todowrite": "allow",
         "todoread": "allow",
         "skill": {
@@ -215,13 +248,18 @@
           "unicode-usage": "allow",
           "callout-boxes": "allow",
           "todo-usage": "allow"
+        },
+        "external_directory": {
+          "*": "deny",
+          "/tmp/*": "allow"
         }
       },
       "required_skills": [
         "skill-invocation-policy",
         "unicode-usage",
         "callout-boxes",
-        "todo-usage"
+        "todo-usage",
+        "general_runner-commands"
       ]
     }
   }
