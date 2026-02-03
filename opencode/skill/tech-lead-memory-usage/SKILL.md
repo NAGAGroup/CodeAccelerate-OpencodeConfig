@@ -152,6 +152,30 @@ Older memories may lack tags, which significantly reduces their discoverability:
 > [!NOTE]
 > Tag migration is not automatic - you must accept the prompt. This improves search ranking for all your memories.
 
+### List Before You Search
+
+> [!IMPORTANT]
+> Always LIST your recent memories before searching. Listing shows you what knowledge you already have stored.
+
+**Recommended workflow:**
+
+1. **Start with list** → See your recent memories to understand what you have
+   ```typescript
+   memory({ mode: "list", limit: 10 });
+   ```
+
+2. **Then search** → Find specific relevant memories with keywords
+   ```typescript
+   memory({ mode: "search", query: "oauth2 authentication security" });
+   ```
+
+3. **Review results** → Check similarity scores and relevance
+
+4. **Add new memories** → Store new knowledge with 4-6 technical tags
+
+> [!TIP]
+> Listing helps you avoid duplicate memories and see patterns in what you've stored. Always list before planning or searching.
+
 ### Search Strategy
 
 Use these techniques for effective searches:
@@ -259,7 +283,7 @@ Semantic search finds memories about token management, JWT refresh flows, sessio
 The memory tool integrates seamlessly into your workflow:
 
 1. **During implementation** → Add memories about patterns and decisions you're making
-2. **Before complex tasks** → Search for relevant memories to inform your approach
+2. **Before complex tasks** → List recent memories first, then search for relevant memories to inform your approach
 3. **After learning** → Store new patterns and techniques you discover
 4. **In future sessions** → Find exactly what you need without starting from scratch
 

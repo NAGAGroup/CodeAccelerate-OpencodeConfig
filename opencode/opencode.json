@@ -75,19 +75,19 @@
         },
         "doom_loop": "ask",
         "mermaid_*": "allow"
-       },
-       "required_skills": [
-         "skill-invocation-policy",
-         "unicode-usage",
-         "callout-boxes",
-         "todo-usage",
-         "tech-lead-questions",
-         "tech-lead-tools",
-         "tech-lead-delegation",
-         "tech-lead-memory-usage"
-       ]
-     },
-     "explore": {
+      },
+      "required_skills": [
+        "skill-invocation-policy",
+        "tech-lead-questions",
+        "tech-lead-tools",
+        "tech-lead-delegation",
+        "tech-lead-memory-usage",
+        "unicode-usage",
+        "callout-boxes",
+        "todo-usage"
+      ]
+    },
+    "explore": {
       "mode": "subagent",
       "model": "github-copilot/claude-haiku-4.5",
       "permission": {

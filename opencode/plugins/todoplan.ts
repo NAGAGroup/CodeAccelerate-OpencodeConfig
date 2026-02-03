@@ -103,11 +103,19 @@ Use these 4 criteria to structure your todolist effectively:
 ## Next Steps
 
 1. Review the 4 criteria above
-2. Create your todolist with these patterns in mind
-3. Use prefixes (Parallel), (Question Tool), and session_id notes where appropriate
-4. The guardrails plugin will provide reflection checkpoints
+2. Check your memories BEFORE planning:
+   - First, LIST recent memories: memory({ mode: "list", limit: 10 })
+   - Then, SEARCH for relevant memories: memory({ mode: "search", query: "specific keywords" })
+   - Use 4-6 specific technical keywords in your search query
+   - Listing helps you see what you have; searching finds relevant context
+3. Create your todolist with these patterns in mind
+4. Use prefixes (Parallel), (Question Tool), and session_id notes where appropriate
+5. The guardrails plugin will provide reflection checkpoints
 
-Given the above, summarize how it will affect your approach to the user before creating the todolist and continuing. Clearly state any memories you've searched that are relevant to the task`;
+Given the above, summarize how it will affect your approach to the user before creating the todolist and continuing. Clearly state:
+- What memories you LISTED (recent 10)
+- What memories you SEARCHED for and found (with similarity scores)
+- How those memories inform your approach`;
 
             // Inject guidance as reflection prompt
             await injectReflection(sessionID, guidance, agent);

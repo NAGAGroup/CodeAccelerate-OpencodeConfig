@@ -184,7 +184,9 @@ Worth remembering:
 - How systems integrate or communicate
 
 If yes:
-- First, search existing memories to check if this is already stored
+- First, LIST recent memories: memory({ mode: "list", limit: 10 })
+- Then, SEARCH existing memories: memory({ mode: "search", query: "specific keywords" })
+- Use 4-6 specific technical keywords in your search query for best results
 - If not found or significantly different, add a new memory with clear content and 4-6 technical tags for discoverability
 - If found, consider if your new knowledge adds enough value to warrant updating or adding a complementary memory`;
 
