@@ -1,6 +1,7 @@
 import { type Plugin, tool } from "@opencode-ai/plugin";
 import * as fs from "fs/promises";
 import * as path from "path";
+import { createLazyLoader, loadConfig, createConfigLoader } from "../lib/utils";
 
 const DESCRIPTION_TEMPLATE = `Launch a new agent to handle complex, multistep tasks autonomously using template-based instructions.
 
@@ -8,6 +9,8 @@ const DESCRIPTION_TEMPLATE = `Launch a new agent to handle complex, multistep ta
 1. Load the skill file: skill({name: '<agent>-task'}) (e.g., skill({name: 'explore-task'}))
 2. Review the required template_data fields
 3. Call task with populated template_data
+
+Required skills are automatically injected from agent configuration.
 
 Available agent types and the tools they have access to:
 {agents}
@@ -40,30 +43,23 @@ type TaskSession = {
 // Store persistent titles by callID for hook retrieval
 const persistentTitles = new Map<string, string>();
 
+// Track which skills have been loaded per session
+const loadedSkills = new Map<string, Set<string>>();
+
 export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
   // Map of child sessionId -> task tracking info
   const activeTasks = new Map<string, TaskSession>();
+  const loadNunjucks = createLazyLoader("nunjucks");
 
   // Lazy config loading - fetch on first access, then cache
-  let cachedConfig: any = null;
+  const getConfig = createConfigLoader(directory);
 
-  async function getConfig() {
-    if (cachedConfig) return cachedConfig;
-
-    try {
-      const configResponse = await client.config.get({ query: { directory } });
-      if (configResponse.error) {
-        console.warn("[delegate] Failed to load config:", configResponse.error);
-        cachedConfig = { agent: {}, skills: {} };
-      } else {
-        cachedConfig = configResponse.data ?? { agent: {}, skills: {} };
-      }
-    } catch (error) {
-      console.warn("[delegate] Exception loading config:", error);
-      cachedConfig = { agent: {}, skills: {} };
-    }
-
-    return cachedConfig;
+  /**
+   * Get required skills for an agent from config
+   */
+  async function getRequiredSkills(agentName: string): Promise<string[]> {
+    const config = await getConfig();
+    return config.agent?.[agentName]?.required_skills || [];
   }
 
   // Tool description uses placeholder - config loaded at execution time
@@ -177,15 +173,15 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
   /**
    * Parse template to extract required and optional fields using Nunjucks lexer
    */
-  async function parseTemplateFields(template: string): Promise<{
-    required: string[];
-    optional: string[];
-  }> {
-    const required = new Set<string>();
-    const optional = new Set<string>();
-    
-    // Lazy load nunjucks
-    const nunjucks = await import("nunjucks");
+   async function parseTemplateFields(template: string): Promise<{
+     required: string[];
+     optional: string[];
+   }> {
+     const required = new Set<string>();
+     const optional = new Set<string>();
+     
+     // Lazy load nunjucks
+     const nunjucks = await loadNunjucks();
     
     // Use Nunjucks lexer to tokenize the template
     const tokenizer = nunjucks.lexer.lex(template);
@@ -325,15 +321,15 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
     }
   }
 
-  /**
-   * Render template with data using nunjucks
-   */
-  async function renderTemplate(
-    template: string,
-    data: Record<string, any>,
-  ): Promise<string> {
-    // Lazy load nunjucks only when needed
-    const nunjucks = await import("nunjucks");
+   /**
+    * Render template with data using nunjucks
+    */
+   async function renderTemplate(
+     template: string,
+     data: Record<string, any>,
+   ): Promise<string> {
+     // Lazy load nunjucks only when needed
+     const nunjucks = await loadNunjucks();
 
     // Configure nunjucks with no autoescaping (we're generating prompts, not HTML)
     const env = nunjucks.configure({ autoescape: false });
@@ -372,8 +368,46 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
   }
 
   return {
-    // Event hook to receive real-time updates
+    // Event hook to handle session cleanup on compaction
     event: async ({ event }) => {
+      // Handle post-compaction cleanup in session.idle
+      if (event.type === "session.idle") {
+        const sessionID = event.properties.sessionID;
+        
+        // Fetch session messages to detect compaction
+        let messagesResp;
+        try {
+          messagesResp = await client.session.messages({
+            path: { id: sessionID }
+          });
+        } catch (error) {
+          return; // Silently fail if can't fetch messages
+        }
+        
+        const messages = (messagesResp.data ?? []) as Array<{
+          info?: {
+            agent?: string;
+          };
+        }>;
+        
+        // Walk backwards to find the most recent compaction message
+        let mostRecentCompactionIndex = -1;
+        
+        for (let i = messages.length - 1; i >= 0; i--) {
+          const info = messages[i].info;
+          
+          if (info?.agent === "compaction") {
+            mostRecentCompactionIndex = i;
+            break; // Found most recent compaction, no need to continue
+          }
+        }
+        
+        // Clear loadedSkills when compaction detected
+        if (mostRecentCompactionIndex !== -1) {
+          loadedSkills.delete(sessionID);
+        }
+      }
+      
       // Handle tool part updates for tracked sessions
       if (event.type === "message.part.updated") {
         const part = event.properties.part;
@@ -410,6 +444,17 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
         if (storedTitle) {
           output.title = storedTitle;
           persistentTitles.delete(input.callID); // Clean up
+        }
+      }
+      
+      // Track skill loads for delegation validation
+      if (input.tool === "skill") {
+        const skillName = output.metadata?.name;
+        if (skillName) {
+          if (!loadedSkills.has(input.sessionID)) {
+            loadedSkills.set(input.sessionID, new Set());
+          }
+          loadedSkills.get(input.sessionID)!.add(skillName);
         }
       }
     },
@@ -459,16 +504,31 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
           const agent = subagents.find(
             (a: any) => a.name === args.subagent_type,
           );
-          if (!agent) {
-            const availableAgents = subagents
-              .map((a: any) => a.name)
-              .join(", ");
-            throw new Error(
-              `Unknown agent type: ${args.subagent_type} is not a valid agent type. Available agents: ${availableAgents || "none"}`,
-            );
-          }
+           if (!agent) {
+             const availableAgents = subagents
+               .map((a: any) => a.name)
+               .join(", ");
+             throw new Error(
+               `Unknown agent type: ${args.subagent_type} is not a valid agent type. Available agents: ${availableAgents || "none"}`,
+             );
+           }
 
-          // Generate consistent title format: "<Agent> Task"
+           // Validate that required skill has been loaded
+           const requiredSkill = `${args.subagent_type}-task`;
+           const skills = loadedSkills.get(context.sessionID) || new Set();
+           
+           if (!skills.has(requiredSkill)) {
+             throw new Error(`[Delegation Requires Skill Loading]
+
+Before delegating to ${args.subagent_type}, you must:
+1. Load the skill: skill({name: '${requiredSkill}'})
+2. Review the required template_data fields shown in the skill
+3. Then call task with populated template_data
+
+The -task skill shows exactly what information ${args.subagent_type} needs. Loading it first ensures you provide complete delegation instructions.`);
+           }
+
+           // Generate consistent title format: "<Agent> Task"
           const formattedTitle = `${agent.name.charAt(0).toUpperCase()}${agent.name.slice(1)} Task`;
 
           // Store title for hook retrieval
@@ -496,12 +556,29 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
             );
           }
 
-          const template = await extractTemplate(skillFile);
-          await validateTemplateData(template, args.template_data);
-          const renderedPrompt = await renderTemplate(
-            template,
-            args.template_data,
-          );
+           const template = await extractTemplate(skillFile);
+           await validateTemplateData(template, args.template_data);
+
+           const renderedPrompt = await renderTemplate(
+             template,
+             args.template_data,
+           );
+
+           // Append skill loading instructions after template
+           const subagentSkills = await getRequiredSkills(args.subagent_type);
+           let finalPrompt = renderedPrompt;
+
+           if (subagentSkills.length > 0) {
+             const skillCalls = subagentSkills.map(s => `skill({name: "${s}"})`).join('\n');
+             finalPrompt = `${renderedPrompt}
+
+**Before starting:**
+
+1. Load your required skills:
+${skillCalls}
+
+2. Create todolist to track your work`;
+           }
 
           // Ask for permission before delegating
           await context.ask({
@@ -582,15 +659,15 @@ export const CustomTaskPlugin: Plugin = async ({ client, directory }) => {
             },
           });
 
-          try {
-            // Execute the prompt with RENDERED TEMPLATE
-            const result = await client.session.prompt({
-              path: { id: session.id },
-              body: {
-                agent: agent.name,
-                parts: [{ type: "text", text: renderedPrompt }],
-              },
-            });
+           try {
+             // Execute the prompt with RENDERED TEMPLATE
+             const result = await client.session.prompt({
+               path: { id: session.id },
+               body: {
+                 agent: agent.name,
+                 parts: [{ type: "text", text: finalPrompt }],
+               },
+             });
 
             // Small delay to let final events process
             await new Promise((resolve) => setTimeout(resolve, 100));

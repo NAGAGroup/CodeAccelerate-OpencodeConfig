@@ -118,9 +118,9 @@ todowrite({
 
 - **explore** - Deep codebase analysis (when read/grep/glob isn't enough)
 - **librarian** - External docs/APIs research (webfetch, Context7)
-- **junior_dev** - Code implementation (edit/write, NO bash)
+- **junior_dev** - Code implementation (edit/write, bash for file operations: cp, mv, rm, ln)
 - **test_runner** - Run builds/tests/verification (bash for test/build commands)
-- **general_runner** - Run general bash commands (git, setup, user-requested commands)
+- **general_runner** - Run git/setup/external commands (NO file operations)
 
 ---
 

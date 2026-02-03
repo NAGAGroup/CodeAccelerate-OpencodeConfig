@@ -1,7 +1,5 @@
 import type { Plugin } from "@opencode-ai/plugin";
-import { readFile } from "fs/promises";
-import { join } from "path";
-import { homedir } from "os";
+import { createConfigLoader } from "../lib/utils";
 
 /**
  * SkillLoaderPlugin - Loads required skills for coordinator agents
@@ -13,56 +11,11 @@ import { homedir } from "os";
  * are delegation templates FOR coordinators to load when delegating, not for
  * subagents themselves. Subagents receive populated template_data directly.
  */
-export const SkillLoaderPlugin: Plugin = async ({ client, worktree }) => {
+export const SkillLoaderPlugin: Plugin = async (ctx: any) => {
+  const { client } = ctx;
+  const worktree = ctx.worktree || ctx.directory;
   const injectedSessions = new Set<string>();
-  let cachedConfig: any = null;
-
-  async function getConfig() {
-    if (cachedConfig) return cachedConfig;
-    
-    const globalPath = join(homedir(), '.config', 'opencode', 'opencode.json');
-    const projectPath = join(worktree, '.opencode', 'opencode.json');
-    
-    const readJson = async (path: string) => {
-      try {
-        return JSON.parse(await readFile(path, 'utf-8'));
-      } catch {
-        return null;
-      }
-    };
-
-    const global = await readJson(globalPath);
-    const project = await readJson(projectPath);
-    
-    // Deep merge agent configs with special handling for required_skills arrays
-    const mergedAgents: any = {};
-    const allAgents = new Set([
-      ...Object.keys(global?.agent || {}),
-      ...Object.keys(project?.agent || {})
-    ]);
-    
-    for (const agentName of allAgents) {
-      const globalAgent = global?.agent?.[agentName] || {};
-      const projectAgent = project?.agent?.[agentName] || {};
-      
-      mergedAgents[agentName] = {
-        ...globalAgent,
-        ...projectAgent,
-        // Merge required_skills arrays instead of replacing
-        required_skills: [
-          ...(globalAgent.required_skills || []),
-          ...(projectAgent.required_skills || [])
-        ].filter((skill, index, arr) => arr.indexOf(skill) === index) // Remove duplicates
-      };
-    }
-    
-    const result = {
-      agent: mergedAgents
-    };
-    
-    cachedConfig = result;
-    return result;
-  }
+  const getConfig = createConfigLoader(worktree);
 
   return {
     "chat.message": async (input, output) => {
@@ -89,18 +42,23 @@ export const SkillLoaderPlugin: Plugin = async ({ client, worktree }) => {
       // Build instruction with all required skills
       const skillCalls = skills.map((s: string) => `skill({name: "${s}"})`).join('\n');
       
-      // Build startup instruction
-      const instruction = `[Session Initialization]
+       // Build startup instruction
+       const instruction = `[Session Initialization]
 
 Before responding to the user, complete these setup steps IN ORDER:
 
 1. Load your required skills:
 ${skillCalls}
 
-2. Create todolist immediately (required for all work):
-   - For discussions/planning: Create single stub item like "Discuss approach with user"
-   - For implementation: Break down the work into actionable steps
-   - Even simple tasks need a todolist for progress tracking
+2. Use these skills and explicitly summarize how you'll use them to perform the user's request:
+   - What constraints do the skills define?
+   - What delegation patterns should you follow?
+   - What tools should you use vs delegate?
+   - Create a brief mental model of your approach
+
+3. Call todoplan() to get todolist planning guidance
+
+4. Using the guidance, create your todolist with todowrite()
 
 Once setup is complete, respond naturally to the user's request.`;
 
@@ -122,6 +80,93 @@ Once setup is complete, respond naturally to the user's request.`;
         });
       } catch (error) {
         // Silently fail - don't pollute TUI
+      }
+    },
+    
+    // Re-inject after compaction on session.idle
+    event: async ({ event }) => {
+      if (event.type === "session.idle") {
+        const sessionID = event.properties.sessionID;
+        
+        // Fetch session messages to detect compaction
+        let messagesResp;
+        try {
+          messagesResp = await client.session.messages({
+            path: { id: sessionID }
+          });
+        } catch (error) {
+          return; // Silently fail if can't fetch messages
+        }
+        
+        const messages = (messagesResp.data ?? []) as Array<{
+          info?: {
+            agent?: string;
+            model?: { providerID: string; modelID: string };
+          };
+        }>;
+        
+        // Walk backwards to detect compaction and find pre-compaction agent
+        let hasCompactionMessage = false;
+        let preCompactionAgent: string | undefined;
+        
+        for (let i = messages.length - 1; i >= 0; i--) {
+          const info = messages[i].info;
+          
+          if (info?.agent === "compaction") {
+            hasCompactionMessage = true;
+            continue; // Skip compaction message, keep looking
+          }
+          
+          if (info?.agent) {
+            preCompactionAgent = info.agent;
+            break; // Found the agent that was active before compaction
+          }
+        }
+        
+        // Only proceed if compaction occurred for coordinator agents
+        if (!hasCompactionMessage) return;
+        if (preCompactionAgent !== "tech_lead" && preCompactionAgent !== "build") return;
+        
+         // Clear session from injected tracking - treat as brand new session
+         injectedSessions.delete(sessionID);
+        
+        const config = await getConfig();
+        const skills = config.agent?.[preCompactionAgent]?.required_skills;
+        if (!skills?.length) return;
+        
+        const skillCalls = skills.map((s: string) => `skill({name: "${s}"})`).join('\n');
+        
+        const instruction = `[Session Re-initialization After Compaction]
+
+The session was recently compacted. Re-initialize:
+
+1. Load your required skills:
+${skillCalls}
+
+2. Call todoplan() to review todolist guidance
+
+3. Create a new todolist for continuing work
+
+Your previous context has been summarized. Continue with full agent capabilities.`;
+        
+        // Inject instruction and trigger immediate response
+        try {
+          await client.session.prompt({
+            path: { id: sessionID },
+            body: {
+              agent: preCompactionAgent, // Preserve agent context
+              parts: [
+                { 
+                  type: "text", 
+                  text: instruction,
+                  synthetic: true
+                }
+              ],
+            },
+          });
+        } catch (error) {
+          // Silently fail - don't pollute TUI
+        }
       }
     },
   };

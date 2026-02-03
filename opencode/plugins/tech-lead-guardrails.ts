@@ -4,13 +4,11 @@ import type { Plugin } from "@opencode-ai/plugin";
  * TechLeadGuardrailsPlugin - Enforces role boundaries for all agents with special rules for tech_lead
  * 
  * Features:
- * 1. UNIVERSAL: Mandatory todolists before ANY work (all agents)
- * 2. UNIVERSAL: Completion checkpoint when all todos marked complete (all agents)
- * 3. UNIVERSAL: Auto-reset todolist requirement after completion (all agents)
- * 4. TECH_LEAD ONLY: Todo content analysis with meta-reflection (detect anti-patterns)
- * 5. TECH_LEAD ONLY: Markdown-only editing enforcement
- * 6. TECH_LEAD ONLY: Skill-loading enforcement before delegation
- * 7. TECH_LEAD ONLY: Infinite reflection loop prevention (one reflection per pattern per todolist)
+ * 1. UNIVERSAL: Mandatory todolists before ANY work
+ * 2. UNIVERSAL: Auto-reset todolist requirement after completion
+ * 3. TECH_LEAD ONLY: todoplan required before todowrite/todoread
+ * 4. TECH_LEAD ONLY: Markdown-only editing enforcement
+ * 5. TECH_LEAD ONLY: Skill-loading enforcement before delegation
  */
 export const TechLeadGuardrailsPlugin: Plugin = async ({ client }) => {
   // Track loaded skills per session
@@ -19,18 +17,22 @@ export const TechLeadGuardrailsPlugin: Plugin = async ({ client }) => {
   // Track current agent per session
   const sessionAgents = new Map<string, string>();
   
-  // Track todolist state per session
-  interface TodolistState {
-    exists: boolean;
-    allComplete: boolean;
-    lastTodos: any[];
-  }
+   // Track todolist state per session
+   interface TodolistState {
+     exists: boolean;
+     allComplete: boolean;
+     lastTodos: any[];
+     metareflectionOccurred: boolean;
+     finalizationPromptSent: boolean;
+   }
   const sessionTodolist = new Map<string, TodolistState>();
   
-  // Track which reflection patterns have been triggered per session
-  // This prevents infinite reflection loops when agent updates todolist
-  type ReflectionPattern = 'implementation' | 'no-delegation' | 'parallel' | 'large-list';
-  const sessionReflections = new Map<string, Set<ReflectionPattern>>();
+   // Track todoplan calls per session
+   const todoplanCalled = new Map<string, boolean>();
+   
+   // Track the index of the last compaction message we've processed per session
+   // This prevents re-processing the same compaction message on every session.idle
+   const lastProcessedCompactionIndex = new Map<string, number>();
 
   // Helper: Inject reflection prompt that agent will see after completing current response
   // Uses synthetic: true so the agent sees it but the user doesn't (cleaner UX)
@@ -75,126 +77,6 @@ export const TechLeadGuardrailsPlugin: Plugin = async ({ client }) => {
     );
   }
 
-  // Helper: Analyze todos for anti-patterns (tech_lead only)
-  function analyzeTodos(todos: any[]): { needsReflection: boolean; pattern?: ReflectionPattern; prompt?: string } {
-    const implementationKeywords = [
-      /^(create|write|implement|code|add|build)\s+\w+\.(js|ts|py|go|rs|java|jsx|tsx|cpp|c|rb|php)/i,
-      /^(update|modify|change|edit|fix)\s+\w+\s+(function|class|component|module|file)/i,
-      /write.*code/i,
-      /implement.*logic/i,
-      /add.*function/i,
-      /create.*class/i,
-    ];
-
-    const delegationKeywords = [
-      /delegate/i,
-      /assign/i,
-      /(junior_dev|test_runner|explore|librarian|generic_runner)/i,
-    ];
-
-    // Pattern 1: Implementation todos (Red flag)
-    const implTodos = todos.filter(t => 
-      implementationKeywords.some(regex => regex.test(t.content))
-    );
-
-    if (implTodos.length > 0) {
-      const examples = implTodos.slice(0, 2).map(t => `- "${t.content}"`).join('\n');
-      return {
-        needsReflection: true,
-        pattern: 'implementation',
-        prompt: `[Reflection Checkpoint]
-
-Your todos contain implementation tasks:
-${examples}
-
-Question: Are you planning to implement code yourself?
-
-Remember: You are a coordinator, not an implementer.
-- For code implementation -> Delegate to junior_dev
-- For builds/tests -> Delegate to test_runner
-- For research -> Delegate to explore/librarian
-
-Should these todos be for DELEGATING work rather than DOING work?`
-      };
-    }
-
-    // Pattern 2: No delegation mentioned (Yellow flag - only if 3+ todos)
-    if (todos.length >= 3) {
-      const hasDelegation = todos.some(t => 
-        delegationKeywords.some(regex => regex.test(t.content))
-      );
-
-      if (!hasDelegation) {
-        const examples = todos.slice(0, 3).map(t => `- "${t.content}"`).join('\n');
-        return {
-          needsReflection: true,
-          pattern: 'no-delegation',
-          prompt: `[Reflection Checkpoint]
-
-Your todos don't mention delegating to subagents:
-${examples}
-
-Question: Is all this work for you to do personally?
-
-Consider: Could some of these be delegated in parallel?
-- Analysis work -> explore agent
-- Implementation -> junior_dev agent  
-- Verification -> test_runner agent
-
-Or are you still in the solo research phase? (That's fine too!)`
-        };
-      }
-    }
-
-    // Pattern 3: Parallel opportunities
-    const pendingDelegations = todos.filter(t => 
-      delegationKeywords.some(regex => regex.test(t.content)) && 
-      t.status === 'pending'
-    );
-
-    if (pendingDelegations.length >= 2) {
-      const examples = pendingDelegations.slice(0, 2).map(t => `- "${t.content}"`).join('\n');
-      return {
-        needsReflection: true,
-        pattern: 'parallel',
-        prompt: `[Reflection Checkpoint]
-
-You have multiple delegation todos:
-${examples}
-
-Question: Are these tasks independent?
-
-If yes, you can delegate to multiple agents IN PARALLEL using multiple task() calls in the same message. This is much faster than sequential delegation.
-
-If no, proceed sequentially as planned.`
-      };
-    }
-
-    // Pattern 4: Large todo list (Complexity signal)
-    if (todos.length >= 7) {
-      return {
-        needsReflection: true,
-        pattern: 'large-list',
-        prompt: `[Reflection Checkpoint]
-
-You've created ${todos.length} todos for this task.
-
-Question: Is this task too complex for the delegation model?
-
-Consider:
-- Have you already tried delegating and failed 2+ times?
-- Does this affect 15+ files across multiple systems?
-- Would the user benefit from direct implementation?
-
-If yes to multiple, consider suggesting: "This task is complex. Would you like me to switch to the build agent?"
-
-If no, proceed with coordinated delegation as planned.`
-      };
-    }
-
-    return { needsReflection: false };
-  }
-
   return {
     // Track agent identity per session
     "chat.message": async (input, output) => {
@@ -222,59 +104,120 @@ If no, proceed with coordinated delegation as planned.`
         }
       }
       
-      // Track todolist creation and updates
-      if (input.tool === "todowrite") {
-        const todos = output.metadata?.todos;
-        
-        if (todos?.length) {
-          const allComplete = areAllTodosComplete(todos);
-          
-          // Update todolist state
-          sessionTodolist.set(sessionID, {
-            exists: true,
-            allComplete: allComplete,
-            lastTodos: todos,
-          });
-          
-          // Completion checkpoint (for all agents)
-          if (agent === "tech_lead" && allComplete) {
-            // DON'T await - inject asynchronously to avoid blocking tool completion
-            injectReflection(sessionID, `[Completion Checkpoint]
+       // Track todolist creation and updates
+       if (input.tool === "todowrite") {
+         const todos = output.metadata?.todos;
+         
+         if (todos?.length) {
+           const allComplete = areAllTodosComplete(todos);
+           const previousState = sessionTodolist.get(sessionID);
+           const wasComplete = previousState?.allComplete || false;
+           
+           // Update todolist state
+           sessionTodolist.set(sessionID, {
+             exists: true,
+             allComplete: allComplete,
+             lastTodos: todos,
+             metareflectionOccurred: false,
+             finalizationPromptSent: previousState?.finalizationPromptSent || false,
+           });
+           
+           // Trigger finalization reflection when todos transition to all complete
+           if (allComplete && !wasComplete && !sessionTodolist.get(sessionID)?.finalizationPromptSent) {
+             // Mark that we've sent the finalization prompt
+             const currentState = sessionTodolist.get(sessionID);
+             if (currentState) {
+               sessionTodolist.set(sessionID, {
+                 ...currentState,
+                 finalizationPromptSent: true,
+               });
+             }
+             
+             // Don't await - fire and forget to avoid blocking todowrite completion
+             injectReflection(
+               sessionID,
+               `[Todolist Complete]
 
-All todos are marked complete!
+All todos are now marked as completed or cancelled. Before finishing:
 
-Before finishing:
-1. Have you verified the work succeeded?
-2. Is there any follow-up work needed?
-3. Should you report results to the user?
+Provide a complete summary of your work for the user.
 
-If truly done: Summarize what was accomplished.
-If user requests more work: Create new todolist for the new work.`, agent);
-            
-            // Clear reflection tracking when todos complete - allow reflections for next todolist
-            sessionReflections.delete(sessionID);
-          }
-          
-          // Todo content analysis (only for tech_lead, only if not all complete)
-          if (agent === "tech_lead" && !allComplete) {
-            const analysis = analyzeTodos(todos);
-            if (analysis.needsReflection && analysis.pattern && analysis.prompt) {
-              // Check if we've already reflected on this pattern in this session
-              const reflectedPatterns = sessionReflections.get(sessionID) || new Set();
-              
-              if (!reflectedPatterns.has(analysis.pattern)) {
-                // First time seeing this pattern - inject reflection
-                reflectedPatterns.add(analysis.pattern);
-                sessionReflections.set(sessionID, reflectedPatterns);
-                
-                // DON'T await - inject asynchronously to avoid blocking tool completion
-                injectReflection(sessionID, analysis.prompt, agent);
-              }
-            }
-          }
-        }
+If you already provided a detailed summary in your previous message, restate it exactly so the user has a clear record of what was accomplished.
+
+Your summary should include:
+- What was completed
+- Key results or outcomes
+- Any important notes or next steps
+
+This ensures the user has a clear final report of the session's work.`,
+               agent
+             );
+           }
+           
+           // Reset todoplan when todos complete (tech_lead only)
+           if (agent === "tech_lead" && allComplete) {
+             todoplanCalled.set(sessionID, false);
+           }
+         }
+       }
+      
+      // Track todoplan calls (tech_lead only)
+      if (input.tool === "todoplan" && agent === "tech_lead") {
+        todoplanCalled.set(sessionID, true);
       }
     },
+
+     // Handle post-compaction cleanup in session.idle
+     event: async ({ event }) => {
+       if (event.type === "session.idle") {
+         const sessionID = event.properties.sessionID;
+         
+         // Fetch session messages to detect compaction
+         let messagesResp;
+         try {
+           messagesResp = await client.session.messages({
+             path: { id: sessionID }
+           });
+         } catch (error) {
+           return; // Silently fail if can't fetch messages
+         }
+         
+         const messages = (messagesResp.data ?? []) as Array<{
+           info?: {
+             agent?: string;
+           };
+         }>;
+         
+         // Walk backwards to find the most recent compaction message
+         let mostRecentCompactionIndex = -1;
+         
+         for (let i = messages.length - 1; i >= 0; i--) {
+           const info = messages[i].info;
+           
+           if (info?.agent === "compaction") {
+             mostRecentCompactionIndex = i;
+             break; // Found most recent compaction, no need to continue
+           }
+         }
+         
+         // Only clear state if we found a NEW compaction we haven't processed yet
+         if (mostRecentCompactionIndex !== -1) {
+           const lastProcessed = lastProcessedCompactionIndex.get(sessionID) ?? -1;
+           
+           // Only process if this is a new compaction (higher index than last processed)
+           if (mostRecentCompactionIndex > lastProcessed) {
+             // Clear todolist state from our Map - force fresh start after compaction
+             sessionTodolist.delete(sessionID);
+             
+             // Clear todoplan state - require new planning after compaction
+             todoplanCalled.delete(sessionID);
+             
+             // Remember that we've processed this compaction
+             lastProcessedCompactionIndex.set(sessionID, mostRecentCompactionIndex);
+           }
+         }
+       }
+     },
 
     // Enforce guardrails before tool execution
     "tool.execute.before": async (input, output) => {
@@ -287,7 +230,7 @@ If user requests more work: Create new todolist for the new work.`, agent);
       // ========================================
       
       // Coordination tools: Allow without todolist (these help CREATE the todolist)
-      const coordinationTools = ["question", "skill", "query_required_skills", "todoread", "todowrite"];
+      const coordinationTools = ["question", "skill", "query_required_skills", "todoplan", "todoread", "todowrite"];
       if (coordinationTools.includes(tool)) {
         // Continue to agent-specific checks below
       } else if (tool.startsWith("mermaid_")) {
@@ -297,8 +240,17 @@ If user requests more work: Create new todolist for the new work.`, agent);
         // ALL other tools require todolist (for all agents)
         const todoState = sessionTodolist.get(sessionID);
         
-        // No todolist at all
-        if (!todoState?.exists) {
+         // No todolist at all - implement metareflection state tracking
+         if (!todoState?.exists && !todoState?.metareflectionOccurred) {
+           // Mark that metareflection has occurred
+           sessionTodolist.set(sessionID, {
+             exists: false,
+             allComplete: false,
+             lastTodos: [],
+             metareflectionOccurred: true,
+             finalizationPromptSent: false,
+           });
+          
           await guideThenBlock(sessionID, `[Todolist Required]
 
 You must create a todolist before beginning work.
@@ -321,8 +273,13 @@ Benefits:
 - Keeps you organized`, agent);
         }
         
+        // If metareflection already occurred but still no todolist, block silently
+        if (!todoState?.exists && todoState?.metareflectionOccurred) {
+          throw new Error("Tool execution blocked by guardrail");
+        }
+        
         // All todos complete - need new todolist for new work
-        if (todoState.allComplete) {
+        if (todoState?.allComplete) {
           const previousWork = todoState.lastTodos
             .slice(0, 3)
             .map(t => `- ${t.content}`)
@@ -348,19 +305,34 @@ This helps track the new work you're starting.`, agent);
       // Only apply tech_lead-specific guardrails to tech_lead
       if (agent !== "tech_lead") return;
       
-      // EDIT/WRITE TOOLS: Check file extension
-      if (tool === "edit" || tool === "write") {
-        const filePath = output.args?.filePath || input.args?.filePath;
-        
-        if (!filePath) {
-          await guideThenBlock(sessionID, `[tech_lead Constraint] Cannot determine file path for ${tool} operation. Please specify a file path.`, agent);
-        }
-        
-        // Allow markdown files
-        if (filePath.endsWith(".md")) return;
-        
-        // Block all other file types
-        await guideThenBlock(sessionID, `[tech_lead Constraint] Cannot edit non-markdown files directly.
+       // TODOWRITE/TODOREAD: Require todoplan to be called first
+       if (tool === "todowrite" || tool === "todoread") {
+         const planCalled = todoplanCalled.get(sessionID);
+         if (!planCalled) {
+           await guideThenBlock(sessionID, `[tech_lead Constraint] Must call todoplan before using ${tool}.
+
+Before creating or reading your todolist, you must:
+1. Call todoplan() to get todolist guidance
+2. Review the guidance
+3. Then call ${tool}
+
+This ensures you've considered delegation patterns, parallel opportunities, and proper tool usage.`, agent);
+         }
+       }
+       
+       // EDIT/WRITE TOOLS: Check file extension
+       if (tool === "edit" || tool === "write") {
+         const filePath = output.args?.filePath || input.args?.filePath;
+         
+         if (!filePath) {
+           await guideThenBlock(sessionID, `[tech_lead Constraint] Cannot determine file path for ${tool} operation. Please specify a file path.`, agent);
+         }
+         
+         // Allow markdown files
+         if (filePath.endsWith(".md")) return;
+         
+         // Block all other file types
+         await guideThenBlock(sessionID, `[tech_lead Constraint] Cannot edit non-markdown files directly.
 File: ${filePath}
 
 You can only edit/write markdown files (.md) for:
@@ -378,9 +350,9 @@ For complex tasks affecting 15+ files or after 3+ failed delegations:
 2. User can type "switch to build" if they agree
 
 Remember: You are a coordinator, not an implementer.`, agent);
-      }
-      
-      // TASK TOOL: Validate skill was loaded first
+       }
+       
+       // TASK TOOL: Validate skill was loaded first
       if (tool === "task") {
         const subagentType = output.args?.subagent_type || input.args?.subagent_type;
         
