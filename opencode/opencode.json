@@ -6,6 +6,11 @@
       "type": "local",
       "command": ["npx", "-y", "@upstash/context7-mcp"],
       "enabled": true
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp?exaApiKey=${EXA_API_KEY}",
+      "enabled": false
     }
   },
   "default_agent": "tech_lead",
@@ -114,6 +119,8 @@
       "permission": {
         "*": "deny",
         "webfetch": "allow",
+        "websearch": "allow",
+        "exa*": "allow",
         "context7*": "allow",
         "todowrite": "allow",
         "todoread": "allow",
