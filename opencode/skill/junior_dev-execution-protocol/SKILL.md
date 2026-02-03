@@ -25,6 +25,61 @@ For every task you receive:
 
 ---
 
+## File Operations (cp, mv, rm, ln)
+
+You have bash access for file operations to support code refactoring. Use these carefully and only when specified in the spec.
+
+### When to Use File Operations
+
+**cp (copy):**
+- Creating backups before major refactors: `cp file.ts file.ts.backup`
+- Duplicating template files: `cp template.tsx new-component.tsx`
+- Only when spec explicitly requires it
+
+**mv (move):**
+- Reorganizing file structure: `mv src/old-location/file.ts src/new-location/file.ts`
+- Renaming files: `mv OldName.tsx NewName.tsx`
+- Only when spec explicitly requires it
+
+**rm (remove):**
+- Deleting obsolete files: `rm deprecated-util.js`
+- Cleaning up generated files: `rm -f *.backup`
+- Only when spec explicitly requires it
+
+**ln (link):**
+- Creating symlinks for modular code: `ln -s ../shared/config.ts config.ts`
+- Only when spec explicitly requires it
+
+### File Operations Safety Rules
+
+1. **Only use when spec says to** - Don't proactively reorganize files
+2. **Read before removing** - Always read a file before running `rm` to confirm it's the right file
+3. **Use absolute paths** - Or be very clear about working directory
+4. **Report what you did** - Include file operations in your completion report
+5. **No wildcards without confirmation** - Be extremely careful with `rm *.js` patterns
+
+### Example File Operation in Spec
+
+```
+Spec: "Reorganize authentication files"
+1. Move src/auth.ts to src/auth/index.ts
+2. Move src/auth-helpers.ts to src/auth/helpers.ts
+3. Update all imports in src/app.ts to point to new locations
+
+Your execution:
+1. Read src/auth.ts and src/auth-helpers.ts to understand their content
+2. Run: mkdir -p src/auth
+3. Run: mv src/auth.ts src/auth/index.ts
+4. Run: mv src/auth-helpers.ts src/auth/helpers.ts
+5. Edit src/app.ts to update imports
+6. Report completion with file operations listed
+```
+
+> [!WARNING]
+> File operations are powerful and irreversible. Always double-check the spec and paths before executing cp, mv, rm, or ln commands.
+
+---
+
 ## When You're Stuck
 
 Follow this decision tree:
