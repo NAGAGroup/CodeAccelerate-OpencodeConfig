@@ -165,7 +165,7 @@ export const AgentGuardrailsPlugin: Plugin = async ({ client }) => {
 
 All todos are now marked as completed or cancelled. Before finishing:
 
-Provide a complete summary of your work for the user.
+1. Provide a complete summary of your work for the user.
 
 If you already provided a detailed summary in your previous message, restate it exactly so the user has a clear record of what was accomplished.
 
@@ -174,7 +174,20 @@ Your summary should include:
 - Key results or outcomes
 - Any important notes or next steps
 
-This ensures the user has a clear final report of the session's work.`,
+2. Memory check: Would future-you benefit from remembering this?
+
+Ask: "If I encounter a similar task in 2 weeks, what would I want to know?"
+
+Worth remembering:
+- Architectural decisions with rationale
+- Project-specific patterns or conventions
+- Solutions to non-obvious problems
+- How systems integrate or communicate
+
+If yes:
+- First, search existing memories to check if this is already stored
+- If not found or significantly different, add a new memory with clear content and 4-6 technical tags for discoverability
+- If found, consider if your new knowledge adds enough value to warrant updating or adding a complementary memory`,
               agent,
             );
           }
@@ -239,6 +252,10 @@ This ensures the user has a clear final report of the session's work.`,
       } else if (tool.startsWith("mermaid_")) {
         // Mermaid tools: Allow without todolist (visualization/planning)
         // Continue to agent-specific checks below
+      } else if (tool === "memory") {
+        // Memory tool: Allow without todolist (important for all agents)
+        // No agent checks for this tool due to its universal utility
+        return;
       } else {
         // ALL other tools require todolist (for all agents)
         const todoState = sessionTodolist.get(sessionID);

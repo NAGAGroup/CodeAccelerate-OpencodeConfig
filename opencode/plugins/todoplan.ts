@@ -107,7 +107,7 @@ Use these 4 criteria to structure your todolist effectively:
 3. Use prefixes (Parallel), (Question Tool), and session_id notes where appropriate
 4. The guardrails plugin will provide reflection checkpoints
 
-Given the above, summarize how it will affect your approach to the user before creating the todolist and continuing.`;
+Given the above, summarize how it will affect your approach to the user before creating the todolist and continuing. Clearly state any memories you've searched that are relevant to the task`;
 
             // Inject guidance as reflection prompt
             await injectReflection(sessionID, guidance, agent);

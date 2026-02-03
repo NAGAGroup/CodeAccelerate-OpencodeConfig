@@ -53,8 +53,8 @@ export const SkillLoaderPlugin: Plugin = async (ctx: any) => {
       // Get agent from the user message (this is where the agent assignment is)
       const agent = (lastUserMessage.info as any)?.agent;
 
-      // Only inject for coordinator agents
-      if (agent !== "tech_lead" && agent !== "build") return;
+      // Only inject for tech_lead agents
+      if (agent !== "tech_lead") return;
 
       // Check if this is first prompt OR just after compaction
       const needsInit =
@@ -85,17 +85,15 @@ Before responding to the user, complete these setup steps IN ORDER:
 1. Load your required skills:
 ${skillCalls}
 
-2. Use these skills and explicitly summarize how you'll use them to perform the user's request:
-   - What constraints do the skills define?
-   - What delegation patterns should you follow?
-   - What tools should you use vs delegate?
-   - Create a brief mental model of your approach
+2. Use the memory tool to search for any relevant context to the user's request.
 
-3. Call todoplan() to get todolist planning guidance
+3. **IMPORTANT**: Call your todoplan agent tool IMMEDIATELY 
 
-4. Using the guidance, create your todolist with todowrite()
+4. Did you ignore what I just said? If so, call todoplan NOW!
 
-5. Summarize everything learned from the above steps to the user before proceeding with their request.`;
+5. Create your a todolist with todowrite tool (ignore any existing todolist)
+
+6. Summarize everything learned from the above steps to the user before proceeding with their request.`;
 
       // Append to the last text part of the last user message
       const lastTextPart = [...lastUserMessage.parts]
