@@ -9,6 +9,9 @@ description: Template for explore agent task delegation
 {# questions: Specific questions to answer (use multiline list) #}
 {# output_format: Optional - How to structure results (e.g., "list with line numbers", "markdown table", "tree structure") #}
 
+> [!IMPORTANT]
+> When creating your todolist, NEVER add summary todos like "Report findings" or "Summarize results". The system automatically prompts you to report when todos are complete. Focus todos on actionable exploration steps only.
+
 **Goal:** {{goal|required}}
 
 **Search Scope:** {{search_scope|required}}

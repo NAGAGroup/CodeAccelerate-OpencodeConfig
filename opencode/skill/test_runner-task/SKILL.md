@@ -11,6 +11,9 @@ description: Template for delegating verification, testing, and build validation
 {# expected_results: What success looks like (build status, test counts, output patterns, artifact locations) #}
 {# diagnostic_commands: Optional - bash commands to run if tests/build fail to gather diagnostic information #}
 
+> [!IMPORTANT]
+> When creating your todolist, NEVER add summary todos like "Report results" or "Summarize findings". The system automatically prompts you to report when todos are complete. Focus todos on actionable verification steps: Build phase, Test phase, Diagnostic phase.
+
 **Task:** {{task|required}}
 
 **Context:** {{context|required}}

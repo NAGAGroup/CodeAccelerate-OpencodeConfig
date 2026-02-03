@@ -30,11 +30,11 @@
       },
       "required_skills": [
         "skill-invocation-policy",
-        "unicode-usage",
         "callout-boxes",
+        "unicode-usage",
         "tech-lead-questions",
-        "tech-lead-tools",
         "tech-lead-delegation",
+        "tech-lead-tools",
         "todo-usage"
       ]
     },
@@ -78,12 +78,12 @@
       },
       "required_skills": [
         "skill-invocation-policy",
-        "tech-lead-questions",
-        "tech-lead-tools",
-        "tech-lead-delegation",
-        "tech-lead-memory-usage",
         "unicode-usage",
         "callout-boxes",
+        "tech-lead-questions",
+        "tech-lead-delegation",
+        "tech-lead-memory-usage",
+        "tech-lead-tools",
         "todo-usage"
       ]
     },
@@ -109,8 +109,8 @@
       },
       "required_skills": [
         "skill-invocation-policy",
-        "unicode-usage",
         "callout-boxes",
+        "unicode-usage",
         "explore-tool-patterns",
         "todo-usage"
       ]
@@ -139,8 +139,8 @@
       },
       "required_skills": [
         "skill-invocation-policy",
-        "unicode-usage",
         "callout-boxes",
+        "unicode-usage",
         "github-exploration",
         "librarian-research-protocol",
         "todo-usage"
@@ -182,10 +182,10 @@
       },
       "required_skills": [
         "skill-invocation-policy",
-        "unicode-usage",
         "callout-boxes",
-        "junior_dev-execution-protocol",
+        "unicode-usage",
         "junior_dev-research-policy",
+        "junior_dev-execution-protocol",
         "todo-usage"
       ]
     },
@@ -212,8 +212,8 @@
       },
       "required_skills": [
         "skill-invocation-policy",
-        "unicode-usage",
         "callout-boxes",
+        "unicode-usage",
         "test_runner-execution-protocol",
         "todo-usage"
       ]
@@ -267,8 +267,8 @@
       },
       "required_skills": [
         "skill-invocation-policy",
-        "unicode-usage",
         "callout-boxes",
+        "unicode-usage",
         "general_runner-commands",
         "todo-usage"
       ]

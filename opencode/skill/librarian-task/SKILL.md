@@ -9,6 +9,9 @@ description: Template for librarian agent task delegation
 {# output_format: What format you want (e.g., "list of flag constants with descriptions and links", "code examples with official docs", "comparison table", "summary of research papers with citations") #}
 {# specific_urls: Optional - User-provided URLs to prioritize in research (comma-separated or list). If the user did not provide any, pass an empty list [] #}
 
+> [!IMPORTANT]
+> When creating your todolist, NEVER add summary todos like "Report research findings" or "Summarize results". The system automatically prompts you to report when todos are complete. Focus todos on actionable research steps only.
+
 **Research Question:** {{research_question|required}}
 
 **Usage Context:** {{usage_context|required}}

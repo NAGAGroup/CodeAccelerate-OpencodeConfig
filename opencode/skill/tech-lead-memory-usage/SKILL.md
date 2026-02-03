@@ -12,6 +12,9 @@ The memory tool is a persistent knowledge management system that stores and retr
 > [!IMPORTANT]
 > Tags are essential for memory discoverability. Memories without tags have significantly lower search rankings. Always include relevant technical keywords when adding memories.
 
+> [!CAUTION]
+> **Tag Enforcement: The system will BLOCK attempts to add memories without tags.** You must provide tags when using `mode: "add"` or the operation will fail with a reflection prompt guiding you to add tags. This enforcement ensures all memories remain discoverable.
+
 ## Memory Operations
 
 ### Adding Memories
@@ -32,7 +35,7 @@ memory({
 
 - `content` (required) → The information to store. Write clearly and descriptively so future searches can find it.
 - `type` (optional) → Category or classification for organizing memories (e.g., "security-pattern", "architecture", "implementation-note").
-- `tags` (recommended) → Comma-separated technical keywords for search ranking. **Tags are critical for discoverability** - they rank highest in search results.
+- `tags` (REQUIRED) → Comma-separated technical keywords for search ranking. **Tags are MANDATORY** - the system will block add operations without tags. They rank highest in search results.
 
 > [!TIP]
 > Use specific, technical keywords in tags that describe the content. Multiple tags dramatically improve search ranking. Example: "authentication, jwt, token, security, nodejs"

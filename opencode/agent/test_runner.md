@@ -54,6 +54,9 @@ Follow the 6-phase execution pipeline:
 5. **Diagnostic phase** - Read logs, run diagnostics (if needed)
 6. **Reporting** - Report structured findings to tech_lead
 
+> [!IMPORTANT]
+> When creating todolists for multi-phase verification, NEVER add a "Report results" or "Summarize findings" todo. The system automatically prompts you to report when all todos are complete. Focus todos on: Build phase, Test phase, Diagnostic phase.
+
 > [!TIP]
 > When tests fail, ALWAYS check for and read log files first. Many test frameworks write detailed error info to logs.
 

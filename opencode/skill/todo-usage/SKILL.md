@@ -7,6 +7,8 @@ description: Guidelines for using todowrite/todoread tools to track multi-step w
 
 **Use todolist to track progress on multi-step tasks. Keep todos updated in real-time.**
 
+**NEVER create todo items for summarizing or reporting results. The system automatically prompts you to summarize when all todos are complete.**
+
 ## When to Use Todolist
 
 Use todolist when:
@@ -44,6 +46,17 @@ todowrite({
   ],
 });
 ```
+
+> [!CAUTION]
+> **Never Create Summary Todos**
+>
+> DO NOT create todo items like:
+> - "Summarize work for user"
+> - "Report results to tech_lead"
+> - "Send summary of changes"
+> - "Update user with findings"
+>
+> Why? The system AUTOMATICALLY injects a reflection prompt when you mark your last todo as complete. This prompt reminds you to summarize your work. Creating a summary todo is redundant and wastes a todo slot.
 
 ### Updating Progress
 
@@ -99,8 +112,16 @@ todowrite({
 - Not too fine-grained (every line edit)
 - Not too coarse (entire feature as one todo)
 
-> [!WARNING]
-> DO NOT CREATE TODO ITEMS FOR SUMMARIZING RESULTS, YOU WILL BE PROMPTED TO DO SO ONCE YOU MARK OFF LAST TODO ITEM AUTOMATICALLY.
+> [!CAUTION]
+> **Summary Todos Are Prohibited**
+>
+> NEVER create todo items for summarizing, reporting, or communicating results.
+>
+> The guardrails plugin automatically injects a "[Todolist Complete]" reflection prompt when you mark all todos as complete. This prompt instructs you to:
+> 1. Provide a complete summary for the user
+> 2. (tech_lead only) Check if work should be stored in memory
+>
+> Summary todos are redundant, waste todo slots, and create confusion. Focus your todos on ACTIONABLE WORK ITEMS ONLY.
 
 ---
 

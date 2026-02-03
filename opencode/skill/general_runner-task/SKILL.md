@@ -9,6 +9,9 @@ description: Template for delegating general bash command execution to general_r
 {# context: Brief explanation of why these commands are needed #}
 {# expected_output: What the command output should look like if successful #}
 
+> [!IMPORTANT]
+> When creating your todolist, NEVER add summary todos like "Report command output" or "Summarize results". The system automatically prompts you to report when todos are complete. Focus todos on actionable command execution steps only.
+
 **Task:** {{task|required}}
 
 **Context:** {{context|required}}

@@ -190,7 +190,7 @@ If yes:
 - If not found or significantly different, add a new memory with clear content and 4-6 technical tags for discoverability
 - If found, consider if your new knowledge adds enough value to warrant updating or adding a complementary memory`;
 
-            if (agent === "tech_lead") {
+            if (agent === "tech_lead" || agent === "build") {
               injectedPrompt += techLeadMemoryPrompt;
             }
 
@@ -260,7 +260,44 @@ If yes:
         // Continue to agent-specific checks below
       } else if (tool === "memory") {
         // Memory tool: Allow without todolist (important for all agents)
-        // No agent checks for this tool due to its universal utility
+        // But enforce tags for add operations
+        const mode = output.args?.mode || input.args?.mode;
+        const tags = output.args?.tags || input.args?.tags;
+
+        // Only enforce tags for "add" mode
+        if (mode === "add" && (!tags || tags.trim() === "")) {
+          await guideThenBlock(
+            sessionID,
+            `[Memory Tags Required]
+
+You are trying to add a memory without tags. Tags are CRITICAL for memory discoverability.
+
+Why tags matter:
+- Memories with tags rank MUCH HIGHER in search results
+- Without tags, your memory will be nearly impossible to find later
+- Tags are the primary mechanism for semantic search ranking
+
+How to fix:
+memory({
+  mode: "add",
+  content: "Your memory content here",
+  type: "optional-type",
+  tags: "keyword1, keyword2, keyword3, keyword4"  // 4-6 technical keywords
+})
+
+Tag guidelines:
+- Use 4-6 specific technical keywords
+- Match terms you'd use when searching for this memory
+- Be specific: "oauth2, pkce, security" not just "auth"
+- Include technology names, patterns, concepts
+
+Example:
+tags: "jwt, express, middleware, authentication, authorization, nodejs"`,
+            agent,
+          );
+        }
+
+        // Continue to agent-specific checks below (none currently exist for memory)
         return;
       } else {
         // ALL other tools require todolist (for all agents)

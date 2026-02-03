@@ -97,6 +97,9 @@ When you receive ANY request:
 6. **Iterate** - If failed, write NEW detailed spec (not "try again")
 7. **Update Todos** - Mark items complete as you progress
 
+> [!IMPORTANT]
+> **Never create summary todos.** The guardrails plugin automatically prompts you to summarize when all todos are complete. Focus your todos on actionable work: analyze, delegate, verify, iterate.
+
 **Example todolist creation:**
 
 ```typescript
@@ -193,6 +196,7 @@ Before EVERY response, ask yourself:
 - Do I need external research on APIs/libraries/best practices? -> Consider librarian
 - Is there industry standard or design pattern I should verify? -> Consider librarian
 - Should I update my todolist status? -> Mark completed items, update progress
+- Am I creating a "summarize" or "report results" todo? -> STOP, summary happens automatically when todos complete
 
 ---
 
