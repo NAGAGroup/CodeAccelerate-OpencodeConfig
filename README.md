@@ -72,23 +72,37 @@ When tech_lead delegation isn't the right fit for a task:
 
 ### Installation
 
-1. **Copy this config to your OpenCode directory:**
+1. We use `pixi` for package management, so here's how to install `opencode` with it:
+
+   ```bash
+   pixi global install nodejs
+   npm install -g opencode-ai
+
+   # run with npx
+   npx opencode auth login
+   ```
+
+2. **Copy this config to your OpenCode directory:**
+
    ```bash
    cp -r opencode ~/.config/opencode
    ```
+
    Or for project-local configuration (recommended):
+
    ```bash
    cp -r opencode .opencode/
    ```
-   
+
    > [!NOTE]
    > Project-local config (.opencode/) takes precedence over global config (~/.config/opencode)
 
-2. **Start OpenCode in your project directory**
+3. **Start OpenCode in your project directory**
+
    ```bash
    opencode
    ```
-   
+
    > [!NOTE]
    > tech_lead is the default agent - you can start chatting immediately without switching agents
 
@@ -97,6 +111,7 @@ When tech_lead delegation isn't the right fit for a task:
 The tech_lead agent is intelligent about delegation. It automatically analyzes your requests, determines what specialist agents are needed, and orchestrates the workflow without requiring manual coordination.
 
 **Example Request:**
+
 ```
 Please do deep-review of this custom opencode configuration codebase. Make sure to check for alignment with best practices outlined in online docs and other sources.
 ```
@@ -145,4 +160,3 @@ Explore the documentation to deepen your understanding:
 ---
 
 **Ready to get started?** Open your project and start chatting with tech_lead. It's designed to learn from your requests and improve its delegation decisions over time.
-
