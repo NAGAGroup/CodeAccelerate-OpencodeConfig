@@ -123,3 +123,123 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
     }
   }) as T;
 }
+
+/**
+ * Compaction Detection Utility
+ * 
+ * Provides a unified way for plugins to detect and respond to session compaction.
+ * Uses dual-hook strategy: session.compacted (primary) + session.idle (fallback).
+ * 
+ * Benefits:
+ * - Eliminates code duplication across plugins
+ * - Ensures compaction is detected AFTER it completes (not during)
+ * - Prevents double-processing with built-in deduplication
+ * - Allows plugins to track per-session compaction indices
+ */
+export function createCompactionDetector(client: any) {
+  // Deduplication: Prevent double-processing when both events fire within 5 seconds
+  const recentDetections = new Set<string>();
+  const DEDUP_WINDOW_MS = 5000;
+
+  /**
+   * Detects compaction and calls handler if found.
+   * 
+   * @param sessionID - Session to check
+   * @param handler - Called with (sessionID, compactionIndex) when compaction detected
+   * @param lastProcessedIndex - Optional: index of last processed compaction (for tracking)
+   * @returns The index of the detected compaction, or -1 if none found
+   */
+  async function detectAndHandle(
+    sessionID: string,
+    handler: (sessionID: string, compactionIndex: number) => Promise<void>,
+    lastProcessedIndex?: number
+  ): Promise<number> {
+    // Deduplication check: prevent double-processing
+    const now = Date.now();
+    const dedupKey = `${sessionID}:${Math.floor(now / DEDUP_WINDOW_MS)}`;
+    
+    if (recentDetections.has(dedupKey)) {
+      return -1; // Already processed in this 5-second window
+    }
+
+    // Fetch session messages to detect compaction
+    let messagesResp;
+    try {
+      messagesResp = await client.session.messages({
+        path: { id: sessionID },
+      });
+    } catch (error) {
+      return -1; // Silently fail if can't fetch messages
+    }
+
+    const messages = (messagesResp.data ?? []) as Array<{
+      info?: {
+        agent?: string;
+      };
+    }>;
+
+    // Walk backwards to find the most recent compaction message
+    let compactionIndex = -1;
+
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const info = messages[i].info;
+
+      if (info?.agent === "compaction") {
+        compactionIndex = i;
+        break; // Found most recent compaction
+      }
+    }
+
+    // Only process if we found a NEW compaction (not already processed)
+    if (compactionIndex === -1) {
+      return -1; // No compaction found
+    }
+
+    const lastProcessed = lastProcessedIndex ?? -1;
+    if (compactionIndex <= lastProcessed) {
+      return compactionIndex; // Already processed this compaction
+    }
+
+    // Mark as processed in deduplication set
+    recentDetections.add(dedupKey);
+
+    // Call the handler
+    try {
+      await handler(sessionID, compactionIndex);
+    } catch (error) {
+      // Silently fail - don't pollute TUI
+    }
+
+    return compactionIndex;
+  }
+
+  /**
+   * Creates an event handler for plugins to use.
+   * Handles both session.compacted and session.idle events with proper deduplication.
+   * 
+   * @param handler - Called with (sessionID, compactionIndex) when compaction detected
+   * @param getLastProcessedIndex - Optional: function to get last processed index for a session
+   * @returns Event handler function to register in plugin
+   */
+  return function createEventHandler(
+    handler: (sessionID: string, compactionIndex: number) => Promise<void>,
+    getLastProcessedIndex?: (sessionID: string) => number
+  ) {
+    return async ({ event }: { event: any }) => {
+      // PRIMARY: Direct compaction event (fires after compaction completes)
+      if (event.type === "session.compacted") {
+        const sessionID = event.properties.sessionID;
+        const lastProcessed = getLastProcessedIndex?.(sessionID);
+        await detectAndHandle(sessionID, handler, lastProcessed);
+        return; // Early return to prevent double-processing from session.idle
+      }
+
+      // FALLBACK: Detect compaction retroactively when direct event doesn't fire
+      if (event.type === "session.idle") {
+        const sessionID = event.properties.sessionID;
+        const lastProcessed = getLastProcessedIndex?.(sessionID);
+        await detectAndHandle(sessionID, handler, lastProcessed);
+      }
+    };
+  };
+}
