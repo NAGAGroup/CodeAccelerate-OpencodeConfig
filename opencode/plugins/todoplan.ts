@@ -67,13 +67,12 @@ export const TodoplanPlugin: Plugin = async (ctx: any) => {
 
 Use these 4 criteria to structure your todolist effectively:
 
-1. [Delegation] - Are you delegating work to subagents?
-   - Implementation → junior_dev
-   - Testing/Verification → test_runner
-   - Research/Analysis → explore or librarian
-   - Shell commands → general_runner
-   
-   Your todos should mention which agent handles each task.
+ 1. [Delegation] - Are you delegating work to subagents?
+    - Implementation → junior_dev
+    - Testing/Verification → test_runner
+    - Research/Analysis → explore or librarian
+    
+    Your todos should mention which agent handles each task.
 
 2. [Parallelization] - Can independent tasks run in parallel?
    - If you have 2+ pending delegations to different agents
