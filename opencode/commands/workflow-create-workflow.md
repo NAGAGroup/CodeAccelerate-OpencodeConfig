@@ -24,6 +24,9 @@ Scenario: $ARGUMENTS
 2. **Understand the workflow goal**
    - Ask clarifying questions about the scenario
    - Identify the inputs, steps, and expected outputs
+   - **CRITICAL CHECK:** Does this workflow read or modify `opencode.json`?
+     * If YES: You MUST include config inheritance handling (see "Config Inheritance Pattern" section below)
+     * If NO: Proceed normally
    - Update todo: mark complete, add any new tasks discovered
 
 3. **Define delegation strategy (REQUIRED)**
@@ -48,6 +51,10 @@ Scenario: $ARGUMENTS
    - Specify what information flows between steps
    - Identify decision points and validation criteria
    - Ensure workflow is bounded (has clear start/end, no open-ended exploration)
+   - **If workflow touches opencode.json:** Plan to include config inheritance handling:
+     * Read global config first, then project-local
+     * Explain inheritance in the workflow instructions
+     * Check against merged permissions, not just project-local
    - Update todo: mark complete
 
 6. **Draft the command file**
@@ -61,6 +68,10 @@ Scenario: $ARGUMENTS
    > - Document the delegation strategy clearly in the workflow:
    >   - If tech_lead does the work: "You will generate/create/write [X] yourself..."
    >   - If delegating: "Delegate to [agent] to [specific task]..."
+   > - **If workflow reads/modifies opencode.json:**
+   >   - Add "Understanding Config Inheritance" section (see template below)
+   >   - Update process steps to read BOTH configs (global + project-local)
+   >   - Explain that project-local extends/overrides global
    
    - Define instruction template with $ARGUMENTS placeholder (use $ARGUMENTS for all user input, or $1, $2, $3 for specific positional arguments)
    - Include 2-4 realistic examples showing how $ARGUMENTS gets replaced
@@ -82,6 +93,9 @@ Scenario: $ARGUMENTS
 9. **Report completion**
    - Show the final command name: `/workflow-<name>`
    - Provide usage example
+   - **For global commands only:**
+     * Inform user that build mode has permissions to read/write files outside project directory
+     * Suggest: "To edit this global command in the future, switch to build mode"
    - Mark all todos complete
 
 ## Examples
@@ -107,6 +121,51 @@ Scenario: $ARGUMENTS
 - [X] Require human decision at every step
 - [X] One-off scenarios that won't repeat
 - [X] Missing todo list requirements
+
+## Config Inheritance Pattern
+
+> [!IMPORTANT]
+> If your workflow reads or modifies `opencode.json`, you MUST handle config inheritance.
+
+**OpenCode config inheritance:**
+- Global config: `~/.config/opencode/opencode.json` (baseline for all projects)
+- Project-local config: `.opencode/opencode.json` (extends/overrides global)
+- Project-local settings extend or override global settings
+
+**Workflows that need this:**
+- Workflows that read agent permissions
+- Workflows that modify opencode.json
+- Workflows that analyze agent configuration
+
+**How to handle inheritance in workflows:**
+
+Add this section to workflows that read opencode.json:
+
+```markdown
+## Understanding Config Inheritance
+
+> [!IMPORTANT]
+> OpenCode supports config inheritance: project-local `.opencode/opencode.json` extends global `~/.config/opencode/opencode.json`
+
+**When reading configuration:**
+1. First read global config: `~/.config/opencode/opencode.json`
+2. Then read project-local config (if exists): `.opencode/opencode.json`
+3. Project-local settings override/extend global settings
+4. To understand current configuration, you need BOTH files
+```
+
+Update relevant process steps:
+
+```markdown
+4. **Read current configuration (BOTH configs)**
+   - Read global config: `~/.config/opencode/opencode.json`
+     * Extract relevant settings from global (baseline)
+   - Read project-local config (if it exists): `.opencode/opencode.json`
+     * Extract relevant settings from project (overrides)
+   - Combine understanding: project-local extends/overrides global
+   - Note structure and formatting
+   - Update todo: mark complete
+```
 
 ## Workflow Template Structure
 

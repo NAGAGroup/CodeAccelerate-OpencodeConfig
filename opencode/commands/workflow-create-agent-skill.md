@@ -159,15 +159,25 @@ skill({name: "junior_dev-task"})
 Delegate tasks in parallel:
 
 **Task 1: Create skill file**
-- Delegate to junior_dev to create `skill/<skill-name>/index.md`
-- Provide complete skill content in spec
-- Include proper markdown structure with header
+- Delegate to junior_dev to create `skill/<skill-name>/SKILL.md`
+- Provide complete skill content in spec including frontmatter
+- Frontmatter format:
+  ```
+  ---
+  name: skill-name
+  description: One-sentence description
+  ---
+  ```
+- Include proper markdown structure after frontmatter
 
 **Task 2: Update opencode.json for each agent (if registering)**
 - If user wants to register skill, delegate ONE junior_dev task PER selected agent
 - Each delegation updates `opencode.json` to add skill to that agent's required_skills array
 - Path: `~/.config/opencode/opencode.json` OR `.opencode/opencode.json`
 - Add skill name to: `agent.<agent-name>.required_skills` array
+
+> [!IMPORTANT]
+> **Config inheritance note:** If modifying project-local config, first read global config to understand the baseline required_skills. Project-local extends/overrides global.
 
 > [!IMPORTANT]
 > If registering for multiple agents, create PARALLEL delegations:
@@ -182,8 +192,11 @@ Update todo: mark tasks complete as junior_dev finishes.
 After junior_dev completes:
 
 - Read the created skill file to verify content
-- Read opencode.json to verify registration for each selected agent (if applicable)
-- Check that paths are correct and skill appears in each agent's required_skills array
+- Read BOTH configs to verify registration:
+  * Global config: `~/.config/opencode/opencode.json` (baseline)
+  * Project-local config (if exists): `.opencode/opencode.json` (overrides)
+- Check that skill appears in correct agent's required_skills array in the modified config
+- Verify paths are correct
 
 Update todo: mark complete.
 
@@ -194,6 +207,10 @@ Provide user with:
 - Which agents it's registered with (if applicable)
 - How to use: `skill({name: "<skill-name>"})`
 - Whether it's global or project-level
+
+**For global skills only:**
+- Inform user that build mode has permissions to read/write files outside project directory
+- Suggest: "To edit this global skill in the future, switch to build mode"
 
 Update todo: mark all tasks complete.
 
