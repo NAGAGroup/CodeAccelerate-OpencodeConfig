@@ -131,11 +131,11 @@ Each agent has capabilities and limits. Don't request violations:
 
 | Agent | Capabilities | Constraint |
 |-------|-------------|-----------|
+| tech_lead | Coordinate, read code, run project commands | [X] Cannot edit code directly |
 | explore | Read/search code | [X] Cannot modify files |
 | librarian | Research external sources | [X] Cannot write code |
-| junior_dev | Write/edit code | [X] Cannot run tests |
-| test_runner | Run tests/builds | [X] Cannot edit code |
-| general_runner | Git commands, npm install | [X] Cannot modify logic |
+| junior_dev | Write/edit code, file operations | [X] Cannot run tests or install packages |
+| test_runner | Run tests/builds/diagnostics | [X] Cannot edit code or install packages |
 
 Example violations:
 

@@ -23,7 +23,6 @@ OpenCode's orchestration follows a coordinator-and-specialists pattern:
 - **test_runner** - Executes tests, builds, and diagnoses failures
 - **explore** - Maps codebases and discovers patterns quickly
 - **librarian** - Researches external APIs, libraries, and documentation
-- **general_runner** - Executes git operations, dependency installation, and custom scripts
 
 **Why This Matters:**
 
@@ -46,14 +45,15 @@ The coordinator-and-specialists pattern provides:
 **Can do:**
 - Read and analyze codebases
 - Edit markdown documentation
+- Execute project management commands (git, gh cli, pixi, package installation, curl/jq for CI/CD APIs)
 - Ask clarifying questions
 - Delegate tasks to specialized agents
 - Synthesize results and make recommendations
 
 **Cannot do:**
-- Execute bash commands directly
-- Edit code files directly
-- Run tests or builds
+- Use bash for codebase exploration (must use built-in grep/glob/read tools)
+- Edit code files directly (must delegate to junior_dev)
+- Run tests or builds (must delegate to test_runner)
 - Make architectural decisions without understanding context
 
 **When active:**
@@ -74,12 +74,13 @@ tech_lead: Analyzes existing auth patterns → identifies requirements
 
 **Can do:**
 - Edit any code or configuration file
-- Perform file operations (cp, mv, rm, ln) when specified
+- Perform file operations (cp, mv, rm, ln) via bash
 - Follow multi-step implementation specs exactly
 - Read codebase to understand current state
 
 **Cannot do:**
-- Run tests or build commands
+- Run tests or build commands (must delegate to test_runner)
+- Install packages (tech_lead handles this)
 - Improvise solutions or interpret vague requirements
 - Make architectural decisions
 - Fix issues beyond the specification
@@ -103,14 +104,17 @@ junior_dev: Reads current code → implements exact changes → reports completi
 **Role:** Execute tests, builds, diagnostics, and verification
 
 **Can do:**
-- Run test suites (npm test, pytest, etc.)
+- Run test suites (npm test, pytest, pixi run, etc.)
 - Execute build processes
 - Run diagnostic commands
 - Check code quality and linting
+- Save large output to /tmp for analysis
 - Provide detailed failure analysis
 
 **Cannot do:**
-- Fix code or edit files
+- Install packages (tech_lead handles this)
+- Fix code or edit files (junior_dev handles this)
+- Modify git state (tech_lead handles this)
 - Make architectural changes
 - Interpret test failures for you (will provide details but tech_lead analyzes)
 
@@ -180,32 +184,6 @@ librarian: Fetches JWT RFC documentation
            tech_lead uses this to guide junior_dev
 ```
 
-### general_runner (Command Execution Agent - On Demand)
-
-**Role:** Execute git operations, dependency management, and custom scripts
-
-**Can do:**
-- Run git commands (commit, push, pull, branch management)
-- Install dependencies (npm install, pip install, etc.)
-- Execute custom project scripts
-- Run setup and initialization commands
-
-**Cannot do:**
-- Edit files (use junior_dev for file operations)
-- Run tests or builds (use test_runner)
-- Read or analyze code for understanding
-
-**When active:**
-Activated by tech_lead when command execution is needed (git operations, dependency installation, custom scripts).
-
-**Example:**
-```
-tech_lead: "Commit the recent authentication changes"
-
-general_runner: Executes: git add . && git commit -m "feat: add JWT authentication"
-                Reports: "Committed 3 files with message 'feat: add JWT authentication'"
-```
-
 ---
 
 ## Delegation Flow
@@ -217,17 +195,16 @@ User Request
     ↓
 tech_lead (Analysis & Planning)
     ├─ Asks clarifying questions if needed
+    ├─ Executes project management commands (git, package installation)
     ├─ Analyzes current state (delegates to explore)
     ├─ Plans approach and checks external info (delegates to librarian)
-    └─ Delegates implementation (to junior_dev), verification (to test_runner),
-       or command execution (to general_runner)
+    └─ Delegates implementation (to junior_dev) and verification (to test_runner)
     ↓
 Specialized Agent Execution
     ├─ junior_dev: Implements changes
     ├─ test_runner: Verifies quality
     ├─ explore: Discovers patterns
-    ├─ librarian: Researches details
-    └─ general_runner: Executes commands
+    └─ librarian: Researches details
     ↓
 tech_lead (Synthesis)
     └─ Collects results
@@ -337,12 +314,11 @@ Workflow Complete
 
 OpenCode enforces a **permission system** where each agent has specific allowed and forbidden tools. This isn't arbitrary - it's intentional architecture:
 
-- **tech_lead** can read code and write documentation but not edit code directly
-- **junior_dev** can edit code but not run tests
-- **test_runner** can run bash commands but not edit files
+- **tech_lead** can read code, write documentation, and run project management commands (git, package installation) but cannot edit code directly or use bash for exploration
+- **junior_dev** can edit code and perform file operations but not run tests or install packages
+- **test_runner** can run test/build/diagnostic commands and write to /tmp but not edit files, install packages, or modify git state
 - **explore** can read files but not edit anything
 - **librarian** can fetch external info but not access local files
-- **general_runner** can run commands but cannot read/edit project files
 
 ### Why Constraints Matter
 

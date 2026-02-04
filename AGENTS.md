@@ -323,6 +323,8 @@ export const MyPlugin: Plugin = async ({ client, directory, worktree }) => {
 
 ### For tech_lead Agent
 - Can only edit/write markdown files (*.md)
+- Has bash access for project management (git, gh cli, pixi, npm/yarn/pip install, curl/jq for CI/CD APIs)
+- Must use built-in tools (grep/glob/read) for codebase exploration (not bash)
 - Must delegate code changes to junior_dev
 - Must delegate tests/builds to test_runner
 - Use skill templates before calling task tool
@@ -331,10 +333,12 @@ export const MyPlugin: Plugin = async ({ client, directory, worktree }) => {
 - Follow specs exactly - no improvisation
 - Report unclear specs instead of guessing
 - Can edit any file type (not restricted to .md)
-- Cannot run bash commands
+- Has bash access for file operations only (cp, mv, rm, ln)
 
 ### For test_runner Agent
-- Can run any bash command
+- Has selective bash permissions for test/build/diagnostic commands
+- Can write to /tmp for capturing large output
+- Cannot install packages, modify files, or change git state
 - Focus on verification and diagnostics
 - Report results clearly with status indicators
 

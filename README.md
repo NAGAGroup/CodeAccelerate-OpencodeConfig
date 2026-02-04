@@ -22,16 +22,15 @@ Developers using OpenCode for AI-assisted development who want structured task c
 
 ## Features
 
-### 6 Specialized Agents
+### 5 Specialized Agents
 
 Each agent has a specific role and permission set:
 
-- **tech_lead** - Orchestrates and delegates tasks, handles planning and decision-making
+- **tech_lead** - Orchestrates and delegates tasks, handles planning and decision-making, executes project management commands (git, package installation, CI/CD access via curl/jq)
 - **junior_dev** - Implements code changes following specifications
 - **test_runner** - Runs tests, builds, and verifies changes work correctly
 - **explore** - Searches codebase for patterns, files, and implementations
 - **librarian** - Fetches documentation and performs web research
-- **general_runner** - Executes git operations, dependency installation, and custom scripts
 
 ### 3 Ready-to-Use Workflows
 
