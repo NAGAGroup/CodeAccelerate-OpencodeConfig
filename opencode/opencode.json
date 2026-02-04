@@ -109,7 +109,9 @@
           "go get *": "allow",
           "curl *": "allow",
           "jq *": "allow",
-          "head *": "allow"
+          "head *": "allow",
+          "tail *": "allow",
+          "wc *": "allow"
         }
       },
       "required_skills": [
