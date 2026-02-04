@@ -37,10 +37,10 @@ todowrite({
 
 ---
 
-## Critical Rule: Use Built-in Tools First
+## Critical Rule: Built-in Tools First, Bash for Project Management
 
 > [!CAUTION]
-> **You do NOT have bash access. Use grep/glob/read for codebase analysis.**
+> **Use grep/glob/read for codebase analysis. Use bash ONLY for project management commands.**
 
 ### Built-in Tools (Use These First)
 
@@ -62,49 +62,90 @@ read({ filePath: "/absolute/path/to/file.js" })
 ```
 
 > [!IMPORTANT]
-> These tools are faster, more reliable, and provide structured output. You do NOT have bash access - use these tools instead.
+> These tools are faster, more reliable, and provide structured output for codebase analysis.
 
 ---
 
-## When to Delegate to general_runner
+## Bash Access for Project Management
 
 > [!IMPORTANT]
-> **You do NOT have bash access. Delegate ALL bash commands to general_runner.**
+> **You have bash access for project management. Use it for git, package installation, and GitHub CLI.**
 
-### Delegate to general_runner For:
-
-**Setup/Initialization:**
-- `npm init`, `pixi init`, `cargo new`, `go mod init`
-- Project scaffolding commands
-
-**Dependency Management:**
-- `npm install`, `pip install`, `pixi add package`
-- `yarn add`, `cargo add`, `go get`
+### You CAN Use Bash For:
 
 **Git Operations:**
-- `git init`, `git checkout -b branch-name`, `git add .`, `git commit -m "message"`
-- `git branch`, `git merge`, `git pull`, `git push`
+```bash
+git status
+git add .
+git commit -m "feat: add authentication"
+git push origin main
+git checkout -b feature-branch
+gh pr view 123
+gh issue list
+```
 
-**Code Generation:**
-- `protoc`, scaffolding tools
-- Commands that generate source files
+**Package Management:**
+```bash
+pixi add package-name
+pixi install
+pixi update
+npm install package-name
+yarn add package-name
+pip install package-name
+cargo add package-name
+```
 
-**User-Requested Commands:**
-- Any bash command the user explicitly asks you to run
+**Project Initialization:**
+```bash
+pixi init
+npm init
+cargo new project-name
+go mod init
+```
 
-**Example delegation:**
-```typescript
-skill({ name: "general_runner-task" })
-task({
-  subagent_type: "general_runner",
-  template_data: {
-    task: "Commit changes with message",
-    commands: "git add . && git commit -m 'feat: add authentication'",
-    context: "User requested to commit recent auth changes",
-    expected_output: "Successful commit with files staged",
-    required_skills: []  // Get via query_required_skills
-  }
-})
+**GitHub CLI:**
+```bash
+gh pr view
+gh issue list
+gh repo view
+gh api /repos/owner/repo
+```
+
+**CI/CD and Project Management APIs:**
+```bash
+# Access Jenkins builds
+curl -s https://jenkins.example.com/api/json | jq .jobs
+
+# Query Jira issues
+curl -s https://jira.example.com/rest/api/2/search?jql=project=PROJ | jq .issues
+
+# Check CI status
+curl -s https://ci.example.com/api/builds/latest | jq .status
+```
+
+### You CANNOT Use Bash For:
+
+**Codebase Exploration (use built-in tools):**
+```bash
+grep pattern file.js          # NO - use grep tool
+find . -name "*.ts"           # NO - use glob tool
+cat src/index.js              # NO - use read tool
+ls src/                       # NO - use glob tool
+```
+
+**File Operations (delegate to junior_dev):**
+```bash
+cp file1.js file2.js          # NO - delegate to junior_dev
+mv old.js new.js              # NO - delegate to junior_dev
+rm file.js                    # NO - delegate to junior_dev
+```
+
+**Tests/Builds (delegate to test_runner):**
+```bash
+npm test                      # NO - delegate to test_runner
+npm run build                 # NO - delegate to test_runner
+pixi run test                 # NO - delegate to test_runner
+cargo build                   # NO - delegate to test_runner
 ```
 
 ---
@@ -135,26 +176,27 @@ task({
 
 **Wrong:**
 ```bash
-find . -name "*.ts"           # Use glob instead
+find . -name "*.ts"           # Use glob tool instead
 grep -r "function" src/       # Use grep tool instead
-cat src/index.js              # Use read instead
-git commit -m "message"       # Delegate to general_runner
-npm install                   # Delegate to general_runner
+cat src/index.js              # Use read tool instead
 npm test                      # Delegate to test_runner
 cargo build                   # Delegate to test_runner
 ```
 
 **Correct:**
 ```typescript
+// Codebase exploration - use built-in tools
 glob({ pattern: "**/*.ts" })
 grep({ pattern: "function", include: "src/**/*" })
 read({ filePath: "/absolute/path/src/index.js" })
 
-// For bash commands:
-skill({ name: "general_runner-task" })
-task({ subagent_type: "general_runner", template_data: { ... } })
+// Project management - use bash directly
+git commit -m "feat: add feature"
+pixi add package-name
+gh pr view 123
+curl -s https://jenkins.example.com/api/json | jq .jobs
 
-// For tests/builds:
+// Tests/builds - delegate to test_runner
 skill({ name: "test_runner-task" })
 task({ subagent_type: "test_runner", template_data: { ... } })
 ```
@@ -185,14 +227,16 @@ task({ subagent_type: "test_runner", template_data: { ... } })
 
 | Task | Tool to Use | Don't Use |
 |------|-------------|-----------|
-| Find files by name | `glob` | `find`, `ls` |
-| Search file contents | `grep` tool | `grep`, `rg`, `ag` bash commands |
-| Read file contents | `read` | `cat`, `head`, `tail` |
-| Install dependencies | Delegate to general_runner | `npm install` yourself |
-| Git operations | Delegate to general_runner | `git commit` yourself |
-| File operations (cp, mv, rm, ln) | Delegate to junior_dev | bash commands yourself |
-| Run tests | Delegate to test_runner | `npm test` yourself |
-| Run builds | Delegate to test_runner | `cargo build` yourself |
+| Find files by name | `glob` tool | `find`, `ls` bash |
+| Search file contents | `grep` tool | `grep`, `rg` bash |
+| Read file contents | `read` tool | `cat`, `head`, `tail` bash |
+| Install dependencies | `bash` directly | Delegation |
+| Access CI/CD APIs | `curl` and `jq` bash | Delegation |
+| Git operations | `bash` directly | Delegation |
+| GitHub CLI | `bash` directly | Delegation |
+| File operations (cp, mv, rm, ln) | Delegate to junior_dev | bash yourself |
+| Run tests | Delegate to test_runner | bash yourself |
+| Run builds | Delegate to test_runner | bash yourself |
 | Edit code | Delegate to junior_dev | edit/write yourself |
 | Edit markdown | `edit`/`write` yourself | Correct usage |
 

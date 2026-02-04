@@ -286,71 +286,118 @@ When tests fail:
 
 4. **Include log content in diagnostic report**
 
-## Bash Command Safety
+## Selective Bash Permissions
 
-### Allowed Commands (Read-Only Verification)
+> [!NOTE]
+> You have selective bash permissions. Test/build/diagnostic commands are allowed. Package installation, file modifications, and git changes are forbidden and enforced by the system.
 
-**Build commands:**
-- `make`, `make build`, `make test`
-- `npm run build`, `npm run compile`
-- `cargo build`, `cargo build --release`
-- `gradle build`, `mvn compile`
-- `docker-compose build`
+### What You CAN Do
 
-**Test commands:**
-- `npm test`, `pytest`, `jest`, `cargo test`, `go test`
-- `rspec`, `mvn test`, `gradle test`
-- Any test runner specified by tech_lead
+**Test and Build Commands:**
+- `npm test`, `npm run build`, `npm run *`
+- `pytest`, `python -m pytest`, `python -m unittest`
+- `cargo test`, `cargo build`, `cargo check`, `cargo clippy`
+- `go test`, `go build`, `go vet`
+- `make`, `make test`, `make build`, `cmake`
+- `mvn test`, `gradle test`, `rake`, `rspec`
+- `pixi run`, `pixi exec`
 
-**Read commands:**
-- `cat`, `less`, `head`, `tail` - Read files
-- `grep`, `ack`, `rg` - Search content
-- `ls`, `find` - List files
-- `git status`, `git log`, `git diff` - Git inspection
+**Diagnostic and Read Commands:**
+- `cat`, `head`, `tail`, `less`, `more` - Read files
+- `grep`, `egrep`, `fgrep`, `rg`, `ack` - Search content
+- `ls`, `find`, `tree` - List files
+- `git status`, `git log`, `git diff`, `git show` - Git inspection
+- `env`, `printenv`, `echo`, `which`, `whereis` - Environment info
+- `pwd`, `whoami`, `hostname`, `uname`, `df`, `free` - System info
+- Version checks: `node --version`, `python --version`, `cargo --version`, etc.
+- Package listing: `npm list`, `pip list`, `pip freeze`, `cargo tree`, `pixi list`
+- Docker inspection: `docker ps`, `docker logs`, `docker-compose ps`, `docker-compose logs`
 
-**Diagnostic commands:**
-- `env`, `printenv` - Show environment
-- `which`, `whereis` - Find commands
-- `node --version`, `python --version` - Check versions
-- `npm list`, `pip list` - Check dependencies
-- `docker ps`, `docker-compose ps` - Check containers
-- `pwd`, `whoami` - Context info
+**Shell Features for Output Handling:**
+- `bash -c "command > /tmp/output.txt"` - Save output to /tmp
+- `tee /tmp/output.txt` - Display and save output
+- Shell redirection to /tmp only
 
-### Forbidden Commands (Modifications)
+### What You CANNOT Do
 
-> [!WARNING]
-> These commands are FORBIDDEN. Report to tech_lead if task requires them.
+> [!CAUTION]
+> These operations are forbidden and will be blocked by the system.
 
-**No file writes:**
-- `>`, `>>`, `tee` to files
-- `echo` to files
-- `sed -i` (in-place editing)
-- `awk` with output redirection
-
-**No modifications:**
-- `rm`, `mv`, `cp` - File operations
-- `touch` - Create files
-- `mkdir` - Create directories
-- `chmod`, `chown` - Change permissions
-
-**No installations:**
-- `npm install`, `npm ci`
-- `pip install`
+**Package Installation (tech_lead handles this):**
+- `npm install`, `npm ci`, `yarn add`, `yarn install`
+- `pip install`, `pixi add`, `pixi install`
+- `cargo add`, `cargo install`
 - `apt-get`, `yum`, `brew`
-- `cargo install`
 
-**No environment changes:**
-- `export VAR=value`
-- Setting `PATH`, `NODE_ENV`, etc.
-- `source`, `.` (dot command)
+**File Modifications (junior_dev handles this):**
+- `rm`, `mv`, `cp`, `ln` - File operations
+- `touch`, `mkdir`, `rmdir` - Create/remove directories
+- `chmod`, `chown` - Permission changes
+- `sed -i`, `vim`, `nano`, `emacs` - File editing
 
-**No destructive operations:**
-- `rm -rf`
-- `git reset --hard`
-- `git clean -fd`
-- `docker system prune`
+**Git Modifications (tech_lead handles this):**
+- `git add`, `git commit`, `git push`, `git pull`
+- `git checkout`, `git merge`, `git rebase`
+- `git reset`, `git clean`, `git rm`, `git mv`
 
-**If tech_lead requests these:** Report that you cannot perform modifications and suggest delegating to junior_dev or having tech_lead run bash commands directly.
+**Environment Changes:**
+- `export`, `source`, `.` (dot command)
+
+**Destructive Operations:**
+- `docker system prune`, `docker rm`, `docker rmi`
+- `kill`, `killall`
+
+**Interactive Shells:**
+- `pixi shell`, `bash`, `sh`, `zsh`
+
+## Handling Large Output
+
+When commands produce large output that exceeds tool limits, you have several options:
+
+### Option 1: Filter First (Preferred)
+
+```bash
+# Extract only errors
+npm test 2>&1 | grep -E "(FAIL|ERROR|WARN)"
+
+# Show last 200 lines
+cargo build --verbose 2>&1 | tail -n 200
+
+# Show first failure only
+pytest --maxfail=1 -v
+```
+
+### Option 2: Save to /tmp for Analysis
+
+You can write to `/tmp` directory to capture large output:
+
+```bash
+# Save full output
+bash -c "npm test --verbose > /tmp/test-output.txt 2>&1"
+
+# Read and analyze
+cat /tmp/test-output.txt | grep -A 10 "FAIL"
+
+# Use tee to see and save
+pytest -v 2>&1 | tee /tmp/pytest.log
+```
+
+### Option 3: Use Command Flags
+
+Many tools have output control flags:
+
+```bash
+pytest --tb=short           # Short tracebacks
+cargo build --message-format=short
+npm test -- --silent        # Quiet mode
+```
+
+### Best Practices
+
+1. **Try filtering first** - Often you don't need full output
+2. **Use /tmp for large outputs** - Temporary storage for detailed logs
+3. **Clean up after reading** - Good practice: `rm /tmp/test-output.txt`
+4. **Don't save to project directory** - You don't have write permission there
 
 ## Reporting Format
 

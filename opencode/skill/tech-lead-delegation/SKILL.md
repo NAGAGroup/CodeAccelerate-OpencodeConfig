@@ -12,13 +12,12 @@ description: How to delegate work to specialized agents
 | **explore** | Deep codebase analysis, extensive file mapping |
 | **librarian** | External research, API docs, library usage, best practices, standards |
 | **junior_dev** | ALL code implementation (bash for file operations: cp, mv, rm, ln) |
-| **test_runner** | ALL builds, tests, verification (bash for build/test commands) |
-| **general_runner** | Git, setup, user-requested commands (NO file operations) |
+| **test_runner** | ALL builds, tests, verification (bash for build/test/diagnostic commands) |
 
 > [!IMPORTANT]
+> - You (tech_lead) have bash access for project management (git, gh cli, pixi, package installation)
 > - junior_dev has bash access for file operations (cp, mv, rm, ln). Always delegate verification to test_runner after implementation.
-> - general_runner handles git/setup/external commands but NOT file operations (those go to junior_dev).
-> - You (tech_lead) have NO bash access. Delegate all commands to appropriate agents.
+> - test_runner has selective bash permissions for test/build/diagnostic commands, can write to /tmp for large output
 
 ---
 
@@ -138,31 +137,7 @@ test_runner verifies
 
 ---
 
-### Pattern 3: Command Execution
-
-```
-User request (git/setup command)
-    ↓
-Understand what needs to be done
-    ↓
-general_runner executes command
-    ↓
-Review output and report
-```
-
-**Example:** "Commit these changes"
-1. Review what files have been modified
-2. Delegate to general_runner with git commands
-3. Report results to user
-
-**Example:** "Install dependencies"
-1. Check package.json or requirements.txt
-2. Delegate to general_runner with install command
-3. Report results
-
----
-
-### Pattern 4: Bug Fix
+### Pattern 3: Bug Fix
 
 ```
 User report
