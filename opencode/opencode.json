@@ -35,7 +35,6 @@
         "unicode-usage",
         "tech-lead-questions",
         "tech-lead-delegation",
-        "tech-lead-tools",
         "todo-usage"
       ]
     },
@@ -76,13 +75,11 @@
         },
         "doom_loop": "ask",
         "mermaid_*": "allow",
+        "skip_librarian": "allow",
+        "skip_questions": "allow",
         "bash": {
           "*": "deny",
           "git *": "allow",
-          "gh pr *": "allow",
-          "gh issue *": "allow",
-          "gh repo view *": "allow",
-          "gh api *": "allow",
           "pixi add *": "allow",
           "pixi remove *": "allow",
           "pixi install *": "allow",
@@ -106,12 +103,7 @@
           "cargo init *": "allow",
           "cargo add *": "allow",
           "go mod init *": "allow",
-          "go get *": "allow",
-          "curl *": "allow",
-          "jq *": "allow",
-          "head *": "allow",
-          "tail *": "allow",
-          "wc *": "allow"
+          "go get *": "allow"
         }
       },
       "required_skills": [
@@ -121,7 +113,6 @@
         "tech-lead-questions",
         "tech-lead-delegation",
         "tech-lead-memory-usage",
-        "tech-lead-tools",
         "todo-usage"
       ]
     },
@@ -136,6 +127,13 @@
         "lsp": "allow",
         "todowrite": "allow",
         "todoread": "allow",
+        "bash": {
+          "*": "deny",
+          "git diff *": "allow",
+          "git log *": "allow",
+          "git show *": "allow",
+          "git status *": "allow"
+        },
         "skill": {
           "*": "deny",
           "skill-invocation-policy": "allow",
@@ -165,6 +163,26 @@
         "context7*": "allow",
         "todowrite": "allow",
         "todoread": "allow",
+        "bash": {
+          "*": "deny",
+          "gh pr *": "allow",
+          "gh issue *": "allow",
+          "gh repo view *": "allow",
+          "gh api *": "allow",
+          "git log *": "allow",
+          "git show *": "allow",
+          "git diff *": "allow",
+          "git status *": "allow",
+          "curl *": "allow",
+          "jq *": "allow",
+          "head *": "allow",
+          "tail *": "allow",
+          "cat *": "allow",
+          "grep *": "allow",
+          "egrep *": "allow",
+          "wc *": "allow",
+          "less *": "allow"
+        },
         "skill": {
           "*": "deny",
           "skill-invocation-policy": "allow",

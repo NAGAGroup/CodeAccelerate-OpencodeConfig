@@ -1,5 +1,5 @@
 import type { Plugin } from "@opencode-ai/plugin";
-import { createConfigLoader } from "../lib/utils";
+import { createConfigLoader, formatPermissionsForAgent } from "../lib/utils";
 
 /**
  * SkillLoaderPlugin - Loads required skills for coordinator agents
@@ -10,6 +10,32 @@ export const SkillLoaderPlugin: Plugin = async (ctx: any) => {
   const injectedSessions = new Set<string>();
   const compactedSessions = new Set<string>(); // Sessions that just completed compaction
   const getConfig = createConfigLoader(worktree);
+
+  // Helper: Inject reflection prompt (agent sees, user doesn't)
+  async function injectReflection(
+    sessionID: string,
+    message: string,
+    agentName?: string
+  ) {
+    try {
+      await client.session.prompt({
+        path: { id: sessionID },
+        body: {
+          noReply: true,
+          ...(agentName ? { agent: agentName } : {}),
+          parts: [
+            {
+              type: "text",
+              text: message,
+              synthetic: true,
+            },
+          ],
+        },
+      });
+    } catch (error) {
+      // Silently fail
+    }
+  }
 
   return {
     // HOOK 1: Fires BEFORE compaction starts
@@ -103,6 +129,19 @@ ${skillCalls}
       if (lastTextPart && lastTextPart.type === "text") {
         lastTextPart.text += instruction;
       }
+
+      // Inject agent permissions (fire and forget - don't await)
+      const permissionBlock = formatPermissionsForAgent(agent, config);
+      const permissionMessage = `[Your Tool Permissions]
+
+You have access to the following tools and commands:
+
+${permissionBlock}
+
+This is your complete permission set. You cannot use tools not listed above.`;
+
+      // Fire and forget - don't block message transform
+      injectReflection(sessionID, permissionMessage, agent);
     },
   };
 };

@@ -4,6 +4,7 @@ import * as path from "path";
 
 export interface AgentConfig {
   required_skills?: string[];
+  permission?: Record<string, any>;
   [key: string]: any;
 }
 
@@ -54,6 +55,50 @@ export async function loadConfig(worktree: string): Promise<Config> {
     agent: mergedAgents,
     skills: project?.skills || global?.skills || {},
   };
+}
+
+/**
+ * Formats agent permissions into human-readable text for injection into agent prompts.
+ * Merges global and local configs automatically (same as loadConfig).
+ * 
+ * @param agentName - Name of the agent to format permissions for
+ * @param config - Merged configuration object (from loadConfig)
+ * @returns Formatted permission text showing all allowed tools and patterns
+ */
+export function formatPermissionsForAgent(
+  agentName: string,
+  config: Config
+): string {
+  const permissions = config.agent[agentName]?.permission || {};
+  const lines: string[] = [];
+
+  // Helper to format permission value recursively
+  function formatValue(key: string, value: any, indent: string = ""): void {
+    if (key === "*") {
+      lines.push(`${indent}Default: ${value}`);
+      return;
+    }
+
+    if (typeof value === "string") {
+      lines.push(`${indent}- ${key}: ${value}`);
+    } else if (typeof value === "object" && value !== null) {
+      lines.push(`${indent}- ${key}:`);
+      for (const [pattern, perm] of Object.entries(value)) {
+        if (pattern === "*") {
+          lines.push(`${indent}  Default: ${perm}`);
+        } else {
+          lines.push(`${indent}  - ${pattern}: ${perm}`);
+        }
+      }
+    }
+  }
+
+  // Format all permissions
+  for (const [tool, perm] of Object.entries(permissions)) {
+    formatValue(tool, perm);
+  }
+
+  return lines.length > 0 ? lines.join("\n") : "No specific permissions configured";
 }
 
 export function createConfigLoader(worktree: string) {
