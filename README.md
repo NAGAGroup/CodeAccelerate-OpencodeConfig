@@ -57,5 +57,5 @@ Executes the first subtask. Run again for each subsequent subtask.
 ## Learn More
 
 - **[docs/CONCEPTS.md](docs/CONCEPTS.md)** — The design philosophy and key concepts: why this config works the way it does, what HeadWrench is, what sessions are, what skills are
-- **[docs/USAGE.md](docs/USAGE.md)** — How to use the 7 commands: /plan, /continue, /amend, /inbox, and context commands — with examples
+- **[docs/USAGE.md](docs/USAGE.md)** — How to use the 9 commands: /plan, /continue, /amend, /inbox, context commands, and session activation — with examples
 - **[FEATURES.md](FEATURES.md)** — Complete component inventory: all agents, commands, protocols, skills, plugins, MCPs

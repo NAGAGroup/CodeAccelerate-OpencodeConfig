@@ -104,7 +104,7 @@ Think of skills as "expertise HeadWrench reaches for when it needs it" — not h
 
 ## Commands — Entry Points
 
-The 7 slash commands are your entry points into the system. High-level overview:
+The 9 slash commands are your entry points into the system. High-level overview:
 
 - **`/plan`** — Start a new session. Triggers Q&A, ContextScout analysis, and plan generation. Use when you have a new piece of work to organize.
 
@@ -119,6 +119,10 @@ The 7 slash commands are your entry points into the system. High-level overview:
 - **`/context-list`** — List files currently in `.opencode/context/`.
 
 - **`/context-remove`** — Remove a file from `.opencode/context/`.
+
+- **`/activate-session`** — Set a session plan as active for the current OpenCode session. HeadWrench will inject the session's state into its context on every message.
+
+- **`/deactivate-session`** — Unset the active session plan for the current OpenCode session.
 
 For detailed usage of each command, see [USAGE.md](USAGE.md).
 
@@ -140,5 +144,5 @@ Where to focus if you want to tune the system:
 
 ## Next Steps
 
-- **[USAGE.md](USAGE.md)** — How to use `/plan`, `/continue`, `/amend`, `/inbox`, and context commands
+- **[USAGE.md](USAGE.md)** — How to use `/plan`, `/continue`, `/amend`, `/inbox`, context commands, and session activation commands
 - **[../FEATURES.md](../FEATURES.md)** — Complete component inventory: all agents, commands, protocols, skills, plugins, and MCPs

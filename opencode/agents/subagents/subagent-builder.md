@@ -9,6 +9,7 @@ permission:
   read: allow
   glob: allow
   list: allow
+  task: deny
   bash:
     "*": deny
     "cat *": allow

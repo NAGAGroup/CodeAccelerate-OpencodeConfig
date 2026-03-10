@@ -1,6 +1,6 @@
 # Usage Guide
 
-This system is driven by 7 slash commands. Start with `/plan` for any non-trivial work — the rest follow from there.
+This system is driven by 9 slash commands. Start with `/plan` for any non-trivial work — the rest follow from there.
 
 ## /plan — Start a Session
 
@@ -117,6 +117,30 @@ Use this when context is stale or no longer relevant.
 
 ---
 
+## Session Activation
+
+### /activate-session
+
+Set a session plan as active for the current OpenCode session. Once active, HeadWrench automatically injects that session's state into its context on every message — no manual loading needed.
+
+```
+/activate-session
+```
+
+Run this after `/plan` generates a new session, or when resuming a previously created session plan.
+
+### /deactivate-session
+
+Unset the currently active session plan.
+
+```
+/deactivate-session
+```
+
+Use this when you're done with a session and want to free-run without session context injected.
+
+---
+
 ## Quick Reference
 
 | Command | When to use |
@@ -128,6 +152,8 @@ Use this when context is stale or no longer relevant.
 | `/context-add <path>` | Add file to persistent planning context |
 | `/context-list` | See what's in persistent context |
 | `/context-remove <path>` | Remove file from persistent context |
+| `/activate-session` | Set active session plan for this OpenCode session |
+| `/deactivate-session` | Unset the active session plan |
 
 ---
 

@@ -12,6 +12,7 @@ permission:
   grep: allow
   list: allow
   sequential-thinking: allow
+  task: deny
   bash:
     "*": deny
     "cat *": allow

@@ -92,7 +92,9 @@ Once approved:
 
 ## Phase 8 — Final Overview and Wait
 
-Give a brief final overview: session name, goal, number of subtasks, key gates. State that you are ready to begin when the user says so.
+Give a brief final overview: session name, goal, number of subtasks, key gates. Then tell the user:
+
+> "Run `/activate-session` to set this as your active session plan, then say **start** when you're ready to begin."
 
 **Do not begin executing subtasks until the user explicitly says to start.**
 

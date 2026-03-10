@@ -14,6 +14,7 @@ permission:
   todoread: allow
   question: allow
   skill: allow
+  task: deny
   bash:
     "*": ask
     "cat *": allow

@@ -5,9 +5,11 @@ steps: 15
 color: "#8b5cf6"
 permission:
   "*": deny
+  task: deny
   webfetch: allow
   websearch: allow
-  task: allow
+  "exa*": allow
+  "sequential*": allow
 ---
 
 # DeepResearcher

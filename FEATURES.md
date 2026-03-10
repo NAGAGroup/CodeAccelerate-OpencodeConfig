@@ -21,10 +21,10 @@ The OpenCode configuration follows a layered, plan-driven architecture:
 | Component | Count | Location |
 |-----------|-------|----------|
 | Agents | 8 | `opencode/agents/` and special models |
-| Commands | 7 | HeadWrench CLI |
+| Commands | 9 | HeadWrench CLI |
 | Protocols | 3 | `opencode/protocols/` |
 | Skills | 1 | `opencode/skills/` |
-| Plugins | 2 | `opencode/dcp.jsonc`, `session-compaction.ts` |
+| Plugins | 2 | `@tarquinen/opencode-dcp@beta`, `session-context` |
 | MCPs | 3 | MCP registry (context7, sequential-thinking, exa) |
 
 ---
@@ -59,6 +59,8 @@ The OpenCode configuration follows a layered, plan-driven architecture:
 | `/context-add` | Add a file to `.opencode/context/` persistent context |
 | `/context-list` | List files currently in `.opencode/context/` |
 | `/context-remove` | Remove a file from `.opencode/context/` |
+| `/activate-session` | Activate an existing session plan from `.opencode/sessions/` |
+| `/deactivate-session` | Deactivate the currently active session plan |
 
 ---
 
@@ -85,7 +87,7 @@ The OpenCode configuration follows a layered, plan-driven architecture:
 | Plugin | Purpose |
 |--------|---------|
 | `@tarquinen/opencode-dcp@beta` | Dynamic Context Pruning. Automatically compresses conversations to prevent context overflow. Configured via `opencode/dcp.jsonc`. |
-| `session-compaction.ts` | Injects session plan, current subtask, notes, and persistent context into the continuation prompt after compaction, so HeadWrench stays oriented. |
+| `session-context` | Provides `activate_session` and `deactivate_session` tools. Injects active session plan spec into the system prompt so HeadWrench stays oriented across context compactions. |
 
 ---
 

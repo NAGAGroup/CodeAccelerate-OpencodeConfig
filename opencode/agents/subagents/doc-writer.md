@@ -11,6 +11,7 @@ permission:
   grep: allow
   list: allow
   skill: allow
+  task: deny
   bash:
     "*": deny
     "cat *": allow
