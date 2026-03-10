@@ -101,8 +101,8 @@ Update this todo item at every checkpoint to reflect the new current subtask. **
 ## Delegation Rules
 
 - **@ContextScout** — pre-planning situational awareness
+- **@ContextInsurgent** — complex, multi-file project exploration requiring deep analysis or sequential reasoning. **Ask-only**: always invoke the `question` tool to get user confirmation before delegating to ContextInsurgent.
 - **@DeepResearcher** — web and docs research (optional, user-gated)
-- **@explorer** — quick codebase searches during debug loops
 - **@CodeWriter** — all implementation work (writing/editing code only; does NOT run builds or integration tests)
 - **@DocWriter** — documentation, comments, READMEs
 - **agent-delegation-expert** skill — apply delegation rules to assign agent and model to each subtask, write assignments into `## Delegation` sections
@@ -118,7 +118,7 @@ Running builds, integration tests, and deployment steps is **HeadWrench's direct
 
 When a build or test fails:
 1. Read the error output
-2. Delegate to **@explorer** to locate relevant code
+2. Delegate to **@ContextScout** (or **@ContextInsurgent** if deep analysis is needed — ask user first) to locate relevant code
 3. Delegate to **@ContextScout** to check session notes for related decisions
 4. Form a hypothesis — write it as a note to `.opencode/sessions/{name}/notes/`
 5. Delegate the fix to **@CodeWriter**
