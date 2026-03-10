@@ -40,11 +40,57 @@ Do **not** use sequential thinking for straightforward tasks — delegation deci
 
 ## During Sessions
 
-Follow the active session's subtask todolist strictly. Execute subtasks in order. For each subtask, load **only the current subtask's `subtask-NN-{name}.md` file** and pass it to the assigned subagent — do not load the full `index.md` or all subtask files at once. At the end of each subtask, follow the checkpoint protocol in `~/.config/opencode/protocols/checkpoint.md`.
+On user "start", run session bootstrap. Follow the active session's subtask todolist strictly. Execute subtasks in order. For each subtask, load **only the current subtask's `subtask-NN-{name}.md` file** and pass it to the assigned subagent — do not load the full `index.md` or all subtask files at once. Track checkpoint steps as explicit Layer 3 todos and execute the checkpoint protocol in `~/.config/opencode/protocols/checkpoint.md`.
+
+## Session Bootstrap
+
+When user says "start":
+
+- Read `.opencode/sessions/{name}/index.md` once for orientation only (session name, goal, current subtask)
+- Read `.opencode/sessions/{name}/spec.json` and resolve `currentSubtask`
+- Load only the current `subtask-NN-{name}.md` file
+- Create Layer 1 session summary todo
+- Extract `## Todolist` from current subtask file and create Layer 2 todos
+- Create Layer 3 checkpoint todos (8 fixed steps)
+- Begin executing the current subtask
+
+## Todolist Structure
+
+Maintain a 3-layer todo stack during active sessions:
+
+- **Layer 1 (top): Session summary todo**
+  - One item only
+  - Persists across all subtasks
+  - Update at checkpoint; do not replace
+- **Layer 2 (middle): Subtask-specific todos**
+  - Source: current subtask file `## Todolist`
+  - HW may add subtask-local todos during execution
+  - Clear and repopulate at each subtask transition
+- **Layer 3 (bottom): Fixed checkpoint todos (8 steps)**
+  1. WIP commit (skip if subtask was read-only)
+  2. Update `index.md` — mark completed, mark next `in_progress`
+  3. Update `spec.json` — increment `currentSubtask`, update status
+  4. Update session summary todo — reflect new current subtask
+  5. Write session notes — one file per significant finding
+  6. Write inbox — reusable project-level observations
+  7. Gate check — if next subtask is a gate, stop and surface to user
+  8. Circuit breaker — check for N consecutive failures
+  - Clear and repopulate at each subtask transition
+
+## Subtask Transition
+
+After all 8 Layer 3 checkpoint todos are complete:
+
+- Mark all Layer 2 and Layer 3 todos complete for the finished subtask
+- Read `.opencode/sessions/{name}/spec.json` and resolve new `currentSubtask`
+- Load only the next `subtask-NN-{name}.md` file
+- Create fresh Layer 2 todos from next subtask file `## Todolist`
+- Create fresh Layer 3 checkpoint todos (same 8 fixed steps)
+- Update Layer 1 session summary todo with the new current subtask (do not replace)
 
 ## Session Summary Todo
 
-At session bootstrap, create a single todo item (for HW orientation only) containing:
+Layer 1 is a single HW orientation todo, created at session bootstrap, containing:
 - Session name
 - Session goal
 - Path to session index: `.opencode/sessions/{name}/index.md`
@@ -81,7 +127,7 @@ When a build or test fails:
 
 ## Gates
 
-`[🚫 GATE]` items in the todolist are non-negotiable stops. Do not proceed past a gate without explicit user approval.
+Gates are defined as `[🚫 GATE]` todo items inside the **preceding subtask's `## Todolist`** (Layer 2) — not as standalone subtask rows. Layer 3 step 7 (Gate check) enforces the stop at checkpoint time: if the next item is a gate todo, do not proceed. Surface findings to the user and wait for explicit approval before continuing.
 
 ## Notes
 

@@ -86,7 +86,8 @@ Ask for approval. If the user requests changes, revise the plan and loop back to
 Once approved:
 - Delegation assignments have already been written into subtask `## Delegation` sections during Phase 5
 - If checkpoint customizations were requested in Phase 2.5, write the session-local override at `.opencode/sessions/{session-name}/protocols/checkpoint.md`
-- Create the **session summary todo** containing: session name, goal, path to `index.md`, first subtask number and description
+- Create the **session summary todo** (Layer 1 only) containing: session name, goal, path to `index.md`, first subtask number and description
+- Do not create Layer 2 (subtask todos) or Layer 3 (checkpoint todos) here; create both at execution start when the user says "start"
 - If new custom agents are needed, delegate to @SubagentBuilder in parallel with finalization
 
 ## Phase 8 — Final Overview and Wait
@@ -94,3 +95,12 @@ Once approved:
 Give a brief final overview: session name, goal, number of subtasks, key gates. State that you are ready to begin when the user says so.
 
 **Do not begin executing subtasks until the user explicitly says to start.**
+
+## Phase 9 — Execution Bootstrap
+
+When the user explicitly says to start:
+1. Read `.opencode/sessions/{session-name}/index.md` once for orientation.
+2. Load the first subtask file (`subtask-NN-{name}.md`), determined by `spec.json` `currentSubtask`.
+3. Extract the `## Todolist` section from the subtask file and create Layer 2 todos.
+4. Create the 8 fixed checkpoint todos as Layer 3.
+5. Begin executing the first subtask with all 3 layers active.
