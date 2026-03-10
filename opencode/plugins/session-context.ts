@@ -1,5 +1,6 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import type { Hooks, PluginInput } from "@opencode-ai/plugin"
+import type { Part } from "@opencode-ai/sdk"
 import { mkdir, readFile, unlink, writeFile } from "fs/promises"
 import { join } from "path"
 
@@ -28,11 +29,21 @@ export default async (ctx: PluginInput): Promise<Hooks> => {
   return {
     "command.execute.before": async (
       input: { command: string; sessionID: string; arguments: string },
-      _output: { parts: unknown[] },
+      output: { parts: Part[] },
     ) => {
       if (input.command !== "session-status") return
 
       const cwd = process.cwd()
+
+      // Push an ignored part so OpenCode skips the agent turn for this command
+      output.parts.push({
+        id: "session-status-handled",
+        sessionID: input.sessionID,
+        messageID: "session-status-handled",
+        type: "text",
+        text: "",
+        ignored: true,
+      })
 
       try {
         const activeSessionPath = join(
