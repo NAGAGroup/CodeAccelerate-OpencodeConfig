@@ -5,8 +5,84 @@ import { join } from "path"
 
 let currentSessionID: string | undefined = undefined
 
-export default async (_ctx: PluginInput): Promise<Hooks> => {
+function formatSessionToast(spec: {
+  name: string
+  status: string
+  subtasks: Array<{ id: string; name: string; status: string }>
+}): string {
+  const counts = { completed: 0, in_progress: 0, skipped: 0, pending: 0, failed: 0 }
+  for (const t of spec.subtasks) {
+    const s = t.status as keyof typeof counts
+    if (s in counts) counts[s]++
+  }
+  const parts: string[] = []
+  if (counts.completed) parts.push(`${counts.completed} done`)
+  if (counts.in_progress) parts.push(`${counts.in_progress} in progress`)
+  if (counts.pending) parts.push(`${counts.pending} pending`)
+  if (counts.skipped) parts.push(`${counts.skipped} skipped`)
+  if (counts.failed) parts.push(`${counts.failed} failed`)
+  return `${spec.name} | ${parts.join(", ")}`
+}
+
+export default async (ctx: PluginInput): Promise<Hooks> => {
   return {
+    "command.execute.before": async (
+      input: { command: string; sessionID: string; arguments: string },
+      _output: { parts: unknown[] },
+    ) => {
+      if (input.command !== "session-status") return
+
+      const cwd = process.cwd()
+
+      try {
+        const activeSessionPath = join(
+          cwd,
+          ".opencode",
+          "session-ids",
+          input.sessionID,
+          "active-session.json",
+        )
+        const activeSessionRaw = await readFile(activeSessionPath, "utf-8")
+        const parsed = JSON.parse(activeSessionRaw) as { sessionName?: string }
+        const sessionName = parsed.sessionName
+
+        if (!sessionName) {
+          await ctx.client.tui.showToast({
+            body: { message: "No active session", variant: "info" },
+          })
+          return
+        }
+
+        const specPath = join(cwd, ".opencode", "sessions", sessionName, "spec.json")
+        const specRaw = await readFile(specPath, "utf-8")
+        const spec = JSON.parse(specRaw) as {
+          name: string
+          status: string
+          subtasks: Array<{ id: string; name: string; status: string }>
+        }
+
+        const variant =
+          spec.status === "completed"
+            ? "success"
+            : spec.status === "in_progress"
+              ? "info"
+              : "warning"
+
+        await ctx.client.tui.showToast({
+          body: {
+            title: "Session Status",
+            message: formatSessionToast(spec),
+            variant,
+            duration: 8000,
+          },
+        })
+      } catch {
+        await ctx.client.tui.showToast({
+          body: { message: "No active session", variant: "info" },
+        })
+      }
+    },
+
     "experimental.chat.system.transform": async (
       input: { sessionID?: string; model: unknown },
       output: { system: string[] },
