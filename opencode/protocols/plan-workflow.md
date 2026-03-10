@@ -38,13 +38,13 @@ HeadWrench writes the session plan draft directly.
 - HW writes: (a) `index.md` (living human-readable plan), (b) `spec.json` (machine-readable orchestrator state), and (c) one `subtask-NN-{name}.md` file per subtask.
 - No files are executed or modified beyond the plan files themselves.
 
-### Step 4 — Delegation Review (AgentDelegationExpert)
-HeadWrench delegates the drafted plan to the **AgentDelegationExpert (ADE)**.
-- **ADE** is a read-only and recommendation-only agent. It never edits files.
-- **ADE** returns:
-    - Recommended agent routing for each subtask (subagent type, model tier).
-    - Recommended model per subtask.
-    - Recommendations for new project-local custom agents if existing agents are insufficient.
+### Step 4 — Delegation Review (Agent-Delegation-Expert Skill)
+HeadWrench loads the **agent-delegation-expert** skill and applies its delegation rules to the drafted plan.
+- **HW applies the rules directly** to each subtask, determining:
+    - Recommended agent routing for each subtask
+    - Recommended model tier per subtask
+    - Recommendations for new project-local custom agents if existing agents are insufficient
+- **HW writes the assignments** into the `## Delegation` section of each subtask file (`subtask-NN-{name}.md`), never into `spec.json` or `index.md`.
 
 ### Step 5 — Presentation to User
 HeadWrench presents the full proposal to the user, including:
@@ -58,8 +58,8 @@ The user reviews the proposal and either approves it or requests changes.
 - This loop continues until the user provides explicit approval.
 
 ### Step 7 — Finalization & Parallel Builds
-Once approved, HeadWrench incorporates the final delegation rules into the session plan files and completes final setup.
-- HW updates `index.md` and `spec.json` with delegation assignments from AgentDelegationExpert.
+Once approved, HeadWrench finalizes and completes setup.
+- HW has already written delegation assignments into each subtask's `## Delegation` section during Step 4.
 - If the user requested customizations to the checkpoint protocol in Step 2.5, HW writes the session-local override at `.opencode/sessions/{session-name}/protocols/checkpoint.md`.
 - HW creates the **session summary todo** containing: session name, goal, path to `index.md`, first subtask number, and first subtask description.
 - If new custom agents were approved, HW delegates their creation to the **SubagentBuilder** to run **in parallel** with finalization.
@@ -71,7 +71,7 @@ HeadWrench provides a brief, final summary of the plan and state of the environm
 
 ## Invariants
 - **HW as Author**: HeadWrench is the only agent permitted to write or edit the session plan. The "SessionPlanDrafter" agent is retired and must not be used.
-- **ADE is Read-Only**: AgentDelegationExpert must never modify files; it provides recommendations only.
+- **HW as Delegation Applier**: HeadWrench loads the agent-delegation-expert skill and applies its rules to assign agents and models to each subtask. Assignments are written into subtask `## Delegation` sections only — never into `spec.json` or `index.md`.
 - **ContextScout is Read-Only**: ContextScout never makes changes to the codebase or documentation.
 - **Blocked Execution**: No subtask execution may occur until the user has approved the plan and given the "start" command.
 - **Gated Research**: DeepResearcher is never dispatched automatically; it always requires user confirmation.
@@ -83,9 +83,9 @@ HeadWrench provides a brief, final summary of the plan and state of the environm
 
 | Agent | Role | Writes? |
 |---|---|---|
-| **HeadWrench (HW)** | Orchestrator, Plan Author, & Finalizer | Yes |
+| **HeadWrench (HW)** | Orchestrator, Plan Author, Delegation Applier, & Finalizer | Yes |
 | **ContextScout** | Situation Reporter & Context Collector | No |
-| **AgentDelegationExpert** | Routing & Model Recommendation | No |
+| **agent-delegation-expert** skill | Delegation Rules (applied by HW) | No |
 | **SubagentBuilder** | Custom Agent Constructor (if needed) | Yes |
 | **DeepResearcher** | Specialized Technical Research (optional) | No |
 

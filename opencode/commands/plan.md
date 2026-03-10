@@ -65,18 +65,18 @@ Create the session directory at `.opencode/sessions/{session-name}/` and write:
 
 ## Phase 5 — Agent Routing
 
-Delegate to @AgentDelegationExpert — pass the drafted plan. It returns:
-- Recommended agent routing per subtask
-- Recommended model per subtask
-- Any new custom agents needed (with rationale)
+Load the **agent-delegation-expert** skill and apply its delegation rules to the drafted plan:
+- Assign agent routing per subtask
+- Assign model per subtask
+- Identify any new custom agents needed (with rationale)
 
-AgentDelegationExpert is **read-only** — it returns recommendations only and does not write files.
+Write the assignments into the `## Delegation` section of each `subtask-NN-{name}.md` file. Assignments go in subtask files only — never in `spec.json` or `index.md`.
 
 ## Phase 6 — Present to User
 
 Present to the user:
 - Plan overview (goal, subtasks, gates)
-- Delegation recommendations from AgentDelegationExpert
+- Delegation assignments (agents and models assigned to each subtask)
 - Any proposed new custom agents
 
 Ask for approval. If the user requests changes, revise the plan and loop back to Phase 5.
@@ -84,7 +84,7 @@ Ask for approval. If the user requests changes, revise the plan and loop back to
 ## Phase 7 — Finalize
 
 Once approved:
-- Incorporate the delegation rules into the plan (`index.md` and `spec.json`)
+- Delegation assignments have already been written into subtask `## Delegation` sections during Phase 5
 - If checkpoint customizations were requested in Phase 2.5, write the session-local override at `.opencode/sessions/{session-name}/protocols/checkpoint.md`
 - Create the **session summary todo** containing: session name, goal, path to `index.md`, first subtask number and description
 - If new custom agents are needed, delegate to @SubagentBuilder in parallel with finalization

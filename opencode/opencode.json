@@ -19,9 +19,6 @@
     "subagents/deep-researcher": {
       "model": "github-copilot/claude-haiku-4.5"
     },
-    "subagents/agent-delegation-expert": {
-      "model": "opencode/gemini-3-flash"
-    },
     "subagents/gates-expert": {
       "model": "github-copilot/claude-sonnet-4.6"
     },

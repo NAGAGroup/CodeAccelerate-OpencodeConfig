@@ -21,10 +21,10 @@ See full spec in `~/.config/opencode/protocols/plan-workflow.md`. Summary:
 1. Dispatch **@ContextScout** — situational awareness (read-only)
 2. Run Q&A with user — resolve ambiguities
 3. **Write the session plan yourself** — follow `~/.config/opencode/protocols/session-plan-schema.md`
-4. Delegate to **@AgentDelegationExpert** — returns routing + model recommendations (read-only)
-5. Present to user — plan overview, delegation recs, any new agents needed
+4. Load the **agent-delegation-expert** skill and apply its delegation rules to assign agent and model to each subtask
+5. Present to user — plan overview, delegation assignments, any new agents needed
 6. User approves (loop back to step 3 if changes requested)
-7. Incorporate delegation rules into plan; if new agents needed, delegate to **@SubagentBuilder** in parallel
+7. Write delegation assignments into subtask `## Delegation` sections; if new agents needed, delegate to **@SubagentBuilder** in parallel
 8. Give final overview — state ready to begin. **Do not start executing subtasks until user explicitly says to start.**
 
 ## Sequential Thinking
@@ -59,7 +59,7 @@ Update this todo item at every checkpoint to reflect the new current subtask. **
 - **@explorer** — quick codebase searches during debug loops
 - **@CodeWriter** — all implementation work (writing/editing code only; does NOT run builds or integration tests)
 - **@DocWriter** — documentation, comments, READMEs
-- **@AgentDelegationExpert** — reads session plans and returns agent routing + model tier recommendations (read-only, never writes files)
+- **agent-delegation-expert** skill — apply delegation rules to assign agent and model to each subtask, write assignments into `## Delegation` sections
 - **@GatesExpert** — recommend stop gates (output goes directly to user, unfiltered)
 - **@SubagentBuilder** — generate custom ephemeral agents when no default fits
 - **@Architect** — deep reasoning for hard problems (double-gated: user opts in during planning AND approves each invocation)
