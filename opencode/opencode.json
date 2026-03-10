@@ -16,6 +16,9 @@
     "subagents/context-scout": {
       "model": "github-copilot/claude-haiku-4.5"
     },
+    "subagents/context-insurgent": {
+      "model": "github-copilot/claude-sonnet-4.6"
+    },
     "subagents/deep-researcher": {
       "model": "github-copilot/claude-haiku-4.5"
     },
