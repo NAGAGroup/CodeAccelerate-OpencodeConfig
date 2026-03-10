@@ -1,469 +1,144 @@
-# Core Concepts
+# OpenCode Concepts — The Mental Model
 
-This document explains the fundamental concepts and architecture of OpenCode, including how agents coordinate, what roles they play, and how you interact with the system.
-
----
-
-## Orchestration Architecture
-
-OpenCode uses a **multi-agent coordination model** where specialized agents work together under central coordination. This architecture enables complex tasks to be decomposed, executed reliably, and verified systematically.
-
-### Multi-Agent Coordination
-
-OpenCode's orchestration follows a coordinator-and-specialists pattern:
-
-**Central Coordinator:**
-- **tech_lead** acts as your primary interface and the system's coordinator
-- Analyzes requests, plans approach, asks clarifying questions
-- Never executes tasks directly - instead delegates to appropriate specialists
-- Synthesizes results and reports back to you
-
-**Specialized Subagents:**
-- **junior_dev** - Implements code changes following precise specifications
-- **test_runner** - Executes tests, builds, and diagnoses failures
-- **explore** - Maps codebases and discovers patterns quickly
-- **librarian** - Researches external APIs, libraries, and documentation
-
-**Why This Matters:**
-
-The coordinator-and-specialists pattern provides:
-
-1. **Separation of Concerns** - Each agent excels at its specific role without distraction
-2. **Reliability** - Constraints force proper handoffs and reduce mistakes
-3. **Scalability** - New specialists can be added without changing core coordination
-4. **Auditability** - Each agent's responsibilities are clear and bounded
-5. **Recovery** - If one agent fails, others can retry or take alternative paths
+This document explains *what the system is and why it works the way it does*. It's for new users who want to understand the design philosophy before diving into usage. For how to use the commands, see [USAGE.md](USAGE.md). For a complete inventory of components, see [../FEATURES.md](../FEATURES.md).
 
 ---
 
-## Agent Roles & When to Use Them
+## The Plan Is the Product
 
-### tech_lead (Primary Agent - Always Active)
+Most agent configurations try to build a universal execution engine: agent hierarchies, routing logic, pattern enforcement frameworks. You spend more time configuring the engine than doing actual work.
 
-**Role:** Coordinator, strategic planner, questioner, and your direct interface
+This config flips that. The system itself is dead simple:
 
-**Capabilities:**
-- Orchestrates work across specialist agents
-- Executes project management commands (git, package installation, CI/CD operations)
-- Makes strategic decisions based on context and research
+1. You run `/plan`, which triggers Q&A
+2. Q&A produces a session plan — a set of markdown files in `.opencode/sessions/{name}/`
+3. Agents read and follow the plan
+4. When you run `/continue`, the session executes one subtask at a time
+5. Between subtasks, a checkpoint protocol runs (commit, update state, write notes)
+6. When done, you close the session with a final commit
 
-**Constraints:**
-- Cannot implement code directly (delegates to junior_dev)
-- Cannot run tests or builds (delegates to test_runner)
-- Uses built-in tools for codebase exploration instead of bash commands
+The complexity lives in each session plan — designed fresh for that specific problem, then discarded when done. The mental model is simple: **there are files in a directory, and agents read them.**
 
-**When active:**
-ALWAYS - This is your main interface to OpenCode. tech_lead is always present in your conversation.
-
-> [!TIP]
-> See [FEATURES.md Section 1](../FEATURES.md#1-agents-5-total) for complete capability and permission matrix
-
-**Example:**
-```
-User: "Add authentication to the API"
-tech_lead: Analyzes existing auth patterns → identifies requirements
-          → delegates to junior_dev for implementation
-          → delegates to test_runner for verification
-          → synthesizes results and reports findings
-```
-
-### junior_dev (Implementation Agent - On Demand)
-
-**Role:** Precise code implementation following detailed specifications
-
-**Capabilities:**
-- Implements code changes exactly as specified
-- Modifies any file type (code, config, documentation)
-- Performs file operations (copy, move, delete)
-
-**Constraints:**
-- Works only from detailed specifications (reports back if unclear)
-- Cannot run tests or installs (delegates to test_runner and tech_lead)
-- Never improvises or makes architectural decisions
-
-**When active:**
-Activated by tech_lead when code implementation is needed. Requires clear, detailed specifications. Will report if spec is unclear rather than guess.
-
-> [!TIP]
-> See [FEATURES.md Section 1](../FEATURES.md#1-agents-5-total) for detailed permissions and capabilities
-
-**Example:**
-```
-tech_lead: "Please add JWT validation middleware to Express server"
-Specification: 
-- Create middleware at src/middleware/auth.js
-- Implement JWT verification with secret from env
-- Add error handling with 401 responses
-
-junior_dev: Reads current code → implements exact changes → reports completion
-```
-
-### test_runner (Verification Agent - On Demand)
-
-**Role:** Execute tests, builds, diagnostics, and verification
-
-**Capabilities:**
-- Runs test suites, builds, and diagnostic commands
-- Provides detailed failure analysis and output
-- Captures large output to /tmp for analysis
-
-**Constraints:**
-- Cannot edit code or fix issues (delegates to junior_dev)
-- Cannot install packages (delegates to tech_lead)
-- Cannot modify git state (delegates to tech_lead)
-
-**When active:**
-Activated by tech_lead when verification is needed. Runs after implementation to ensure quality.
-
-> [!TIP]
-> See [FEATURES.md Section 1](../FEATURES.md#1-agents-5-total) for detailed permissions and capabilities
-
-**Example:**
-```
-tech_lead: "Run tests to verify the new authentication implementation"
-
-test_runner: Executes: npm test
-            Provides: Test output, pass/fail status, detailed failures
-            Reports: "3 tests passing, 1 failing due to missing env variable JWT_SECRET"
-```
-
-### explore (Discovery Agent - On Demand)
-
-**Role:** Fast codebase analysis and pattern discovery
-
-**Capabilities:**
-- Searches codebase for patterns and implementations
-- Maps file structure and dependencies
-- Identifies existing code patterns and examples
-
-**Constraints:**
-- Cannot edit anything (read-only analysis)
-- Cannot research external information
-- Cannot make architectural decisions
-
-**When active:**
-Activated by tech_lead when understanding the codebase is needed before planning implementation.
-
-> [!TIP]
-> See [FEATURES.md Section 1](../FEATURES.md#1-agents-5-total) for detailed permissions and capabilities
-
-**Example:**
-```
-tech_lead: "I need to understand the current auth patterns in this codebase"
-
-explore: Searches for auth-related code → identifies 3 patterns
-         Maps imports and dependencies → reports findings
-         Shows: "Found JWT middleware in auth/ and legacy session in legacy/"
-```
-
-### librarian (Research Agent - On Demand)
-
-**Role:** External research for APIs, libraries, and documentation
-
-**Capabilities:**
-- Fetches and reviews online documentation and specifications
-- Researches library APIs, patterns, and standards
-- Verifies external tool usage and best practices
-
-**Constraints:**
-- Cannot read local files (external research only)
-- Cannot edit anything
-- Cannot make implementation decisions
-
-**When active:**
-Activated by tech_lead when external research is needed (verifying API details, library patterns, standard specs).
-
-> [!TIP]
-> See [FEATURES.md Section 1](../FEATURES.md#1-agents-5-total) for detailed permissions and capabilities
-
-**Example:**
-```
-tech_lead: "I need to verify the correct JWT standard claims to use"
-
-librarian: Fetches JWT RFC documentation
-           Reports: "Standard claims are: iss, sub, aud, exp, iat, nbf"
-           tech_lead uses this to guide junior_dev
-```
+Everything is inspectable and editable. Session plans are markdown. Protocols are markdown. Agent definitions are markdown. If something isn't working mid-session, you edit the file. No plugin API to understand, no routing heuristic to debug. This transparency is by design.
 
 ---
 
-## Delegation Flow
+## HeadWrench — The Orchestrator
 
-The coordination flow is straightforward and intentional:
+HeadWrench is your primary interface and the session orchestrator. When you open OpenCode, HeadWrench is the default agent.
 
-```
-User Request
-    ↓
-tech_lead (Analysis & Planning)
-    ├─ Asks clarifying questions if needed
-    ├─ Executes project management commands (git, package installation)
-    ├─ Analyzes current state (delegates to explore)
-    ├─ Plans approach and checks external info (delegates to librarian)
-    └─ Delegates implementation (to junior_dev) and verification (to test_runner)
-    ↓
-Specialized Agent Execution
-    ├─ junior_dev: Implements changes
-    ├─ test_runner: Verifies quality
-    ├─ explore: Discovers patterns
-    └─ librarian: Researches details
-    ↓
-tech_lead (Synthesis)
-    └─ Collects results
-    └─ Synthesizes findings
-    └─ Provides final report to user
-    ↓
-User Receives Report
-```
+HeadWrench's responsibilities:
 
-> [!IMPORTANT]
-> This flow ensures proper separation of concerns. tech_lead never implements directly, and specialist agents never try to coordinate - they focus on their specific role.
+- **Planning**: Runs `/plan` — triggers Q&A, reads ContextScout's findings, generates a session plan, assigns agents to subtasks
+- **Delegation**: For each subtask, reads its specification and invokes the right subagent with a fully-specified task prompt
+- **Execution**: Runs `/continue` to execute the next pending subtask in a session
+- **Checkpointing**: Between subtasks, ensures the checkpoint protocol runs (WIP commit, state updates, notes, inbox entries, gate checks)
+- **Contextualization**: Maintains awareness of the session plan, current subtask, accumulated notes, and persistent project context
+
+HeadWrench does **not**:
+
+- Write large code blocks itself (delegates to `code-writer`)
+- Do deep codebase exploration (delegates to `context-scout`)
+- Research topics or fetch external documentation (delegates to `deep-researcher`)
 
 ---
 
-## Skills as a Concept
+## Subagents — Specialized Workers
 
-### What Skills Are
+Subagents are isolated, single-purpose workers. Each has a focused role. HeadWrench gives each subagent a fully-specified task prompt; the subagent completes the task and reports back. Subagents have no awareness of the broader session — they receive work, do it, and return results.
 
-**Skills are pre-loaded knowledge packages** that guide agent behavior without hard-coding constraints into the system. Each skill contains:
+There are 7 subagents:
 
-- **Behavioral guidelines** - How agents should approach their work
-- **Decision trees** - When to take different paths
-- **Policy enforcement** - What's allowed and forbidden
-- **Best practices** - Proven patterns for common situations
+1. **`context-scout`** — Reads the codebase and prior session notes before planning begins. Builds situational awareness so HeadWrench can ask better Q&A during `/plan`. Read-only, fast.
 
-Skills are automatically loaded based on which agent is active. You never need to think about individual skill names - they're loaded behind the scenes.
+2. **`deep-researcher`** — Handles web searches, documentation lookup, code examples, and external knowledge fetching. When you need to research a tool, library, or pattern, this agent does the digging.
 
-### Why Skills Matter
+3. **`gates-expert`** — Recommends where to place approval gates in session plans. Helps identify critical decision points where you should pause before proceeding.
 
-1. **Consistency** - All agents follow the same guidance without duplicating code
-2. **Extensibility** - New skills can be added without changing agent implementation
-3. **Separation of Concerns** - Behavioral guidance is separate from core logic
-4. **Evolutionary** - Skills improve over time and all agents benefit immediately
-5. **Transparency** - Skills make decision-making visible and auditable
+4. **`subagent-builder`** — Generates custom ephemeral agent definitions when no standard subagent fits the task. Creates one-off agent specs for special, unusual work.
 
-### Skill Categories (High-Level)
+5. **`code-writer`** — Fast implementation agent for well-specified code tasks. Requires clear specifications (from the session plan) and executes coding work efficiently.
 
-OpenCode uses four categories of skills:
+6. **`doc-writer`** — Writes documentation, code comments, READMEs, changelogs, and architectural decision records. Keeps documentation in sync with code.
 
-**Template Skills** - Define how agents interact and respond
-- Agent-specific interaction patterns
-- Response formats and structures
-
-**Protocol Skills** - Enforce execution patterns
-- How to approach work tasks
-- When to stop and report vs. continue
-- Verification and quality standards
-
-**Policy Skills** - Set boundaries and constraints
-- What tools are allowed/forbidden
-- When to ask for clarification
-- Unicode and formatting standards
-
-**Delegation Skills** - Guide coordination
-- When to delegate
-- How to frame requests to other agents
-- How to handle results
-
-> [!NOTE]
-> Users don't need to know individual skill names or manage them. They're auto-loaded based on which agent is working. Think of them as "agent instincts" that guide behavior.
+7. **`architect`** — Deep reasoning for complex architectural problems and subtle bugs. Optional, double-gated — reserved for architecturally critical decisions where you want maximum reasoning depth.
 
 ---
 
-## Workflows as a Concept
+## Sessions — The Unit of Work
 
-### What Workflows Are
+A session is a named, bounded piece of work with a goal and a set of subtasks. Sessions are the primary unit of organization.
 
-**Workflows are pre-defined sequences of commands for common, repeatable tasks.** They're invoked with `/workflow-name` syntax and orchestrate multiple steps automatically.
+**Session structure:**
 
-A workflow combines multiple agent actions into a single, bounded operation. Instead of coordinating each step manually, you invoke the workflow once and it handles the delegation and sequencing.
+Sessions live in `.opencode/sessions/{name}/` as plain markdown and JSON files. Key files:
 
-### Why Workflows Matter
+- `index.md` — Human-readable plan: goal, phases, subtasks, who's doing what, success criteria
+- `spec.json` — Machine-readable state: current subtask index, completion status, task definitions, agent assignments
+- `subtask-NN-{name}.md` — One file per subtask. Only the current subtask is loaded and shown to agents at runtime
+- `notes/` — Session-specific findings, decisions, and observations (created and updated during checkpoints)
 
-1. **Repeatable** - Same steps every time, no variation
-2. **Efficient** - Multiple steps in one command vs. separate requests
-3. **Bounded** - Workflow has clear entry/exit and success criteria
-4. **Documented** - Every workflow has built-in documentation
-5. **Testable** - Workflows can be validated and improved
+**Session lifecycle:**
 
-### How Workflows Work
+1. You run `/plan` → Q&A runs → ContextScout provides background → a session is created with an index.md and spec.json
+2. You run `/continue` → the current subtask (from spec.json) is loaded and executed by the assigned agent
+3. After each subtask completes, the checkpoint protocol runs: WIP commit, index.md and spec.json updates, notes written, inbox entries created, gate checks
+4. Repeat `/continue` for each subtask until the session is complete
+5. Final commit closes the session
 
-```
-User Input: /workflow-deploy-api
-
-    ↓
-
-tech_lead Execution:
-    ├─ Run tests (delegate to test_runner)
-    ├─ Check code quality (delegate to test_runner)
-    ├─ Build application (delegate to test_runner)
-    ├─ Verify no errors
-    └─ Report results
-    
-    ↓
-
-Workflow Complete
-```
-
-> [!TIP]
-> Available workflows are documented in USAGE.md. See that file for the complete list and how to invoke each workflow.
+Sessions accumulate observations in `notes/` and feed project-level patterns to `.opencode/inbox/` so future sessions can learn from what worked.
 
 ---
 
-## Configuration & Permissions
+## Skills — Loadable Knowledge Packages
 
-### Permission System
+Skills are markdown files that encode complex rules or decision frameworks. HeadWrench loads skills on demand when needed — they are not auto-loaded.
 
-OpenCode enforces a **permission system** where each agent has specific allowed and forbidden tools. This isn't arbitrary - it's intentional architecture:
+Currently, there is one skill:
 
-- **tech_lead** can read code, write documentation, and run project management commands (git, package installation) but cannot edit code directly or use bash for exploration
-- **junior_dev** can edit code and perform file operations but not run tests or install packages
-- **test_runner** can run test/build/diagnostic commands and write to /tmp but not edit files, install packages, or modify git state
-- **explore** can read files but not edit anything
-- **librarian** can fetch external info but not access local files
+- **`agent-delegation-expert`** — Loaded during `/plan` (Phase 5) to assign the right agent and model tier to each subtask. Provides routing rules and guidance on when to use fast models (haiku) vs. standard (sonnet) vs. deep reasoning (opus).
 
-### Why Constraints Matter
-
-Constraints force proper delegation and prevent anti-patterns:
-
-1. **Prevents Shortcuts** - Can't skip verification or planning steps
-2. **Forces Specialization** - Agents stay focused on their role
-3. **Ensures Quality** - Complex tasks go through proper channels
-4. **Enables Recovery** - When one agent fails, others can retry appropriately
-
-These constraints are defined in `opencode/opencode.json` and are enforced at the framework level.
-
-### Build Agent Fallback
-
-Sometimes the tech_lead delegation workflow isn't sufficient for a task. For those situations, OpenCode includes a **build agent** with comprehensive permissions to implement any task directly.
-
-> [!NOTE]
-> The build agent has all permissions necessary to complete tasks end-to-end without delegation. It's designed for cases where the coordination overhead of the delegation model doesn't fit the task at hand.
-
-**When to use build agent:**
-- Rapid prototyping where delegation overhead slows you down
-- Tasks requiring tight integration across many files simultaneously
-- Situations where you want a single agent to handle everything
-- When delegation has failed multiple times and you need a different approach
-
-**When to use tech_lead delegation (default):**
-- Most standard development tasks
-- When you want clear separation of concerns
-- When verification and quality checks matter
-- When you benefit from specialized agent expertise
+Think of skills as "expertise HeadWrench reaches for when it needs it" — not hardcoded behavior, but on-demand guidance living in markdown files.
 
 ---
 
-## Interaction Patterns
+## Commands — Entry Points
 
-### How You Interact With OpenCode
+The 7 slash commands are your entry points into the system. High-level overview:
 
-Your interaction with OpenCode is always through **tech_lead**. You're not managing individual agents - you're having a conversation with a coordinator who will handle delegation.
+- **`/plan`** — Start a new session. Triggers Q&A, ContextScout analysis, and plan generation. Use when you have a new piece of work to organize.
 
-**Typical interaction pattern:**
+- **`/continue`** — Resume the current session's next subtask. Reads the session plan, loads the next subtask, and executes it. Use repeatedly to work through a session.
 
-```
-You: "I need to add caching to the API responses"
+- **`/amend`** — Apply a quick in-session fix without starting a new plan. Use when you need to adjust something mid-session but don't want to create a new session.
 
-tech_lead responds:
-1. Clarifying Questions: "Which endpoints need caching? How long should items stay cached?"
-2. Analysis: "I'll explore the current code structure and see how responses are handled"
-3. Planning: "I'll need to verify Redis patterns in the codebase before implementing"
-4. Delegation: "I'll implement the changes once I understand current patterns"
-5. Verification: "After implementation, tests will ensure nothing broke"
-6. Report: "Here's what was implemented and test results"
-```
+- **`/inbox`** — Review accumulated project-level observations in `.opencode/inbox/`. Patterns and lessons from past sessions live here.
 
-You never need to say "delegate to junior_dev" or "run tests" - tech_lead decides when delegation is appropriate.
+- **`/context-add`** — Add a file to `.opencode/context/` persistent context. These files are read by ContextScout on every planning session.
 
-### What Happens When tech_lead Delegates
+- **`/context-list`** — List files currently in `.opencode/context/`.
 
-When tech_lead delegates to a specialist agent:
+- **`/context-remove`** — Remove a file from `.opencode/context/`.
 
-1. **Clear Spec** - tech_lead provides detailed, step-by-step instructions
-2. **Focused Execution** - Specialist agent executes only that spec, nothing more
-3. **Results** - Specialist reports back what was done or what went wrong
-4. **Integration** - tech_lead collects results and continues coordinating
-5. **Transparency** - You see what each agent did and their results
-
-> [!NOTE]
-> Each agent handoff is visible to you. When junior_dev runs, you see the spec they received and what they report back. This maintains full transparency while keeping coordination logic centralized.
+For detailed usage of each command, see [USAGE.md](USAGE.md).
 
 ---
 
-## Common Patterns & Best Practices
+## The Leverage Points
 
-### When tech_lead Asks Questions
+Where to focus if you want to tune the system:
 
-tech_lead will ask clarifying questions when your request is ambiguous. This is normal and expected:
+1. **The Q&A prompts in `/plan`** and the **session plan output format** are high-leverage. Small improvements to how questions are asked or how plans are structured compound across every session.
 
-```
-You: "Optimize the database queries"
+2. **ContextScout feeds persistent context** (files in `.opencode/context/`) into every planning session automatically. Keep notes there on what works and what doesn't. This is the primary way the system learns.
 
-tech_lead: "This could mean several things:
-1. Add indexes to slow queries
-2. Implement query caching
-3. Restructure queries to fetch less data
-4. All of the above
+3. **If something isn't working, the files are right there.** Session plans are markdown. Protocols are markdown. If a subtask assignment is wrong, edit it. If a gate is in the wrong place, move it. No black-box heuristics to debug.
 
-Which approach would you prefer, or should I analyze current bottlenecks first?"
-```
-
-**Why this matters:** Specificity prevents incorrect implementation and wasted effort.
-
-### When Spec Is Incomplete
-
-If tech_lead delegates to junior_dev and the spec is unclear, junior_dev will stop and report rather than guess:
-
-```
-junior_dev report to tech_lead:
-"Cannot proceed - spec unclear.
-
-Step 3 says 'Add error handling' but doesn't specify:
-- Which errors to catch
-- What response format to use
-- Whether to log errors
-
-Current finding: 3 different error handling patterns in codebase.
-
-Need: Clarification on which approach to use."
-```
-
-This is success - it prevents incorrect changes.
-
-### When Tests Fail
-
-If test_runner finds failures, tech_lead will analyze and plan next steps:
-
-```
-test_runner: "2 tests failing:
-- test_auth_redirect: Expected 302, got 200
-- test_expired_token: Expected 401, got 200"
-
-tech_lead: "The issue is clear - middleware isn't being applied to those routes.
-I'll ask junior_dev to check the implementation against the spec."
-```
-
-This is how issues are caught and fixed properly.
-
----
-
-## Mental Model Summary
-
-Think of OpenCode as a **coordinated team with clear roles**:
-
-- **tech_lead** is your direct interface and team coordinator
-- **Specialists** (junior_dev, test_runner, explore, librarian) each handle their domain
-- **Constraints** force proper coordination and prevent shortcuts
-- **Skills** guide behavior without hard-coding it
-- **Workflows** handle common repeatable tasks automatically
-
-This structure enables complex multi-step work to be decomposed, executed reliably, and verified systematically - all while keeping you in control through tech_lead.
+4. **The checkpoint protocol** ensures consistency between subtasks. If checkpoints are running too often or not often enough, adjust them.
 
 ---
 
 ## Next Steps
 
-For detailed instructions on how to use OpenCode, see:
-- **[USAGE.md](USAGE.md)** - How to invoke agents and workflows
-- **Agent directories** - /opencode/agent/ for detailed agent specifications
-- **opencode.json** - Configuration and permission details
+- **[USAGE.md](USAGE.md)** — How to use `/plan`, `/continue`, `/amend`, `/inbox`, and context commands
+- **[../FEATURES.md](../FEATURES.md)** — Complete component inventory: all agents, commands, protocols, skills, plugins, and MCPs

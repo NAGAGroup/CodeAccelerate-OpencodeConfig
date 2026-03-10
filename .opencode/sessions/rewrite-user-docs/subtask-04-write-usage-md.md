@@ -1,8 +1,46 @@
-# Usage Guide
+# Subtask 04 — Write New docs/USAGE.md
 
-This system is driven by 7 slash commands. Start with `/plan` for any non-trivial work — the rest follow from there.
+## Delegation
+- **Agent:** @DocWriter (`subagents/doc-writer`)
+- **Model tier:** fast (github-copilot/claude-haiku-4.5) — clear spec with defined command list and example patterns, no ambiguous judgment
+- **Reason:** Straightforward documentation writing with a fully specified structure and examples.
 
-## /plan — Start a Session
+---
+
+## Objective
+
+Write a new `docs/USAGE.md` that shows new users how to use the 5 core user-facing commands: `/plan`, `/continue`, `/amend`, `/inbox`, and the 3 context commands. Each command should have a brief explanation, a concrete example or two, and guidance on when to use it. This is a practical "how to use the system" guide, not a conceptual overview (that's CONCEPTS.md).
+
+---
+
+## Todolist
+
+### 1. Write docs/USAGE.md
+- [ ] Write the file at `/home/jack/CodeAccelerate-OpencodeConfig/docs/USAGE.md`
+- [ ] Cover all 7 commands with examples
+- [ ] Include a quick-reference summary table
+- [ ] Do not reference any old system names
+
+---
+
+## File Specification
+
+**Path:** `docs/USAGE.md`
+
+**Purpose:** Practical usage guide for the 7 slash commands. Shows how and when to use each command, with concrete examples.
+
+**Audience:** New users who want to know what to actually type and when.
+
+**Tone:** Practical, direct, example-first. Not a spec, not a tutorial — more like a quick-start guide for each command.
+
+---
+
+### Required Sections
+
+#### 1. Opening
+1-2 sentences: The system is driven by 7 slash commands. This guide covers the core ones — start with `/plan`.
+
+#### 2. /plan — Start a Session
 
 **When to use:** Any non-trivial task: new features, refactors, bug investigations, migrations. If it needs more than 2-3 steps or will touch multiple files, use `/plan`.
 
@@ -17,14 +55,11 @@ This system is driven by 7 slash commands. Start with `/plan` for any non-trivia
 ```
 /plan I want to add dark mode to the settings page
 ```
-
 HeadWrench will Q&A you, gather context, then write a session plan with subtasks like: explore current theming → implement toggle → update styles → run tests.
 
 **Tip:** The Q&A is where clarity happens. Give specific answers — done criteria, what's in/out of scope, the git branch to use. Vague answers produce vague plans.
 
----
-
-## /continue — Execute the Next Subtask
+#### 3. /continue — Execute the Next Subtask
 
 **When to use:** After `/plan` completes (or to resume a session after a break). Run it once per subtask — it picks up where the session left off.
 
@@ -38,14 +73,11 @@ HeadWrench will Q&A you, gather context, then write a session plan with subtasks
 ```
 /continue
 ```
-
 That's it — no arguments needed. HeadWrench knows where the session is.
 
 **Tip:** If you've edited a subtask file to adjust scope or fix a spec, just run `/continue` — it'll pick up your changes.
 
----
-
-## /amend — Quick Mid-Session Fixes
+#### 4. /amend — Quick Mid-Session Fixes
 
 **When to use:** Small corrections that don't warrant a new session: fixing a typo in a protocol file, adjusting a prompt, correcting a single-file change.
 
@@ -61,9 +93,7 @@ That's it — no arguments needed. HeadWrench knows where the session is.
 
 **When NOT to use:** If the fix touches multiple files, changes the scope of work, or reveals a new subtask — start a proper session with `/plan` instead.
 
----
-
-## /inbox — Review Project Observations
+#### 5. /inbox — Review Project Observations
 
 **When to use:** Periodically, to review patterns and observations that accumulated during past sessions.
 
@@ -79,13 +109,11 @@ That's it — no arguments needed. HeadWrench knows where the session is.
 
 **Tip:** The inbox is how the system learns project-level patterns over time. Reading it occasionally and promoting good observations to context makes future `/plan` sessions smarter.
 
----
-
-## Context Commands
+#### 6. Context Commands
 
 The three context commands manage `.opencode/context/` — a set of persistent files that ContextScout reads at the start of every `/plan` session to give HeadWrench background knowledge about the project.
 
-### /context-add
+##### /context-add
 
 Add a file to persistent context.
 
@@ -95,7 +123,7 @@ Add a file to persistent context.
 
 Use this for files that contain standing context every planning session should know about: architecture decisions, coding conventions, team preferences, known constraints.
 
-### /context-list
+##### /context-list
 
 List what's currently in context.
 
@@ -103,7 +131,7 @@ List what's currently in context.
 /context-list
 ```
 
-### /context-remove
+##### /context-remove
 
 Remove a file from context.
 
@@ -115,9 +143,7 @@ Use this when context is stale or no longer relevant.
 
 **Tip:** Keep context lean. 2-4 targeted files are more effective than 20 loosely related ones.
 
----
-
-## Quick Reference
+#### 7. Quick Reference
 
 | Command | When to use |
 |---------|-------------|
@@ -129,9 +155,7 @@ Use this when context is stale or no longer relevant.
 | `/context-list` | See what's in persistent context |
 | `/context-remove <path>` | Remove file from persistent context |
 
----
-
-## Typical Session Flow
+#### 8. Typical Session Flow
 
 ```
 1. /plan         → Q&A + session plan written
@@ -142,4 +166,34 @@ Use this when context is stale or no longer relevant.
 5. /continue     → Final subtask + session close commit
 ```
 
-For conceptual depth on how sessions, subtasks, and the planning process work, see [CONCEPTS.md](./CONCEPTS.md).
+---
+
+## Scope
+- **Write:** `docs/USAGE.md`
+- **Read:** nothing required (all content is spec'd above)
+- **Excluded:** Everything else — do not modify any other file
+
+---
+
+## Patterns
+```
+✅ GOOD — Lead each command section with "when to use"
+✅ GOOD — Show concrete command examples in code blocks
+✅ GOOD — Include "when NOT to use" where helpful
+✅ GOOD — End with a quick-reference table
+❌ BAD  — Deep conceptual explanations — link to CONCEPTS.md instead
+❌ BAD  — Old system references (tech_lead, junior_dev, workflow-* commands)
+❌ BAD  — Exhaustive edge cases — keep it practical for new users
+```
+
+---
+
+## Constraints
+- Only write `docs/USAGE.md` — do not touch any other file
+- Cover all 7 commands: /plan, /continue, /amend, /inbox, /context-add, /context-list, /context-remove
+- Keep examples realistic and concrete
+- Do NOT document opencode.json or dcp.jsonc config options
+
+---
+
+*At the end of this subtask, follow the checkpoint protocol in `~/.config/opencode/protocols/checkpoint.md`.*
