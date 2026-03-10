@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Opencode-DCP/opencode-dynamic-context-pruning/master/dcp.schema.json",
+  "enabled": true,
+  "debug": false,
+  "pruneNotification": "minimal",
+  "pruneNotificationType": "toast",
+  "commands": {
+    "enabled": true,
+    "protectedTools": [],
+  },
+  "manualMode": {
+    "enabled": false,
+    "automaticStrategies": true,
+  },
+  "turnProtection": {
+    "enabled": true,
+    "turns": 2,
+  },
+  "protectedFilePatterns": [
+    "**/*.hpp",
+    "**/*.h",
+    "**/*.yaml",
+    "**/*.yml",
+  ],
+  "tools": {
+    "settings": {
+      "nudgeEnabled": true,
+      "nudgeFrequency": 15,
+      "contextLimit": 80000,
+      "protectedTools": [],
+    },
+    "distill": {
+      "permission": "allow",
+      "showDistillation": true,
+    },
+    "compress": {
+      "permission": "allow",
+      "showCompression": true,
+    },
+    "prune": {
+      "permission": "allow",
+    },
+  },
+  "strategies": {
+    "deduplication": {
+      "enabled": true,
+      "protectedTools": [],
+    },
+    "supersedeWrites": {
+      "enabled": true,
+    },
+    "purgeErrors": {
+      "enabled": true,
+      "turns": 6,
+      "protectedTools": [],
+    },
+  },
+}

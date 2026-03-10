@@ -1,0 +1,109 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "small_model": "github-copilot/gpt-5-mini",
+  "plugin": ["@tarquinen/opencode-dcp@latest"],
+  "compaction": {
+    "auto": false,
+    "prune": false
+  },
+  "default_agent": "OpenAgent",
+  "agent": {
+    "build": {
+      "disable": true
+    },
+    "plan": {
+      "disable": true
+    },
+    "general": {
+      "disable": true
+    },
+    "OpenCopywriter": {
+      "disable": true
+    },
+    "OpenDataAnalyst": {
+      "disable": true
+    },
+    "OpenRepoManager": {
+      "disable": true
+    },
+    "OpenTechnicalWriter": {
+      "disable": true
+    },
+    "compaction": {
+      "model": "github-copilot/claude-opus-4.6"
+    },
+    "OpenSystemBuilder": {
+      "model": "github-copilot/claude-opus-4.6"
+    },
+    "BuildAgent": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "CoderAgent": {
+      "model": "github-copilot/claude-sonnet-4.6"
+    },
+    "CodeReviewer": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "ContextOrganizer": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "ContextScout": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "DocWriter": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "ExternalScout": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "OpenAgent": {
+      "model": "github-copilot/claude-sonnet-4.6"
+    },
+    "OpenCoder": {
+      "model": "github-copilot/claude-sonnet-4.6"
+    },
+    "OpenDevopsSpecialist": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "OpenFrontendSpecialist": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "TaskManager": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "TestEngineer": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "CppDev": {
+      "model": "opencode/claude-sonnet-4-6"
+    },
+    "CppCoder": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "CppBuildEngineer": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "CppExplorer": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "CppDebugger": {
+      "model": "github-copilot/claude-sonnet-4.6"
+    },
+    "CppResearcher": {
+      "model": "github-copilot/claude-sonnet-4.6"
+    }
+  },
+  "mcp": {
+    "context7": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": true
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp?exaApiKey=${EXA_API_KEY}",
+      "enabled": false
+    }
+  }
+}

@@ -1,0 +1,75 @@
+# opencode/ is ignored wholesale by the root .gitignore (opencode/**)
+# Unignore only files tracked by this repo:
+!.gitignore
+!opencode.json
+!dcp.jsonc
+!opencode-mem.jsonc
+!plugins/
+!plugins/mermaid.ts
+!plugins/dcp-recovery.ts
+
+# C++ Systems agents
+!agent/
+!agent/cpp-dev.md
+!agent/subagents/
+!agent/subagents/cpp/
+!agent/subagents/cpp/cpp-coder.md
+!agent/subagents/cpp/cpp-build-engineer.md
+!agent/subagents/cpp/cpp-hpc-specialist.md
+!agent/subagents/cpp/cpp-explorer.md
+!agent/subagents/cpp/cpp-debugger.md
+!agent/subagents/cpp/cpp-researcher.md
+
+# Overrides
+!command/commit.md
+
+# C++ Systems commands
+!command/
+!command/cpp-design.md
+!command/cpp-impl.md
+!command/cpp-review.md
+!command/cpp-debug.md
+!command/cpp-research.md
+!command/cpp-build.md
+!command/cpp-help.md
+
+# C++ Systems workflows
+!workflows/
+!workflows/cpp-systems/
+!workflows/cpp-systems/cpp-design-workflow.md
+!workflows/cpp-systems/cpp-impl-workflow.md
+
+# C++ Systems context
+!context/
+!context/cpp-systems/
+!context/cpp-systems/navigation.md
+!context/cpp-systems/domain/
+!context/cpp-systems/domain/sycl-adaptivecpp.md
+!context/cpp-systems/domain/cpp-hpc-patterns.md
+!context/cpp-systems/domain/cpp-modern-standards.md
+!context/cpp-systems/domain/level-zero-overview.md
+!context/cpp-systems/processes/
+!context/cpp-systems/processes/design-first-flow.md
+!context/cpp-systems/processes/debug-investigation.md
+!context/cpp-systems/processes/impl-approaches.md
+!context/cpp-systems/standards/
+!context/cpp-systems/standards/cpp-code-quality.md
+!context/cpp-systems/standards/hpc-performance.md
+!context/cpp-systems/standards/standing-orders.md
+!context/cpp-systems/templates/
+!context/cpp-systems/templates/pixi-cmake-scaffold.md
+!context/cpp-systems/templates/plan-doc-template.md
+!context/project/
+!context/project/**
+!context/project-intelligence/
+!context/project-intelligence/**
+
+# Core system context
+!context/core/
+!context/core/system/
+!context/core/system/dcp-context-management.md
+!context/core/system/navigation.md
+!context/core/navigation.md
+
+# Top-level context navigation
+!context/navigation.md

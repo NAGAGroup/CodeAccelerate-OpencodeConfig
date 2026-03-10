@@ -1,0 +1,23 @@
+# OpenCode runtime — local environment specific
+.opencode/session-ids/
+
+# OpenCode inbox — transient staging area (move to .opencode/context/ when ready to commit)
+.opencode/inbox/
+
+# OpenCode managed files — auto-installed by OpenCode runtime, do not track
+opencode/node_modules/
+opencode/bun.lock
+opencode/package.json
+opencode/package-lock.json
+.opencode/node_modules/
+.opencode/bun.lock
+.opencode/package.json
+.opencode/package-lock.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
