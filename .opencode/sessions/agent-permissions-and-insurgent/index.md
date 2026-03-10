@@ -26,8 +26,8 @@
 | 02 | ✅ done | Update HeadWrench: remove @explorer, add ContextInsurgent guidance, update debug loop — DocWriter / fast |
 | 03 | ✅ done | Permissions audit — all agents read-only analysis + findings report — ContextScout / fast |
 | G1 | ✅ done | Review audit findings. Decide: which lockdowns to apply? Which /session-status approach to build? |
-| 04 | 🔲 pending | Apply permissions lockdowns to all agent files — DocWriter / fast |
-| 05 | 🔲 pending | /session-status plugin sidebar panel — CodeWriter / standard |
+| 04 | ⏭ skipped | Apply permissions lockdowns — SKIPPED (audit found zero required changes) |
+| 05 | ✅ done | /session-status slash command at opencode/commands/session-status.md |
 
 ---
 

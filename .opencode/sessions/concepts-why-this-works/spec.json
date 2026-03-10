@@ -1,0 +1,24 @@
+{
+  "name": "concepts-why-this-works",
+  "goal": "Add a 'Why This Works' section to docs/CONCEPTS.md explaining the core design insight — complexity belongs in the session plan, not the config — committed to main.",
+  "created": "2026-03-10",
+  "status": "in_progress",
+  "currentSubtask": 0,
+  "subtaskCount": 2,
+  "architectEnabled": false,
+  "circuitBreakerThreshold": 3,
+  "subtasks": [
+    {
+      "id": "01",
+      "name": "write-section",
+      "description": "Write the 'Why This Works' section in CONCEPTS.md",
+      "status": "pending"
+    },
+    {
+      "id": "02",
+      "name": "final-commit",
+      "description": "Final commit to main",
+      "status": "pending"
+    }
+  ]
+}

@@ -2,8 +2,8 @@
   "name": "agent-permissions-and-insurgent",
   "goal": "Introduce ContextInsurgent subagent, remove @explorer from HeadWrench, audit and lock down all agent permissions, and implement /session-status in the best achievable form.",
   "created": "2026-03-10",
-  "status": "in_progress",
-  "currentSubtask": 3,
+  "status": "completed",
+  "currentSubtask": 5,
   "subtaskCount": 5,
   "architectEnabled": false,
   "circuitBreakerThreshold": 3,
@@ -36,13 +36,13 @@
       "id": "04",
       "name": "apply-permissions-lockdowns",
       "description": "Apply permissions lockdowns to all agent files based on audit findings",
-      "status": "pending"
+      "status": "skipped"
     },
     {
       "id": "05",
       "name": "session-status",
-      "description": "/session-status plugin sidebar panel — TypeScript plugin at opencode/plugins/session-status.ts",
-      "status": "pending"
+      "description": "/session-status slash command at opencode/commands/session-status.md",
+      "status": "completed"
     }
   ]
 }
