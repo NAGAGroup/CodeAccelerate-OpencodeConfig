@@ -142,3 +142,5 @@ vite.config.ts.timestamp-*
 opencode/bun.lock
 opencode/package.json
 opencode/package-lock.json
+.opencode/session-ids
+.opencode/inbox
