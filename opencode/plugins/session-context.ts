@@ -35,13 +35,17 @@ export default async (ctx: PluginInput): Promise<Hooks> => {
 
       const cwd = process.cwd()
 
-      // Push an ignored part so OpenCode skips the agent turn for this command
+      // Clear any parts the command template may have already injected,
+      // then push a synthetic+ignored sentinel so the agent turn is suppressed
+      // and nothing is visible to the user in the TUI.
+      output.parts.splice(0)
       output.parts.push({
         id: "session-status-handled",
         sessionID: input.sessionID,
         messageID: "session-status-handled",
         type: "text",
         text: "",
+        synthetic: true,
         ignored: true,
       })
 
