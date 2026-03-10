@@ -1,103 +1,59 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": false,
-  "small_model": "github-copilot/gpt-5-mini",
-  "plugin": ["@tarquinen/opencode-dcp@latest"],
+  "small_model": "opencode/gpt-5.1-codex-mini",
+  "plugin": ["@tarquinen/opencode-dcp@beta"],
   "compaction": {
-    "auto": false,
-    "prune": false
+    "auto": true,
+    "prune": true,
+    "reserved": 12000
   },
-  "default_agent": "OpenAgent",
+  "default_agent": "headwrench",
   "agent": {
-    "build": {
-      "disable": true
+    "headwrench": {
+      "model": "github-copilot/claude-sonnet-4.6"
     },
-    "plan": {
-      "disable": true
+    "subagents/context-scout": {
+      "model": "github-copilot/claude-haiku-4.5"
     },
-    "general": {
-      "disable": true
+    "subagents/deep-researcher": {
+      "model": "github-copilot/claude-haiku-4.5"
     },
-    "OpenCopywriter": {
-      "disable": true
+    "subagents/agent-delegation-expert": {
+      "model": "opencode/gemini-3-flash"
     },
-    "OpenDataAnalyst": {
-      "disable": true
+    "subagents/gates-expert": {
+      "model": "github-copilot/claude-sonnet-4.6"
     },
-    "OpenRepoManager": {
-      "disable": true
+    "subagents/subagent-builder": {
+      "model": "github-copilot/claude-sonnet-4.6"
     },
-    "OpenTechnicalWriter": {
-      "disable": true
+    "subagents/code-writer": {
+      "model": "opencode/gpt-5.3-codex"
+    },
+    "subagents/doc-writer": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "subagents/architect": {
+      "model": "opencode/claude-opus-4-6"
     },
     "compaction": {
-      "model": "github-copilot/claude-opus-4.6"
-    },
-    "OpenSystemBuilder": {
-      "model": "github-copilot/claude-opus-4.6"
-    },
-    "BuildAgent": {
       "model": "github-copilot/claude-haiku-4.5"
-    },
-    "CoderAgent": {
-      "model": "github-copilot/claude-sonnet-4.6"
-    },
-    "CodeReviewer": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "ContextOrganizer": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "ContextScout": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "DocWriter": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "ExternalScout": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "OpenAgent": {
-      "model": "github-copilot/claude-sonnet-4.6"
-    },
-    "OpenCoder": {
-      "model": "github-copilot/claude-sonnet-4.6"
-    },
-    "OpenDevopsSpecialist": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "OpenFrontendSpecialist": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "TaskManager": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "TestEngineer": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "CppDev": {
-      "model": "opencode/claude-sonnet-4-6"
-    },
-    "CppCoder": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "CppBuildEngineer": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "CppExplorer": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "CppDebugger": {
-      "model": "github-copilot/claude-sonnet-4.6"
-    },
-    "CppResearcher": {
-      "model": "github-copilot/claude-sonnet-4.6"
     }
   },
   "mcp": {
     "context7": {
       "type": "local",
       "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
       "enabled": true
     },
     "exa": {
