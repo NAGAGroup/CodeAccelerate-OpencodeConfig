@@ -21,12 +21,12 @@
 
 | # | Status | Description |
 |---|--------|-------------|
-| 01 | 🔲 pending | Archive all branches to `archive/*` — **HeadWrench / standard** |
-| 02 | 🔲 pending | Repo cleanup: rewrite `.gitignore`, remove stale tracked files — **CodeWriter + HW / fast** |
-| 03 | 🔲 pending | Write `CHANGELOG.md` for v0.1.0 — **DocWriter / fast** |
-| 04 | 🔲 pending | Audit and update all user-facing docs — **DocWriter / standard** |
-| 05 | 🔲 pending | Rewrite git history: orphan branch with 6 milestone commits — **HeadWrench / standard** |
-| 06 | 🔲 pending | Finalize release: set main, delete simple-rewrite, tag v0.1.0, push all — **HeadWrench / standard** |
+| 01 | ✅ complete | Archive all branches to `archive/*` — **HeadWrench / standard** |
+| 02 | ✅ complete | Repo cleanup: rewrite `.gitignore`, remove stale tracked files — **CodeWriter + HW / fast** |
+| 03 | ✅ complete | Write `CHANGELOG.md` for v0.1.0 — **DocWriter / fast** |
+| 04 | ✅ complete | Audit and update all user-facing docs — **DocWriter / standard** |
+| 05 | ✅ complete | Rewrite git history: orphan branch with 6 milestone commits — **HeadWrench / standard** |
+| 06 | ✅ complete | Finalize release: set main, delete simple-rewrite, tag v0.1.0, push all — **HeadWrench / standard** |
 
 ---
 
@@ -66,5 +66,5 @@
 
 ## Current Focus
 
-Subtask 01 is next: archive all branches to `archive/*` on origin.
+✅ **Session complete.** All 6 subtasks done. v0.1.0 tagged and pushed. main = rewritten history.
 
