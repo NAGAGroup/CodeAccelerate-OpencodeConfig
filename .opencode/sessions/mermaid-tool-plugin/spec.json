@@ -30,7 +30,7 @@
       "id": "03",
       "name": "final-commit-pr",
       "description": "Final commit on feat/mermaid-tool branch and create PR to main",
-      "status": "in_progress"
+      "status": "complete"
     }
   ]
 }
