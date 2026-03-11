@@ -33,6 +33,7 @@ This document tracks planned, in-progress, and shipped features for the CodeAcce
 | 🔲 | more frequent commits during session execution | Commit session context and progress more frequently during execution of a session plan to improve resilience and traceability |
 | 🔲 | mermaid diagram tool | Custom plugin leveraging the beautiful-mermaid library to render Mermaid diagrams inside OpenCode sessions |
 | 🔲 | improved Architect usage instructions for HeadWrench | Clearer session-level guidance on when and how HW should invoke @Architect during sessions where it's enabled — currently HW never uses it even when opted in |
+| 🔲 | session-context-manager | Better context/session/notes management with cleanup tooling (stale detection, deduplication, archive format suggestions) — built to be easy on the user |
 
 ---
 
