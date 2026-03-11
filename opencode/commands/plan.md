@@ -3,7 +3,11 @@ description: "Start a new session with full planning workflow: ContextScout → 
 agent: headwrench
 ---
 
+Immediately, before doing anything else create a todolist for a phases.
+
 Run the full planning workflow for a new session.
+
+## USER SESSION DESCRIPTION
 
 $ARGUMENTS
 
@@ -15,6 +19,8 @@ Delegate to @ContextScout to build a situational awareness report covering:
 - Persistent context from `.opencode/context/`
 
 ## Phase 2 — Q&A
+
+If no session description was given, ask the user to provide details.
 
 Interview the user. Cover:
 - **Done criteria** — how will we know this is complete?
@@ -48,6 +54,18 @@ If yes, delegate to @DeepResearcher with the specific topic. This step requires 
 
 ## Phase 4 — Draft Session Plan
 
+### Phase 4a — Agent Routing
+
+Load the **agent-delegation-expert** skill and apply its delegation rules to the drafted plan:
+- Assign agent routing per subtask
+- Assign model per subtask
+- Identify parallel delegation opportunities within subtask scope
+- Identify any new custom agents needed (with rationale)
+
+Write the assignments into the `## Delegation` section of each `subtask-NN-{name}.md` file. Assignments go in subtask files only — never in `spec.json` or `index.md`.
+
+### Phase 4b — Plan Design
+
 Use **Sequential Thinking** to reason through the subtask breakdown before writing — consider ordering, dependencies, gate placement, and parallelism opportunities.
 
 Then write the session plan yourself following `~/.config/opencode/protocols/session-plan-schema.md`. Use:
@@ -63,16 +81,7 @@ Create the session directory at `.opencode/sessions/{session-name}/` and write:
 - `spec.json` — machine-readable orchestrator state
 - One `subtask-NN-{name}.md` per subtask — isolated, fully-specified task files following the format in `~/.config/opencode/protocols/session-plan-schema.md`
 
-## Phase 5 — Agent Routing
-
-Load the **agent-delegation-expert** skill and apply its delegation rules to the drafted plan:
-- Assign agent routing per subtask
-- Assign model per subtask
-- Identify any new custom agents needed (with rationale)
-
-Write the assignments into the `## Delegation` section of each `subtask-NN-{name}.md` file. Assignments go in subtask files only — never in `spec.json` or `index.md`.
-
-## Phase 6 — Present to User
+## Phase 5 — Present to User
 
 Present to the user:
 - Plan overview (goal, subtasks, gates)
@@ -81,7 +90,7 @@ Present to the user:
 
 Ask for approval. If the user requests changes, revise the plan and loop back to Phase 5.
 
-## Phase 7 — Finalize
+## Phase 6 — Finalize
 
 Once approved:
 - Delegation assignments have already been written into subtask `## Delegation` sections during Phase 5
@@ -91,18 +100,16 @@ Once approved:
 - If new custom agents are needed, delegate to @SubagentBuilder in parallel with finalization
 - **Commit the session files**: stage and commit all files under `.opencode/sessions/{session-name}/` to the repo with a commit message of the form `plan: add session {session-name}`
 
-## Phase 8 — Final Overview and Wait
+## Phase 7 — Execution Bootstrap
 
 Give a brief final overview: session name, goal, number of subtasks, key gates. Then tell the user:
 
-> "Run `/activate-session` to set this as your active session plan, then say **start** when you're ready to begin."
+Instruct the user to send `start` when they're ready or to open new session and run `/activate-session {session-name}`.
 
 **Do not begin executing subtasks until the user explicitly says to start.**
 
-## Phase 9 — Execution Bootstrap
-
 When the user explicitly says to start:
-1. Read `.opencode/sessions/{session-name}/index.md` once for orientation.
+1. Call the activate_session tool and read `.opencode/sessions/{session-name}/index.md` once for orientation.
 2. Load the first subtask file (`subtask-NN-{name}.md`), determined by `spec.json` `currentSubtask`.
 3. Extract the `## Todolist` section from the subtask file and create Layer 2 todos.
 4. Create the 8 fixed checkpoint todos as Layer 3.
