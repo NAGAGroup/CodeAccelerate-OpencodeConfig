@@ -21,10 +21,10 @@
 
 | # | Status | Description |
 |---|--------|-------------|
-| 01 | 🔲 pending | Implement mermaid-tool plugin — @CodeWriter / standard |
-| G1 | 🚫 GATE | Verify plugin loads and renders correctly before marking Shipped |
-| 02 | 🔲 pending | Update ROADMAP.md and CHANGELOG.md — @DocWriter / fast |
-| 03 | 🔲 pending | Final commit and create PR — HeadWrench |
+| 01 | ✅ complete | Implement mermaid-tool plugin — @CodeWriter / standard |
+| G1 | ✅ GATE passed | Verify plugin loads and renders correctly before marking Shipped |
+| 02 | ✅ complete | Update ROADMAP.md and CHANGELOG.md — @DocWriter / fast |
+| 03 | ✅ complete | Final commit and create PR — HeadWrench |
 
 ---
 
@@ -40,9 +40,17 @@
 
 ## Current Focus
 
-▶️ Planning complete — ready to begin Subtask 01 on user's "start" signal.
+✅ Session complete — all subtasks done. PR created on `feat/mermaid-tool` → `main`.
 
-**Next:** Subtask 01 — Implement mermaid-tool plugin (CodeWriter)
+**Done criteria met:**
+- [x] `beautiful-mermaid` added to `opencode/package.json` and installed
+- [x] `opencode/plugins/mermaid-tool.ts` implemented with `render_mermaid` tool
+- [x] Tool registered/discoverable in OpenCode
+- [x] Smoke test passed: ASCII render of a simple flowchart produces unicode art
+- [x] TypeScript check passed
+- [x] ROADMAP.md mermaid diagram tool entry updated from 🔲 Planned → ✅ Recently Shipped
+- [x] CHANGELOG.md updated with the new feature
+- [x] PR created on `feat/mermaid-tool` → `main`
 
 ---
 
