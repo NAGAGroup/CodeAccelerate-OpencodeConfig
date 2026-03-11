@@ -89,6 +89,7 @@ Once approved:
 - Create the **session summary todo** (Layer 1 only) containing: session name, goal, path to `index.md`, first subtask number and description
 - Do not create Layer 2 (subtask todos) or Layer 3 (checkpoint todos) here; create both at execution start when the user says "start"
 - If new custom agents are needed, delegate to @SubagentBuilder in parallel with finalization
+- **Commit the session files**: stage and commit all files under `.opencode/sessions/{session-name}/` to the repo with a commit message of the form `plan: add session {session-name}`
 
 ## Phase 8 — Final Overview and Wait
 
