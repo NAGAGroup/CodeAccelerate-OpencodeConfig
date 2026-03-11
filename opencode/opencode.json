@@ -44,7 +44,7 @@
       "model": "github-copilot/claude-haiku-4.5"
     },
     "subagents/architect": {
-      "model": "opencode/claude-opus-4-6"
+      "model": "github-copilot/claude-opus-4.6"
     },
     "compaction": {
       "model": "github-copilot/claude-haiku-4.5"
