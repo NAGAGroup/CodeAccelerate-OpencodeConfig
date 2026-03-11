@@ -6,10 +6,19 @@
   "compaction": {
     "auto": true,
     "prune": true,
-    "reserved": 12000
+    "reserved": 0
   },
   "default_agent": "headwrench",
   "agent": {
+    "plan": {
+      "disable": true
+    },
+    "general": {
+      "disable": true
+    },
+    "explore": {
+      "disable": true
+    },
     "headwrench": {
       "model": "github-copilot/claude-sonnet-4.6"
     },
