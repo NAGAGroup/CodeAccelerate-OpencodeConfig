@@ -29,6 +29,9 @@ This document tracks planned, in-progress, and shipped features for the CodeAcce
 |--------|---------|-------------|
 | 🔲 | custom agent hot-reload | Reload agent definitions without restarting OpenCode, enabling rapid iteration on subagent specs |
 | 🔲 | multi-session breadcrumbs | Track cross-session dependencies and suggest related past sessions during planning |
+| 🔲 | /plan-collaborative slash command | Parallel to `/plan` but tailored for writing session plans involving heavy agent–user back-and-forth; produces `.opencode/sessions` plans for open-ended, exploratory work where linear task execution doesn't apply |
+| 🔲 | more frequent commits during session execution | Commit session context and progress more frequently during execution of a session plan to improve resilience and traceability |
+| 🔲 | mermaid diagram tool | Custom plugin leveraging the beautiful-mermaid library to render Mermaid diagrams inside OpenCode sessions |
 
 ---
 
