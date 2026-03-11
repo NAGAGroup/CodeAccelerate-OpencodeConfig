@@ -7,8 +7,8 @@
 ## Done Criteria
 
 - [x] `ROADMAP.md` exists at repo root with a clear template structure (categories, status indicators, placeholder rows)
-- [ ] `.opencode/commands/roadmap-add.md` — project-local slash command to add feature entries and commit
-- [ ] Both committed to `main`
+- [x] `.opencode/commands/roadmap-add.md` — project-local slash command to add feature entries and commit
+- [x] Both committed to `main`
 
 ---
 
@@ -18,7 +18,7 @@
 |---|--------|-------------|
 | 01 | ✅ complete | Write `ROADMAP.md` template at repo root — DocWriter / fast |
 | 02 | ❌ cancelled | Update `.opencode/context/navigation.md` to reference `ROADMAP.md` — cancelled (stale context) |
-| 03 | 🔲 pending | Write `.opencode/commands/roadmap-add.md` — project-local slash command — DocWriter / fast |
+| 03 | ✅ complete | Write `.opencode/commands/roadmap-add.md` — project-local slash command — DocWriter / fast |
 
 ---
 
@@ -30,9 +30,7 @@ _No gates — this is a low-risk documentation session._
 
 ## Current Focus
 
-**Amended.** Subtask 03 added: write `/roadmap-add` project-local slash command. Session reopened — in progress.
-
-Next: Subtask 03 — Write `.opencode/commands/roadmap-add.md`.
+**Session complete.** Subtask 01 ✅, Subtask 02 ❌ cancelled (stale context), Subtask 03 ✅.
 
 ---
 
