@@ -1,6 +1,5 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import type { Hooks, PluginInput } from "@opencode-ai/plugin"
-import type { Part } from "@opencode-ai/sdk"
 import { mkdir, readFile, unlink, writeFile } from "fs/promises"
 import { join } from "path"
 
@@ -27,27 +26,14 @@ function formatSessionToast(spec: {
 
 export default async (ctx: PluginInput): Promise<Hooks> => {
   return {
-    "command.execute.before": async (
-      input: { command: string; sessionID: string; arguments: string },
-      output: { parts: Part[] },
-    ) => {
+    "command.execute.before": async (input: {
+      command: string
+      sessionID: string
+      arguments: string
+    }) => {
       if (input.command !== "session-status") return
 
       const cwd = process.cwd()
-
-      // Clear any parts the command template may have already injected,
-      // then push a synthetic+ignored sentinel so the agent turn is suppressed
-      // and nothing is visible to the user in the TUI.
-      output.parts.splice(0)
-      output.parts.push({
-        id: "session-status-handled",
-        sessionID: input.sessionID,
-        messageID: "session-status-handled",
-        type: "text",
-        text: "",
-        synthetic: true,
-        ignored: true,
-      })
 
       try {
         const activeSessionPath = join(
