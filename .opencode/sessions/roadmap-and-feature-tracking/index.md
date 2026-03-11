@@ -6,9 +6,9 @@
 
 ## Done Criteria
 
-- [ ] `ROADMAP.md` exists at repo root with a clear template structure (categories, status indicators, placeholder rows)
-- [ ] `.opencode/context/navigation.md` references `ROADMAP.md` so ContextScout reads it during `/plan`
-- [ ] Both files committed to `main`
+- [x] `ROADMAP.md` exists at repo root with a clear template structure (categories, status indicators, placeholder rows)
+- [ ] `.opencode/commands/roadmap-add.md` — project-local slash command to add feature entries and commit
+- [ ] Both committed to `main`
 
 ---
 
@@ -16,8 +16,9 @@
 
 | # | Status | Description |
 |---|--------|-------------|
-| 01 | 🔲 pending | Write `ROADMAP.md` template at repo root — DocWriter / fast |
-| 02 | 🔲 pending | Update `.opencode/context/navigation.md` to reference `ROADMAP.md` — DocWriter / fast |
+| 01 | ✅ complete | Write `ROADMAP.md` template at repo root — DocWriter / fast |
+| 02 | ❌ cancelled | Update `.opencode/context/navigation.md` to reference `ROADMAP.md` — cancelled (stale context) |
+| 03 | 🔲 pending | Write `.opencode/commands/roadmap-add.md` — project-local slash command — DocWriter / fast |
 
 ---
 
@@ -29,22 +30,22 @@ _No gates — this is a low-risk documentation session._
 
 ## Current Focus
 
-**Planning complete.** Awaiting user `start` to begin execution.
+**Amended.** Subtask 03 added: write `/roadmap-add` project-local slash command. Session reopened — in progress.
 
-Next: Subtask 01 — Write `ROADMAP.md` template.
+Next: Subtask 03 — Write `.opencode/commands/roadmap-add.md`.
 
 ---
 
 ## Scope
 
 **In scope:**
-- `ROADMAP.md` — new file at repo root
-- `.opencode/context/navigation.md` — add reference to ROADMAP.md
+- `ROADMAP.md` — new file at repo root ✅
+- `.opencode/commands/roadmap-add.md` — project-local slash command to add features and commit
 
 **Out of scope:**
 - Populating ROADMAP.md with actual feature entries (template/structure only)
 - Modifying any agent files, protocols, or plugin code
-- Editing any other context files beyond `navigation.md`
+- Editing any files under `.opencode/context/` (stale — do not write)
 
 ---
 

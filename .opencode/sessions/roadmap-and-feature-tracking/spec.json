@@ -1,10 +1,10 @@
 {
   "name": "roadmap-and-feature-tracking",
-  "goal": "Create a visible feature tracking system: a ROADMAP.md at repo root for humans, with a context pointer so agents reference it during future planning sessions.",
+  "goal": "Create a visible feature tracking system: a ROADMAP.md at repo root for humans, with a /roadmap-add slash command to add features and commit.",
   "created": "2026-03-10",
   "status": "in_progress",
-  "currentSubtask": 0,
-  "subtaskCount": 2,
+  "currentSubtask": 2,
+  "subtaskCount": 3,
   "architectEnabled": false,
   "circuitBreakerThreshold": 3,
   "subtasks": [
@@ -12,13 +12,19 @@
       "id": "01",
       "name": "write-roadmap",
       "description": "Write ROADMAP.md template at repo root",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "id": "02",
       "name": "update-context-navigation",
       "description": "Update .opencode/context/navigation.md to reference ROADMAP.md",
-      "status": "pending"
+      "status": "cancelled"
+    },
+    {
+      "id": "03",
+      "name": "roadmap-add-command",
+      "description": "Write .opencode/commands/roadmap-add.md — project-local slash command",
+      "status": "in_progress"
     }
   ]
 }
