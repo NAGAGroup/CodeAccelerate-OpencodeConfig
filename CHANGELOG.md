@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Session bootstrap procedure** that initializes the todo stack and transitions between subtask contexts
 - **Dynamic Context Pruning (DCP)** integration via `@tarquinen/opencode-dcp` plugin to optimize token usage in multi-turn sessions
 - **Structured session metadata** format using `.opencode/session-ids/<sessionID>/active-session.json` to store and retrieve active session state
+- **Mermaid diagram tool** (`render_mermaid`) leveraging the beautiful-mermaid library to render Mermaid diagrams as ASCII unicode art, SVG, or GitHub-compatible markdown fenced blocks
 
 ### Changed
 

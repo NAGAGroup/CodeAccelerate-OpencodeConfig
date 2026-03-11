@@ -2,8 +2,8 @@
   "name": "mermaid-tool-plugin",
   "goal": "Implement a render_mermaid OpenCode tool plugin using the beautiful-mermaid library that renders Mermaid diagrams as ASCII, SVG, or markdown fenced blocks.",
   "created": "2026-03-10",
-  "status": "in_progress",
-  "currentSubtask": 0,
+  "status": "complete",
+  "currentSubtask": 3,
   "subtaskCount": 3,
   "architectEnabled": false,
   "circuitBreakerThreshold": 3,
@@ -12,25 +12,25 @@
       "id": "01",
       "name": "implement-plugin",
       "description": "Add beautiful-mermaid dep, implement mermaid-tool.ts plugin, register in opencode.json",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "id": "G1",
       "name": "gate-verify",
       "description": "Gate: HW verifies plugin smoke test and TypeScript check before marking Shipped",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "id": "02",
       "name": "update-docs",
       "description": "Update ROADMAP.md (Planned → Shipped) and CHANGELOG.md",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "id": "03",
       "name": "final-commit-pr",
       "description": "Final commit on feat/mermaid-tool branch and create PR to main",
-      "status": "pending"
+      "status": "complete"
     }
   ]
 }
