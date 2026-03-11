@@ -31,7 +31,6 @@ This document tracks planned, in-progress, and shipped features for the CodeAcce
 | 🔲 | multi-session breadcrumbs | Track cross-session dependencies and suggest related past sessions during planning |
 | 🔲 | /plan-collaborative slash command | Parallel to `/plan` but tailored for writing session plans involving heavy agent–user back-and-forth; produces `.opencode/sessions` plans for open-ended, exploratory work where linear task execution doesn't apply |
 | 🔲 | more frequent commits during session execution | Commit session context and progress more frequently during execution of a session plan to improve resilience and traceability |
-| 🔲 | mermaid diagram tool | Custom plugin leveraging the beautiful-mermaid library to render Mermaid diagrams inside OpenCode sessions |
 | 🔲 | improved Architect usage instructions for HeadWrench | Clearer session-level guidance on when and how HW should invoke @Architect during sessions where it's enabled — currently HW never uses it even when opted in |
 
 ---
@@ -58,6 +57,7 @@ Features under consideration but not yet prioritized. These may move to Planned 
 | ✅ | Agent delegation skill (v0.1.0) | Loadable skill that assigns agents based on task complexity, type, and skill requirements |
 | ✅ | Session-context plugin (v0.1.0) | Injects session metadata into system prompt to maintain orientation across context compactions |
 | ✅ | Dynamic Context Pruning (v0.1.0) | Integration of `@tarquinen/opencode-dcp` plugin to optimize token usage in multi-turn sessions |
+| ✅ | Mermaid diagram tool (v0.1.0) | Custom plugin leveraging the beautiful-mermaid library to render Mermaid diagrams as ASCII unicode art, SVG, or GitHub-compatible markdown fenced blocks |
 
 ---
 
