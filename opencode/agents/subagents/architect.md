@@ -11,7 +11,7 @@ permission:
   glob: allow
   grep: allow
   list: allow
-  sequential-thinking: allow
+  "sequential-thinking*": deny
   task: deny
   bash:
     "*": deny
