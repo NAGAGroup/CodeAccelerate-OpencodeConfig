@@ -2,8 +2,8 @@
   "name": "improve-planning-system",
   "goal": "Overhaul the planning system to improve compaction survival, parallel delegation, task sizing, agent commits, /amend functionality, and plan type detection.",
   "created": "2026-03-12",
-  "status": "in_progress",
-  "currentSubtask": 0,
+  "status": "completed",
+  "currentSubtask": 8,
   "subtaskCount": 8,
   "architectEnabled": false,
   "circuitBreakerThreshold": 3,
@@ -12,49 +12,49 @@
       "id": "01",
       "name": "amend-overhaul",
       "description": "Rewrite /amend.md from scratch with planning workflow knowledge, delegation re-run, and in-progress session awareness",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "02",
       "name": "dcp-prompt-overrides",
       "description": "Write DCP prompt overrides (system, compress, context-limit-nudge) to protect active subtask file reads from compression",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "03",
       "name": "compaction-survival",
       "description": "Strengthen session summary todo format and add compaction recovery procedures to headwrench.md and checkpoint.md",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "04",
       "name": "parallel-delegation-schema",
       "description": "Add parallel group delegation syntax to session-plan-schema.md and document launch mechanics in headwrench.md",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "05",
       "name": "task-sizing-prompting",
       "description": "Document task sizing limits, resubmit/task_id pattern, and prompting philosophy in schema and headwrench.md",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "06",
       "name": "agent-commit-rules",
       "description": "Update checkpoint.md, code-writer.md, doc-writer.md, and headwrench.md so agents commit their own work + session directory",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "07",
       "name": "dynamic-plan-types",
       "description": "Add session type detection and conditional Q&A branches (generic/debug/collaborative) to plan.md and plan-workflow.md",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "08",
       "name": "final-review",
-      "description": "Cross-file consistency check and polish pass across all modified files",
-      "status": "pending"
+      "description": "Final review and polish pass",
+      "status": "completed"
     }
   ]
 }

@@ -17,14 +17,14 @@
 
 | # | Status | Description |
 |---|--------|-------------|
-| 01 | 🔲 pending | Rewrite `/amend.md` from scratch — **@CodeWriter / standard** |
-| 02 | 🔲 pending | DCP prompt overrides + `dcp.jsonc` tuning — **@CodeWriter / standard** |
-| 03 | 🔲 pending | Compaction survival: session summary todo + recovery procedures — **@CodeWriter / standard** |
-| 04 | 🔲 pending | Parallel delegation schema: new parallel group syntax — **@CodeWriter / standard** |
-| 05 | 🔲 pending | Task sizing + prompting philosophy — **@CodeWriter / fast** |
-| 06 | 🔲 pending | Agent commit rules: checkpoint + subagent defs + headwrench — **@CodeWriter / fast** |
-| 07 | 🔲 pending | Dynamic plan types: session type detection in plan.md + plan-workflow.md — **@CodeWriter / standard** |
-| 08 | 🔲 pending | Final review + polish pass — **@DocWriter / fast** |
+| 01 | ✅ completed | Rewrite `/amend.md` from scratch — **@CodeWriter / standard** |
+| 02 | ✅ completed | DCP prompt overrides + `dcp.jsonc` tuning — **@CodeWriter / standard** |
+| 03 | ✅ completed | Compaction survival: session summary todo + recovery procedures — **@CodeWriter / standard** |
+| 04 | ✅ completed | Parallel delegation schema: new parallel group syntax — **@CodeWriter / standard** |
+| 05 | ✅ completed | Task sizing + prompting philosophy — **@CodeWriter / fast** |
+| 06 | ✅ completed | Agent commit rules: checkpoint + subagent defs + headwrench — **@CodeWriter / fast** |
+| 07 | ✅ completed | Dynamic plan types: session type detection in plan.md + plan-workflow.md — **@CodeWriter / standard** |
+| 08 | ✅ completed | Final review + polish pass — **@DocWriter / fast** |
 
 ## Gates Section
 
@@ -32,7 +32,7 @@ No gates defined for this session. All work is low-risk markdown editing of conf
 
 ## Current Focus
 
-**Starting.** First subtask: rewrite `/amend.md`.
+**Session complete.** All 8 subtasks finished successfully.
 
 ## Scope
 
