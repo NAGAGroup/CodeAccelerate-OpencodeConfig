@@ -2,11 +2,11 @@
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": false,
   "small_model": "opencode/gpt-5.1-codex-mini",
-  "plugin": ["@tarquinen/opencode-dcp@beta"],
+  "plugin": ["@tarquinen/opencode-dcp@3.0.0"],
   "compaction": {
     "auto": true,
     "prune": true,
-    "reserved": 0
+    "reserved": 15000
   },
   "default_agent": "headwrench",
   "agent": {

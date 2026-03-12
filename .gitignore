@@ -144,3 +144,5 @@ opencode/package.json
 opencode/package-lock.json
 .opencode/session-ids
 .opencode/inbox
+.opencode/bun.lock
+.opencode/package.json
