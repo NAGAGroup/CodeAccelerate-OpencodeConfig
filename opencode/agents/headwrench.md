@@ -121,6 +121,23 @@ Update this todo item at every checkpoint to reflect the new current subtask. **
 - **@SubagentBuilder** — generate custom ephemeral agents when no default fits
 - **@Architect** — deep reasoning for hard problems (double-gated: user opts in during planning AND approves each invocation)
 
+### Prompting Philosophy
+
+Set the right level of detail: provide structured context, a clear 1-2 sentence goal, hard constraints, and a verification criterion — then let the subagent reason through execution. Do not micro-manage implementation steps.
+
+Include in delegation prompts:
+- What to read (specific file paths)
+- Goal stated in 1-2 sentences
+- Hard constraints and known patterns to follow
+- How to verify the work is done correctly
+
+Do not include:
+- Step-by-step micro-instructions
+- Line-by-line implementation guidance
+- Prescriptive "how" sequencing that removes subagent reasoning; HeadWrench provides the **what**, not the detailed **how**
+
+See also: Delegation Sizing Guidelines in `session-plan-schema.md`.
+
 ### Parallel Group Delegation
 
 - Identify a parallel group subtask by the `## Delegation — Parallel Group` header in the current subtask file.

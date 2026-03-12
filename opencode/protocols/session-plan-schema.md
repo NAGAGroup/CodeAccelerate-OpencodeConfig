@@ -135,6 +135,19 @@ Examples: `subtask-01-analyze.md`, `subtask-03-fix-compaction-hook.md`
 - Gate sections are only included when the subtask immediately precedes a gate.
 - The `## Patterns` section uses fenced code blocks to prevent markdown rendering of ✅/❌ lines.
 
+## Delegation Sizing Guidelines
+
+- **Rule of thumb (soft, not hard):** A single delegation should usually stay around ~3 files or ~500 lines of new/modified content. This is a sizing heuristic, not an absolute cap.
+- **Anti-pattern to avoid:** Asking DocWriter to produce a 5000-word document in a single task invocation — split it into logical parts instead.
+- **Use `task_id` to continue oversized sequential work:** If one slot's work is too large for a single invocation, run Part 1 first and capture the returned `task_id`. Resubmit Part 2 with that same `task_id` so the work continues in the same subagent session. Repeat for Part 3+ as needed.
+
+Example (prose/pseudocode):
+- Part 1 prompt: "Draft sections 1-2 of the migration guide in `docs/migration.md`; stop after section 2 and report progress."
+- Result handling: "Store returned `task_id` from Part 1 as `doc_task_id`."
+- Part 2 resume prompt: "Resume using `doc_task_id`; draft sections 3-4 in the same file, preserving style and terminology from Part 1."
+
+- **Important:** The `task_id` resubmit pattern is for **sequential slicing only** (when later parts depend on earlier parts). If parts are independent and scopes do not overlap, use **parallel groups** instead.
+
 ### Parallel Delegation (Optional)
 Subtasks may opt into parallel delegation when multiple agents can work simultaneously on strictly separate scopes.
 
