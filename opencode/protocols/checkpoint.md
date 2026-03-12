@@ -50,7 +50,7 @@ Follow these steps in order at the end of each subtask:
     -   **Wait** for explicit approval before continuing.
 
 8.  **Circuit Breaker**:
-    -   If the last N subtasks failed (N = `circuitBreakerN` in `spec.json`, default 3):
+    -   If the last N subtasks failed (N = `circuitBreakerThreshold` in `spec.json`, default 3):
     -   **Stop immediately.** Do not attempt the next subtask.
     -   Report all N failures and ask the user how to proceed.
 
