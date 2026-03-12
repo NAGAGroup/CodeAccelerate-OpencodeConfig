@@ -2,8 +2,8 @@
   "name": "deny-by-default-agent-permissions",
   "goal": "Enforce deny-by-default tool permissions across all subagent definitions so agents cannot attempt tools they're not explicitly permitted to use, enabling safe unsupervised execution.",
   "created": "2026-03-11",
-  "status": "in_progress",
-  "currentSubtask": 0,
+  "status": "completed",
+  "currentSubtask": 4,
   "subtaskCount": 4,
   "architectEnabled": false,
   "circuitBreakerThreshold": 3,
@@ -12,31 +12,31 @@
       "id": "01",
       "name": "fix-agent-permissions",
       "description": "Fix agent permission blocks — apply deny-by-default to all agents that need it",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "02",
       "name": "update-delegation-skill",
       "description": "Update delegation skill with permission patterns section",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "03",
       "name": "update-subagentbuilder",
       "description": "Update SubagentBuilder definition to generate deny-by-default agents",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "G1",
       "name": "gate-review",
       "description": "User reviews all changed files before push",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "04",
       "name": "push-to-main",
       "description": "Push to main and close session",
-      "status": "pending"
+      "status": "completed"
     }
   ]
 }

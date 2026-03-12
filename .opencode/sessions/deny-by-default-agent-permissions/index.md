@@ -18,11 +18,11 @@
 
 | # | Status | Description |
 |---|--------|-------------|
-| 01 | 🔲 pending | Fix agent permission blocks — @CodeWriter / standard |
-| 02 | 🔲 pending | Update delegation skill with permission patterns — @DocWriter / fast |
-| 03 | 🔲 pending | Update SubagentBuilder definition — @DocWriter / fast |
-| G1 | 🚫 GATE | User reviews all changed files before push |
-| 04 | 🔲 pending | Push to main — HeadWrench / direct |
+| 01 | ✅ done | Fix agent permission blocks — @CodeWriter / standard |
+| 02 | ✅ done | Update delegation skill with permission patterns — @DocWriter / fast |
+| 03 | ✅ done | Update SubagentBuilder definition — @DocWriter / fast |
+| G1 | ✅ done | User reviews all changed files before push |
+| 04 | ✅ done | Push to main — HeadWrench / direct |
 
 ---
 
@@ -38,9 +38,7 @@
 
 ## Current Focus
 
-Planning complete. Ready to execute on user `start` command.
-
-**Next:** Subtask 01 — Fix agent permission blocks.
+**Session complete.** All subtasks done, changes pushed to main.
 
 ---
 
