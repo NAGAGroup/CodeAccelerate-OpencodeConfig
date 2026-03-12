@@ -16,17 +16,12 @@ permission:
   skill: allow
   task: deny
   bash:
-    "*": ask
+    "*": deny
     "cat *": allow
     "ls *": allow
     "find *": allow
     "grep *": allow
     "rg *": allow
-    "npm test *": allow
-    "npx prettier *": allow
-    "npx eslint *": allow
-    "make *": allow
-    "cargo test *": allow
 ---
 
 # CodeWriter
