@@ -78,7 +78,7 @@ Maintain a 3-layer todo stack during active sessions:
   - HW may add subtask-local todos during execution
   - Clear and repopulate at each subtask transition
 - **Layer 3 (bottom): Fixed checkpoint todos (8 steps)**
-  1. WIP commit (skip if subtask was read-only)
+  1. WIP commit ownership check (verify subagent commit with `git log -1` for CodeWriter/DocWriter tasks; skip read-only; commit only for HW-direct edits)
   2. Update `index.md` — mark completed, mark next `in_progress`
   3. Update `spec.json` — increment `currentSubtask`, update status
   4. Update session summary todo — reflect new current subtask
@@ -148,6 +148,15 @@ See also: Delegation Sizing Guidelines in `session-plan-schema.md`.
 ## Build & Test
 
 Running builds, integration tests, and deployment steps is **HeadWrench's direct responsibility** — never delegate these to CodeWriter or any other subagent. After CodeWriter completes an implementation subtask, HW runs the build/test commands directly and handles the results.
+
+## Commit Ownership
+
+- CodeWriter and DocWriter own their implementation/documentation commits and must commit at the end of their task.
+- At checkpoint step 1, HeadWrench verifies the agent commit exists (`git log -1`) rather than re-committing the same changes.
+- HeadWrench commit responsibility is limited to:
+  1. Read-only subtask checkpoint commits (when no subagent committed)
+  2. Session directory metadata updates not covered by subagent commits
+  3. The final session-close commit
 
 ## Build-Test-Debug Loop
 

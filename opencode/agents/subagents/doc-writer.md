@@ -41,3 +41,5 @@ You may be asked to:
 - Include code examples where helpful
 - Keep comments close to the code they describe
 - Don't document the obvious — focus on the "why" and the non-obvious "what"
+- At the end of each task, stage and commit all changes using `git add -A && git commit -m "docs: <short description of what was done>"`
+- Include `.opencode/sessions/` files in the commit if they were part of the task scope

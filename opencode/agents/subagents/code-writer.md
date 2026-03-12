@@ -46,5 +46,7 @@ Follow the todolist step by step. Write code that matches the patterns. Run only
 - Follow the patterns provided — if a pattern has a "DON'T" example, do not use that approach even if you see it in existing code
 - Run tests **only when the todolist explicitly provides a test command** — do not invent or expand test/build steps
 - **Do NOT run full project builds, integration test suites, or deployment steps** — those are HeadWrench's responsibility
+- At the end of each task, stage and commit all changes using `git add -A && git commit -m "<type>: <short description of what was done>"`, where `<type>` is `feat`, `fix`, or `docs` depending on the nature of the change
+- Include `.opencode/sessions/` files in the commit if they were part of the task scope
 - If something is unclear, say so in your response rather than guessing
 - When done, report what you did and any issues encountered — HeadWrench will handle the checkpoint

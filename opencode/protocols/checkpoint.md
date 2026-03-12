@@ -7,8 +7,11 @@ The canonical checkpoint procedure run by HeadWrench at the end of **EVERY** sub
 Follow these steps in order at the end of each subtask:
 
 1.  **WIP Commit**:
-    -   Run `git add -A && git commit -m "wip: subtask-NN — <short description>"` (replace `NN` with the current subtask ID).
-    -   **Skip** if the subtask was strictly analysis/read-only with no file changes.
+    -   Apply the 3-way ownership rule:
+        -   **Implementation subtask (CodeWriter/DocWriter):** the subagent already committed at task completion. HeadWrench verifies the commit exists with `git log -1 --oneline` and skips creating another commit if confirmed.
+        -   **Read-only/analysis subtask:** **Skip** if the subtask was strictly analysis/read-only with no file changes.
+        -   **HeadWrench-direct edits:** run `git add -A && git commit -m "wip: subtask-NN — <short description>"` (replace `NN` with the current subtask ID).
+    -   Any commit created for the subtask must include updated session directory files (for example `.opencode/sessions/...`) when they were part of the task.
     -   The WIP commit ensures `spec.json` always reflects the last known good state.
     -   This file is the authoritative recovery anchor — if context is lost mid-session, reading `spec.json` is always the correct first step.
     -   It tells you the `currentSubtask` index, which resolves which subtask file to load next.
