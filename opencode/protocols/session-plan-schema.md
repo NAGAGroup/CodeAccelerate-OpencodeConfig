@@ -135,6 +135,44 @@ Examples: `subtask-01-analyze.md`, `subtask-03-fix-compaction-hook.md`
 - Gate sections are only included when the subtask immediately precedes a gate.
 - The `## Patterns` section uses fenced code blocks to prevent markdown rendering of ✅/❌ lines.
 
+### Parallel Delegation (Optional)
+Subtasks may opt into parallel delegation when multiple agents can work simultaneously on strictly separate scopes.
+
+Use this `## Delegation` format for parallel groups:
+
+```markdown
+## Delegation — Parallel Group
+This subtask uses parallel delegation. HeadWrench launches all slots simultaneously in a single message.
+
+### Slot A — [short description]
+- **Agent:** @CodeWriter
+- **Model tier:** fast
+- **Scope:** [specific files/scope slice for this slot]
+
+### Slot B — [short description]
+- **Agent:** @CodeWriter
+- **Model tier:** fast
+- **Scope:** [specific files/scope slice for this slot]
+```
+
+Use a per-slot `## Todolist` structure:
+
+```markdown
+## Todolist
+
+### Slot A — [description]
+- [ ] Task for slot A
+
+### Slot B — [description]
+- [ ] Task for slot B
+```
+
+Rules for parallel groups:
+- Slots must have explicit, non-overlapping file scopes. No two slots may edit the same file.
+- Parallel group subtasks should use a `## Scope` section with clearly delineated per-slot file lists.
+- The standard single-agent `## Delegation` format remains valid and unchanged. Parallel groups are opt-in.
+- `## Todolist` remains the source of Layer 2 todos regardless of delegation type.
+
 ## notes/ Convention
 The `notes/` directory stores session-specific discoveries.
 - **Naming**: `kebab-case-topic.md`

@@ -121,6 +121,13 @@ Update this todo item at every checkpoint to reflect the new current subtask. **
 - **@SubagentBuilder** — generate custom ephemeral agents when no default fits
 - **@Architect** — deep reasoning for hard problems (double-gated: user opts in during planning AND approves each invocation)
 
+### Parallel Group Delegation
+
+- Identify a parallel group subtask by the `## Delegation — Parallel Group` header in the current subtask file.
+- For parallel groups, launch all slot Task tool calls in **one message** so they start simultaneously.
+- Wait for **all** slot results to return before moving to checkpoint steps.
+- If any slot fails, treat the entire subtask as failed for circuit breaker purposes.
+
 ## Build & Test
 
 Running builds, integration tests, and deployment steps is **HeadWrench's direct responsibility** — never delegate these to CodeWriter or any other subagent. After CodeWriter completes an implementation subtask, HW runs the build/test commands directly and handles the results.
