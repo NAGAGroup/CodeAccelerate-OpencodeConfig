@@ -9,6 +9,10 @@ Follow these steps in order at the end of each subtask:
 1.  **WIP Commit**:
     -   Run `git add -A && git commit -m "wip: subtask-NN — <short description>"` (replace `NN` with the current subtask ID).
     -   **Skip** if the subtask was strictly analysis/read-only with no file changes.
+    -   The WIP commit ensures `spec.json` always reflects the last known good state.
+    -   This file is the authoritative recovery anchor — if context is lost mid-session, reading `spec.json` is always the correct first step.
+    -   It tells you the `currentSubtask` index, which resolves which subtask file to load next.
+    -   Do not use `index.md` as the recovery anchor — it is human-readable documentation, not the state source.
 
 2.  **Update index.md**:
     -   Mark the just-completed subtask as `completed` in the Subtask Table.

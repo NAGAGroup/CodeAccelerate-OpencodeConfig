@@ -153,13 +153,17 @@ HeadWrench maintains a **single persistent todo item** throughout the session th
 The todo must contain:
 - Session name
 - Session goal (one sentence)
+- Path to `spec.json`: `.opencode/sessions/{name}/spec.json`
 - Path to `index.md`: `.opencode/sessions/{name}/index.md`
 - Current subtask number and description
+- The phrase: `If context lost: read spec.json → load current subtask file → rebuild todo stack`
 
 ### Example
 ```
-SESSION: fix-plan-schema-and-workflow | Goal: Align docs with real session format | Plan: .opencode/sessions/fix-plan-schema-and-workflow/index.md | Current: Subtask 02 — Update plan-workflow.md + plan.md
+SESSION: improve-planning-system | Goal: Harden planning workflow and recovery behavior across compaction events | Spec: .opencode/sessions/improve-planning-system/spec.json | Plan: .opencode/sessions/improve-planning-system/index.md | Current: Subtask 03 — Compaction Survival | If context lost: read spec.json → load current subtask file → rebuild todo stack
 ```
+
+This todo must be rich enough for HeadWrench to fully re-bootstrap session orientation without any prior chat history.
 
 ### Ownership Rules
 - **HeadWrench creates** this todo during session bootstrap (plan finalization).
