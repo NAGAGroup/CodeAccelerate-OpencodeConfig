@@ -18,9 +18,25 @@ HeadWrench dispatches **ContextScout** to read the existing codebase context, se
 - It returns a comprehensive situational report to HW.
 - **Optional (DeepResearcher)**: If the situational report indicates missing technical knowledge or complex research is required, a **DeepResearcher** may be dispatched at this point, but *only* with explicit user opt-in.
 
-### Step 2 — Q&A
+### Step 1.5 — Session Type Detection
+Before full Q&A, HeadWrench asks exactly one question:
+
+> "What kind of session is this?"
+
+Session types:
+- **Generic** (default): feature work, refactors, new systems
+- **Debug**: investigating a bug or failure
+- **Collaborative**: user wants to work alongside HW, not just direct it
+
+HW records this selection in Q&A context and uses it to branch Step 2.
+
+### Step 2 — Q&A (Base + Conditional Branch)
 HeadWrench analyzes the situational report and runs a focused Q&A session with the user.
-- HW asks clarifying questions to resolve any remaining ambiguities or contradictions.
+- HW always runs the standard base Q&A (done criteria, scope, references, invariants, uncertainties, build/test, git, circuit breaker, CI, architect opt-in).
+- **Generic**: no extra questions (preserves current behavior).
+- **Debug**: adds symptom, start point/last known good, prior attempts, suspected components, reproduction test status, and whether to add a regression test after fix.
+- **Collaborative**: adds preferred involvement level, decisions the user wants to make personally, and whether HW should pause before each subtask.
+- HW asks clarifying follow-ups to resolve ambiguities or contradictions.
 - This step ensures HW has a full understanding of the user's constraints and preferences before drafting.
 
 ### Step 2.5 — Checkpoint Protocol Approval
@@ -37,6 +53,8 @@ HeadWrench writes the session plan draft directly.
 - The plan must follow the session plan format schema defined in `~/.config/opencode/protocols/session-plan-schema.md`.
 - HW writes: (a) `index.md` (living human-readable plan), (b) `spec.json` (machine-readable orchestrator state), and (c) one `subtask-NN-{name}.md` file per subtask.
 - No files are executed or modified beyond the plan files themselves.
+
+**Ordering rule:** Drafting (Step 3) always happens before delegation routing (Step 4).
 
 ### Step 4 — Delegation Review (Agent-Delegation-Expert Skill)
 HeadWrench loads the **agent-delegation-expert** skill and applies its delegation rules to the drafted plan.

@@ -1,5 +1,5 @@
 ---
-description: "Start a new session with full planning workflow: ContextScout → Q&A → HW drafts plan → AgentDelegationExpert → SubagentBuilder (if needed) → approval."
+description: "Start a new session with full planning workflow: ContextScout → session type detection → Q&A → HW drafts plan → AgentDelegationExpert → SubagentBuilder (if needed) → approval."
 agent: headwrench
 ---
 
@@ -18,11 +18,24 @@ Delegate to @ContextScout to build a situational awareness report covering:
 - Prior sessions and their outcomes
 - Persistent context from `.opencode/context/`
 
+## Phase 1.5 — Session Type Detection
+
+Ask exactly one question:
+
+> "What kind of session is this?"
+
+Options:
+- **Generic** (default) — feature work, refactors, new systems
+- **Debug** — investigating a bug or failure
+- **Collaborative** — user wants to work alongside HW, not just direct it
+
+Record the selected session type in your Q&A context and use it to branch Phase 2.
+
 ## Phase 2 — Q&A
 
 If no session description was given, ask the user to provide details.
 
-Interview the user. Cover:
+Interview the user using the **standard Q&A** below (all session types):
 - **Done criteria** — how will we know this is complete?
 - **Scope** — what's in, what's out?
 - **Reference vs legacy** — which existing code should be followed as a pattern, which should be ignored?
@@ -33,6 +46,21 @@ Interview the user. Cover:
 - **Circuit breaker threshold** — how many consecutive failures before stopping? (default: 3)
 - **CI/infrastructure** — anything relevant?
 - **Architect opt-in** — do you want deep reasoning available for hard problems? (default: no)
+
+Then apply conditional additions based on session type:
+
+- **Generic** — no additional questions; behavior is unchanged from today.
+- **Debug** — add:
+  - **Symptom** — what's failing, and what error/unexpected behavior is seen?
+  - **Start point** — when did this begin, and what is the last known good state?
+  - **Prior attempts** — what has already been tried?
+  - **Suspected components** — what areas seem most likely involved?
+  - **Repro test exists?** — is there an existing reproduction test?
+  - **Regression test after fix?** — should HW add one?
+- **Collaborative** — add:
+  - **Involvement level** — approve every subtask, review changes, or mostly hands-off?
+  - **User-owned decisions** — which decisions should the user make personally (architecture, API shape, etc.)?
+  - **Pause cadence** — should HW pause before each subtask to discuss scope?
 
 After Q&A, use **Sequential Thinking** to synthesize the answers — reason through scope trade-offs, dependencies between subtasks, and any unresolved ambiguities before moving to plan drafting.
 
@@ -54,18 +82,6 @@ If yes, delegate to @DeepResearcher with the specific topic. This step requires 
 
 ## Phase 4 — Draft Session Plan
 
-### Phase 4a — Agent Routing
-
-Load the **agent-delegation-expert** skill and apply its delegation rules to the drafted plan:
-- Assign agent routing per subtask
-- Assign model per subtask
-- Identify parallel delegation opportunities within subtask scope
-- Identify any new custom agents needed (with rationale)
-
-Write the assignments into the `## Delegation` section of each `subtask-NN-{name}.md` file. Assignments go in subtask files only — never in `spec.json` or `index.md`.
-
-### Phase 4b — Plan Design
-
 Use **Sequential Thinking** to reason through the subtask breakdown before writing — consider ordering, dependencies, gate placement, and parallelism opportunities.
 
 Then write the session plan yourself following `~/.config/opencode/protocols/session-plan-schema.md`. Use:
@@ -81,16 +97,26 @@ Create the session directory at `.opencode/sessions/{session-name}/` and write:
 - `spec.json` — machine-readable orchestrator state
 - One `subtask-NN-{name}.md` per subtask — isolated, fully-specified task files following the format in `~/.config/opencode/protocols/session-plan-schema.md`
 
-## Phase 5 — Present to User
+## Phase 5 — Apply Agent Routing
+
+Load the **agent-delegation-expert** skill and apply its delegation rules to the drafted plan:
+- Assign agent routing per subtask
+- Assign model per subtask
+- Identify parallel delegation opportunities within subtask scope
+- Identify any new custom agents needed (with rationale)
+
+Write the assignments into the `## Delegation` section of each `subtask-NN-{name}.md` file. Assignments go in subtask files only — never in `spec.json` or `index.md`.
+
+## Phase 6 — Present to User
 
 Present to the user:
 - Plan overview (goal, subtasks, gates)
 - Delegation assignments (agents and models assigned to each subtask)
 - Any proposed new custom agents
 
-Ask for approval. If the user requests changes, revise the plan and loop back to Phase 5.
+Ask for approval. If the user requests changes, revise the plan and loop back to Phase 4 and/or Phase 5 as needed.
 
-## Phase 6 — Finalize
+## Phase 7 — Finalize
 
 Once approved:
 - Delegation assignments have already been written into subtask `## Delegation` sections during Phase 5
@@ -100,7 +126,7 @@ Once approved:
 - If new custom agents are needed, delegate to @SubagentBuilder in parallel with finalization
 - **Commit the session files**: stage and commit all files under `.opencode/sessions/{session-name}/` to the repo with a commit message of the form `plan: add session {session-name}`
 
-## Phase 7 — Execution Bootstrap
+## Phase 8 — Execution Bootstrap
 
 Give a brief final overview: session name, goal, number of subtasks, key gates. Then tell the user:
 
