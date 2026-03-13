@@ -13,7 +13,7 @@ HeadWrench (HW) should invoke the `/plan` workflow in the following scenarios:
 ## Workflow Steps
 
 ### Step 1 — Context Gathering (ContextScout)
-HeadWrench dispatches **ContextScout** to read the existing codebase context, session notes, and inbox items relevant to the task. 
+HeadWrench dispatches **ContextScout** to read the existing codebase context and active session notes relevant to the task. See `~/.config/opencode/protocols/context-management.md` for the full reading scope (Tiers 1–4). The inbox (`.opencode/inbox/`) is a **write-only staging queue** — ContextScout does not read it.
 - **ContextScout** is strictly read-only.
 - It returns a comprehensive situational report to HW.
 - **Optional (DeepResearcher)**: If the situational report indicates missing technical knowledge or complex research is required, a **DeepResearcher** may be dispatched at this point, but *only* with explicit user opt-in.

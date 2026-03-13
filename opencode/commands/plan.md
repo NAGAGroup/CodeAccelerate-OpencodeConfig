@@ -16,7 +16,9 @@ $ARGUMENTS
 Delegate to @ContextScout to build a situational awareness report covering:
 - Codebase structure (layout, languages, frameworks, build system)
 - Prior sessions and their outcomes
-- Persistent context from `.opencode/context/`
+- Active context from Tier 2 (`~/.config/opencode/context/`) and Tier 3 (`.opencode/context/`) — skip files with `active: false` or `superseded_by:` set
+- Active session notes from Tier 4 (`.opencode/sessions/*/notes/` for in_progress/pending sessions only)
+- Do **not** read `.opencode/inbox/` — the inbox is a write-only staging queue; agents never read it
 
 ## Phase 1.5 — Session Type Detection
 

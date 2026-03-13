@@ -48,11 +48,16 @@ When user says "start":
 
 - Read `.opencode/sessions/{name}/index.md` once for orientation only (session name, goal, current subtask)
 - Read `.opencode/sessions/{name}/spec.json` and resolve `currentSubtask`
-- Load only the current `subtask-NN-{name}.md` file
+- Load Tier 2 context: read all active files in `~/.config/opencode/context/` (global permanent context)
+- Load Tier 3 context: read all active files in `.opencode/context/` (local permanent context)
+- Load Tier 4 context: read session notes from `.opencode/sessions/*/notes/` for sessions with status `in_progress` or `pending` only
+- Load only the current `subtask-NN-{name}.md` file (Tier 5)
 - Create Layer 1 session summary todo
 - Extract `## Todolist` from current subtask file and create Layer 2 todos
 - Create Layer 3 checkpoint todos (8 fixed steps)
 - Begin executing the current subtask
+
+> Context loading follows the 5-tier model in `~/.config/opencode/protocols/context-management.md`. Skip files with `active: false` or `superseded_by:` set.
 
 ## Compaction Recovery
 
@@ -61,9 +66,10 @@ If context is lost due to autocompaction, recover in this exact order:
 1. Check the Layer 1 session summary todo first — if it contains the recovery phrase `If context lost: read spec.json...`, use it to orient.
 2. If Layer 1 todo is missing or stale: read `.opencode/sessions/{name}/spec.json` to find `currentSubtask`.
 3. Load only the current `subtask-NN-{name}.md` file (do **not** load `index.md` or all subtask files).
-4. Reconstruct the 3-layer todo stack: Layer 1 from `spec.json` + `index.md` goal, Layer 2 from subtask `## Todolist`, Layer 3 fixed 8-step checkpoint.
-5. Resume work at whatever step was in progress — do not restart the subtask unless the user explicitly instructs it.
-6. Note: the most recent WIP commit ensures `spec.json` reflects the last completed checkpoint state.
+4. Reload Tier 2-4 context: active files in `~/.config/opencode/context/`, `.opencode/context/`, and in_progress/pending session notes (same rules as Session Bootstrap). Skip files with `active: false` or `superseded_by:` set.
+5. Reconstruct the 3-layer todo stack: Layer 1 from `spec.json` + `index.md` goal, Layer 2 from subtask `## Todolist`, Layer 3 fixed 8-step checkpoint.
+6. Resume work at whatever step was in progress — do not restart the subtask unless the user explicitly instructs it.
+7. Note: the most recent WIP commit ensures `spec.json` reflects the last completed checkpoint state.
 
 ## Todolist Structure
 

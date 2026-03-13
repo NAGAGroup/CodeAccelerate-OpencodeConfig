@@ -11,7 +11,8 @@ $ARGUMENTS
    - Read `.opencode/sessions/$ARGUMENTS/index.md` and `spec.json`
    - Read the current (first incomplete) subtask file: `.opencode/sessions/$ARGUMENTS/subtask-NN-{name}.md`
    - Read all files under `.opencode/sessions/$ARGUMENTS/notes/`
-   - Return: session goal, completed subtasks, current subtask objective/scope/constraints, and any relevant notes
+   - Read active Tier 2 context (`~/.config/opencode/context/`) and Tier 3 context (`.opencode/context/`) — skip files with `active: false` or `superseded_by:` set
+   - Return: session goal, completed subtasks, current subtask objective/scope/constraints, relevant notes, and any active context files loaded
 
 2. Present the summary to the user:
    - Session goal

@@ -197,7 +197,38 @@ If present, any Markdown file here overrides the corresponding global protocol f
 - `protocols/checkpoint.md` — overrides `~/.config/opencode/protocols/checkpoint.md` for this session.
 - Written during `/plan` finalization **only if** the user requested changes to the default checkpoint protocol.
 
-## Session Summary Todo
+## Context Loading
+
+HeadWrench loads context at two moments: **session bootstrap** (when user says "start") and **compaction recovery** (when context is lost). Subagents do **not** load context — HW manages context and provides each subagent with a fully-specified, isolated prompt.
+
+### What to Load
+
+Follow the 5-tier model from `~/.config/opencode/protocols/context-management.md`:
+
+| Tier | Location | Load Rule |
+|------|----------|-----------|
+| 1 | `~/.config/opencode/` (protocols, agents, commands) | Always loaded by the runtime |
+| 2 | `~/.config/opencode/context/` (global permanent context) | Read all files with `active: true` (or no header — missing `active` = true) |
+| 3 | `.opencode/context/` (local permanent context) | Read all files with `active: true` |
+| 4 | `.opencode/sessions/*/notes/` | Only sessions with status `in_progress` or `pending`; skip completed/archived |
+| 5 | Current `subtask-NN-*.md` | Load only the current subtask file — fresh per task |
+
+Skip any file where `superseded_by:` is set (regardless of `active:` value).
+
+### When to Load
+
+- **Session Bootstrap**: After reading `spec.json`, and before creating Layer 2 todos, load Tiers 2–4.
+- **Compaction Recovery**: After reconstructing from `spec.json` and loading the current subtask file, reload Tiers 2–4 before resuming work.
+- **Planning** (`/plan`): ContextScout handles Tier 2–4 reading during Phase 1 (situational awareness). HW does not need to re-load independently during planning.
+
+### What Not to Load
+
+- **Inbox** (`.opencode/inbox/`) — write-only staging queue; never read by agents
+- **Archive** (`.opencode/archive/`) — historical record; never read by agents
+- **Completed session notes** — only active (in_progress/pending) session notes are loaded
+- **All subtask files simultaneously** — only the current `subtask-NN-*.md` file is loaded at runtime
+
+
 HeadWrench maintains a **single persistent todo item** throughout the session that serves as a compact orientation anchor — especially useful after context compaction.
 
 ### Contents
