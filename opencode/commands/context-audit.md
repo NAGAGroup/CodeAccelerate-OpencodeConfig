@@ -47,7 +47,7 @@ For each completed session with archivable notes, show exactly this format:
 
 ```
 [ARCHIVE] improve-planning-system (7 notes, session completed)
-  Proposed: Move .opencode/sessions/improve-planning-system/notes/ → .opencode/archive/session-notes/improve-planning-system/
+  Proposed: Move .opencode/sessions/improve-planning-system/ → .opencode/archive/sessions/improve-planning-system/
   Promotion candidates: subtask-01-amend-overhaul.md (HIGH), subtask-04-parallel-delegation-schema.md (MEDIUM)
   → Promote any to inbox before archiving? [y/n per file]
 ```
@@ -65,7 +65,7 @@ Execute only approved actions.
 For each approved action, execute as follows:
 
 - **Inbox promotion**: Create a new context file (global or local) with YAML header; mark the source inbox item `superseded_by: <new-context-file>`.
-- **Session archival**: Create `.opencode/archive/session-notes/{session-name}/` if needed; move note files from session notes.
+- **Session archival**: Create `.opencode/archive/sessions/{session-name}/` if needed; move the entire session directory from `.opencode/sessions/`.
 - **Inbox retrofits**: Add required YAML front-matter to inbox files missing headers.
 - **Promoted-then-archive**: Create an inbox item for selected session-note findings, then archive the source session note.
 

@@ -109,7 +109,7 @@ Session notes follow the lifecycle of their session:
 |----------------|-------------|--------|
 | `in_progress` | Active | Read during planning |
 | `pending` (not started) | Active | Read during planning |
-| `completed` | Archivable | Move to `.opencode/archive/session-notes/{session-name}/`; no longer read during planning |
+| `completed` | Archivable | Move entire session directory to `.opencode/archive/sessions/{session-name}/`; no longer read during planning |
 
 **Archival trigger**: Manual, via `/context-audit` command. The session-close checkpoint does NOT auto-archive — archival requires human review because valuable findings should be promoted to persistent context before the notes are archived.
 
@@ -145,10 +145,10 @@ When a genuine contradiction exists (neither item is definitively correct), both
 ### Destination
 
 ```
-.opencode/archive/session-notes/{session-name}/
+.opencode/archive/sessions/{session-name}/
 ```
 
-Example: Notes from session `improve-planning-system` move to `.opencode/archive/session-notes/improve-planning-system/`
+Example: Session `improve-planning-system` moves entirely to `.opencode/archive/sessions/improve-planning-system/`
 
 ### Trigger
 
@@ -159,15 +159,14 @@ Manual, via `/context-audit` command. HeadWrench executes file moves and directo
 1. `/context-audit` identifies completed sessions with non-archived notes.
 2. For each note, the user decides: **promote to inbox** (for later context promotion), **archive only**, or **keep in session**.
 3. For promotion candidates: HeadWrench creates a new inbox item summarizing the finding; the user reviews the summary.
-4. Once promotion is settled, HeadWrench moves the note file from `.opencode/sessions/{name}/notes/` to `.opencode/archive/session-notes/{name}/`.
+4. Once promotion is settled, HeadWrench moves the entire session directory from `.opencode/sessions/{name}/` to `.opencode/archive/sessions/{name}/`.
 5. The session's `spec.json` is not modified by archival (it remains a historical record).
 
 ### What Is NOT Archived
 
-- Notes from sessions with `status: in_progress` or `status: pending`
+- Sessions with `status: in_progress` or `status: pending`
 - Inbox items (inbox is the queue; items are deactivated or promoted, not archived)
 - Context/ files (these are permanent until explicitly deleted or superseded)
-- Session `index.md`, `spec.json`, and subtask files (stay in place as historical records)
 
 ---
 
@@ -243,7 +242,7 @@ For each completed session with archivable notes:
 
 ```
 [ARCHIVE] improve-planning-system (7 notes, session completed)
-  Proposed: Move .opencode/sessions/improve-planning-system/notes/ → .opencode/archive/improve-planning-system/notes/
+  Proposed: Move .opencode/sessions/improve-planning-system/ → .opencode/archive/sessions/improve-planning-system/
   Promotion candidates: subtask-01-amend-overhaul.md (HIGH), subtask-04-parallel-delegation-schema.md (MEDIUM)
   → Promote any to inbox before archiving? [y/n per file]
 ```
@@ -259,7 +258,7 @@ User approves or rejects each proposed action. HeadWrench executes only approved
 For each approved action, HeadWrench executes:
 
 - **Inbox promotion**: Create a new context/ file (global or local) with YAML header; mark the inbox item `superseded_by: <new-context-file>`.
-- **Session archival**: Create `.opencode/archive/{session-name}/notes/` (if needed); move note files from session.
+- **Session archival**: Create `.opencode/archive/sessions/{session-name}/` (if needed); move the entire session directory from `.opencode/sessions/`.
 - **Inbox retrofits**: Add YAML front-matter to files missing headers.
 - **Promoted-then-archive**: Create an inbox item for the finding, then archive the source session note.
 
@@ -319,7 +318,7 @@ When writing inbox items:
 1. **Session marked `status: completed`** in `spec.json`.
 2. **Run `/context-audit`** — finds the session in `[ARCHIVE]` list with its notes.
 3. **User reviews promotion candidates** — selects which (if any) to promote to inbox first.
-4. **HeadWrench executes** — creates inbox items for promoted notes; moves all notes to `.opencode/archive/session-notes/{session}/`.
+4. **HeadWrench executes** — creates inbox items for promoted notes; moves the entire session directory to `.opencode/archive/sessions/{session}/`.
 5. **Next planning cycle** — archived notes are never read; only promoted-then-archived findings exist in context.
 
 ### Resolving a Contradiction
