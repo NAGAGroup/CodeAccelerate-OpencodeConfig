@@ -3,7 +3,7 @@
   "goal": "Design and implement a tiered context management system that eliminates accumulated stale and competing context from reaching agents, with manual slash commands for guided context hygiene.",
   "created": "2026-03-13",
   "status": "in_progress",
-  "currentSubtask": 0,
+  "currentSubtask": 1,
   "subtaskCount": 7,
   "architectEnabled": false,
   "circuitBreakerThreshold": 3,
@@ -12,13 +12,13 @@
       "id": "01",
       "name": "context-audit",
       "description": "Deep audit of all session notes and inbox",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "02",
       "name": "design-architecture",
       "description": "Design tiered context architecture",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "id": "G1",

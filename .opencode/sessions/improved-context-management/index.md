@@ -19,8 +19,8 @@
 
 | # | Status | Description |
 |---|--------|-------------|
-| 01 | 🔲 pending | Deep audit of all session notes and inbox — ContextScout / fast |
-| 02 | 🔲 pending | Design tiered context architecture — HeadWrench direct / standard |
+| 01 | ✅ completed | Deep audit of all session notes and inbox — ContextScout / fast |
+| 02 | 🔄 in_progress | Design tiered context architecture — HeadWrench direct / standard |
 | G1 | 🚫 GATE | Architecture review gate — user approves design before any writing begins |
 | 03 | 🔲 pending | Write context-management protocol — DocWriter / standard |
 | 04 | 🔲 pending | Update checkpoint protocol — DocWriter / standard |
@@ -48,8 +48,8 @@
 
 ## Current Focus
 
-**Now:** Session not yet started.  
-**Next:** Run subtask 01 (deep context audit).
+**Now:** Subtask 02 in progress — synthesizing audit results into architecture design.  
+**Next:** G1 gate — architecture review before writing begins.
 
 ---
 
