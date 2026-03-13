@@ -30,15 +30,29 @@ Follow these steps in order at the end of each subtask:
     -   This keeps HeadWrench oriented within the session context.
 
 5.  **Write Session Notes**:
-    -   Identify any significant findings, decisions, or discoveries from this subtask.
-    -   Write one file per concept to `.opencode/sessions/{name}/notes/`.
-    -   **Filename**: `kebab-case-topic.md`.
-    -   **Content**: Must include what was found/decided, why, and any open questions.
+     -   Identify any significant findings, decisions, or discoveries from this subtask.
+     -   Write one file per concept to `.opencode/sessions/{name}/notes/`.
+     -   **Filename**: `kebab-case-topic.md`.
+     -   **Content**: Must include what was found/decided, why, and any open questions.
+     -   **Important**: Session notes are session-scoped (Tier 4 context) and will be archived when the session completes. Write notes knowing they may eventually be promoted to permanent context (via inbox) or archived. Findings that should persist across sessions belong in the inbox (step 6) or later in context/ (via `/context-audit`).
 
 6.  **Write Inbox**:
-    -   Determine if any reusable project-level observations were made (e.g., naming conventions, tool quirks, process improvements, or patterns).
-    -   **Format**: Write to `.opencode/inbox/<YYYY-MM-DD>-<topic>.md`.
-    -   **Rule**: One observation per file. Skip if nothing qualifies.
+     -   Determine if any reusable project-level observations were made (e.g., naming conventions, tool quirks, process improvements, or patterns).
+     -   **Format**: Write to `.opencode/inbox/<YYYY-MM-DD>-<topic>.md`.
+     -   **YAML Header**: Every new inbox item must include this metadata header at the top of the file:
+         ```yaml
+         ---
+         topic: short-topic-tag
+         session: session-name
+         created: YYYY-MM-DD
+         active: true
+         supersedes: ~
+         superseded_by: ~
+         ---
+         ```
+     -   **Supersession**: Use `supersedes:` and `superseded_by:` when writing an item that replaces an older one. Set the new item's `supersedes: old-filename.md` and update the old item's `superseded_by: new-filename.md`.
+     -   **Rule**: One observation per file. Skip if nothing qualifies.
+     -   **Qualification**: See "Inbox Qualification Guidance" below for deciding whether to write to inbox or directly to context/.
 
 7.  **Gate Check**:
     -   If the next subtask has an ID format of `GN` or is prefixed with `[🚫 GATE]`:
@@ -79,12 +93,24 @@ When all subtasks in the session plan are finished:
 ## Inbox Qualification Guidance
 Use this criteria to decide if an observation belongs in the project `inbox`:
 
--   **Ask**: "Would a future session benefit from knowing this?"
--   **Include (Inbox)**:
-    -   Tool-specific findings (e.g., "Tool X always requires flag Y").
-    -   Newly discovered naming conventions or project-wide patterns.
-    -   Process improvements that should be applied to future workflows.
--   **Exclude (Notes Only)**:
-    -   Findings specific to the current session's task.
-    -   Local decisions made only for this session.
-    -   Transient implementation details.
+-   **Primary Question**: "Would a future session benefit from knowing this?"
+    -   If **No** → Findings specific to the current session only belong in **Session Notes** (step 5), not inbox.
+    -   If **Yes** → Proceed to the destination question below.
+
+-   **Destination Question**: "Is the destination tier obvious and the item clearly reusable?"
+    -   **Obvious destination + clearly reusable** → Write directly to context/ (`~/.config/opencode/context/` for global patterns or `.opencode/context/` for project-specific facts). These will have YAML headers with `promoted_from: direct`.
+    -   **Uncertain destination or candidate for review** → Write to inbox. The item will be reviewed during `/context-audit` and promoted to global or local context (Tier 2 or Tier 3) by human decision.
+
+-   **Include in Inbox** (when destination is uncertain):
+     -   Tool-specific findings that might apply across projects but need validation (e.g., "Tool X always requires flag Y when used with Z").
+     -   Newly discovered naming conventions or patterns that need project consensus.
+     -   Process improvements or workflows worth considering for future use.
+
+-   **Include in Session Notes** (not inbox):
+     -   Findings specific to the current session's task.
+     -   Local decisions made only for this session.
+     -   Transient implementation details.
+
+-   **Write Directly to Context** (not inbox):
+     -   Universal patterns reusable across any project (write to `~/.config/opencode/context/`).
+     -   Project-wide conventions clearly applicable to this codebase (write to `.opencode/context/`).
