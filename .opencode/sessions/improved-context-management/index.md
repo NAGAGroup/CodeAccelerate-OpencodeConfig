@@ -23,8 +23,8 @@
 | 02 | ✅ completed | Design tiered context architecture — HeadWrench direct / standard |
 | G1 | ✅ completed | Architecture review gate — approved |
 | 03 | ✅ completed | Write context-management protocol — DocWriter / standard |
-| 04 | 🔄 in_progress | Update checkpoint protocol — DocWriter / standard |
-| 05 | 🔲 pending | Write slash commands for context management — CodeWriter / standard |
+| 04 | ✅ completed | Update checkpoint protocol — DocWriter / standard |
+| 05 | 🔄 in_progress | Write slash commands for context management — CodeWriter / standard |
 | 06 | 🔲 pending | Archive and cleanup existing stale content — HeadWrench direct |
 | 07 | 🔲 pending | Final validation — HeadWrench direct |
 
