@@ -3,7 +3,7 @@
   "goal": "Design and implement a tiered context management system that eliminates accumulated stale and competing context from reaching agents, with manual slash commands for guided context hygiene.",
   "created": "2026-03-13",
   "status": "in_progress",
-  "currentSubtask": 1,
+  "currentSubtask": 2,
   "subtaskCount": 7,
   "architectEnabled": false,
   "circuitBreakerThreshold": 3,
@@ -18,13 +18,13 @@
       "id": "02",
       "name": "design-architecture",
       "description": "Design tiered context architecture",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "id": "G1",
       "name": "architecture-gate",
       "description": "Architecture review gate",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "id": "03",
