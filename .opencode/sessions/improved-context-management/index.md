@@ -21,9 +21,9 @@
 |---|--------|-------------|
 | 01 | ✅ completed | Deep audit of all session notes and inbox — ContextScout / fast |
 | 02 | ✅ completed | Design tiered context architecture — HeadWrench direct / standard |
-| G1 | 🚫 GATE | Architecture review gate — user approves design before any writing begins |
-| 03 | 🔲 pending | Write context-management protocol — DocWriter / standard |
-| 04 | 🔲 pending | Update checkpoint protocol — DocWriter / standard |
+| G1 | ✅ completed | Architecture review gate — approved |
+| 03 | ✅ completed | Write context-management protocol — DocWriter / standard |
+| 04 | 🔄 in_progress | Update checkpoint protocol — DocWriter / standard |
 | 05 | 🔲 pending | Write slash commands for context management — CodeWriter / standard |
 | 06 | 🔲 pending | Archive and cleanup existing stale content — HeadWrench direct |
 | 07 | 🔲 pending | Final validation — HeadWrench direct |

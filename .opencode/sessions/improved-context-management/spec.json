@@ -3,7 +3,7 @@
   "goal": "Design and implement a tiered context management system that eliminates accumulated stale and competing context from reaching agents, with manual slash commands for guided context hygiene.",
   "created": "2026-03-13",
   "status": "in_progress",
-  "currentSubtask": 2,
+  "currentSubtask": 4,
   "subtaskCount": 7,
   "architectEnabled": false,
   "circuitBreakerThreshold": 3,
@@ -24,19 +24,19 @@
       "id": "G1",
       "name": "architecture-gate",
       "description": "Architecture review gate",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "id": "03",
       "name": "write-context-protocol",
       "description": "Write context-management protocol",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "04",
       "name": "update-checkpoint-protocol",
       "description": "Update checkpoint protocol",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "id": "05",
