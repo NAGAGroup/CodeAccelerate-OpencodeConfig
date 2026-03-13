@@ -30,29 +30,22 @@ Present a numbered issue list using only these flag types and meanings:
 
 ## Step 3 — Process Inbox Queue
 
-For each active inbox item (or when `[INBOX]` is present), show exactly this format:
+For each active inbox item (or when `[INBOX]` is present), use a **single `question` tool call** containing one question per inbox item. Each question should show the item's topic, summary, and session. Use these options for each:
 
-```
-[INBOX] inbox/ask-only-subagent-pattern.md
-  Topic: agent-pattern | Created: 2026-03-10 | Session: agent-permissions-and-insurgent
-  Summary: "Some subagents are designated ask-only — HW must get user confirmation..."
-  → Promote to: [G] global context / [L] local context / [D] discard / [S] skip for now
-```
+- `Global context` — promote to `~/.config/opencode/context/`
+- `Local context` — promote to `.opencode/context/`
+- `Discard` — mark superseded, no promotion
+- `Skip for now` — leave in inbox, take no action
 
-Collect one-letter user decisions per item.
+Do not call the `question` tool once per item. Bundle all inbox items into one call.
 
 ## Step 4 — Proposed Archive Actions
 
-For each completed session with archivable notes, show exactly this format:
+For each completed session with archivable notes, use a **single `question` tool call** bundling:
+- One question per session: "Archive `{session-name}`?" with options Yes / No
+- One question per promotion candidate (if any): "Promote `{note-file}` to inbox before archiving?" with options Yes / No
 
-```
-[ARCHIVE] improve-planning-system (7 notes, session completed)
-  Proposed: Move .opencode/sessions/improve-planning-system/ → .opencode/archive/sessions/improve-planning-system/
-  Promotion candidates: subtask-01-amend-overhaul.md (HIGH), subtask-04-parallel-delegation-schema.md (MEDIUM)
-  → Promote any to inbox before archiving? [y/n per file]
-```
-
-Collect per-file promotion decisions and archival intent.
+All archive questions go in one call alongside each other.
 
 ## Step 5 — User Approval
 
