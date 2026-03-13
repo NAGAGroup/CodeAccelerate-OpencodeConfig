@@ -12,7 +12,7 @@ The system defines 4 tiers, ordered from most stable to most ephemeral. Agents s
 
 | Tier | Name | Location | Stability | Reading Rule |
 |------|------|----------|-----------|-------------|
-| 1 | Config | `opencode/protocols/`, `opencode/agents/`, `opencode/commands/`, `opencode.json` | Very high | Always read; no staleness |
+| 1 | Config | `~/.config/opencode/protocols/`, `~/.config/opencode/agents/`, `~/.config/opencode/commands/`, `~/.config/opencode/opencode.json` | Very high | Always read; no staleness |
 | 2 | Inbox | `.opencode/inbox/` | High | Read items where `active: true` (or field absent); skip where `superseded_by:` is set |
 | 3 | Session Notes | `.opencode/sessions/*/notes/` | Session-scoped | Read only from sessions where `spec.json` has `status: in_progress`; completed-session notes are archived |
 | 4 | Subtask File | `.opencode/sessions/{name}/subtask-NN-{name}.md` | Always fresh | Injected at runtime; current task scope only |
@@ -138,10 +138,10 @@ When ContextScout performs situational awareness (during `/plan`):
 
 ### In Scope (always read)
 
-- `opencode/protocols/` — all protocol files
-- `opencode/agents/` — all agent definitions
-- `opencode/commands/` — all slash commands
-- `opencode.json` — global config
+- `~/.config/opencode/protocols/` — all protocol files
+- `~/.config/opencode/agents/` — all agent definitions
+- `~/.config/opencode/commands/` — all slash commands
+- `~/.config/opencode/opencode.json` — global config
 - `.opencode/inbox/` — all items where `active: true` (or field absent) AND `superseded_by` is `~` (or absent)
 - `.opencode/sessions/*/notes/` — only sessions with `spec.json` showing `status: in_progress` or `status: pending`
 
@@ -160,7 +160,7 @@ ContextScout may still read `index.md` and `spec.json` from completed sessions t
 
 ## 7. Slash Command: `/context-audit`
 
-**Location:** `opencode/commands/context-audit.md`
+**Location:** `~/.config/opencode/commands/context-audit.md`
 
 **Purpose:** Interactive guided cleanup of the context system. HeadWrench runs the audit and presents findings; user approves proposed actions; HeadWrench executes.
 
