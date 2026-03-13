@@ -3,7 +3,7 @@
   "goal": "Design and implement a tiered context management system that eliminates accumulated stale and competing context from reaching agents, with manual slash commands for guided context hygiene.",
   "created": "2026-03-13",
   "status": "in_progress",
-  "currentSubtask": 5,
+  "currentSubtask": 6,
   "subtaskCount": 7,
   "architectEnabled": false,
   "circuitBreakerThreshold": 3,
@@ -42,13 +42,13 @@
       "id": "05",
       "name": "write-slash-commands",
       "description": "Write slash commands for context management",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "id": "06",
       "name": "archive-cleanup",
       "description": "Archive and cleanup existing stale content",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "id": "07",

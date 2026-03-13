@@ -24,8 +24,8 @@
 | G1 | ✅ completed | Architecture review gate — approved |
 | 03 | ✅ completed | Write context-management protocol — DocWriter / standard |
 | 04 | ✅ completed | Update checkpoint protocol — DocWriter / standard |
-| 05 | 🔄 in_progress | Write slash commands for context management — CodeWriter / standard |
-| 06 | 🔲 pending | Archive and cleanup existing stale content — HeadWrench direct |
+| 05 | ✅ completed | Write slash commands for context management — CodeWriter / standard |
+| 06 | 🔄 in_progress | Archive and cleanup existing stale content — HeadWrench direct |
 | 07 | 🔲 pending | Final validation — HeadWrench direct |
 
 > Note: Subtasks 03 and 04 are sequential — 04 reads context-management.md written in 03.
