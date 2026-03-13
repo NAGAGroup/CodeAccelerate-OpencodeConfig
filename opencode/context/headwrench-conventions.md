@@ -1,3 +1,10 @@
+---
+scope: global
+tags: [headwrench, conventions, gates, session-plan]
+last_reviewed: 2026-03-13
+source_session: todolist-enforcement (2026-03-10)
+---
+
 # HeadWrench Conventions
 
 Accumulated conventions and patterns for the HeadWrench orchestration system.
