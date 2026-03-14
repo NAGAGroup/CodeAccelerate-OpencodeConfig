@@ -16,8 +16,8 @@
 |---|------|--------|-------------|
 | 01 | context-scout-sweep | ✅ completed | Surface-level audit sweep using fresh-reader lens; feature-set self-description test |
 | 🚫 | **GATE 1** | — | User reviews surface sweep findings before deep dives begin |
-| 02 | insurgent-agent-analysis | 🔄 in_progress | Deep dive: agent instruction/permission alignment, collaborative mode differentiation, enforcement quality |
-| 03 | insurgent-protocol-analysis | ⏳ pending | Deep dive: protocol completeness, command alignment, cross-reference consistency |
+| 02 | insurgent-agent-analysis | ✅ completed | Deep dive: agent instruction/permission alignment, collaborative mode differentiation, enforcement quality |
+| 03 | insurgent-protocol-analysis | 🔄 in_progress | Deep dive: protocol completeness, command alignment, cross-reference consistency |
 | 04 | insurgent-session-analysis | ⏳ pending | Deep dive: compaction survival, plugin correctness, session health, lockdown-WA application status |
 | 🚫 | **GATE 2** | — | User reviews all deep-dive findings before synthesis |
 | 05 | hw-audit-synthesis | ⏳ pending | HeadWrench writes AUDIT.md — executive summary, per-category findings, recommendations |
