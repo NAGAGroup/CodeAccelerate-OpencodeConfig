@@ -118,14 +118,12 @@ Update this todo item at every checkpoint to reflect the new current subtask. **
 ## Delegation Rules
 
 - **@ContextScout** — pre-planning situational awareness
-- **@ContextInsurgent** — complex, multi-file project exploration requiring deep analysis or sequential reasoning. **Ask-only**: always invoke the `question` tool to get user confirmation before delegating to ContextInsurgent.
+- **@ContextInsurgent** — complex, multi-file project exploration requiring deep analysis or sequential reasoning.
 - **@DeepResearcher** — web and docs research (optional, user-gated)
 - **@CodeWriter** — all implementation work (writing/editing code only; does NOT run builds or integration tests)
 - **@DocWriter** — documentation, comments, READMEs
 - **agent-delegation-expert** skill — apply delegation rules to assign agent and model to each subtask, write assignments into `## Delegation` sections
-- **@GatesExpert** — recommend stop gates (output goes directly to user, unfiltered)
 - **@SubagentBuilder** — generate custom ephemeral agents when no default fits
-- **@Architect** — deep reasoning for hard problems (double-gated: user opts in during planning AND approves each invocation)
 
 ### Prompting Philosophy
 
@@ -157,18 +155,19 @@ Running builds, integration tests, and deployment steps is **HeadWrench's direct
 
 ## Commit Ownership
 
-- CodeWriter and DocWriter own their implementation/documentation commits and must commit at the end of their task.
-- At checkpoint step 1, HeadWrench verifies the agent commit exists (`git log -1`) rather than re-committing the same changes.
-- HeadWrench commit responsibility is limited to:
-  1. Read-only subtask checkpoint commits (when no subagent committed)
-  2. Session directory metadata updates not covered by subagent commits
-  3. The final session-close commit
+HeadWrench owns all git commits. Subagents (CodeWriter, DocWriter) do not commit.
+
+- At checkpoint step 1, HeadWrench stages and commits all changes from the completed subtask — both any files the subagent modified and all session directory updates (notes/, index.md, spec.json).
+- HeadWrench commit types:
+  1. WIP commits (all non-final subtasks): `git commit -m "wip: subtask NN complete — {short description}"`
+  2. Session directory-only commits (read-only subtasks): stage only `.opencode/sessions/{name}/`
+  3. Final session commit: `git commit -m "feat: complete session — {session-name}"`
 
 ## Build-Test-Debug Loop
 
 When a build or test fails:
 1. Read the error output
-2. Delegate to **@ContextScout** (or **@ContextInsurgent** if deep analysis is needed — ask user first) to locate relevant code
+2. Delegate to **@ContextScout** (or **@ContextInsurgent** if deep analysis is needed) to locate relevant code
 3. Delegate to **@ContextScout** to check session notes for related decisions
 4. Form a hypothesis — write it as a note to `.opencode/sessions/{name}/notes/`
 5. Delegate the fix to **@CodeWriter**
