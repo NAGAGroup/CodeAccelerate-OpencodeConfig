@@ -35,6 +35,7 @@ Produce a markdown agent definition file in `.opencode/sessions/{session-name}/a
 ---
 description: "{one-line description}"
 mode: subagent
+model: {model-identifier provided by HW}
 steps: {appropriate step count}
 color: "#hexcolor"
 permission:
@@ -62,7 +63,7 @@ permission:
 - Permissions should be as restrictive as possible while still allowing the agent to do its job
 - Always include explicit scope and output format in the system prompt
 - Model tier should match what AgentDelegationExpert recommended
-- Do not include `model:` in the frontmatter — models are configured in `opencode.json`
+- **Always include `model:` in the frontmatter** — custom session-local agents are not in `opencode.json`, so the model must be specified directly in the agent file. HW will provide the required model identifier in the task spec.
 - **Do include `permission:` in the frontmatter** — permissions belong in the agent `.md` file, not in `opencode.json`
 
 ## Permission Rules for Generated Agents

@@ -26,9 +26,6 @@
     "subagents/deep-researcher": {
       "model": "github-copilot/claude-haiku-4.5"
     },
-    "subagents/gates-expert": {
-      "model": "github-copilot/claude-sonnet-4.6"
-    },
     "subagents/subagent-builder": {
       "model": "github-copilot/claude-sonnet-4.6"
     },
@@ -37,9 +34,6 @@
     },
     "subagents/doc-writer": {
       "model": "github-copilot/claude-haiku-4.5"
-    },
-    "subagents/architect": {
-      "model": "github-copilot/claude-opus-4.6"
     },
     "compaction": {
       "model": "github-copilot/claude-sonnet-4.6"
@@ -63,7 +57,7 @@
     "exa": {
       "type": "remote",
       "url": "https://mcp.exa.ai/mcp?exaApiKey=${EXA_API_KEY}",
-      "enabled": false
+      "enabled": true
     }
   }
 }

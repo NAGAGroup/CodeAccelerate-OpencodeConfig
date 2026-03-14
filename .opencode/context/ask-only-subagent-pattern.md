@@ -5,8 +5,9 @@ promoted_from: inbox
 session: agent-permissions-and-insurgent
 created: 2026-03-10
 last_reviewed: 2026-03-13
+active: false
 supersedes: ~
-superseded_by: ~
+superseded_by: planning-uses-multi-scout-then-insurgent.md
 ---
 
 # Pattern: Ask-Only Subagents

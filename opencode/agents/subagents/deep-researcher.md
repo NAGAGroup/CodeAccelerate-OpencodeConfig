@@ -10,6 +10,7 @@ permission:
   websearch: allow
   "exa*": allow
   "sequential*": allow
+  "context7*": allow
 ---
 
 # DeepResearcher

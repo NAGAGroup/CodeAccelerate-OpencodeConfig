@@ -46,7 +46,6 @@ Machine-readable orchestrator state. Agent/model assignments are **not** stored 
   "status": "string",               // in_progress | complete
   "currentSubtask": number,         // 0-indexed position of the next subtask to execute
   "subtaskCount": number,           // Total number of non-gate subtasks
-  "architectEnabled": boolean,      // Whether Architect agent is available for this session
   "circuitBreakerThreshold": number,// Max consecutive failures allowed before stopping (default: 3)
   "subtasks": [
     {
@@ -62,7 +61,6 @@ Machine-readable orchestrator state. Agent/model assignments are **not** stored 
 ### Field Descriptions
 - **`currentSubtask`**: The 0-indexed position of the task the orchestrator should run next. Updated at each checkpoint.
 - **`subtaskCount`**: Count of executable subtasks only (gates are not counted).
-- **`architectEnabled`**: Set during Q&A in the `/plan` workflow. Governs whether `@Architect` may be invoked.
 - **`circuitBreakerThreshold`**: If this many consecutive subtasks fail, the session halts and escalates to the user.
 
 ## subtask-NN-{name}.md Specification

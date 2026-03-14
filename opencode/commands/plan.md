@@ -1,9 +1,9 @@
 ---
-description: "Start a new session with full planning workflow: ContextScout → session type detection → Q&A → HW drafts plan → AgentDelegationExpert → SubagentBuilder (if needed) → approval."
+description: "Start a new session with full planning workflow: ContextScout (parallel) → optional ContextInsurgent synthesis → optional DeepResearcher → session type → Q&A → checkpoint approval → HW drafts plan → AgentDelegationExpert → approval → finalize."
 agent: headwrench
 ---
 
-Immediately, before doing anything else create a todolist for a phases.
+Immediately, before doing anything else create a todolist for the phases.
 
 Run the full planning workflow for a new session.
 
@@ -13,14 +13,23 @@ $ARGUMENTS
 
 ## Phase 1 — Situational Awareness
 
-Delegate to @ContextScout to build a situational awareness report covering:
+**Step 1a — Quick orientation (HW direct):** Glob/grep the project yourself for high-level layout: directory structure, key config files, language/framework signals. This takes seconds and gives you enough to dispatch targeted scouts.
+
+**Step 1b — Parallel ContextScout dispatch:** Dispatch one or more @ContextScout agents in parallel — one per distinct concern relevant to the task. Each scout covers its slice of:
 - Codebase structure (layout, languages, frameworks, build system)
 - Prior sessions and their outcomes
 - Active context from Tier 2 (`~/.config/opencode/context/`) and Tier 3 (`.opencode/context/`) — skip files with `active: false` or `superseded_by:` set
 - Active session notes from Tier 4 (`.opencode/sessions/*/notes/` for in_progress/pending sessions only)
 - Do **not** read `.opencode/inbox/` — the inbox is a write-only staging queue; agents never read it
 
-## Phase 1.5 — Session Type Detection
+**Step 1c — ContextInsurgent synthesis (when needed):** After the scouts return, synthesize their reports. If the task involves complex multi-file relationships, architectural interdependencies, or findings that need deep sequential reasoning, delegate to @ContextInsurgent to produce a single structured analysis. ContextInsurgent is read-only. Use its output as the situational awareness foundation for Q&A and plan drafting.
+
+## Phase 1.5 — Research (Optional, User-Gated)
+
+Ask the user: is there documentation, an API, or a library that needs researching before planning?
+If yes, delegate to @DeepResearcher with the specific topic. This step requires **explicit user opt-in** — never dispatch DeepResearcher automatically.
+
+## Phase 2 — Session Type Detection
 
 Ask exactly one question:
 
@@ -31,9 +40,9 @@ Options:
 - **Debug** — investigating a bug or failure
 - **Collaborative** — user wants to work alongside HW, not just direct it
 
-Record the selected session type in your Q&A context and use it to branch Phase 2.
+Record the selected session type in your Q&A context and use it to branch Phase 3.
 
-## Phase 2 — Q&A
+## Phase 3 — Q&A
 
 If no session description was given, ask the user to provide details.
 
@@ -47,7 +56,6 @@ Interview the user using the **standard Q&A** below (all session types):
 - **Git workflow** — branching strategy, commit conventions?
 - **Circuit breaker threshold** — how many consecutive failures before stopping? (default: 3)
 - **CI/infrastructure** — anything relevant?
-- **Architect opt-in** — do you want deep reasoning available for hard problems? (default: no)
 
 Then apply conditional additions based on session type:
 
@@ -66,7 +74,7 @@ Then apply conditional additions based on session type:
 
 After Q&A, use **Sequential Thinking** to synthesize the answers — reason through scope trade-offs, dependencies between subtasks, and any unresolved ambiguities before moving to plan drafting.
 
-## Phase 2.5 — Checkpoint Protocol Approval
+## Phase 3.5 — Checkpoint Protocol Approval
 
 Show the user the contents of `~/.config/opencode/protocols/checkpoint.md` and ask:
 
@@ -77,18 +85,13 @@ Show the user the contents of `~/.config/opencode/protocols/checkpoint.md` and a
 
 **This step is mandatory** — checkpoint protocol governs how progress is tracked between subtasks, and it cannot be changed after subtask files have been written.
 
-## Phase 3 — Research (Optional)
-
-Ask the user: is there documentation, an API, or a library that needs researching before planning?
-If yes, delegate to @DeepResearcher with the specific topic. This step requires explicit user opt-in.
-
 ## Phase 4 — Draft Session Plan
 
 Use **Sequential Thinking** to reason through the subtask breakdown before writing — consider ordering, dependencies, gate placement, and parallelism opportunities.
 
 Then write the session plan yourself following `~/.config/opencode/protocols/session-plan-schema.md`. Use:
 - Q&A answers
-- ContextScout report
+- ContextScout/ContextInsurgent report
 - DeepResearcher findings (if any)
 - Session name (derive from the goal if not provided)
 
@@ -122,7 +125,7 @@ Ask for approval. If the user requests changes, revise the plan and loop back to
 
 Once approved:
 - Delegation assignments have already been written into subtask `## Delegation` sections during Phase 5
-- If checkpoint customizations were requested in Phase 2.5, write the session-local override at `.opencode/sessions/{session-name}/protocols/checkpoint.md`
+- If checkpoint customizations were requested in Phase 3.5, write the session-local override at `.opencode/sessions/{session-name}/protocols/checkpoint.md`
 - Create the **session summary todo** (Layer 1 only) containing: session name, goal, path to `index.md`, first subtask number and description
 - Do not create Layer 2 (subtask todos) or Layer 3 (checkpoint todos) here; create both at execution start when the user says "start"
 - If new custom agents are needed, delegate to @SubagentBuilder in parallel with finalization
