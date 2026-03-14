@@ -3,11 +3,6 @@
   "autoupdate": false,
   "small_model": "opencode/gpt-5.1-codex-mini",
   "plugin": ["@tarquinen/opencode-dcp@3.0.0"],
-  "compaction": {
-    "auto": true,
-    "prune": true,
-    "reserved": 15000
-  },
   "default_agent": "headwrench",
   "agent": {
     "plan": {
@@ -47,7 +42,7 @@
       "model": "github-copilot/claude-opus-4.6"
     },
     "compaction": {
-      "model": "github-copilot/claude-haiku-4.5"
+      "model": "github-copilot/claude-sonnet-4.6"
     }
   },
   "mcp": {

@@ -1,8 +1,8 @@
 {
   "session": "opencode-config-audit",
   "goal": "In-depth audit of the opencode config — agents, protocols, commands, plugins, sessions. Identify improvements, contradictions, effectiveness gaps. Deliver AUDIT.md at project root.",
-  "status": "in_progress",
-  "currentSubtask": 4,
+  "status": "completed",
+  "currentSubtask": 5,
   "sessionType": "collaborative",
   "circuitBreaker": {
     "maxFailures": 3,
@@ -30,13 +30,13 @@
     {
       "id": 4,
       "name": "insurgent-session-analysis",
-      "status": "in_progress",
+      "status": "completed",
       "file": "subtask-04-insurgent-session-analysis.md"
     },
     {
       "id": 5,
       "name": "hw-audit-synthesis",
-      "status": "pending",
+      "status": "completed",
       "file": "subtask-05-hw-audit-synthesis.md"
     }
   ]

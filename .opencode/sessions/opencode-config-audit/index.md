@@ -18,9 +18,9 @@
 | 🚫 | **GATE 1** | — | User reviews surface sweep findings before deep dives begin |
 | 02 | insurgent-agent-analysis | ✅ completed | Deep dive: agent instruction/permission alignment, collaborative mode differentiation, enforcement quality |
 | 03 | insurgent-protocol-analysis | ✅ completed | Deep dive: protocol completeness, command alignment, cross-reference consistency |
-| 04 | insurgent-session-analysis | 🔄 in_progress | Deep dive: compaction survival, plugin correctness, session health, lockdown-WA application status |
+| 04 | insurgent-session-analysis | ✅ completed | Deep dive: compaction survival, plugin correctness, session health, lockdown-WA application status |
 | 🚫 | **GATE 2** | — | User reviews all deep-dive findings before synthesis |
-| 05 | hw-audit-synthesis | ⏳ pending | HeadWrench writes AUDIT.md — executive summary, per-category findings, recommendations |
+| 05 | hw-audit-synthesis | ✅ completed | HeadWrench writes AUDIT.md — executive summary, per-category findings, recommendations |
 
 ---
 
