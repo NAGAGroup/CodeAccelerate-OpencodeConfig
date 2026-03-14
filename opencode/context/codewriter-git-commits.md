@@ -1,8 +1,12 @@
 ---
-scope: global
-tags: [codewriter, git, commits, delegation]
+topic: codewriter-git-commits
+tier: global
+promoted_from: inbox
+session: ~
+created: 2026-03-13
 last_reviewed: 2026-03-13
-source_inbox: codewriter-no-git-commits.md
+supersedes: ~
+superseded_by: ~
 ---
 
 # CodeWriter: Git Commit Limitation

@@ -1,8 +1,12 @@
 ---
-scope: global
-tags: [headwrench, conventions, gates, session-plan]
+topic: headwrench-conventions
+tier: global
+promoted_from: direct
+session: todolist-enforcement
+created: 2026-03-13
 last_reviewed: 2026-03-13
-source_session: todolist-enforcement (2026-03-10)
+supersedes: ~
+superseded_by: ~
 ---
 
 # HeadWrench Conventions
