@@ -24,7 +24,7 @@ See full spec in `~/.config/opencode/protocols/plan-workflow.md`. Summary:
 4. Load the **agent-delegation-expert** skill and apply its delegation rules to assign agent and model to each subtask
 5. Present to user — plan overview, delegation assignments, any new agents needed
 6. User approves (loop back to step 3 if changes requested)
-7. Write delegation assignments into subtask `## Delegation` sections; if new agents needed, delegate to **@SubagentBuilder** in parallel
+7. Write delegation assignments into subtask `## Delegation` sections; if implementation or documentation subtasks need a session-local agent, load the **agent-writer skill** (`~/.config/opencode/skills/agent-writer/SKILL.md`) and create the agent file now. Write `PLACEHOLDER_MODEL_ID` in the agent's model field, then tell the user: "Before running 'start', update `PLACEHOLDER_MODEL_ID` in `.opencode/agents/{name}.md` with your preferred model. Restart opencode after updating."
 8. Give final overview — state ready to begin. **Do not start executing subtasks until user explicitly says to start.**
 
 ## Sequential Thinking
@@ -51,6 +51,7 @@ When user says "start":
 - Load Tier 2 context: read all active files in `~/.config/opencode/context/` (global permanent context)
 - Load Tier 3 context: read all active files in `.opencode/context/` (local permanent context)
 - Load Tier 4 context: read session notes from `.opencode/sessions/*/notes/` for sessions with status `in_progress` or `pending` only
+- Check `.opencode/agents/` for any session-local agents created for this session. Note their names — these are the agents to delegate implementation subtasks to. If `PLACEHOLDER_MODEL_ID` is still present in any agent file, warn the user before proceeding.
 - Load only the current `subtask-NN-{name}.md` file (Tier 5)
 - Create Layer 1 session summary todo
 - Extract `## Todolist` from current subtask file and create Layer 2 todos
@@ -124,8 +125,9 @@ Update this todo item at every checkpoint to reflect the new current subtask. **
 - **@ContextScout** — pre-planning situational awareness
 - **@ContextInsurgent** — complex, multi-file project exploration requiring deep analysis or sequential reasoning.
 - **@DeepResearcher** — web and docs research (optional, user-gated)
-- **agent-delegation-expert** skill — apply delegation rules to assign agent and model to each subtask, write assignments into `## Delegation` sections
-- **@SubagentBuilder** — generate custom ephemeral agents when no default fits
+- **Session-local agents** (from `.opencode/agents/`) — all implementation and documentation work; created by HW using the agent-writer skill during plan finalization
+- **agent-delegation-expert** skill — apply delegation rules to assign agent to each subtask, write assignments into `## Delegation` sections
+- **@SubagentBuilder** — no longer exists. HW creates session-local agents directly using the agent-writer skill.
 
 ### Prompting Philosophy
 
@@ -153,7 +155,7 @@ See also: Delegation Sizing Guidelines in `session-plan-schema.md`.
 
 ## Build & Test
 
-Running builds, integration tests, and deployment steps is **HeadWrench's direct responsibility** — never delegate these to CodeWriter or any other subagent. After any implementation subtask completes, HW runs the build/test commands directly and handles the results.
+Running builds, integration tests, and deployment steps is **HeadWrench's direct responsibility** — never delegate these to any subagent. After any implementation subtask completes, HW runs the build/test commands directly and handles the results.
 
 ## Commit Ownership
 
