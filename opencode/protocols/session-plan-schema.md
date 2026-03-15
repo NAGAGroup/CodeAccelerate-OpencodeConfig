@@ -24,9 +24,19 @@ The `index.md` file is the high-level status document for humans and subagents. 
    | # | Status | Description |
    |---|--------|-------------|
    | 01 | 🔲 pending | Short description — **Agent / model tier** |
-   | G1 | 🚫 GATE | Gate description |
+   | 02 | 🔲 pending | Next subtask — with gate todo inside its Todolist |
 
-   - Status values: `🔲 pending` · `▶️ in_progress` · `✅ completed` · `🚫 GATE` · `⏸ blocked` · `⏭ skipped`
+   Example subtask Todolist with a gate (inside `subtask-02-*.md`):
+   ```markdown
+   ## Todolist
+   ### 1. Do the work
+   - [ ] Implement the thing
+   - [ ] [🚫 GATE] User must approve findings before proceeding to subtask 03
+   ```
+
+   > **Gates are NOT subtasks.** They are `[🚫 GATE]` todo items in the preceding subtask's `## Todolist`. HeadWrench stops at checkpoint when it encounters an unresolved gate todo.
+
+   - Status values: `🔲 pending` · `▶️ in_progress` · `✅ completed` · `⏸ blocked` · `⏭ skipped`
    - Agent/model are appended to the Description column for human readability only.
 
 4. **Gates Section**: One subsection per gate (`### GN — Name`) explaining the stop condition and what approval is needed.
@@ -43,7 +53,7 @@ Machine-readable orchestrator state. Agent/model assignments are **not** stored 
   "name": "string",                 // kebab-case-session-name
   "goal": "string",                 // One sentence goal
   "created": "string",              // YYYY-MM-DD
-  "status": "string",               // in_progress | complete
+  "status": "string",               // in_progress | pending | completed
   "currentSubtask": number,         // 0-indexed position of the next subtask to execute
   "subtaskCount": number,           // Total number of non-gate subtasks
   "circuitBreakerThreshold": number,// Max consecutive failures allowed before stopping (default: 3)

@@ -59,6 +59,8 @@ When user says "start":
 
 > Context loading follows the 5-tier model in `~/.config/opencode/protocols/context-management.md`. Skip files with `active: false` or `superseded_by:` set.
 
+> If loaded context files appear to contradict each other, apply the Conflict Resolution rules in `~/.config/opencode/protocols/context-management.md`.
+
 ## Compaction Recovery
 
 If context is lost due to autocompaction, recover in this exact order:

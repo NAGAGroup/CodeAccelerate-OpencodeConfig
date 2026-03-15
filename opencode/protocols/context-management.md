@@ -8,6 +8,8 @@ This protocol defines how context is organized, tiered, and maintained throughou
 2. **Stale or conflicting information**: Context files and inbox items use explicit `supersedes`/`superseded_by` chains and staleness rules to prevent obsolete data from being read.
 3. **Unclear authority and promotion process**: The inbox serves as a staging queue; `/context-audit` is the unified mechanism for promoting, reviewing, and archiving context.
 
+> See the **Conflict Resolution** section below for rules on handling contradictions between context files at different tiers.
+
 ---
 
 ## Context Tiers
@@ -44,6 +46,8 @@ Use this decision tree when writing a new context item:
 | A session-specific finding (not generalizable) | `.opencode/sessions/{name}/notes/` (Tier 4) |
 
 **Rule**: Checkpoints always write to the inbox (staging), never directly to context. Human review via `/context-audit` is what moves items into permanent context.
+
+> **When in doubt, write to inbox — never directly to context/ without human review.**
 
 ---
 
@@ -88,7 +92,7 @@ superseded_by: ~
 | `created` | both | Yes | ISO 8601 date (YYYY-MM-DD) when the item was first written. |
 | `active` | inbox | No | Boolean; default `true` when absent. Set to `false` to deactivate an inbox item without deleting it. Inactive items are skipped during `/context-audit` reviews. |
 | `tier` | context | Yes | `global` or `local`. Must match the directory location. Explicit to catch misplacements. |
-| `promoted_from` | context | Yes | `inbox` (item came through the promotion queue) or `direct` (written directly to context). Tracks provenance. |
+| `promoted_from` | context | Yes | `inbox` (item came through the promotion queue) or `direct` (written directly to context, bypassing the inbox — used when a context file was written directly during session bootstrap, checkpoint, or when HW writes a context file as part of a session plan). Tracks provenance. |
 | `last_reviewed` | context | No | ISO 8601 date. Updated by `/context-audit` each time the item is reviewed. Helps identify stale files. |
 | `supersedes` | both | No | Filename of the older item this replaces. Use `~` when not applicable. Enables explicit version chains. |
 | `superseded_by` | both | No | Filename of the newer item that replaces this. Use `~` otherwise. ContextScout skips items where this is set. |
