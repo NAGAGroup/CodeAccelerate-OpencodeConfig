@@ -1,10 +1,10 @@
 # Subtask 08 — archive-sessions
 
 ## Objective
-Archive the 4 completed sessions from `.opencode/sessions/` to `.opencode/archive/sessions/`.
+Archive the 4 completed sessions from `.opencode/sessions/` to `.opencode/archive/sessions/`. After archiving, instruct the user to run `/context-audit` in a fresh opencode session to verify permanent context health, then return to this session to approve and apply the v1.0.0 git tag.
 
 ## TL;DR
-Four sessions are completed and cluttering the active sessions directory. Move them to the archive.
+Four sessions are completed and cluttering the active sessions directory. Move them to the archive. Then pause for the user to run a context audit before applying the final v1.0.0 release tag.
 
 ## Scope
 ### Bash
@@ -20,7 +20,9 @@ Four sessions are completed and cluttering the active sessions directory. Move t
 - Archive destination: `.opencode/archive/sessions/`
 - Sessions to archive: audit-complete, concepts-why-this-works, lockdown-workflows-and-agents, opencode-config-audit
 - Do NOT touch `.opencode/sessions/v1-release-prep/`
-- This is the final subtask — use the Session Close commit format
+- This is the final subtask — use the Session Close commit format: `feat: complete session — v1-release-prep`
+- After archiving and the Session Close commit, gate: instruct user to run `/context-audit` in another session before applying the tag
+- v1.0.0 tag format: `git tag v1.0.0 -m "v1.0.0 release"`
 
 ## Sessions to Archive
 - `.opencode/sessions/audit-complete/`
@@ -35,6 +37,8 @@ Four sessions are completed and cluttering the active sessions directory. Move t
 - [ ] Move lockdown-workflows-and-agents to archive
 - [ ] Move opencode-config-audit to archive
 - [ ] Verify .opencode/sessions/ only contains v1-release-prep after archival
+- [ ] 🚫 GATE — Instruct user: "Run `/context-audit` in a fresh opencode session to verify permanent context health, then return here and confirm to apply the v1.0.0 tag"
+- [ ] Apply v1.0.0 git tag: `git tag v1.0.0 -m "v1.0.0 release"`
 
 ## Delegation
 **Agent:** HeadWrench directly  
