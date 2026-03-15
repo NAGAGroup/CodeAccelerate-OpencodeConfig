@@ -106,6 +106,12 @@ Examples: `subtask-01-analyze.md`, `subtask-03-fix-compaction-hook.md`
 ### N. [Final group — always ends with checkpoint]
 - [ ] [last work item]
 
+> **Interactivity pause markers:** For Collaborative sessions with **Approve** or **Review** involvement levels, insert a `[⏸ PAUSE]` item as a checklist entry.
+> - **Approve mode** → place `- [ ] [⏸ PAUSE] — <what to surface>` as the **first item** in the todolist (before any work begins)
+> - **Review mode** → place `- [ ] [⏸ PAUSE] — <what to surface>` as the **last item** before the checkpoint group
+> - When HW encounters this marker during execution, it stops, surfaces a summary to the user, and waits for explicit confirmation before proceeding.
+> - See `plan-collaborative.md` for full syntax, placement rules, and examples.
+
 ---
 
 ## Scope
