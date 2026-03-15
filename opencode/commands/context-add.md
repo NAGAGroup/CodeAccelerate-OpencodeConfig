@@ -46,3 +46,13 @@ If the content originates from an inbox file (e.g. the user says "promote inbox/
 ## Step 4 — Confirm
 
 Report the file path written and show the first 10 lines including the YAML header.
+
+---
+
+## Reference
+
+See `~/.config/opencode/protocols/context-management.md` for full YAML header fields, staleness rules, and inbox vs. context destination guidance.
+
+### `session:` field convention
+
+Use `session: ~` (null) when the context file applies globally and was not created during a specific named session, or when the originating session name is not known. Use the actual session name (e.g., `session: audit-complete`) when the file was created as part of a specific session.

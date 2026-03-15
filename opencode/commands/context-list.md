@@ -14,6 +14,10 @@ For each file, show:
 - `superseded_by:` if set — mark as ⚠️ superseded
 - File size
 
+Display rules for inactive entries:
+- If `active: false` is set in the YAML header, prefix the entry with `⚪ [inactive]`
+- If `superseded_by:` is set in the YAML header, prefix the entry with `⚪ [inactive → {superseding-filename}]` showing the filename that supersedes it
+
 ## Global context — `~/.config/opencode/context/`
 
 Same format as above.

@@ -11,9 +11,9 @@ Implement all remaining AUDIT.md findings (Tiers 3–6) plus new design changes:
 |---|------|--------|
 | 01 | cleanup-and-runtime-fixes | completed |
 | 02 | fix-checkpoint | completed |
-| 03 | fix-commands-critical | in_progress |
-| 04 | fix-commands-secondary | pending |
-| 05 | fix-schema-and-context-management | pending |
+| 03 | fix-commands-critical | completed |
+| 04 | fix-commands-secondary | completed |
+| 05 | fix-schema-and-context-management | in_progress |
 | 06 | create-agent-writer-skill | pending |
 | 07 | rewrite-delegation-skill | pending |
 | 08 | update-headwrench | pending |

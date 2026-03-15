@@ -5,7 +5,7 @@ agent: headwrench
 
 $ARGUMENTS
 
-Run the context-management audit protocol defined in `opencode/protocols/context-management.md`.
+Run the context-management audit protocol defined in `~/.config/opencode/protocols/context-management.md`.
 
 This command is the authoritative replacement for legacy inbox-only review flow. It absorbs `/inbox` promotion behavior into one interactive audit with minimal cognitive burden: gather decisions during review, then execute only after one final user approval.
 
@@ -41,6 +41,12 @@ Do not call the `question` tool once per item. Bundle all inbox items into one c
 
 ## Step 4 — Proposed Archive Actions
 
+When reviewing inbox items for promotion, use the following criteria to determine the correct destination tier:
+
+- **Promote to global context** (`~/.config/opencode/context/`): patterns that are true across **all** projects (e.g., deny-by-default permissions, commit message conventions that apply repo-agnostically)
+- **Promote to local context** (`.opencode/context/`): patterns specific to **this** repo (e.g., a project-specific symlink path, agent decisions scoped to this codebase)
+- **Keep as session note**: project-specific findings that aren't yet patterns, or time-bounded observations that may not generalise
+
 For each completed session with archivable notes, use a **single `question` tool call** bundling:
 - One question per session: "Archive `{session-name}`?" with options Yes / No
 - One question per promotion candidate (if any): "Promote `{note-file}` to inbox before archiving?" with options Yes / No
@@ -61,8 +67,9 @@ For each approved action, execute as follows:
 - **Session archival**: Create `.opencode/archive/sessions/{session-name}/` if needed; move the entire session directory from `.opencode/sessions/`.
 - **Inbox retrofits**: Add required YAML front-matter to inbox files missing headers.
 - **Promoted-then-archive**: Create an inbox item for selected session-note findings, then archive the source session note.
+- **Discard**: Set `active: false` on the file's YAML front-matter header and add `discarded_at: {date}`. Do NOT delete the file — it may contain historical context. If the file is in `.opencode/inbox/`, move it to `.opencode/archive/inbox/` if an archive exists.
 
-When writing or updating metadata, follow the field definitions and invariants in `opencode/protocols/context-management.md`.
+When writing or updating metadata, follow the field definitions and invariants in `~/.config/opencode/protocols/context-management.md`.
 
 ## Step 7 — Summary
 

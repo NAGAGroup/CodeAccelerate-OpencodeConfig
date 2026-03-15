@@ -46,6 +46,8 @@ When this category is used, recompute all impacted indices/IDs and keep `index.m
 
 `currentSubtask` may only move through valid recalculation caused by structural edits (see Section 5).
 
+> **Exception:** Adding retroactive session notes (files in `.opencode/sessions/{name}/notes/`) is always permitted even after session completion, as notes are historical records, not session plan artifacts.
+
 ## 3) In-Progress Session Safety Rules
 
 - If any subtask is `in_progress`, pause active execution before editing plan artifacts.
@@ -117,4 +119,5 @@ Only write files after user approval.
 5. Apply file edits with schema compliance
 6. Recalculate `spec.json` indices/counts/current pointer
 7. Re-run delegation via `skill` tool (Section 7)
-8. Return concise amendment report with what changed and why
+8. Commit the amended changes: `git commit -m 'amend: {session-name} — {brief description of amendment}'`. This is an amendment commit, not a WIP commit.
+9. Return concise amendment report with what changed and why
