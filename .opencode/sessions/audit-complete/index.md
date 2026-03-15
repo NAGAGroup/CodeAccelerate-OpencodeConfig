@@ -10,8 +10,8 @@ Implement all remaining AUDIT.md findings (Tiers 3–6) plus new design changes:
 | # | Name | Status |
 |---|------|--------|
 | 01 | cleanup-and-runtime-fixes | completed |
-| 02 | fix-checkpoint | in_progress |
-| 03 | fix-commands-critical | pending |
+| 02 | fix-checkpoint | completed |
+| 03 | fix-commands-critical | in_progress |
 | 04 | fix-commands-secondary | pending |
 | 05 | fix-schema-and-context-management | pending |
 | 06 | create-agent-writer-skill | pending |
