@@ -3,7 +3,7 @@
 ## Goal
 Implement all remaining AUDIT.md findings (Tiers 3–6) plus new design changes: remove CodeWriter/DocWriter as global agents, create agent-writer skill, delete SubagentBuilder, redesign planning protocols.
 
-## Status: in_progress
+## Status: completed
 
 ## Subtasks
 
@@ -18,8 +18,8 @@ Implement all remaining AUDIT.md findings (Tiers 3–6) plus new design changes:
 | 07 | rewrite-delegation-skill | completed |
 | 08 | update-headwrench | completed |
 | 09 | write-plan-protocols | completed |
-| 10 | redesign-plan-md | in_progress |
-| 11 | final-cleanup | pending |
+| 10 | redesign-plan-md | completed |
+| 11 | final-cleanup | completed |
 
 ## Notes
 - Session-local implementer agent at `.opencode/agents/session-local-implementer.md` handles all file edits
