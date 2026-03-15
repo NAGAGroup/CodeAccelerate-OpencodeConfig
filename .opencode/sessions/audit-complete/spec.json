@@ -2,7 +2,7 @@
   "session": "audit-complete",
   "status": "in_progress",
   "goal": "Implement all remaining AUDIT.md findings (Tiers 3–6) plus new design changes: remove CodeWriter/DocWriter as global agents, create agent-writer skill, delete SubagentBuilder, redesign planning protocols",
-  "currentSubtask": 8,
+  "currentSubtask": 9,
   "totalSubtasks": 11,
   "circuitBreaker": 3,
   "consecutiveFailures": 0,
@@ -15,8 +15,8 @@
     { "id": 5,  "name": "fix-schema-and-context-management", "status": "completed" },
     { "id": 6,  "name": "create-agent-writer-skill",    "status": "completed" },
     { "id": 7,  "name": "rewrite-delegation-skill",     "status": "completed" },
-    { "id": 8,  "name": "update-headwrench",            "status": "in_progress" },
-    { "id": 9,  "name": "write-plan-protocols",         "status": "pending" },
+    { "id": 8,  "name": "update-headwrench",            "status": "completed" },
+    { "id": 9,  "name": "write-plan-protocols",         "status": "in_progress" },
     { "id": 10, "name": "redesign-plan-md",             "status": "pending" },
     { "id": 11, "name": "final-cleanup",                "status": "pending" }
   ]

@@ -1,3 +1,8 @@
+---
+superseded_by: "plan-init.md, plan-shared.md, plan-end.md, plan-generic.md, plan-debug.md, plan-collaborative.md"
+superseded_at: "2026-03-14"
+active: false
+---
 # /plan Workflow
 
 ## Overview
