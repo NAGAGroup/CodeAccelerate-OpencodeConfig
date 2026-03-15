@@ -17,8 +17,8 @@ Implement all remaining AUDIT.md findings (Tiers 3–6) plus new design changes:
 | 06 | create-agent-writer-skill | completed |
 | 07 | rewrite-delegation-skill | completed |
 | 08 | update-headwrench | completed |
-| 09 | write-plan-protocols | in_progress |
-| 10 | redesign-plan-md | pending |
+| 09 | write-plan-protocols | completed |
+| 10 | redesign-plan-md | in_progress |
 | 11 | final-cleanup | pending |
 
 ## Notes
