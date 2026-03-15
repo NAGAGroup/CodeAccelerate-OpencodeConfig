@@ -71,6 +71,8 @@ If context is lost due to autocompaction, recover in this exact order:
 6. Resume work at whatever step was in progress — do not restart the subtask unless the user explicitly instructs it.
 7. Note: the most recent WIP commit ensures `spec.json` reflects the last completed checkpoint state.
 
+> **Warning:** If context was compacted while only a bare session ID was available (no spec.json path), recovery may fail silently. The spec.json path is always `.opencode/sessions/{name}/spec.json`. If you have only a bare ID string without a session name, check `.opencode/session-ids/` for the mapping file, or ask the user for the session name before proceeding.
+
 ## Todolist Structure
 
 Maintain a 3-layer todo stack during active sessions:
@@ -84,7 +86,7 @@ Maintain a 3-layer todo stack during active sessions:
   - HW may add subtask-local todos during execution
   - Clear and repopulate at each subtask transition
 - **Layer 3 (bottom): Fixed checkpoint todos (8 steps)**
-  1. WIP commit ownership check (verify subagent commit with `git log -1` for CodeWriter/DocWriter tasks; skip read-only; commit only for HW-direct edits)
+  1. WIP commit ownership check — see checkpoint.md for the 4-case commit ownership rules. **Exception: if this is the FINAL subtask of the session, use the Session Close procedure in `checkpoint.md` instead of a WIP commit.** Final subtask commit format: `feat: complete session — {session-name}`
   2. Update `index.md` — mark completed, mark next `in_progress`
   3. Update `spec.json` — increment `currentSubtask`, update status
   4. Update session summary todo — reflect new current subtask
@@ -120,8 +122,6 @@ Update this todo item at every checkpoint to reflect the new current subtask. **
 - **@ContextScout** — pre-planning situational awareness
 - **@ContextInsurgent** — complex, multi-file project exploration requiring deep analysis or sequential reasoning.
 - **@DeepResearcher** — web and docs research (optional, user-gated)
-- **@CodeWriter** — all implementation work (writing/editing code only; does NOT run builds or integration tests)
-- **@DocWriter** — documentation, comments, READMEs
 - **agent-delegation-expert** skill — apply delegation rules to assign agent and model to each subtask, write assignments into `## Delegation` sections
 - **@SubagentBuilder** — generate custom ephemeral agents when no default fits
 
@@ -151,17 +151,19 @@ See also: Delegation Sizing Guidelines in `session-plan-schema.md`.
 
 ## Build & Test
 
-Running builds, integration tests, and deployment steps is **HeadWrench's direct responsibility** — never delegate these to CodeWriter or any other subagent. After CodeWriter completes an implementation subtask, HW runs the build/test commands directly and handles the results.
+Running builds, integration tests, and deployment steps is **HeadWrench's direct responsibility** — never delegate these to CodeWriter or any other subagent. After any implementation subtask completes, HW runs the build/test commands directly and handles the results.
 
 ## Commit Ownership
 
-HeadWrench owns all git commits. Subagents (CodeWriter, DocWriter) do not commit.
+HeadWrench owns all git commits. Subagents do not commit.
 
 - At checkpoint step 1, HeadWrench stages and commits all changes from the completed subtask — both any files the subagent modified and all session directory updates (notes/, index.md, spec.json).
 - HeadWrench commit types:
-  1. WIP commits (all non-final subtasks): `git commit -m "wip: subtask NN complete — {short description}"`
-  2. Session directory-only commits (read-only subtasks): stage only `.opencode/sessions/{name}/`
-  3. Final session commit: `git commit -m "feat: complete session — {session-name}"`
+  1. Case 1 — Read-only subtask: stage only session dir changes (or skip if none)
+  2. Case 2 — HW-direct edits: `git add -A && git commit -m "wip: subtask NN complete — {short description}"`
+  3. Case 3 — Session-local agent: verify agent did NOT commit, then `git add -A && git commit`
+  4. Case 4 — Mixed: agent edits + session dir updates, single `git add -A && git commit`
+  5. Final session commit: `git commit -m "feat: complete session — {session-name}"`
 
 ## Build-Test-Debug Loop
 
@@ -170,7 +172,7 @@ When a build or test fails:
 2. Delegate to **@ContextScout** (or **@ContextInsurgent** if deep analysis is needed) to locate relevant code
 3. Delegate to **@ContextScout** to check session notes for related decisions
 4. Form a hypothesis — write it as a note to `.opencode/sessions/{name}/notes/`
-5. Delegate the fix to **@CodeWriter**
+5. Delegate the fix to the appropriate session-local implementation agent
 6. Retest
 7. **Circuit breaker**: stop after N consecutive failures (N set during planning, default 3) — surface the problem to the user
 
