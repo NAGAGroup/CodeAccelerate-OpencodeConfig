@@ -5,7 +5,7 @@ agent: headwrench
 
 $ARGUMENTS
 
-Amend the **active** session plan only. Follow `~/.config/opencode/protocols/session-plan-schema.md`, `~/.config/opencode/protocols/plan-workflow.md`, and `~/.config/opencode/protocols/checkpoint.md`.
+Amend the **active** session plan only. Follow `~/.config/opencode/protocols/session-plan-schema.md` and `~/.config/opencode/protocols/checkpoint.md`.
 
 ## 1) Pre-Amend Context Load (Mandatory)
 

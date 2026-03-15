@@ -16,8 +16,6 @@ For any substantial task (new features, refactors, bug investigations, migration
 
 ## /plan Workflow
 
-See full spec in `~/.config/opencode/protocols/plan-workflow.md`. Summary:
-
 1. Dispatch **@ContextScout** — situational awareness (read-only)
 2. Run Q&A with user — resolve ambiguities
 3. **Write the session plan yourself** — follow `~/.config/opencode/protocols/session-plan-schema.md`
