@@ -24,17 +24,19 @@ After all ContextScout results return:
 - If findings are straightforward and self-contained → synthesize directly from scout reports
 - If complex inter-file relationships, circular dependencies, or conflicting conventions exist → delegate to **@ContextInsurgent** for deep synthesis before proceeding
 
-## Step 4 — Session Type Detection
+## Step 4 — Session Type Selection
 
-Examine the user's request and any existing session state to determine session type:
+Use the `question` tool to ask the user to select the session type. Always ask — do not infer or default silently, even if one type seems obvious from the description.
 
-| Type | Signals |
-|------|---------|
+Present the three options:
+
+| Type | When to use |
+|------|-------------|
 | **Generic** | New feature, refactor, migration, documentation, multi-step implementation |
 | **Debug** | Bug report, unexpected behavior, test failure, error trace |
 | **Collaborative** | User wants active review or approval at each step |
 
-Default to **Generic** if unclear. Confirm with the user during Q&A if the type is ambiguous.
+Wait for the user's explicit selection before proceeding.
 
 ## Output
 
