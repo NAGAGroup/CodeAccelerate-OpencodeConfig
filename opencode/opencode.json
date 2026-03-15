@@ -15,27 +15,23 @@
       "disable": true
     },
     "headwrench": {
+      "description": "Primary orchestrator — plans, delegates, drives sessions",
       "model": "github-copilot/claude-sonnet-4.6"
     },
     "subagents/context-scout": {
+      "description": "Read-only situational awareness for pre-planning",
       "model": "github-copilot/claude-haiku-4.5"
     },
     "subagents/context-insurgent": {
+      "description": "Deep multi-file exploration with sequential reasoning",
       "model": "github-copilot/claude-sonnet-4.6"
     },
     "subagents/deep-researcher": {
-      "model": "github-copilot/claude-haiku-4.5"
-    },
-    "subagents/subagent-builder": {
-      "model": "github-copilot/claude-sonnet-4.6"
-    },
-    "subagents/code-writer": {
-      "model": "opencode/gpt-5.3-codex"
-    },
-    "subagents/doc-writer": {
+      "description": "Web and documentation research via exa and Context7",
       "model": "github-copilot/claude-haiku-4.5"
     },
     "compaction": {
+      "description": "Context compaction handler",
       "model": "github-copilot/claude-sonnet-4.6"
     }
   },
