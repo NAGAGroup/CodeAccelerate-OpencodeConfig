@@ -16,9 +16,6 @@ This document tracks planned, in-progress, and shipped features for the CodeAcce
 ## In Progress
 
 <!-- Example entry (remove once real features are added) -->
-| Status | Feature | Description |
-|--------|---------|-------------|
-| ▶️ | session-context plugin — inject active session state to system prompt on every turn | Ensures HeadWrench stays oriented across context compactions by storing and retrieving active session metadata through structured JSON files |
 
 ---
 
@@ -31,7 +28,6 @@ This document tracks planned, in-progress, and shipped features for the CodeAcce
 | 🔲 | multi-session breadcrumbs | Track cross-session dependencies and suggest related past sessions during planning |
 | 🔲 | /plan-collaborative slash command | Parallel to `/plan` but tailored for writing session plans involving heavy agent–user back-and-forth; produces `.opencode/sessions` plans for open-ended, exploratory work where linear task execution doesn't apply |
 | 🔲 | more frequent commits during session execution | Commit session context and progress more frequently during execution of a session plan to improve resilience and traceability |
-| 🔲 | improved Architect usage instructions for HeadWrench | Clearer session-level guidance on when and how HW should invoke @Architect during sessions where it's enabled — currently HW never uses it even when opted in |
 | 🔲 | session-context-manager | Better context/session/notes management with cleanup tooling (stale detection, deduplication, archive format suggestions) — built to be easy on the user |
 
 ---
@@ -52,8 +48,8 @@ Features under consideration but not yet prioritized. These may move to Planned 
 | Status | Feature | Description |
 |--------|---------|-------------|
 | ✅ | HeadWrench orchestrator (v0.1.0) | Primary orchestration agent with plan/session/checkpoint workflow for multi-agent coordination |
-| ✅ | Seven specialized subagents (v0.1.0) | context-scout, deep-researcher, gates-expert, subagent-builder, code-writer, doc-writer, architect |
-| ✅ | Nine slash commands (v0.1.0) | `/plan`, `/continue`, `/amend`, `/inbox`, `/context-add`, `/context-list`, `/context-remove`, `/activate-session`, `/deactivate-session` |
+| ✅ | Four agents (HeadWrench + 3 subagents: context-scout, context-insurgent, deep-researcher) (v0.1.0) | context-scout (read-only exploration), context-insurgent (deep sequential analysis), deep-researcher (web/docs research) |
+| ✅ | Eleven slash commands (v0.1.0) | `/plan`, `/continue`, `/amend`, `/quick-plan`, `/context-add`, `/context-list`, `/context-remove`, `/context-audit`, `/activate-session`, `/deactivate-session`, `/session-status` |
 | ✅ | Checkpoint protocol (v0.1.0) | Canonical validation and approval workflow run at the end of every subtask |
 | ✅ | Agent delegation skill (v0.1.0) | Loadable skill that assigns agents based on task complexity, type, and skill requirements |
 | ✅ | Session-context plugin (v0.1.0) | Injects session metadata into system prompt to maintain orientation across context compactions |
