@@ -1,7 +1,7 @@
 {
   "session": "v1-release-prep",
   "goal": "Prepare opencode framework config for v1.0.0 release: fix all documentation inaccuracies, update ROADMAP/CHANGELOG, fix stale protocol references, archive completed sessions, and draft CHANGELOG v1.0.0 entry for user review.",
-  "status": "in_progress",
+  "status": "complete",
   "currentSubtask": 10,
   "circuitBreakerLimit": 3,
   "consecutiveFailures": 0,
@@ -15,6 +15,6 @@
     { "id": 7, "name": "draft-changelog-and-gate", "status": "complete" },
     { "id": 8, "name": "archive-sessions", "status": "complete" },
     { "id": 9, "name": "create-deep-research-plan", "status": "complete" },
-    { "id": 10, "name": "update-docs-and-release", "status": "in_progress" }
+    { "id": 10, "name": "update-docs-and-release", "status": "complete" }
   ]
 }

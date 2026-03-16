@@ -98,9 +98,11 @@ Think of skills as "expertise HeadWrench reaches for when it needs it" — not h
 
 ## Commands — Entry Points
 
-The 11 slash commands are your entry points into the system. High-level overview:
+The 12 slash commands are your entry points into the system. High-level overview:
 
 - **`/plan`** — Start a new session. Triggers Q&A, ContextScout analysis, and plan generation. Use when you have a new piece of work to organize.
+
+- **`/plan-deep-research`** — Research-first planning session — orients, dispatches DeepResearcher, gates on findings. Use when understanding comes before implementation and the decision of what to build depends on research.
 
 - **`/continue`** — Resume the current session's next subtask. Reads the session plan, loads the next subtask, and executes it. Use repeatedly to work through a session.
 

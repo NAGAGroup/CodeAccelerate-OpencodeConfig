@@ -3,7 +3,7 @@
 ## Goal
 Prepare opencode framework config for v1.0.0 release: fix all documentation inaccuracies, update ROADMAP/CHANGELOG, fix stale protocol references, archive completed sessions, and draft CHANGELOG v1.0.0 entry for user review.
 
-## Status: 🟡 In Progress
+## Status: ✅ Complete
 
 ## Subtasks
 
@@ -18,7 +18,7 @@ Prepare opencode framework config for v1.0.0 release: fix all documentation inac
 | 7 | draft-changelog-and-gate | ✅ Complete |
 | 8 | archive-sessions | ✅ Complete |
 | 9 | create-deep-research-plan | ✅ Complete |
-| 10 | update-docs-and-release | 🟡 In Progress |
+| 10 | update-docs-and-release | ✅ Complete |
 
 ## Notes
 - Session-local agent: `.opencode/agents/session-local-implementer.md` (reused from audit-complete session)

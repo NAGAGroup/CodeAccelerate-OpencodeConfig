@@ -1,6 +1,6 @@
 # Usage Guide
 
-This system is driven by 11 slash commands. Start with `/plan` for any non-trivial work — the rest follow from there.
+This system is driven by 12 slash commands. Start with `/plan` for any non-trivial work — the rest follow from there.
 
 ## /plan — Start a Session
 
@@ -21,6 +21,29 @@ This system is driven by 11 slash commands. Start with `/plan` for any non-trivi
 HeadWrench will Q&A you, gather context, then write a session plan with subtasks like: explore current theming → implement toggle → update styles → run tests.
 
 **Tip:** The Q&A is where clarity happens. Give specific answers — done criteria, what's in/out of scope, the git branch to use. Vague answers produce vague plans.
+
+---
+
+## /plan-deep-research — Research-First Planning
+
+**When to use:** When understanding comes before implementation — you need to evaluate options, explore a technology, or understand an API before committing to an approach. Use this instead of `/plan` when the decision of *what* to build depends on research findings.
+
+**What it does:**
+- Runs plan-init orientation — reads the project layout and relevant context
+- Asks 1–3 scoping questions to bound the research topic: depth vs. breadth, decision criteria
+- Dispatches `@DeepResearcher` with a prompt scoped to your research goal
+- Surfaces a findings summary at a gate and asks how to proceed
+- Loops deeper on sub-topics, pivots to a new angle, or transitions to `/plan` when you're ready to build
+- Produces a `research-brief.md` in `.opencode/sessions/{name}/notes/`
+
+**Example:**
+```
+/plan-deep-research I want to understand the trade-offs between tRPC and REST+OpenAPI for our API layer before we commit to a direction.
+```
+
+HeadWrench will orient on the project, ask a few scoping questions (e.g., "are you evaluating type safety, bundle size, or DX?"), dispatch `@DeepResearcher`, and surface a findings brief for your review. You decide whether to go deeper, pivot, or kick off a `/plan` session to start building.
+
+**Tip:** Use `/plan-deep-research` when the output is a research brief, not a list of subtasks. When you're ready to build, run `/plan` and reference the research brief as context.
 
 ---
 
@@ -196,6 +219,7 @@ Use this to get a fast at-a-glance view of where the active session stands — w
 | Command | When to use |
 |---------|-------------|
 | `/plan` | Start a new session for any non-trivial task |
+| `/plan-deep-research` | Research-first planning: orient, dispatch @DeepResearcher, gate on findings |
 | `/continue` | Execute the next subtask in the current session |
 | `/amend` | Quick fix — one file, no new session needed |
 | `/quick-plan` | Lightweight alignment check + immediate execution for small tasks |

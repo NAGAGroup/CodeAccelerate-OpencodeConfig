@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- /plan-deep-research command and protocol — dedicated research planning mode using DeepResearcher; gates on findings before transitioning to a build session
 - **context-insurgent subagent** — deep multi-file codebase exploration specialist with sequential thinking capability; fills the gap between lightweight context-scout reads and full implementation
 - **agent-writer skill** — HeadWrench loads this skill during plan finalization to create session-local agent `.md` files in `.opencode/agents/`, replacing the deleted subagent-builder role
 - **/context-audit command** — unified audit workflow: promotes inbox items, reviews session archival candidates, retrofits retrofitable items, and flags stale context files

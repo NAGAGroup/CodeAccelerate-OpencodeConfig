@@ -21,8 +21,8 @@ The OpenCode configuration follows a layered, plan-driven architecture:
 | Component | Count | Location |
 |-----------|-------|----------|
 | Agents | 4 | `opencode/agents/` and special models |
-| Commands | 11 | HeadWrench CLI |
-| Protocols | 9 | `opencode/protocols/` |
+| Commands | 12 | HeadWrench CLI |
+| Protocols | 10 | `opencode/protocols/` |
 | Skills | 2 | `opencode/skills/` |
 | Plugins | 2 | `@tarquinen/opencode-dcp@3.0.0`, `session-context` |
 | MCPs | 3 | MCP registry (context7, sequential-thinking, exa) |
@@ -49,6 +49,7 @@ The OpenCode configuration follows a layered, plan-driven architecture:
 | Command | Purpose |
 |---------|---------|
 | `/plan` | Run the full planning workflow: Q&A, session creation, subtask breakdown, delegation assignment |
+| `/plan-deep-research` | Research-first planning — orient, dispatch @DeepResearcher, review findings, decide to build or close |
 | `/continue` | Resume the current session; execute the next pending subtask |
 | `/amend` | Apply a quick in-session fix without starting a new session |
 | `/context-add` | Add a file to `.opencode/context/` persistent context |
@@ -73,6 +74,7 @@ The OpenCode configuration follows a layered, plan-driven architecture:
 | `plan-generic.md` | Standard planning workflow for general-purpose sessions | `opencode/protocols/plan-generic.md` |
 | `plan-collaborative.md` | Planning workflow variant for collaborative multi-agent sessions | `opencode/protocols/plan-collaborative.md` |
 | `plan-debug.md` | Planning workflow variant for debugging and investigation sessions | `opencode/protocols/plan-debug.md` |
+| `plan-deep-research.md` | Research-first planning: dispatch DeepResearcher, gate on findings, transition to /plan or close | `opencode/protocols/plan-deep-research.md` |
 | `plan-end.md` | End-of-session procedures: wrap-up, finalization, and handoff | `opencode/protocols/plan-end.md` |
 | `session-plan-schema.md` | Machine-readable spec for session directory structure: index.md, spec.json, subtask-NN files, notes/ subdirectory | `opencode/protocols/session-plan-schema.md` |
 
