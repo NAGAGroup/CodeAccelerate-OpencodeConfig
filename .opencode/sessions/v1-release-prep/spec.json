@@ -2,7 +2,7 @@
   "session": "v1-release-prep",
   "goal": "Prepare opencode framework config for v1.0.0 release: fix all documentation inaccuracies, update ROADMAP/CHANGELOG, fix stale protocol references, archive completed sessions, and draft CHANGELOG v1.0.0 entry for user review.",
   "status": "in_progress",
-  "currentSubtask": 5,
+  "currentSubtask": 6,
   "circuitBreakerLimit": 3,
   "consecutiveFailures": 0,
   "subtasks": [
@@ -10,8 +10,8 @@
     { "id": 2, "name": "fix-concepts-and-readme", "status": "complete" },
     { "id": 3, "name": "fix-usage-md", "status": "complete" },
     { "id": 4, "name": "fix-roadmap-md", "status": "complete" },
-    { "id": 5, "name": "fix-session-plan-schema", "status": "in_progress" },
-    { "id": 6, "name": "fix-documentation-maintenance", "status": "pending" },
+    { "id": 5, "name": "fix-session-plan-schema", "status": "complete" },
+    { "id": 6, "name": "fix-documentation-maintenance", "status": "in_progress" },
     { "id": 7, "name": "draft-changelog-and-gate", "status": "pending" },
     { "id": 8, "name": "archive-sessions", "status": "pending" }
   ]
