@@ -16,8 +16,8 @@ Prepare opencode framework config for v1.0.0 release: fix all documentation inac
 | 5 | fix-session-plan-schema | ✅ Complete |
 | 6 | fix-documentation-maintenance | ✅ Complete |
 | 7 | draft-changelog-and-gate | ✅ Complete |
-| 8 | archive-sessions | 🟡 In Progress |
-| 9 | create-deep-research-plan | ⬜ Pending |
+| 8 | archive-sessions | ✅ Complete |
+| 9 | create-deep-research-plan | 🟡 In Progress |
 | 10 | update-docs-and-release | ⬜ Pending |
 
 ## Notes
