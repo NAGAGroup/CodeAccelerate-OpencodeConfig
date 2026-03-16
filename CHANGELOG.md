@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-15
+
+### Added
+
+- **context-insurgent subagent** — deep multi-file codebase exploration specialist with sequential thinking capability; fills the gap between lightweight context-scout reads and full implementation
+- **agent-writer skill** — HeadWrench loads this skill during plan finalization to create session-local agent `.md` files in `.opencode/agents/`, replacing the deleted subagent-builder role
+- **/context-audit command** — unified audit workflow: promotes inbox items, reviews session archival candidates, retrofits retrofitable items, and flags stale context files
+- **/quick-plan command** — lightweight alignment check and immediate execution for small, well-understood tasks that don't warrant a full session plan
+- **/session-status command** — displays current session plan status and subtask progress at a glance without triggering execution
+- **Modular planning protocol** — six focused protocol files (plan-init, plan-shared, plan-generic, plan-collaborative, plan-debug, plan-end) replace the previous monolithic plan-workflow.md
+- **context-management.md protocol** — formalizes the 5-tier context loading model with staleness detection, supersession chaining, and conflict resolution rules
+- **Session archival support** — completed sessions can be moved to `.opencode/archive/sessions/` via the /context-audit workflow
+
+### Changed
+
+- **Agent roster reduced and clarified** — removed gates-expert, subagent-builder, code-writer, doc-writer, and architect; framework now uses headwrench + 3 focused subagents (context-scout, context-insurgent, deep-researcher) plus session-local implementation agents
+- **DCP plugin versioned** — `@tarquinen/opencode-dcp` updated from `@beta` to `@3.0.0`
+- **exa MCP enabled** — Exa search MCP is now enabled by default; requires `EXA_API_KEY` environment variable
+- **FEATURES.md fully rewritten** — all component counts, agent/command/protocol/skill tables corrected to match the actual framework state
+
+### Fixed
+
+- Documentation inaccuracies across FEATURES.md, CONCEPTS.md, README.md, USAGE.md, and ROADMAP.md (wrong agent counts, stale agent names, wrong command counts, wrong MCP status)
+- Stale agent references (DocWriter, @CodeWriter) removed from `opencode/protocols/session-plan-schema.md`
+- Broken file reference (`opencode/commands/README.md`) removed from `docs/DOCUMENTATION_MAINTENANCE.md`
+- ROADMAP.md cleaned up: removed duplicate "In Progress" entry for shipped session-context plugin, removed stale "improved Architect usage" planned item
+
+### Removed
+
+- **gates-expert, subagent-builder, code-writer, doc-writer, architect agents** — all five deleted; their roles are now handled by session-local agents (implementation) and HeadWrench directly (gates, architecture)
+- **plan-workflow.md** — monolithic planning protocol replaced by the modular plan-*.md suite
+
 ## [0.1.0] - 2026-03-10
 
 ### Added
