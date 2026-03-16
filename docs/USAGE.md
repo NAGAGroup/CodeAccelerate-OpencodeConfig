@@ -1,6 +1,6 @@
 # Usage Guide
 
-This system is driven by 9 slash commands. Start with `/plan` for any non-trivial work — the rest follow from there.
+This system is driven by 11 slash commands. Start with `/plan` for any non-trivial work — the rest follow from there.
 
 ## /plan — Start a Session
 
@@ -63,6 +63,28 @@ That's it — no arguments needed. HeadWrench knows where the session is.
 
 ---
 
+## /quick-plan — Execute a Small Focused Change
+
+**When to use:** Small, well-understood tasks that don't need full session tracking: a targeted change to one or a few files where the goal is clear and the risk of misalignment is low.
+
+**What it does:**
+- Runs a quick orientation pass — globs/greps the project for layout, then dispatches parallel ContextScout agents as needed
+- Asks 1–3 focused Q&A questions to confirm goal, scope, and approach — skips anything already clear from your description
+- Summarises understanding in 2–4 bullet points and asks for confirmation
+- Executes the change immediately upon confirmation
+- No session plan written, no subtask files, no checkpoint protocol
+
+**Example:**
+```
+/quick-plan rename the `UserCard` component to `ProfileCard` across the codebase
+```
+
+HeadWrench will orient itself, confirm the scope with you, then execute the rename directly.
+
+**Tip:** Use `/quick-plan` when a task is genuinely small and self-contained. If during Q&A it becomes clear the scope is larger than expected, switch to `/plan` for proper session tracking.
+
+---
+
 ## /inbox — Review Project Observations
 
 **When to use:** Periodically, to review patterns and observations that accumulated during past sessions.
@@ -83,7 +105,7 @@ That's it — no arguments needed. HeadWrench knows where the session is.
 
 ## Context Commands
 
-The three context commands manage `.opencode/context/` — a set of persistent files that ContextScout reads at the start of every `/plan` session to give HeadWrench background knowledge about the project.
+The context commands manage `.opencode/context/` — a set of persistent files that ContextScout reads at the start of every `/plan` session to give HeadWrench background knowledge about the project.
 
 ### /context-add
 
@@ -113,6 +135,24 @@ Remove a file from context.
 
 Use this when context is stale or no longer relevant.
 
+### /context-audit
+
+Run a unified interactive audit of the full context system.
+
+```
+/context-audit
+```
+
+This is the authoritative command for periodic context hygiene. It goes beyond simple inbox review — in one interactive session it handles inbox promotion, session note archival, metadata retrofits, and staleness checks on context files. It gathers all your decisions first, then executes only after a single final approval.
+
+What it covers:
+- **Inbox promotion** — reviews pending inbox items and asks whether to promote each to global or local context, discard, or skip
+- **Session archival** — identifies completed sessions with unarchived notes and proposes archiving them
+- **Inbox retrofits** — flags inbox items missing required YAML front-matter and adds it
+- **Context staleness** — flags context files not reviewed in over 90 days
+
+**Tip:** Run `/context-audit` periodically instead of `/inbox` — it does everything `/inbox` did and more, in one pass with one approval step.
+
 **Tip:** Keep context lean. 2-4 targeted files are more effective than 20 loosely related ones.
 
 ---
@@ -139,6 +179,16 @@ Unset the currently active session plan.
 
 Use this when you're done with a session and want to free-run without session context injected.
 
+### /session-status
+
+Display the current session plan status as a quick summary.
+
+```
+/session-status
+```
+
+Use this to get a fast at-a-glance view of where the active session stands — which subtask is current, what's complete, and what remains — without triggering any execution.
+
 ---
 
 ## Quick Reference
@@ -148,12 +198,15 @@ Use this when you're done with a session and want to free-run without session co
 | `/plan` | Start a new session for any non-trivial task |
 | `/continue` | Execute the next subtask in the current session |
 | `/amend` | Quick fix — one file, no new session needed |
+| `/quick-plan` | Lightweight alignment check + immediate execution for small tasks |
 | `/inbox` | Review accumulated project observations |
 | `/context-add <path>` | Add file to persistent planning context |
 | `/context-list` | See what's in persistent context |
 | `/context-remove <path>` | Remove file from persistent context |
+| `/context-audit` | Unified audit: inbox promotion, archival, retrofits, staleness review |
 | `/activate-session` | Set active session plan for this OpenCode session |
 | `/deactivate-session` | Unset the active session plan |
+| `/session-status` | Display current session plan status and progress |
 
 ---
 
