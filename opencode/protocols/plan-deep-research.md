@@ -1,88 +1,103 @@
 # plan-deep-research.md — Deep Research Session Type
 
-The Deep Research session type is for users who want to understand a topic, technology, API, or approach before deciding how to build something. The primary agent is `@DeepResearcher`. The output is a research brief, not a subtask plan.
+The Deep Research session type plans and executes a structured multi-round research investigation as a full HW session. The session has `index.md`, `spec.json`, and subtask files — just like Generic or Debug sessions. Each subtask is a single focused `@DeepResearcher` invocation. Gates between rounds let the user review findings and steer direction before the next round begins.
+
+> **This is not a research-during-planning step.** The research IS the session. `@DeepResearcher` is not invoked during planning — it is the execution agent for every research subtask.
 
 ## Flow
 
-1. **Phase 1** — Run `plan-init.md` (orientation only — skip session type selection; session type is already determined as Deep Research)
-2. **Research Q&A** — See below
-3. **DeepResearcher dispatch** — See below
-4. **Gate: user reviews findings** — See below
-5. **Transition decision** — See below
-6. **Finalization** — Run `plan-end.md` only if the user chooses to transition to a build session; otherwise write session notes and close
+1. **Phase 1** — Run `plan-init.md` (orientation; skip session type selection — already determined)
+2. **Shared steps** — Run `plan-shared.md` (skip Step 5 — the research IS the session)
+3. **Research Q&A** — See below
+4. **Subtask decomposition** — See below
+5. **Apply delegation** — Load agent-delegation-expert skill
+6. **Finalization** — Run `plan-end.md`
 
 ## Research Q&A
 
-Use the `question` tool to ask 1–3 targeted questions to scope the research prompt. Do not ask about anything already clear from the user's description.
+Use the `question` tool to ask 1–3 targeted questions to scope the research plan. Do not ask about anything already clear from the user's description.
 
 Focus questions on:
 
-- **Topic boundary** — what is in scope and what is explicitly out?
-- **Depth vs. breadth** — deep dive on one thing, or survey of options?
-- **Decision criteria** — what does the user need to know to make a build decision? (e.g., API constraints, performance characteristics, library maturity, licensing)
+- **Topic boundary** — what is in scope and what is explicitly out of scope?
+- **Depth vs. breadth** — deep dive on one thing, or survey across several options?
+- **Decision criteria** — what does the user need to know to make a decision? (e.g., API constraints, performance characteristics, library maturity, licensing)
+- **Initial rounds** — how many distinct research questions does the user want to start with? (HW can suggest 1–3 based on the topic; more can be added at gates)
 
 Keep it to 1–3 questions. Do not ask for information you already have.
 
-## DeepResearcher Dispatch
+## Subtask Decomposition
 
-After Q&A, construct a scoped research prompt from the user's goal and the Q&A answers. The prompt must specify:
+### Research Round Subtasks
 
-- The research topic and its boundaries
-- The depth/breadth trade-off agreed in Q&A
-- The decision criteria the findings must address
-- Any known constraints (versions, platforms, existing dependencies)
+Each research round is one subtask. A round has a single focused research question that `@DeepResearcher` can fully address in one invocation.
 
-Dispatch `@DeepResearcher` with this prompt. Wait for the research brief to return before proceeding.
+**Naming convention:** `subtask-NN-research-round-N-{slug}.md`
+**Examples:** `subtask-01-research-round-1-trpc-vs-rest.md`, `subtask-02-research-round-2-bundle-size.md`
 
-## Gate: User Reviews Findings
+Each research round subtask must have:
 
-After `@DeepResearcher` returns its brief, surface a summary to the user:
+- **Objective** — The specific research question being answered. One focused question only. Include what the output should cover (e.g., trade-offs, constraints, maturity, code examples).
+- **Scope** — What areas, sources, or angles to investigate. Known constraints (versions, platforms, existing stack).
+- **Constraints** — Output format, depth/breadth trade-off, things to avoid or not assume.
+- **Todolist** — 4 items (see template below):
+  1. Construct scoped research prompt from the subtask Objective and any prior round notes
+  2. Dispatch `@DeepResearcher` with the prompt
+  3. Write round findings to `notes/round-NN-findings.md`
+  4. `[🚫 GATE]` Surface findings summary to user; wait for direction before proceeding
 
-- Key findings (3–7 bullet points)
-- Open questions or gaps in the research
-- Recommended next steps based on findings
+- **Delegation** — Always `@DeepResearcher` for research rounds
 
-Then use the `question` tool to ask the user how they want to proceed. Present the options:
+### Synthesis Subtask
 
-| Option | Description |
-|--------|-------------|
-| **Go deeper** | Dispatch another research round on a specific sub-topic from the findings |
-| **Pivot topic** | Redirect research to a different angle or adjacent topic |
-| **Transition to planning** | User is satisfied with findings and wants to start a build session |
-| **Done** | Findings are sufficient; close the session without starting a build session |
+The **last subtask is always a synthesis subtask** — HW-direct, no DeepResearcher invocation.
 
-Wait for explicit user selection before continuing.
+**Naming convention:** `subtask-NN-synthesis.md`
 
-## Transition Decision
+The synthesis subtask:
+- Reads all `notes/round-NN-findings.md` files accumulated during the session
+- Compiles a `notes/research-brief.md` with: session goal, research scope, all findings (in round order), open questions, recommended next steps
+- No gate — this is the terminal subtask
 
-**If the user selects "Go deeper" or "Pivot topic":**
-- Construct a new scoped research prompt based on the user's direction
-- Dispatch `@DeepResearcher` again with the refined prompt
-- Return to the Gate step
+**Delegation:** HW-direct (reading session notes and writing a brief — no subagent needed).
 
-**If the user selects "Transition to planning":**
-- Write session notes (see Finalization below)
-- Tell the user to run `/plan` and reference the research session notes as context
-- Do not invoke `plan-end.md` for the research session itself — the research session is complete
+### Dynamic Rounds
 
-**If the user selects "Done":**
-- Write session notes and close the session
+The initial plan contains the rounds identified in Q&A plus the synthesis subtask. At each gate, the user may direct:
 
-## Finalization
+- **Continue to synthesis** — proceed to the synthesis subtask as planned
+- **Add another round** — HW inserts a new research subtask before synthesis and continues
+- **Redirect the current angle** — HW notes the redirect in session notes; proceeds to synthesis or next round per user direction
 
-Write a session notes file to `.opencode/sessions/{name}/notes/research-brief.md` containing:
+Document the dynamic round rule in `index.md` under **Patterns & Constraints**: "Additional research rounds may be inserted at gates based on user direction."
 
-- Session goal (from the user's original description)
-- Research scope (topic boundaries, depth/breadth trade-off, decision criteria)
-- Full findings from all `@DeepResearcher` rounds (in order)
-- Open questions or gaps not resolved
-- Recommended next steps
+### Sizing Rules
 
-Then run `plan-end.md` **only if** the user chose to transition to a build session and a subtask plan was drafted. If the session ends as a pure research output (no subtask plan), skip `plan-end.md` — write only the notes file and tell the user the session is complete.
+- One research question per subtask. Do not bundle multiple questions into one round.
+- If a topic is too broad for one invocation, split it into two focused rounds (e.g., Round 1: API surface; Round 2: performance characteristics).
+- Minimum 2 subtasks (at least one research round + synthesis). Maximum initial rounds: 5 (more can be added at gates).
+- Every research round ends with a `[🚫 GATE]` except the synthesis subtask.
 
-## Key Constraints
+## Applying Delegation
 
-- Never skip the Gate — the user must review findings before any transition
-- Do not draft subtasks during the research session; subtask decomposition belongs to a follow-on `/plan` session
-- If `@DeepResearcher` returns insufficient findings, surface the gaps at the Gate rather than patching them silently
-- Loop depth is not capped — allow as many research rounds as the user requests
+After subtask decomposition is complete, load the **agent-delegation-expert skill** (`~/.config/opencode/skills/agent-delegation-expert/SKILL.md`) and apply its routing rules.
+
+For Deep Research sessions:
+- All research round subtasks → `@DeepResearcher`
+- Synthesis subtask → HW-direct (no subagent)
+
+Write assignments into each subtask's `## Delegation` section before writing files.
+
+## Execution Behavior (for reference — not planning steps)
+
+When the session runs:
+
+1. HW reads the current research round subtask file
+2. HW constructs a scoped research prompt from the subtask Objective, Scope, and any relevant `notes/round-NN-findings.md` from prior rounds
+3. HW dispatches `@DeepResearcher` via the Task tool
+4. When results return, HW writes `notes/round-NN-findings.md`
+5. HW hits the Gate: surfaces a findings summary to the user and waits for direction
+6. User directs: continue to synthesis, add a round, or redirect
+7. At checkpoint, HW updates `spec.json` and `index.md`, and transitions to the next subtask
+
+For the synthesis subtask, HW reads all round notes directly and writes `notes/research-brief.md` without dispatching any subagent.

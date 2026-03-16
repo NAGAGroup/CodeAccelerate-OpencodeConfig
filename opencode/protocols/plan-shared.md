@@ -43,11 +43,13 @@ If the user requests changes, note them as session-specific overrides in the ses
 
 ## Step 5 — Research Gate
 
-Ask the user:
+> **Skip this step for Deep Research session type.** The research IS the session — `@DeepResearcher` is the execution agent for each subtask, not a planning aid. Proceed directly to `plan-deep-research.md`.
+
+For all other session types, ask the user:
 
 > "Does this session require external documentation or API research before planning? If yes, I'll invoke @DeepResearcher."
 
 If yes, invoke **@DeepResearcher** with a focused research prompt. Wait for results before proceeding to plan writing.
 If no, proceed immediately.
 
-Continue to the type-specific protocol (plan-generic.md, plan-debug.md, or plan-collaborative.md).
+Continue to the type-specific protocol (plan-generic.md, plan-debug.md, plan-collaborative.md, or plan-deep-research.md).

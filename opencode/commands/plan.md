@@ -20,6 +20,7 @@ Based on session type detected in Phase 1:
 - **Generic**: See `~/.config/opencode/protocols/plan-generic.md`
 - **Debug**: See `~/.config/opencode/protocols/plan-debug.md`
 - **Collaborative**: See `~/.config/opencode/protocols/plan-collaborative.md`
+- **Deep Research**: See `~/.config/opencode/protocols/plan-deep-research.md`
 
 ### Phase 4 — Finalization
 See `~/.config/opencode/protocols/plan-end.md`

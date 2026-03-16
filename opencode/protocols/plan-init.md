@@ -28,13 +28,14 @@ After all ContextScout results return:
 
 Use the `question` tool to ask the user to select the session type. Always ask — do not infer or default silently, even if one type seems obvious from the description.
 
-Present the three options:
+Present the four options:
 
 | Type | When to use |
 |------|-------------|
 | **Generic** | New feature, refactor, migration, documentation, multi-step implementation |
 | **Debug** | Bug report, unexpected behavior, test failure, error trace |
 | **Collaborative** | User wants active review or approval at each step |
+| **Deep Research** | Structured multi-round research investigation; the research IS the session — subtasks are DeepResearcher invocations with gates between rounds |
 
 Wait for the user's explicit selection before proceeding.
 

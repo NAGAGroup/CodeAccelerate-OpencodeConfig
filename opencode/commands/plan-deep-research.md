@@ -1,41 +1,25 @@
 ---
-description: "Research-first planning — orient on a topic, dispatch @DeepResearcher, review findings, then decide whether to build. Use this instead of /plan when understanding comes before implementation."
+description: "Alias for /plan with Deep Research session type pre-selected. Plans a structured multi-round research investigation as a full HW session."
 agent: headwrench
 ---
 
-$ARGUMENTS
+## /plan-deep-research
 
-## How to Run /plan-deep-research
+> ⚠️ **MANDATORY EXECUTION PROTOCOL — NOT OPTIONAL**
+>
+> You MUST read `~/.config/opencode/commands/plan.md` right now and execute every phase and step exactly as written. This is not a suggestion. This is not a summary you can substitute with your own interpretation. Failure to read and follow `plan.md` verbatim is a protocol violation.
+>
+> **Do not proceed past this line until you have read `~/.config/opencode/commands/plan.md` in full.**
 
-Follow the protocol in `~/.config/opencode/protocols/plan-deep-research.md`.
+---
 
-## Purpose
+You are executing `/plan` with exactly **two overrides** applied. Everything else in `plan.md` is unchanged and binding:
 
-Invoke the deep research planning protocol when the primary goal is *understanding* a topic, technology, API, or approach — before deciding how or whether to build something.
+1. **Session type is pre-selected: Deep Research.** Skip the session type question in Phase 1 — do not ask the user to choose a session type.
+2. **Skip Step 5 (Research Gate) in Phase 2.** The research IS the session, not a planning aid. After completing Steps 1–4 of Phase 2, proceed directly to `~/.config/opencode/protocols/plan-deep-research.md` for Phase 3.
 
-## When to Use /plan-deep-research vs /plan
+Now execute `~/.config/opencode/commands/plan.md`.
 
-| Use `/plan-deep-research` when… | Use `/plan` when… |
-|----------------------------------|-------------------|
-| You want to evaluate options before committing to an approach | You already know what to build |
-| You need to understand an API, library, or technology before writing code | You have a feature, fix, or refactor ready to execute |
-| The decision of *what* to build depends on research findings | The scope and approach are already clear |
-| The output is a research brief, not a list of subtasks | The output is a subtask plan ready to execute |
+---
 
-## What HeadWrench Does
-
-1. **Runs plan-init orientation** — reads the project layout and relevant context
-2. **Asks 1–3 scoping questions** — topic boundary, depth vs. breadth, decision criteria
-3. **Dispatches `@DeepResearcher`** — with a prompt scoped to the user's research goal
-4. **Surfaces findings at a gate** — presents a summary and asks how to proceed
-5. **Loops or transitions** — goes deeper on sub-topics, pivots to a new angle, or transitions to a `/plan` session if the user is ready to build
-
-The session ends with a `research-brief.md` notes file in `.opencode/sessions/{name}/notes/`. If the user chooses to transition to a build session, they run `/plan` next and reference the research brief as context.
-
-## Example
-
-```
-/plan-deep-research I want to understand the trade-offs between tRPC and REST+OpenAPI for our API layer before we commit to a direction.
-```
-
-HeadWrench will orient on the project, ask a few scoping questions (e.g., "are you evaluating type safety, bundle size, or DX?"), dispatch `@DeepResearcher`, and surface a findings brief for your review. You decide whether to go deeper, pivot, or kick off a `/plan` session to start building.
+User arguments: $ARGUMENTS
