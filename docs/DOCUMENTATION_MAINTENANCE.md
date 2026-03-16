@@ -15,12 +15,6 @@ This guide explains how to keep OpenCode configuration documentation synchronize
 | **docs/CONCEPTS.md** | Architecture, design principles | Change architecture patterns or agent roles |
 | **FEATURES.md** | Authoritative feature inventory and baseline - single source of truth for counts and capabilities | ANY feature change (agents, guardrails, plugins, skills, workflows) |
 
-### Workflow & Agent Reference Documentation
-
-| File | Purpose | Update When |
-|------|---------|-------------|
-| **opencode/commands/README.md** | Workflow reference table (point-of-truth for workflow list) | Add/remove/modify workflow |
-
 ### System Documentation
 
 | File | Purpose | Update When |
@@ -72,26 +66,19 @@ When you add, remove, or modify a feature:
 
 ```
 Files to update:
-1. opencode/commands/README.md
-   - Add workflow to appropriate category in the reference table
-   - Include purpose and enforcement details
-   
-2. FEATURES.md - Section 6 (Workflows)
+1. FEATURES.md - Section 6 (Workflows)
    - Add workflow entry with purpose and enforcement
    - Document any new patterns
-   - No longer needed: Update workflow count (reference table is in opencode/commands/README.md)
    
-3. docs/USAGE.md - "Available Workflows" section
+2. docs/USAGE.md - "Available Workflows" section
    - Add detailed workflow documentation
    - Include example usage
    - Document process steps
    - Update Quick Reference table
    - Add reference to opencode/commands/ for specifications
    
-4. opencode/commands/workflow-[name].md (NEW FILE)
+3. opencode/commands/workflow-[name].md (NEW FILE)
    - Create workflow specification
-
-Note: README.md no longer needs workflow count updates - it references opencode/commands/ dynamically
 ```
 
 #### Adding a New Agent
