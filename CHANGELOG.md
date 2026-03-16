@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-03-15
+
+### Fixed
+
+- **/plan-deep-research** was incomplete in v1.0.0 — it described research as a planning aid rather than a proper session type. Now correctly implemented as a full HW session with `index.md`, `spec.json`, subtask files, gates between research rounds, and full checkpoint machinery. Each research round is a `@DeepResearcher` subtask; a mandatory final synthesis subtask compiles all findings into `notes/research-brief.md`.
+- **plan-deep-research.md alias** hardened with mandatory execution protocol language to prevent the agent from skipping the `plan.md` read.
+
 ## [1.0.0] - 2026-03-15
 
 ### Added
