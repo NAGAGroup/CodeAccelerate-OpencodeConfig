@@ -13,6 +13,8 @@
     { "id": 5, "name": "fix-session-plan-schema", "status": "complete" },
     { "id": 6, "name": "fix-documentation-maintenance", "status": "complete" },
     { "id": 7, "name": "draft-changelog-and-gate", "status": "complete" },
-    { "id": 8, "name": "archive-sessions", "status": "in_progress" }
+    { "id": 8, "name": "archive-sessions", "status": "in_progress" },
+    { "id": 9, "name": "create-deep-research-plan", "status": "pending" },
+    { "id": 10, "name": "update-docs-and-release", "status": "pending" }
   ]
 }

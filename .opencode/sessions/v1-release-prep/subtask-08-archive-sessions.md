@@ -20,9 +20,8 @@ Four sessions are completed and cluttering the active sessions directory. Move t
 - Archive destination: `.opencode/archive/sessions/`
 - Sessions to archive: audit-complete, concepts-why-this-works, lockdown-workflows-and-agents, opencode-config-audit
 - Do NOT touch `.opencode/sessions/v1-release-prep/`
-- This is the final subtask — use the Session Close commit format: `feat: complete session — v1-release-prep`
-- After archiving and the Session Close commit, gate: instruct user to run `/context-audit` in another session before applying the tag
-- v1.0.0 tag format: `git tag v1.0.0 -m "v1.0.0 release"`
+- This is NOT the final subtask (amended) — use WIP commit format: `wip: subtask 08 complete — archive completed sessions`
+- v1.0.0 tag has been moved to subtask 10 (the true final subtask)
 
 ## Sessions to Archive
 - `.opencode/sessions/audit-complete/`
@@ -37,8 +36,7 @@ Four sessions are completed and cluttering the active sessions directory. Move t
 - [ ] Move lockdown-workflows-and-agents to archive
 - [ ] Move opencode-config-audit to archive
 - [ ] Verify .opencode/sessions/ only contains v1-release-prep after archival
-- [ ] 🚫 GATE — Instruct user: "Run `/context-audit` in a fresh opencode session to verify permanent context health, then return here and confirm to apply the v1.0.0 tag"
-- [ ] Apply v1.0.0 git tag: `git tag v1.0.0 -m "v1.0.0 release"`
+- [x] 🚫 GATE — Context audit completed; plan amended to add /plan-deep-research feature work before tagging. Proceeding to subtask 09.
 
 ## Delegation
 **Agent:** HeadWrench directly  
