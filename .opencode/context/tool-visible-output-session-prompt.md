@@ -1,6 +1,6 @@
 ---
 topic: tool-visible-output
-tier: 3
+tier: local
 promoted_from: inbox
 session: mermaid-tool-plugin
 created: 2026-03-10
