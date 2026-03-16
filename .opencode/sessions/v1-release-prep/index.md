@@ -17,8 +17,8 @@ Prepare opencode framework config for v1.0.0 release: fix all documentation inac
 | 6 | fix-documentation-maintenance | ✅ Complete |
 | 7 | draft-changelog-and-gate | ✅ Complete |
 | 8 | archive-sessions | ✅ Complete |
-| 9 | create-deep-research-plan | 🟡 In Progress |
-| 10 | update-docs-and-release | ⬜ Pending |
+| 9 | create-deep-research-plan | ✅ Complete |
+| 10 | update-docs-and-release | 🟡 In Progress |
 
 ## Notes
 - Session-local agent: `.opencode/agents/session-local-implementer.md` (reused from audit-complete session)
