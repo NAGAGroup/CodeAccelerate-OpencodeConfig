@@ -9,8 +9,8 @@ Prepare opencode framework config for v1.0.0 release: fix all documentation inac
 
 | # | Name | Status |
 |---|------|--------|
-| 1 | fix-features-md | 🟡 In Progress |
-| 2 | fix-concepts-and-readme | ⬜ Pending |
+| 1 | fix-features-md | ✅ Complete |
+| 2 | fix-concepts-and-readme | 🟡 In Progress |
 | 3 | fix-usage-md | ⬜ Pending |
 | 4 | fix-roadmap-md | ⬜ Pending |
 | 5 | fix-session-plan-schema | ⬜ Pending |
