@@ -37,9 +37,9 @@ HeadWrench's responsibilities:
 
 HeadWrench does **not**:
 
-- Write large code blocks itself (delegates to `code-writer`)
-- Do deep codebase exploration (delegates to `context-scout`)
+- Do deep codebase exploration (delegates to `context-scout` or `context-insurgent`)
 - Research topics or fetch external documentation (delegates to `deep-researcher`)
+- Write implementation code itself (delegates to session-local agents created via the `agent-writer` skill)
 
 ---
 
@@ -47,21 +47,13 @@ HeadWrench does **not**:
 
 Subagents are isolated, single-purpose workers. Each has a focused role. HeadWrench gives each subagent a fully-specified task prompt; the subagent completes the task and reports back. Subagents have no awareness of the broader session — they receive work, do it, and return results.
 
-There are 7 subagents:
+There are 3 subagents:
 
 1. **`context-scout`** — Reads the codebase and prior session notes before planning begins. Builds situational awareness so HeadWrench can ask better Q&A during `/plan`. Read-only, fast.
 
-2. **`deep-researcher`** — Handles web searches, documentation lookup, code examples, and external knowledge fetching. When you need to research a tool, library, or pattern, this agent does the digging.
+2. **`context-insurgent`** — Deep codebase exploration specialist with sequential thinking capability. Used for complex multi-file investigations that require structured, multi-step reasoning.
 
-3. **`gates-expert`** — Recommends where to place approval gates in session plans. Helps identify critical decision points where you should pause before proceeding.
-
-4. **`subagent-builder`** — Generates custom ephemeral agent definitions when no standard subagent fits the task. Creates one-off agent specs for special, unusual work.
-
-5. **`code-writer`** — Fast implementation agent for well-specified code tasks. Requires clear specifications (from the session plan) and executes coding work efficiently.
-
-6. **`doc-writer`** — Writes documentation, code comments, READMEs, changelogs, and architectural decision records. Keeps documentation in sync with code.
-
-7. **`architect`** — Deep reasoning for complex architectural problems and subtle bugs. Optional, double-gated — reserved for architecturally critical decisions where you want maximum reasoning depth.
+3. **`deep-researcher`** — Handles web searches, documentation lookup, code examples, and external knowledge fetching. When you need to research a tool, library, or pattern, this agent does the digging.
 
 ---
 
@@ -94,17 +86,19 @@ Sessions accumulate observations in `notes/` and feed project-level patterns to 
 
 Skills are markdown files that encode complex rules or decision frameworks. HeadWrench loads skills on demand when needed — they are not auto-loaded.
 
-Currently, there is one skill:
+Currently, there are two skills:
 
 - **`agent-delegation-expert`** — Loaded during `/plan` (Phase 5) to assign the right agent and model tier to each subtask. Provides routing rules and guidance on when to use fast models (haiku) vs. standard (sonnet) vs. deep reasoning (opus).
 
-Think of skills as "expertise HeadWrench reaches for when it needs it" — not hardcoded behavior, but on-demand guidance living in markdown files.
+- **`agent-writer`** — Creates session-local agent files during plan finalization. Loaded on demand when a subtask requires a custom agent that doesn't exist yet.
+
+Think of skills as "expertise HeadWrench reaches for when it needs it" — not hardcoded behavior, but on-demand guidance living in markdown files. Skills are loaded on demand, not auto-loaded.
 
 ---
 
 ## Commands — Entry Points
 
-The 9 slash commands are your entry points into the system. High-level overview:
+The 11 slash commands are your entry points into the system. High-level overview:
 
 - **`/plan`** — Start a new session. Triggers Q&A, ContextScout analysis, and plan generation. Use when you have a new piece of work to organize.
 
@@ -116,13 +110,19 @@ The 9 slash commands are your entry points into the system. High-level overview:
 
 - **`/context-add`** — Add a file to `.opencode/context/` persistent context. These files are read by ContextScout on every planning session.
 
+- **`/context-audit`** — Audit permanent context files for staleness. Identifies context files that may be out of date and should be refreshed or removed.
+
 - **`/context-list`** — List files currently in `.opencode/context/`.
 
 - **`/context-remove`** — Remove a file from `.opencode/context/`.
 
+- **`/quick-plan`** — Lightweight planning for small, well-scoped tasks. Faster than `/plan` when full Q&A isn't needed.
+
 - **`/activate-session`** — Set a session plan as active for the current OpenCode session. HeadWrench will inject the session's state into its context on every message.
 
 - **`/deactivate-session`** — Unset the active session plan for the current OpenCode session.
+
+- **`/session-status`** — Display the current session state and subtask progress. Quick overview of where you are in the active session.
 
 For detailed usage of each command, see [USAGE.md](USAGE.md).
 

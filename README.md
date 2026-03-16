@@ -9,11 +9,11 @@ This is an OpenCode configuration that provides structured, session-based AI-ass
 ## What You Get
 
 - **HeadWrench** — orchestrator that runs planning workflows, delegates to subagents, and checkpoints progress
-- **7 specialized subagents** — context-scout, deep-researcher, gates-expert, code-writer, doc-writer, subagent-builder, architect
+- **3 subagents** — context-scout, context-insurgent, deep-researcher
 - **Session-based workflow** — `/plan` creates a structured plan; `/continue` executes it subtask by subtask
-- **1 skill** — agent-delegation-expert for routing subtasks to the right agent and model
+- **2 skills** — agent-delegation-expert, agent-writer
 - **DCP plugin** — automatic context compression to prevent overflow
-- **3 MCPs** — context7 (library docs), sequential-thinking (structured reasoning), exa (web search, disabled by default)
+- **3 MCPs** — context7 (library docs), sequential-thinking (structured reasoning), exa (web search, enabled — requires `EXA_API_KEY` env var)
 
 See [FEATURES.md](FEATURES.md) for the complete component inventory.
 
@@ -57,5 +57,5 @@ Executes the first subtask. Run again for each subsequent subtask.
 ## Learn More
 
 - **[docs/CONCEPTS.md](docs/CONCEPTS.md)** — The design philosophy and key concepts: why this config works the way it does, what HeadWrench is, what sessions are, what skills are
-- **[docs/USAGE.md](docs/USAGE.md)** — How to use the 9 commands: /plan, /continue, /amend, /inbox, context commands, and session activation — with examples
+- **[docs/USAGE.md](docs/USAGE.md)** — How to use the 11 commands: /plan, /continue, /amend, /inbox, context commands, and session activation — with examples
 - **[FEATURES.md](FEATURES.md)** — Complete component inventory: all agents, commands, protocols, skills, plugins, MCPs
