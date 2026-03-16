@@ -152,7 +152,7 @@ Examples: `subtask-01-analyze.md`, `subtask-03-fix-compaction-hook.md`
 ## Delegation Sizing Guidelines
 
 - **Rule of thumb (soft, not hard):** A single delegation should usually stay around ~3 files or ~500 lines of new/modified content. This is a sizing heuristic, not an absolute cap.
-- **Anti-pattern to avoid:** Asking DocWriter to produce a 5000-word document in a single task invocation — split it into logical parts instead.
+- **Anti-pattern to avoid:** Asking any single agent to handle oversized scope (e.g., a 5000-word document or a full-codebase refactor) in one invocation — split it into logical parts instead.
 - **Use `task_id` to continue oversized sequential work:** If one slot's work is too large for a single invocation, run Part 1 first and capture the returned `task_id`. Resubmit Part 2 with that same `task_id` so the work continues in the same subagent session. Repeat for Part 3+ as needed.
 
 Example (prose/pseudocode):
@@ -172,12 +172,12 @@ Use this `## Delegation` format for parallel groups:
 This subtask uses parallel delegation. HeadWrench launches all slots simultaneously in a single message.
 
 ### Slot A — [short description]
-- **Agent:** @CodeWriter
+- **Agent:** [session-local agent name]
 - **Model tier:** fast
 - **Scope:** [specific files/scope slice for this slot]
 
 ### Slot B — [short description]
-- **Agent:** @CodeWriter
+- **Agent:** [session-local agent name]
 - **Model tier:** fast
 - **Scope:** [specific files/scope slice for this slot]
 ```
@@ -273,4 +273,4 @@ This todo must be rich enough for HeadWrench to fully re-bootstrap session orien
 - **Delegation in subtask files**: Agent and model assignments live exclusively in subtask-NN files under `## Delegation`. They are never stored in `spec.json` or `index.md`.
 - **Immutability**: Completed subtask files and their todos are not modified except for retroactive notes.
 - **Session summary todo**: HeadWrench owns and updates it. For HW orientation only — subagents have no awareness of it.
-- **Build & Test Ownership**: Build and test steps are never assigned to CodeWriter or any subagent. HeadWrench runs them directly after implementation subtasks complete.
+- **Build & Test Ownership**: Build and test steps are never assigned to any subagent or session-local agent. HeadWrench runs them directly after implementation subtasks complete.
