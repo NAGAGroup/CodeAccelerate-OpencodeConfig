@@ -9,11 +9,11 @@ The Debug session type handles bug reports, unexpected behavior, test failures, 
 1. **Phase 1** — Run `plan-init.md` (with extra focus on error traces, test output, and relevant code paths)
 2. **Shared steps** — Run `plan-shared.md` (type-specific Q&A: reproduction steps, acceptance criteria)
 3. **Subtask structure:**
-   - **Reproduce** — Write reproduction steps as first subtask; HW runs directly
+   - **Reproduce** — Write reproduction steps as first subtask; you run it directly
    - **Diagnose** — Delegate to @ContextInsurgent for deep analysis of relevant code
    - **Gate** — Review diagnosis with user before implementing fix
    - **Fix** — Delegate to session-local implementer
-   - **Regression test** — HW runs directly
+   - **Regression test** — You run it directly
 4. **Finalization** — Run `plan-end.md`
 
 ## Key Constraints

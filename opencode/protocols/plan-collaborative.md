@@ -6,9 +6,9 @@ The Collaborative session type is for users who want active involvement during e
 
 | Level | Description |
 |-------|-------------|
-| **Review** | HW runs each subtask, then pauses for user review of results before continuing |
-| **Approve** | HW pauses **before** each subtask starts and waits for user approval to proceed |
-| **Observe** | HW runs autonomously and surfaces findings at gates only |
+| **Review** | Run each subtask, then pause for user review of results before continuing |
+| **Approve** | Pause **before** each subtask starts and wait for user approval to proceed |
+| **Observe** | Run autonomously and surface findings at gates only |
 
 Default: **Observe** (matches the default autonomous execution mode).
 
@@ -21,7 +21,7 @@ Default: **Observe** (matches the default autonomous execution mode).
 
 ## Capturing the Interactivity Contract in Subtask Files
 
-The involvement level decided during Q&A **must be encoded directly in every affected subtask file's `## Todolist` section** — not in `spec.json`, not in `index.md`. This is how HW enforces it at runtime.
+The involvement level decided during Q&A **must be encoded directly in every affected subtask file's `## Todolist` section** — not in `spec.json`, not in `index.md`. This is how you enforce it at runtime.
 
 ### Pause Marker Syntax
 
@@ -39,7 +39,7 @@ Use the `[⏸ PAUSE]` marker as a checklist item inside the `## Todolist`:
 | **Review** | As the **last item** in `## Todolist` — after all work is done, before checkpoint |
 | **Observe** | No `[⏸ PAUSE]` markers in regular subtasks; gates handle the pause |
 
-### What HW Does When It Encounters `[⏸ PAUSE]`
+### What You Do When You Encounter `[⏸ PAUSE]`
 
 1. **Stop execution** — do not proceed past the marker.
 2. **Surface a summary** to the user:

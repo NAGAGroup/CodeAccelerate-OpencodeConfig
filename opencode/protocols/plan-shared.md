@@ -8,9 +8,9 @@ Use the `question` tool to ask clarifying questions. Cover these categories:
 
 - **Scope / done criteria** — What does "complete" look like? What is the expected output?
 - **Constraints / invariants** — What must not change? Are there performance, compatibility, or style constraints?
-- **Git workflow** — Should changes go directly to main, or a feature branch? Should HW create commits after each subtask (WIP) or only at the end?
+- **Git workflow** — Should changes go directly to main, or a feature branch? Should commits be created after each subtask (WIP) or only at the end?
 - **Out-of-scope items** — Is anything explicitly excluded from this session?
-- **Circuit breaker** — How many consecutive failures before HW stops and surfaces the problem? (default: 3)
+- **Circuit breaker** — How many consecutive failures before you stop and surface the problem? (default: 3)
 
 Ask all base questions in a single `question` tool call when possible.
 
@@ -20,7 +20,7 @@ After the base Q&A, ask any type-specific questions:
 
 - **Generic**: What is the logical subtask breakdown? Are there subtasks that require human review before proceeding (gates)?
 - **Debug**: What are the reproduction steps? How do we know the bug is fixed (acceptance criteria)?
-- **Collaborative**: What involvement level does the user want? (Review = user reviews each result; Approve = user approves before each start; Observe = HW runs autonomously)
+- **Collaborative**: What involvement level does the user want? (Review = you review each result; Approve = user approves before each start; Observe = you run autonomously)
 
 ## Step 3 — Sequential Thinking Synthesis
 

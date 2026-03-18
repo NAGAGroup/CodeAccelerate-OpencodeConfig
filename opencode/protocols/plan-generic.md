@@ -36,7 +36,7 @@ Break the work into numbered subtasks. Each subtask must have:
 
 ### Gate Placement
 
-A gate is a `[🚫 GATE]` todo item inside a subtask's `## Todolist`. At checkpoint time, HeadWrench checks for gates before transitioning to the next subtask. If a gate is found, HW stops, surfaces findings to the user, and waits for explicit approval before continuing.
+A gate is a `[🚫 GATE]` todo item inside a subtask's `## Todolist`. At checkpoint time, you check for gates before transitioning to the next subtask. If a gate is found, stop, surface findings to the user, and wait for explicit approval before continuing.
 
 Use gates when:
 - A decision depends on intermediate results that aren't known at planning time
