@@ -3,7 +3,7 @@ description: "Alias for /plan with Deep Research session type pre-selected. Plan
 agent: headwrench
 ---
 
-## /plan-deep-research
+You are running a planning session with Deep Research pre-selected. The user's topic or description is: `$ARGUMENTS`
 
 > ⚠️ **MANDATORY EXECUTION PROTOCOL — NOT OPTIONAL**
 >
@@ -13,13 +13,7 @@ agent: headwrench
 
 ---
 
-You are executing `/plan` with exactly **two overrides** applied. Everything else in `plan.md` is unchanged and binding:
+Execute `~/.config/opencode/commands/plan.md` with exactly **two overrides** applied. Everything else in `plan.md` is unchanged and binding:
 
 1. **Session type is pre-selected: Deep Research.** Skip the session type question in Phase 1 — do not ask the user to choose a session type.
 2. **Skip Step 5 (Research Gate) in Phase 2.** The research IS the session, not a planning aid. After completing Steps 1–4 of Phase 2, proceed directly to `~/.config/opencode/protocols/plan-deep-research.md` for Phase 3.
-
-Now execute `~/.config/opencode/commands/plan.md`.
-
----
-
-User arguments: $ARGUMENTS

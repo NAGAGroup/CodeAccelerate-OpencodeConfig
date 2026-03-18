@@ -3,11 +3,7 @@ description: "Lightweight alignment check before executing a small, focused chan
 agent: headwrench
 ---
 
-Run a quick alignment check for a small, targeted change, then execute it.
-
-## USER DESCRIPTION
-
-$ARGUMENTS
+Run a quick alignment check for a small, targeted change, then execute it. The user's description of the task is: `$ARGUMENTS`
 
 ## Step 1 — Orient
 

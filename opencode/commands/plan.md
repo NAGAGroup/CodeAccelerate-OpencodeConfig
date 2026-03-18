@@ -3,27 +3,30 @@ description: "Plan a new session — run context analysis, Q&A, draft subtasks, 
 agent: headwrench
 ---
 
-$ARGUMENTS
+You are starting a planning session. The user's topic or description is: `$ARGUMENTS`
 
-## How to Run /plan
+Work through these phases in order:
 
-Follow these phases in order:
+## Phase 1 — Orientation
 
-### Phase 1 — Orientation
-See `~/.config/opencode/protocols/plan-init.md`
+Read `~/.config/opencode/protocols/plan-init.md` and follow all steps there.
 
-### Phase 2 — Q&A and Synthesis
-See `~/.config/opencode/protocols/plan-shared.md`
+## Phase 2 — Q&A and Synthesis
 
-### Phase 3 — Session Type Routing
-Based on session type detected in Phase 1:
-- **Generic**: See `~/.config/opencode/protocols/plan-generic.md`
-- **Debug**: See `~/.config/opencode/protocols/plan-debug.md`
-- **Collaborative**: See `~/.config/opencode/protocols/plan-collaborative.md`
-- **Deep Research**: See `~/.config/opencode/protocols/plan-deep-research.md`
+Read `~/.config/opencode/protocols/plan-shared.md` and follow all steps there.
 
-### Phase 4 — Finalization
-See `~/.config/opencode/protocols/plan-end.md`
+## Phase 3 — Session Type Routing
+
+Based on the session type detected in Phase 1, read and follow the corresponding protocol:
+
+- **Generic:** Read `~/.config/opencode/protocols/plan-generic.md` and follow all steps there.
+- **Debug:** Read `~/.config/opencode/protocols/plan-debug.md` and follow all steps there.
+- **Collaborative:** Read `~/.config/opencode/protocols/plan-collaborative.md` and follow all steps there.
+- **Deep Research:** Read `~/.config/opencode/protocols/plan-deep-research.md` and follow all steps there.
+
+## Phase 4 — Finalization
+
+Read `~/.config/opencode/protocols/plan-end.md` and follow all steps there.
 
 ## Invariants
 These must never change regardless of session type:
