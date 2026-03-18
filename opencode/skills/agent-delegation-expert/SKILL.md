@@ -27,6 +27,20 @@ For implementation and documentation subtasks, HeadWrench creates session-local 
 
 Do NOT write agent files yourself. Load the agent-writer skill and follow its workflow.
 
+### One Agent vs. Multiple Agents
+
+Typically one session-local agent covers all implementation subtasks. Create multiple agents only when subtasks need meaningfully different model capabilities:
+
+- **Standard implementation** (code edits, file rewrites, doc writing) — a capable mid-tier model like `claude-sonnet` is appropriate
+- **Heavy reasoning / complex architecture** — a stronger model like `claude-opus` or equivalent may be warranted, but use sparingly; sonnet handles most tasks well
+- **Lightweight or mechanical tasks** (renaming, small targeted edits, format-only changes) — a fast/cheap model like `claude-haiku` or a small non-Claude model is sufficient and preferred
+
+When you create multiple agents with different intended models, tell the user explicitly what to put in each agent file. Example:
+
+> "I've created two agents: `.opencode/agents/implementer-heavy.md` for the architecture subtasks (recommend `github-copilot/claude-opus-4` or equivalent strong reasoning model) and `.opencode/agents/implementer-light.md` for the mechanical rename subtasks (recommend `github-copilot/claude-haiku-4.5` or a fast/cheap model). Replace `PLACEHOLDER_MODEL_ID` in each file before running 'start'."
+
+The user controls which model ID goes in each file — you can only recommend. Make the recommendation concrete and actionable.
+
 ## Permission Patterns
 
 Every agent is assigned tool permissions via a deny-by-default policy. This ensures no agent can access tools beyond what's explicitly allowed, maintaining security and preventing unsupervised off-spec behavior.

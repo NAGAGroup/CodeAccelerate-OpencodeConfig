@@ -158,6 +158,25 @@ After creating the agent file, you must surface the placeholder and tell the use
 
 Adjust the model recommendation to match the agent type — implementation work calls for a strong writing/editing model; research agents may need a model with good reasoning and synthesis capabilities.
 
+### Multiple Agents with Different Capability Needs
+
+When a session has subtasks that call for meaningfully different model capabilities, create separate agent files — one per capability level. Then tell the user what model belongs in each, concretely:
+
+- **Sonnet-class** (mid-tier, capable) — standard implementation, doc writing, refactors, most code tasks. Default choice.
+- **Haiku-class** (fast, cheap) — mechanical tasks: targeted renames, format-only edits, simple file moves, small templated writes. Use when the task is routine and speed/cost matters.
+- **Opus-class** (strongest, expensive) — only for genuinely hard reasoning tasks: complex architecture design, subtle multi-system debugging, deep synthesis across large codebases. Don't reach for this by default.
+- **Non-Claude models** — valid options depending on what the user has configured (e.g., GPT-4o, Gemini). Recommend by capability class ("a strong mid-tier model equivalent to claude-sonnet") rather than locking to a specific model ID.
+
+Surface all placeholder instructions in a single user-facing block so they can update everything before restart:
+
+> "I've created two agents:
+> - `.opencode/agents/implementer.md` — for the main implementation subtasks. Replace `PLACEHOLDER_MODEL_ID` with a capable model (e.g., `github-copilot/claude-sonnet-4.6`).
+> - `.opencode/agents/implementer-light.md` — for the mechanical rename subtasks. Replace `PLACEHOLDER_MODEL_ID` with a fast/cheap model (e.g., `github-copilot/claude-haiku-4.5`).
+>
+> Restart opencode after updating both files."
+
+You can only recommend — the user controls which model ID goes in each file.
+
 ## opencode.json — Not Required for Session-Local Agents
 
 Session-local agents in `.opencode/agents/` are picked up automatically by opencode from that directory. **No `opencode.json` entry is required.** The `model:` field in the agent's frontmatter controls model selection directly.
