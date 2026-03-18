@@ -37,7 +37,7 @@ Field notes:
 
 - **`name`** — kebab-case, descriptive. Examples: `session-implementer`, `doc-writer-{session-name}`, `research-agent`.
 - **`description`** — shown to the user when listing agents; keep it to one clear sentence.
-- **`model`** — always write `PLACEHOLDER_MODEL_ID` verbatim. HeadWrench must instruct the user to replace this with their preferred model ID before running `start`. Surface the recommended model type explicitly (e.g., "a capable writing/editing model such as `github-copilot/claude-sonnet-4.6` or equivalent").
+- **`model`** — always write `PLACEHOLDER_MODEL_ID` verbatim. You must instruct the user to replace this with their preferred model ID before running `start`. Surface the recommended model type explicitly (e.g., "a capable writing/editing model such as `github-copilot/claude-sonnet-4.6` or equivalent").
 - **`permission`** — always included in the frontmatter. Use the deny-by-default templates below.
 
 ## System Prompt Structure
@@ -152,7 +152,7 @@ Always place files in `.opencode/agents/` (project-local). These files persist a
 
 ## Communicating Model Recommendations to the User
 
-After creating the agent file, HeadWrench must surface the placeholder and tell the user what to do with it. Use this exact message pattern:
+After creating the agent file, you must surface the placeholder and tell the user what to do with it. Use this exact message pattern:
 
 > "I've created a session-local agent at `.opencode/agents/{name}.md` with a placeholder model ID. Before running 'start', replace `PLACEHOLDER_MODEL_ID` in that file with your preferred model. For implementation work, I recommend a capable writing/editing model (e.g., `github-copilot/claude-sonnet-4.6` or equivalent). Restart opencode after updating the model."
 

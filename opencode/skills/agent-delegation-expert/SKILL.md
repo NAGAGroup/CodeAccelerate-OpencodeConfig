@@ -1,6 +1,6 @@
 ---
 name: agent-delegation-expert
-description: "Assigns the right agent to each subtask based on task type, complexity, and skill requirements. Load during Step 4 of /plan after the session plan is drafted to apply routing rules and populate the Delegation section of each subtask file."
+description: "Assigns the right agent to each subtask based on task type, complexity, and skill requirements. Load during Step 4 of the planning session after the session plan is drafted to apply routing rules and populate the Delegation section of each subtask file."
 ---
 
 # Agent Delegation Expert
@@ -9,7 +9,7 @@ Assigns the right agent to each subtask based on task type, complexity, and skil
 
 ## When to Invoke
 
-Load during Step 4 of `/plan`, after the session plan is drafted. Apply the rules below to assign an agent to each subtask, then write those assignments into the `## Delegation` section of each `subtask-NN-{name}.md` file.
+Load during Step 4 of the planning session, after the session plan is drafted. Apply the rules below to assign an agent to each subtask, then write those assignments into the `## Delegation` section of each `subtask-NN-{name}.md` file.
 
 ## Agent Routing Table
 

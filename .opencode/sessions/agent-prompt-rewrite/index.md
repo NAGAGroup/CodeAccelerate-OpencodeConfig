@@ -18,8 +18,8 @@ Rewrite all 30 agent-facing files (5 agents, 13 commands, 10 protocols, 2 skills
 
 | # | Status | Description |
 |---|--------|-------------|
-| 01 | 🔲 pending | Rewrite agent files (headwrench, context-scout, context-insurgent, deep-researcher, session-local-implementer) — session-local-implementer / standard |
-| 02 | 🔲 pending | Rewrite skill files (agent-delegation-expert/SKILL.md, agent-writer/SKILL.md) — session-local-implementer / standard |
+| 01 | ✅ completed | Rewrite agent files (headwrench, context-scout, context-insurgent, deep-researcher, session-local-implementer) — session-local-implementer / standard |
+| 02 | ▶️ in_progress | Rewrite skill files (agent-delegation-expert/SKILL.md, agent-writer/SKILL.md) — session-local-implementer / standard |
 | 03 | 🔲 pending | Rewrite context/session commands (activate-session, context-add, context-audit, context-list, context-remove, deactivate-session, roadmap-add) — session-local-implementer / standard |
 | 04 | 🔲 pending | Rewrite plan commands (plan.md, plan-deep-research.md, quick-plan.md) — session-local-implementer / standard |
 | 05 | 🔲 pending | Rewrite plan-phase protocols (plan-init, plan-shared, plan-generic, plan-debug, plan-collaborative, plan-end) — session-local-implementer / standard |
@@ -33,7 +33,7 @@ All 30 files rewritten. You review the complete git diff before the final sessio
 
 ## Current Focus
 
-Starting execution at Subtask 01 — rewrite agent files.
+Subtask 01 complete. Executing Subtask 02 — rewrite skill files.
 
 ## Scope
 
