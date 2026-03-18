@@ -3,7 +3,7 @@ description: "Resume an active session. Provide session name to jump straight in
 agent: headwrench
 ---
 
-$ARGUMENTS
+Resume the session named `$ARGUMENTS`. If no session name was given, list available sessions and ask.
 
 ## Pre-check — Session Status
 
@@ -11,7 +11,7 @@ Read `.opencode/sessions/$ARGUMENTS/spec.json` and check the `status` field befo
 
 - If `status` is `"completed"`: surface the following message and **stop** — do not load or reconstruct anything:
 
-  > "Session `{name}` is already complete. No work remaining. Consider running `/context-audit` to review session notes for promotion candidates."
+  > "Session `{name}` is already complete. No work remaining. Consider running a context audit to review session notes for promotion candidates."
 
 - If `status` is not `"completed"`: continue to the **With a session name** flow below.
 

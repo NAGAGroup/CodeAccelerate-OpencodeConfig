@@ -3,9 +3,9 @@ description: "Safely amend an active session plan with state-aware rules, protec
 agent: headwrench
 ---
 
-$ARGUMENTS
+Amend the active session plan as follows: $ARGUMENTS
 
-Amend the **active** session plan only. Follow `~/.config/opencode/protocols/session-plan-schema.md` and `~/.config/opencode/protocols/checkpoint.md`.
+Follow `~/.config/opencode/protocols/session-plan-schema.md` and `~/.config/opencode/protocols/checkpoint.md`. Follow `~/.config/opencode/protocols/session-plan-schema.md` and `~/.config/opencode/protocols/checkpoint.md`.
 
 ## 1) Pre-Amend Context Load (Mandatory)
 
