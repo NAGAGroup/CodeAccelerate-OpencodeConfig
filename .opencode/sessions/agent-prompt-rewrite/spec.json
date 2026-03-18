@@ -3,7 +3,7 @@
   "goal": "Rewrite all 30 agent-facing files (agents, commands, protocols, skills) to fix user-doc framing, add persona/tone/refusal protocols to agent files, and ensure every file addresses its audience in pure agent-directive language.",
   "created": "2026-03-17",
   "status": "in_progress",
-  "currentSubtask": 2,
+  "currentSubtask": 4,
   "subtaskCount": 6,
   "circuitBreakerThreshold": 3,
   "consecutiveFailures": 0,
@@ -24,13 +24,13 @@
       "id": "03",
       "name": "rewrite-context-commands",
       "description": "Rewrite 7 context/session management command files — fix any user-doc framing",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "04",
       "name": "rewrite-plan-commands",
       "description": "Rewrite 3 plan command files — major fix for plan.md user-doc framing",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "05",
