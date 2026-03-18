@@ -34,7 +34,7 @@ The `index.md` file is the high-level status document for humans and subagents. 
    - [ ] [🚫 GATE] User must approve findings before proceeding to subtask 03
    ```
 
-   > **Gates are NOT subtasks.** They are `[🚫 GATE]` todo items in the preceding subtask's `## Todolist`. HeadWrench stops at checkpoint when it encounters an unresolved gate todo.
+   > **Gates are NOT subtasks.** They are `[🚫 GATE]` todo items in the preceding subtask's `## Todolist`. You stop at checkpoint when you encounter an unresolved gate todo.
 
    - Status values: `🔲 pending` · `▶️ in_progress` · `✅ completed` · `⏸ blocked` · `⏭ skipped`
    - Agent/model are appended to the Description column for human readability only.
@@ -74,7 +74,7 @@ Machine-readable orchestrator state. Agent/model assignments are **not** stored 
 - **`circuitBreakerThreshold`**: If this many consecutive subtasks fail, the session halts and escalates to the user.
 
 ## subtask-NN-{name}.md Specification
-Each subtask has its own isolated file. **Only the current subtask file is loaded at runtime** — this keeps context focused. HeadWrench reads the file for the current subtask and passes it to the assigned subagent.
+Each subtask has its own isolated file. **Only the current subtask file is loaded at runtime** — this keeps context focused. You read the file for the current subtask and pass it to the assigned subagent.
 
 ### Filename Convention
 `subtask-NN-{name}.md` — zero-padded two-digit ID + kebab-case name slug.
@@ -95,6 +95,8 @@ Examples: `subtask-01-analyze.md`, `subtask-03-fix-compaction-hook.md`
 ## Objective
 [Clear, specific goal for this subtask — one paragraph]
 
+> **Audience note:** This subtask file is read by HeadWrench. The operational content — file list, constraints, and todolist — is then passed to the assigned subagent as a self-contained task. The subagent has no awareness of session context beyond what is written here.
+
 ---
 
 ## Todolist
@@ -109,7 +111,7 @@ Examples: `subtask-01-analyze.md`, `subtask-03-fix-compaction-hook.md`
 > **Interactivity pause markers:** For Collaborative sessions with **Approve** or **Review** involvement levels, insert a `[⏸ PAUSE]` item as a checklist entry.
 > - **Approve mode** → place `- [ ] [⏸ PAUSE] — <what to surface>` as the **first item** in the todolist (before any work begins)
 > - **Review mode** → place `- [ ] [⏸ PAUSE] — <what to surface>` as the **last item** before the checkpoint group
-> - When HW encounters this marker during execution, it stops, surfaces a summary to the user, and waits for explicit confirmation before proceeding.
+    > - When you encounter this marker during execution, stop, surface a summary to the user, and wait for explicit confirmation before proceeding.
 > - See `plan-collaborative.md` for full syntax, placement rules, and examples.
 
 ---
@@ -169,7 +171,7 @@ Use this `## Delegation` format for parallel groups:
 
 ```markdown
 ## Delegation — Parallel Group
-This subtask uses parallel delegation. HeadWrench launches all slots simultaneously in a single message.
+This subtask uses parallel delegation. You launch all slots simultaneously in a single message.
 
 ### Slot A — [short description]
 - **Agent:** [session-local agent name]
@@ -209,11 +211,11 @@ The `notes/` directory stores session-specific discoveries.
 ## protocols/ Convention
 If present, any Markdown file here overrides the corresponding global protocol for this session.
 - `protocols/checkpoint.md` — overrides `~/.config/opencode/protocols/checkpoint.md` for this session.
-- Written during `/plan` finalization **only if** the user requested changes to the default checkpoint protocol.
+- Written during planning finalization **only if** the user requested changes to the default checkpoint protocol.
 
 ## Context Loading
 
-HeadWrench loads context at two moments: **session bootstrap** (when user says "start") and **compaction recovery** (when context is lost). Subagents do **not** load context — HW manages context and provides each subagent with a fully-specified, isolated prompt.
+You load context at two moments: **session bootstrap** (when user says "start") and **compaction recovery** (when context is lost). Subagents do **not** load context — you manage context and provide each subagent with a fully-specified, isolated prompt.
 
 ### What to Load
 
@@ -233,7 +235,7 @@ Skip any file where `superseded_by:` is set (regardless of `active:` value).
 
 - **Session Bootstrap**: After reading `spec.json`, and before creating Layer 2 todos, load Tiers 2–4.
 - **Compaction Recovery**: After reconstructing from `spec.json` and loading the current subtask file, reload Tiers 2–4 before resuming work.
-- **Planning** (`/plan`): ContextScout handles Tier 2–4 reading during Phase 1 (situational awareness). HW does not need to re-load independently during planning.
+- **Planning (session planning)**: ContextScout handles Tier 2–4 reading during Phase 1 (situational awareness). You do not need to re-load independently during planning.
 
 ### What Not to Load
 
@@ -243,7 +245,7 @@ Skip any file where `superseded_by:` is set (regardless of `active:` value).
 - **All subtask files simultaneously** — only the current `subtask-NN-*.md` file is loaded at runtime
 
 
-HeadWrench maintains a **single persistent todo item** throughout the session that serves as a compact orientation anchor — especially useful after context compaction.
+You maintain a **single persistent todo item** throughout the session that serves as a compact orientation anchor — especially useful after context compaction.
 
 ### Contents
 The todo must contain:
@@ -259,12 +261,12 @@ The todo must contain:
 SESSION: improve-planning-system | Goal: Harden planning workflow and recovery behavior across compaction events | Spec: .opencode/sessions/improve-planning-system/spec.json | Plan: .opencode/sessions/improve-planning-system/index.md | Current: Subtask 03 — Compaction Survival | If context lost: read spec.json → load current subtask file → rebuild todo stack
 ```
 
-This todo must be rich enough for HeadWrench to fully re-bootstrap session orientation without any prior chat history.
+This todo must be rich enough to fully re-bootstrap your session orientation without any prior chat history.
 
 ### Ownership Rules
-- **HeadWrench creates** this todo during session bootstrap (plan finalization).
-- **HeadWrench updates** it at every checkpoint to reflect the new current subtask.
-- This todo is for HeadWrench's own orientation only. Subagents are given isolated, fully-specified single-task prompts by HW and have no awareness of session context or the todo list.
+- **You create** this todo during session bootstrap (plan finalization).
+- **You update** it at every checkpoint to reflect the new current subtask.
+- This todo is for your own orientation only. Subagents are given isolated, fully-specified single-task prompts by you and have no awareness of session context or the todo list.
 
 ## Invariants
 - **Consistency**: `spec.json` and `index.md` must be kept in sync by the Checkpoint Protocol.
@@ -272,5 +274,5 @@ This todo must be rich enough for HeadWrench to fully re-bootstrap session orien
 - **Subtask file isolation**: Only the current subtask file is loaded at runtime — never load all subtask files simultaneously.
 - **Delegation in subtask files**: Agent and model assignments live exclusively in subtask-NN files under `## Delegation`. They are never stored in `spec.json` or `index.md`.
 - **Immutability**: Completed subtask files and their todos are not modified except for retroactive notes.
-- **Session summary todo**: HeadWrench owns and updates it. For HW orientation only — subagents have no awareness of it.
-- **Build & Test Ownership**: Build and test steps are never assigned to any subagent or session-local agent. HeadWrench runs them directly after implementation subtasks complete.
+- **Session summary todo**: You own and update it. For your orientation only — subagents have no awareness of it.
+- **Build & Test Ownership**: Build and test steps are never assigned to any subagent or session-local agent. You run them directly after implementation subtasks complete.

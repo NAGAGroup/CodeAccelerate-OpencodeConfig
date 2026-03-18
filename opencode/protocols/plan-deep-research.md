@@ -22,7 +22,7 @@ Focus questions on:
 - **Topic boundary** — what is in scope and what is explicitly out of scope?
 - **Depth vs. breadth** — deep dive on one thing, or survey across several options?
 - **Decision criteria** — what does the user need to know to make a decision? (e.g., API constraints, performance characteristics, library maturity, licensing)
-- **Initial rounds** — how many distinct research questions does the user want to start with? (HW can suggest 1–3 based on the topic; more can be added at gates)
+- **Initial rounds** — how many distinct research questions does the user want to start with? (you can suggest 1–3 based on the topic; more can be added at gates)
 
 Keep it to 1–3 questions. Do not ask for information you already have.
 
@@ -66,8 +66,8 @@ The synthesis subtask:
 The initial plan contains the rounds identified in Q&A plus the synthesis subtask. At each gate, the user may direct:
 
 - **Continue to synthesis** — proceed to the synthesis subtask as planned
-- **Add another round** — HW inserts a new research subtask before synthesis and continues
-- **Redirect the current angle** — HW notes the redirect in session notes; proceeds to synthesis or next round per user direction
+- **Add another round** — insert a new research subtask before synthesis and continue
+- **Redirect the current angle** — note the redirect in session notes; proceed to synthesis or next round per user direction
 
 Document the dynamic round rule in `index.md` under **Patterns & Constraints**: "Additional research rounds may be inserted at gates based on user direction."
 
@@ -92,12 +92,12 @@ Write assignments into each subtask's `## Delegation` section before writing fil
 
 When the session runs:
 
-1. HW reads the current research round subtask file
-2. HW constructs a scoped research prompt from the subtask Objective, Scope, and any relevant `notes/round-NN-findings.md` from prior rounds
-3. HW dispatches `@DeepResearcher` via the Task tool
-4. When results return, HW writes `notes/round-NN-findings.md`
-5. HW hits the Gate: surfaces a findings summary to the user and waits for direction
+1. Read the current research round subtask file
+2. Construct a scoped research prompt from the subtask Objective, Scope, and any relevant `notes/round-NN-findings.md` from prior rounds
+3. Dispatch `@DeepResearcher` via the Task tool
+4. When results return, write `notes/round-NN-findings.md`
+5. Hit the Gate: surface a findings summary to the user and wait for direction
 6. User directs: continue to synthesis, add a round, or redirect
-7. At checkpoint, HW updates `spec.json` and `index.md`, and transitions to the next subtask
+7. At checkpoint, update `spec.json` and `index.md`, and transition to the next subtask
 
-For the synthesis subtask, HW reads all round notes directly and writes `notes/research-brief.md` without dispatching any subagent.
+For the synthesis subtask, read all round notes directly and write `notes/research-brief.md` without dispatching any subagent.

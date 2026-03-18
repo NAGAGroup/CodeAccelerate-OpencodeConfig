@@ -1,17 +1,17 @@
 # Global Checkpoint Protocol
 
 ## Overview
-The canonical checkpoint procedure run by HeadWrench at the end of **EVERY** subtask. This protocol ensures state consistency, maintains a living record of session findings, and identifies reusable project-level observations.
+The canonical checkpoint procedure you run at the end of **EVERY** subtask. This protocol ensures state consistency, maintains a living record of session findings, and identifies reusable project-level observations.
 
 ## Checkpoint Procedure
 Follow these steps in order at the end of each subtask:
 
 1.  **WIP Commit**:
-    -   HeadWrench owns ALL commits. Subagents do not commit. Apply the appropriate case:
+    -   You own ALL commits. Subagents do not commit. Apply the appropriate case:
         -   **Case 1 — Read-only subtask:** No implementation changes were made. Stage only session directory changes (`.opencode/sessions/{name}/`) and commit: `git add .opencode/sessions/{name}/ && git commit -m "wip: subtask NN — {short description}"`. If no session dir changes either, skip the commit.
-        -   **Case 2 — HW-direct implementation:** HW made all edits directly. Stage all changes and commit: `git add -A && git commit -m "wip: subtask NN — {short description}"`.
+        -   **Case 2 — HW-direct implementation:** You made all edits directly. Stage all changes and commit: `git add -A && git commit -m "wip: subtask NN — {short description}"`.
         -   **Case 3 — Session-local agent implementation:** A session-local agent made file edits. Verify the agent did NOT commit (`git log -1 --oneline` — the last commit should be from a prior checkpoint). Then stage all changes and commit: `git add -A && git commit -m "wip: subtask NN — {short description}"`.
-        -   **Case 4 — Mixed subtask:** A session-local agent modified implementation files AND HeadWrench updated session directory files. After the agent completes and you've confirmed no agent commit, stage all modified files plus session dir in a single commit: `git add -A && git commit -m "wip: subtask NN — {short description}"`.
+        -   **Case 4 — Mixed subtask:** A session-local agent modified implementation files AND you updated session directory files. After the agent completes and you've confirmed no agent commit, stage all modified files plus session dir in a single commit: `git add -A && git commit -m "wip: subtask NN — {short description}"`.
     -   The WIP commit ensures `spec.json` always reflects the last known good state.
     -   This file is the authoritative recovery anchor — if context is lost mid-session, reading `spec.json` is always the correct first step.
     -   It tells you the `currentSubtask` index, which resolves which subtask file to load next.
@@ -27,7 +27,7 @@ Follow these steps in order at the end of each subtask:
 
 4.  **Update Session Summary Todo**:
     -   Update the session summary todo item (created at session bootstrap) to reflect the new current subtask number and description.
-    -   This keeps HeadWrench oriented within the session context.
+    -   This keeps you oriented within the session context.
 
 5.  **Write Session Notes**:
      -   Identify any significant findings, decisions, or discoveries from this subtask.

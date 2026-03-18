@@ -92,7 +92,7 @@ superseded_by: ~
 | `created` | both | Yes | ISO 8601 date (YYYY-MM-DD) when the item was first written. |
 | `active` | inbox | No | Boolean; default `true` when absent. Set to `false` to deactivate an inbox item without deleting it. Inactive items are skipped during `/context-audit` reviews. |
 | `tier` | context | Yes | `global` or `local`. Must match the directory location. Explicit to catch misplacements. |
-| `promoted_from` | context | Yes | `inbox` (item came through the promotion queue) or `direct` (written directly to context, bypassing the inbox — used when a context file was written directly during session bootstrap, checkpoint, or when HW writes a context file as part of a session plan). Tracks provenance. |
+| `promoted_from` | context | Yes | `inbox` (item came through the promotion queue) or `direct` (written directly to context, bypassing the inbox — used when a context file was written directly during session bootstrap, checkpoint, or when you write a context file as part of a session plan). Tracks provenance. |
 | `last_reviewed` | context | No | ISO 8601 date. Updated by `/context-audit` each time the item is reviewed. Helps identify stale files. |
 | `supersedes` | both | No | Filename of the older item this replaces. Use `~` when not applicable. Enables explicit version chains. |
 | `superseded_by` | both | No | Filename of the newer item that replaces this. Use `~` otherwise. ContextScout skips items where this is set. |
@@ -156,14 +156,14 @@ Example: Session `improve-planning-system` moves entirely to `.opencode/archive/
 
 ### Trigger
 
-Manual, via `/context-audit` command. HeadWrench executes file moves and directory creation after the user approves each action.
+Manual, via `/context-audit` command. You execute file moves and directory creation after the user approves each action.
 
 ### Steps
 
 1. `/context-audit` identifies completed sessions with non-archived notes.
 2. For each note, the user decides: **promote to inbox** (for later context promotion), **archive only**, or **keep in session**.
-3. For promotion candidates: HeadWrench creates a new inbox item summarizing the finding; the user reviews the summary.
-4. Once promotion is settled, HeadWrench moves the entire session directory from `.opencode/sessions/{name}/` to `.opencode/archive/sessions/{name}/`.
+3. For promotion candidates: create a new inbox item summarizing the finding; the user reviews the summary.
+4. Once promotion is settled, move the entire session directory from `.opencode/sessions/{name}/` to `.opencode/archive/sessions/{name}/`.
 5. The session's `spec.json` is not modified by archival (it remains a historical record).
 
 ### What Is NOT Archived
@@ -176,7 +176,7 @@ Manual, via `/context-audit` command. HeadWrench executes file moves and directo
 
 ## ContextScout Reading Scope
 
-When ContextScout performs situational awareness (during `/plan` or other planning operations):
+When ContextScout performs situational awareness at the start of a planning session or on request:
 
 ### In Scope (always read)
 
@@ -204,7 +204,7 @@ ContextScout may read `index.md` and `spec.json` from completed sessions to unde
 
 **Location**: `~/.config/opencode/commands/context-audit.md`
 
-**Purpose**: Unified, interactive review of the entire context system. Absorbs legacy inbox management functions. HeadWrench runs the audit, presents findings, collects user decisions, and executes approved actions.
+**Purpose**: Unified, interactive review of the entire context system. Absorbs legacy inbox management functions. You run the audit, present findings, collect user decisions, and execute approved actions.
 
 ### Procedure (7 Steps)
 
@@ -255,11 +255,11 @@ User indicates which files (if any) to promote before archival, and confirms arc
 
 #### Step 5 — User Approval
 
-User approves or rejects each proposed action. HeadWrench executes only approved actions.
+User approves or rejects each proposed action. You execute only approved actions.
 
 #### Step 6 — Execution
 
-For each approved action, HeadWrench executes:
+For each approved action, you execute:
 
 - **Inbox promotion**: Create a new context/ file (global or local) with YAML header; mark the inbox item `superseded_by: <new-context-file>`.
 - **Session archival**: Create `.opencode/archive/sessions/{session-name}/` (if needed); move the entire session directory from `.opencode/sessions/`.
@@ -313,7 +313,7 @@ When writing inbox items:
 
 1. **Write inbox item** during checkpoint with `promoted_from: inbox` placeholder (or wait for user review).
 2. **Run `/context-audit`** — finds the item in `[INBOX]` list.
-3. **User selects `[G]` global context** — HeadWrench creates `~/.config/opencode/context/<topic>.md` with `promoted_from: inbox` and `tier: global`.
+3. **User selects `[G]` global context** — create `~/.config/opencode/context/<topic>.md` with `promoted_from: inbox` and `tier: global`.
 4. **Inbox item updated** — set `superseded_by: <new-context-file>` to mark it complete.
 5. **Next planning cycle** — new item is read from Tier 2; old inbox item is skipped.
 
@@ -322,7 +322,7 @@ When writing inbox items:
 1. **Session marked `status: completed`** in `spec.json`.
 2. **Run `/context-audit`** — finds the session in `[ARCHIVE]` list with its notes.
 3. **User reviews promotion candidates** — selects which (if any) to promote to inbox first.
-4. **HeadWrench executes** — creates inbox items for promoted notes; moves the entire session directory to `.opencode/archive/sessions/{session}/`.
+4. **Execute** — create inbox items for promoted notes; move the entire session directory to `.opencode/archive/sessions/{session}/`.
 5. **Next planning cycle** — archived notes are never read; only promoted-then-archived findings exist in context.
 
 ### Resolving a Contradiction

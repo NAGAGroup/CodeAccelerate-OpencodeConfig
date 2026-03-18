@@ -2,8 +2,8 @@
   "name": "agent-prompt-rewrite",
   "goal": "Rewrite all 30 agent-facing files (agents, commands, protocols, skills) to fix user-doc framing, add persona/tone/refusal protocols to agent files, and ensure every file addresses its audience in pure agent-directive language.",
   "created": "2026-03-17",
-  "status": "in_progress",
-  "currentSubtask": 5,
+  "status": "completed",
+  "currentSubtask": 6,
   "subtaskCount": 6,
   "circuitBreakerThreshold": 3,
   "consecutiveFailures": 0,
@@ -42,7 +42,7 @@
       "id": "06",
       "name": "rewrite-core-protocols",
       "description": "Rewrite 4 core protocol files + [GATE] user reviews full diff before final commit",
-      "status": "in_progress"
+      "status": "completed"
     }
   ]
 }
