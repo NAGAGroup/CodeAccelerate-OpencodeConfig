@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Agent and protocol files rewritten to agent-directive language** — all 29 agent-facing files (5 agents, 2 skills, 12 commands, 10 protocols) converted from user-doc framing to pure agent-directive language. Commands now open with direct imperatives, not documentation headings. Protocols address HeadWrench in second person ("you dispatch", "you run") rather than third person ("HW dispatches", "HW runs"). Slash command name references in body text replaced with plain language equivalents ("planning session" instead of "/plan invocation").
+- **Persona, tone, and refusal protocols added to all agent files** — each agent file now includes a persona statement, a communication style section (with explicit "NEVER" rules for filler affirmations), and an anti-patterns section listing prohibited behaviors.
+- **`$ARGUMENTS` injection contextualised in all command files** — bare `$ARGUMENTS` blocks replaced with embedded mid-sentence references so the agent knows what value it represents (e.g., `Resume the session named \`$ARGUMENTS\`` rather than an orphaned `$ARGUMENTS` line).
+
 ## [1.0.1] - 2026-03-15
 
 ### Fixed
