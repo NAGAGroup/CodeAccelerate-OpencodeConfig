@@ -23,7 +23,7 @@ The `index.md` file is the high-level status document for humans and subagents. 
 
    | # | Status | Description |
    |---|--------|-------------|
-   | 01 | 🔲 pending | Short description — **Agent / model tier** |
+   | 01 | 🔲 pending | Short description — **Agent** |
    | 02 | 🔲 pending | Next subtask — with gate todo inside its Todolist |
 
    Example subtask Todolist with a gate (inside `subtask-02-*.md`):
@@ -87,8 +87,7 @@ Examples: `subtask-01-analyze.md`, `subtask-03-fix-compaction-hook.md`
 
 ## Delegation
 - **Agent:** [Agent name]
-- **Model tier:** [fast / standard / deep — with specific model identifier]
-- **Reason:** [Why this agent and tier for this subtask]
+- **Reason:** [Why this agent for this subtask]
 
 ---
 
@@ -175,12 +174,10 @@ This subtask uses parallel delegation. You launch all slots simultaneously in a 
 
 ### Slot A — [short description]
 - **Agent:** [session-local agent name]
-- **Model tier:** fast
 - **Scope:** [specific files/scope slice for this slot]
 
 ### Slot B — [short description]
 - **Agent:** [session-local agent name]
-- **Model tier:** fast
 - **Scope:** [specific files/scope slice for this slot]
 ```
 
