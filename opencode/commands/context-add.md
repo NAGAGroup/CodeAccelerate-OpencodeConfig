@@ -3,9 +3,9 @@ description: "Write a new context file directly to project-local or global conte
 agent: headwrench
 ---
 
-$ARGUMENTS
+Add a permanent context file using the arguments: `$ARGUMENTS`
 
-Add a permanent context file. Arguments format: `[--global] <filename> [<content>]`
+Arguments format: `[--global] <filename> [<content>]`
 
 - Without `--global`: writes to `.opencode/context/{filename}.md` (project-local, Tier 3)
 - With `--global`: writes to `~/.config/opencode/context/{filename}.md` (global, Tier 2)

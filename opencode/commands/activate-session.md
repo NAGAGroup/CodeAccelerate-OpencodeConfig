@@ -3,9 +3,7 @@ description: "Activate an existing session plan by selecting from available sess
 agent: headwrench
 ---
 
-Activate an existing session plan.
-
-$ARGUMENTS
+Activate an existing session plan. If a session name was provided, it is: `$ARGUMENTS`
 
 ## Step 1 — List Available Sessions
 

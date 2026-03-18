@@ -3,9 +3,7 @@ description: "Run a unified interactive context audit for inbox promotion, archi
 agent: headwrench
 ---
 
-$ARGUMENTS
-
-Run the context-management audit protocol defined in `~/.config/opencode/protocols/context-management.md`.
+Run the context-management audit protocol defined in `~/.config/opencode/protocols/context-management.md`. Any scope or filter arguments provided by the user are: `$ARGUMENTS`
 
 Absorb all inbox promotion, archival, retrofit, and context-review decisions into one interactive audit with minimal cognitive burden: gather decisions during review, then execute only after one final user approval.
 

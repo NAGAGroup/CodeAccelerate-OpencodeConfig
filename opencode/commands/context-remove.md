@@ -3,9 +3,9 @@ description: "Remove a context file from project-local or global context."
 agent: headwrench
 ---
 
-$ARGUMENTS
+Remove a context file using the arguments: `$ARGUMENTS`
 
-Remove a context file. Arguments: `[--global] <filename>`
+Arguments format: `[--global] <filename>`
 
 - Without `--global`: targets `.opencode/context/{filename}.md`
 - With `--global`: targets `~/.config/opencode/context/{filename}.md`

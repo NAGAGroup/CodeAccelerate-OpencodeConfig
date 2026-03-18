@@ -5,8 +5,6 @@ agent: headwrench
 
 Deactivate the current session plan.
 
-$ARGUMENTS
-
 ## Step 1 — Call deactivate_session Tool
 
 Call the `deactivate_session` tool with no arguments.
