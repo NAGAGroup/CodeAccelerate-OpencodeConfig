@@ -3,34 +3,22 @@ description: "Add one or more feature entries to ROADMAP.md and commit the chang
 agent: headwrench
 ---
 
-## Usage
+Add one or more feature entries to `ROADMAP.md`. Arguments format: `[section] [feature string(s)]`
 
-### Mode A — With Arguments
-Provide section name and feature(s) directly:
-```
-/roadmap-add planned "custom agent hot-reload — reload agent defs without restart"
-/roadmap-add planned "feature one" "feature two" "feature three"
-```
+## Step 1 — Determine Mode
 
-### Mode B — Interactive
-No arguments — you will be prompted:
-```
-/roadmap-add
-```
-
-## Behavior
-
-### If arguments provided:
+**Mode A — Arguments provided:** `$ARGUMENTS` contains a section name followed by one or more quoted feature strings.
 1. Parse the section name (first argument) — must be one of: **In Progress**, **Planned**, **Backlog**, **Recently Shipped**
 2. Parse feature string(s) (remaining arguments) — format: `"feature-name — description"`
-3. Skip interactive prompts and proceed directly to inserting entries
+3. Skip interactive prompts and proceed directly to Step 2
 
-### If no arguments:
+**Mode B — No arguments:** `$ARGUMENTS` is empty.
 1. Ask: "What feature(s) do you want to add? (Enter name — description, one per line, or type DONE when finished)"
 2. Ask: "Which section? (In Progress / Planned / Backlog / Recently Shipped)"
-3. Accept user input for both
+3. Accept user input for both, then proceed to Step 2
 
-### For both modes:
+## Step 2 — Build Entries
+
 1. **Read** `ROADMAP.md` from repo root
 2. **Parse** the target section (find the table in that section)
 3. **Build** new table rows matching existing format:
@@ -54,9 +42,9 @@ No arguments — you will be prompted:
 - **Parse error**: If a feature string doesn't contain " — " separator, ask user to re-enter it in format: `"name — description"`
 - **Git error**: Report the error clearly and ask if user wants to retry
 
-## Notes
+## Constraints
 
-- Feature name and description must be separated by ` — ` (space-dash-space)
+- Feature name and description must be separated by ` — ` (space-em-dash-space)
 - Section names are case-sensitive and must match ROADMAP.md exactly
 - Always get user confirmation before committing
 - After commit, show the commit hash for verification

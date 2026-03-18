@@ -7,7 +7,7 @@ $ARGUMENTS
 
 Run the context-management audit protocol defined in `~/.config/opencode/protocols/context-management.md`.
 
-This command is the authoritative replacement for legacy inbox-only review flow. It absorbs `/inbox` promotion behavior into one interactive audit with minimal cognitive burden: gather decisions during review, then execute only after one final user approval.
+Absorb all inbox promotion, archival, retrofit, and context-review decisions into one interactive audit with minimal cognitive burden: gather decisions during review, then execute only after one final user approval.
 
 ## Step 1 — Inventory
 

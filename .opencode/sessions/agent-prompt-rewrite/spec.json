@@ -3,7 +3,7 @@
   "goal": "Rewrite all 30 agent-facing files (agents, commands, protocols, skills) to fix user-doc framing, add persona/tone/refusal protocols to agent files, and ensure every file addresses its audience in pure agent-directive language.",
   "created": "2026-03-17",
   "status": "in_progress",
-  "currentSubtask": 1,
+  "currentSubtask": 2,
   "subtaskCount": 6,
   "circuitBreakerThreshold": 3,
   "consecutiveFailures": 0,
@@ -18,7 +18,7 @@
       "id": "02",
       "name": "rewrite-skills",
       "description": "Rewrite 2 skill files — fix framing and slash command references",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "03",
