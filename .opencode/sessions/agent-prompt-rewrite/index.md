@@ -22,8 +22,8 @@ Rewrite all 30 agent-facing files (5 agents, 13 commands, 10 protocols, 2 skills
 | 02 | ✅ completed | Rewrite skill files (agent-delegation-expert/SKILL.md, agent-writer/SKILL.md) — session-local-implementer / standard |
 | 03 | ✅ completed | Rewrite context/session commands (activate-session, context-add, context-audit, context-list, context-remove, deactivate-session, roadmap-add) — session-local-implementer / standard |
 | 04 | ✅ completed | Rewrite plan commands (plan.md, plan-deep-research.md, quick-plan.md) — session-local-implementer / standard |
-| 05 | ▶️ in_progress | Rewrite plan-phase protocols (plan-init, plan-shared, plan-generic, plan-debug, plan-collaborative, plan-end) — session-local-implementer / standard |
-| 06 | 🔲 pending | Rewrite core protocols (plan-deep-research, checkpoint, context-management, session-plan-schema) + [🚫 GATE] user reviews full diff — session-local-implementer / standard |
+| 05 | ✅ completed | Rewrite plan-phase protocols (plan-init, plan-shared, plan-generic, plan-debug, plan-collaborative, plan-end) — session-local-implementer / standard |
+| 06 | ▶️ in_progress | Rewrite core protocols (plan-deep-research, checkpoint, context-management, session-plan-schema) + [🚫 GATE] user reviews full diff — session-local-implementer / standard |
 
 ## Gates
 
@@ -33,7 +33,7 @@ All 30 files rewritten. You review the complete git diff before the final sessio
 
 ## Current Focus
 
-Subtask 04 complete. Executing Subtask 05 — rewrite plan-phase protocol files (plan-init, plan-shared, plan-generic, plan-debug, plan-collaborative, plan-end).
+Subtask 05 complete. Executing Subtask 06 — rewrite core protocol files (plan-deep-research, checkpoint, context-management, session-plan-schema).
 
 ## Scope
 

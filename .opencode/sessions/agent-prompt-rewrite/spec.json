@@ -3,7 +3,7 @@
   "goal": "Rewrite all 30 agent-facing files (agents, commands, protocols, skills) to fix user-doc framing, add persona/tone/refusal protocols to agent files, and ensure every file addresses its audience in pure agent-directive language.",
   "created": "2026-03-17",
   "status": "in_progress",
-  "currentSubtask": 4,
+  "currentSubtask": 5,
   "subtaskCount": 6,
   "circuitBreakerThreshold": 3,
   "consecutiveFailures": 0,
@@ -36,13 +36,13 @@
       "id": "05",
       "name": "rewrite-plan-protocols",
       "description": "Rewrite 6 plan-phase protocol files — fix slash command references, clarify HW audience",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "06",
       "name": "rewrite-core-protocols",
       "description": "Rewrite 4 core protocol files + [GATE] user reviews full diff before final commit",
-      "status": "pending"
+      "status": "in_progress"
     }
   ]
 }
