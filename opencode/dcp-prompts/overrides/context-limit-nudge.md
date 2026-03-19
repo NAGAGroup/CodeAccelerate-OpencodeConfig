@@ -15,15 +15,24 @@ If YES:
 - After compressing everything else, re-evaluate context pressure. The subtask spec must survive in raw form until its checkpoint completes.
 
 If NO (no active subtask, or subtask is already checkpointed):
-- Proceed with the standard large-range strategy below.
+- Proceed with the range strategy below.
 
 RANGE STRATEGY (MANDATORY)
-Prioritize one large, closed, high-yield compression range first.
-This overrides the normal preference for many small compressions.
-Only split into multiple compressions if one large range would reduce summary quality or make boundary selection unsafe.
+Prefer MULTIPLE SMALLER compressions, not one large range. This applies even in emergency mode.
+
+Copilot models have constrained output token budgets due to rate limits. A single large compression summary can exceed that budget and fail with "not enough tokens" — the very failure you are trying to avoid. Multiple smaller compressions each produce a shorter summary, staying within the output token budget.
+
+Execution order:
+1. Identify the oldest, most clearly closed stale slice.
+2. Compress it now.
+3. Re-evaluate context pressure.
+4. If still above the max threshold, identify the next oldest closed slice and compress it.
+5. Repeat until context pressure is relieved.
+
+If any single candidate range still feels too large to summarize safely, split it into two shorter sub-ranges and compress each separately. Never attempt one large pass that spans the majority of the conversation.
 
 RANGE SELECTION
-Start from older, resolved history and capture as much stale context as safely possible in one pass.
+Start from older, resolved history and work forward — compress the earliest closed slice first.
 Avoid the newest active working slice unless it is clearly closed.
 Use visible injected boundary IDs for compression (`mNNNN` for messages, `bN` for compressed blocks), and ensure `startId` appears before `endId`.
 

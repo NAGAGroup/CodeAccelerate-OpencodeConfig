@@ -2,8 +2,8 @@
   "name": "compress-threshold-fix",
   "goal": "Fix compress + auto-compaction failures on Copilot models by lowering context thresholds in dcp.jsonc and rewriting the context-limit-nudge prompt to prefer multiple smaller compressions",
   "created": "2026-03-18",
-  "status": "in_progress",
-  "currentSubtask": 0,
+  "status": "complete",
+  "currentSubtask": 2,
   "subtaskCount": 2,
   "circuitBreakerThreshold": 3,
   "consecutiveFailures": 0,
@@ -12,13 +12,13 @@
       "id": "01",
       "name": "update-dcp-thresholds",
       "description": "Update dcp.jsonc thresholds: maxContextLimit 60%→45%, minContextLimit 20%→15%, nudgeFrequency 5→3, iterationNudgeThreshold 8→5",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "02",
       "name": "rewrite-nudge-and-verification",
       "description": "Rewrite context-limit-nudge.md to prefer multiple small compressions; write verification protocol to inbox",
-      "status": "pending"
+      "status": "completed"
     }
   ]
 }

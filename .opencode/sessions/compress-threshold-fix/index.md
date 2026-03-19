@@ -6,9 +6,9 @@
 
 ## Done Criteria
 
-- [ ] `dcp.jsonc` updated: `maxContextLimit` → `"45%"`, `minContextLimit` → `"15%"`, `nudgeFrequency` → `3`, `iterationNudgeThreshold` → `5`
-- [ ] `context-limit-nudge.md` override rewritten: "ONE LARGE range" mandate removed; replaced with prefer-multiple-small-compressions instruction
-- [ ] Verification protocol written to `.opencode/inbox/compress-fix-verification.md`
+- [x] `dcp.jsonc` updated: `maxContextLimit` → `"45%"`, `minContextLimit` → `"15%"`, `nudgeFrequency` → `3`, `iterationNudgeThreshold` → `5`
+- [x] `context-limit-nudge.md` override rewritten: "ONE LARGE range" mandate removed; replaced with prefer-multiple-small-compressions instruction
+- [x] Verification protocol written to `.opencode/inbox/compress-fix-verification.md`
 - [ ] Single final commit made: `feat: complete session — compress-threshold-fix`
 
 ---
@@ -17,8 +17,8 @@
 
 | # | Status | Description |
 |---|--------|-------------|
-| 01 | 🔲 pending | Update dcp.jsonc thresholds — @session-local-implementer |
-| 02 | 🔲 pending | Rewrite context-limit-nudge.md + write verification protocol — @session-local-implementer |
+| 01 | ✅ complete | Update dcp.jsonc thresholds — @session-local-implementer |
+| 02 | ✅ complete | Rewrite context-limit-nudge.md + write verification protocol — @session-local-implementer |
 
 ---
 
@@ -51,4 +51,4 @@
 
 ## Current Focus
 
-Subtask 01 is next: update dcp.jsonc thresholds.
+Session complete. All done criteria met.
