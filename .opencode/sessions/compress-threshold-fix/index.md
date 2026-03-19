@@ -9,7 +9,7 @@
 - [x] `dcp.jsonc` updated: `maxContextLimit` → `"45%"`, `minContextLimit` → `"15%"`, `nudgeFrequency` → `3`, `iterationNudgeThreshold` → `5`
 - [x] `context-limit-nudge.md` override rewritten: "ONE LARGE range" mandate removed; replaced with prefer-multiple-small-compressions instruction
 - [x] Verification protocol written to `.opencode/inbox/compress-fix-verification.md`
-- [ ] Single final commit made: `feat: complete session — compress-threshold-fix`
+- [x] Single final commit made: `feat: complete session — compress-threshold-fix`
 
 ---
 
