@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "id": "plan-deep-research",
+  "session_type": "execution",
+  "goal": "Create the plan-deep-research planning mode: a collaborative, research-centric variant of plan-collaborative. Adds planning DAG + prompts, plugin tool, slash command, and headwrench.md update.",
+  "created": "2026-03-20",
+  "status": "ready",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "label": "Session Overview",
+      "prompt": ".opencode/session-plans/plan-deep-research/prompts/session-overview.md",
+      "next": "subtask-01"
+    },
+    "subtask-01": {
+      "id": "subtask-01",
+      "type": "agent",
+      "label": "Write planning DAG and core prompt files",
+      "prompt": ".opencode/session-plans/plan-deep-research/prompts/subtask-01-planning-dag.md",
+      "next": "subtask-02"
+    },
+    "subtask-02": {
+      "id": "subtask-02",
+      "type": "agent",
+      "label": "Write finalize.md for plan-deep-research",
+      "prompt": ".opencode/session-plans/plan-deep-research/prompts/subtask-02-finalize-prompt.md",
+      "next": "subtask-03"
+    },
+    "subtask-03": {
+      "id": "subtask-03",
+      "type": "agent",
+      "label": "Wiring: plugin tool, slash command, headwrench.md",
+      "prompt": ".opencode/session-plans/plan-deep-research/prompts/subtask-03-wiring.md"
+    }
+  }
+}
