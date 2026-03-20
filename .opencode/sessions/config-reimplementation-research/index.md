@@ -2,7 +2,7 @@
 
 **Goal:** Research and produce a design brief for re-implementing the opencode config featureset using research-backed, optimal designs — unconstrained by the current implementation's patterns where better approaches exist.
 
-**Status:** in_progress  
+**Status:** completed  
 **Created:** 2026-03-19  
 **Output:** `notes/research-brief.md` + `notes/design-doc.md` (NOT an executable session plan — a separate /plan session creates the execution plan)
 
@@ -14,8 +14,8 @@
 |---|------|--------|
 | 01 | research-round-1-planning-and-session-design | completed |
 | 02 | research-round-2-agent-and-delegation-design | completed |
-| 03 | research-round-3-supporting-infrastructure | in_progress |
-| 04 | synthesis | pending |
+| 03 | research-round-3-supporting-infrastructure | completed |
+| 04 | synthesis | completed |
 
 ---
 

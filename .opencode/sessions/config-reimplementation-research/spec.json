@@ -2,8 +2,8 @@
   "name": "config-reimplementation-research",
   "goal": "Research and produce a design brief for re-implementing the opencode config featureset using research-backed, optimal designs unconstrained by current implementation patterns",
   "created": "2026-03-19",
-  "status": "in_progress",
-  "currentSubtask": 2,
+  "status": "completed",
+  "currentSubtask": 4,
   "subtaskCount": 4,
   "circuitBreakerThreshold": 3,
   "subtasks": [
@@ -23,13 +23,13 @@
       "id": "03",
       "name": "research-round-3-supporting-infrastructure",
       "description": "Research context management, protocol systems, skills systems, slash commands, and general UX patterns for AI coding assistants",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "04",
       "name": "synthesis",
       "description": "HW-direct: read all round findings, compile research-brief.md and design-doc.md covering all 8 feature areas",
-      "status": "pending"
+      "status": "completed"
     }
   ]
 }
