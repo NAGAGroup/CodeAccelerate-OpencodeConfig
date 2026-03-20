@@ -28,8 +28,8 @@
 | 04 | ✅ complete | Design /plan-debug JSON + resulting session JSON — **HW direct** |
 | 05 | ✅ complete | Design /plan-collaborative JSON + resulting session JSON — **HW direct** |
 | 06 | ✅ complete | Implement subagents (context-scout, context-insurgent, deep-researcher, junior-dev, quick-doc) — **HW direct** |
-| 07 | 🔄 in_progress | Implement planning enforcement plugin — **HW direct** |
-| 08 | 🔲 pending | Implement opencode.json, headwrench.md, slash commands, session type protocols — **HW direct** |
+| 07 | ✅ complete | Implement planning enforcement plugin — **HW direct** |
+| 08 | 🔄 in_progress | Implement opencode.json, headwrench.md, slash commands, session type protocols — **HW direct** |
 | 09 | 🔲 pending | Validation: integration test + manual walkthrough — **HW direct** |
 
 ---
@@ -45,7 +45,7 @@
 ---
 
 ## Current Focus
-**Subtask 07 — Implement planning enforcement plugin**
+**Subtask 08 — Implement opencode.json, headwrench.md, slash commands, session type protocols**
 
 ---
 
