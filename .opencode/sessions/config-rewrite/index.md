@@ -9,7 +9,8 @@
 - [ ] New `opencode/opencode.json` in place with all agents, plugins, and MCPs configured
 - [ ] `headwrench.md` rewritten with memory plugin usage protocol and DAG execution model
 - [ ] `/plan-<type>` slash commands implemented (generic, debug, collaborative, deep-research, session-type)
-- [ ] Planning enforcement plugin selected and integrated (blocks task execution without a plan artifact)
+- [ ] Planning enforcement plugin implemented (blocks task execution without a plan artifact; next_step built-in tool)
+- [ ] DAG node schema locked down; plan DAG JSON files written for each session type
 - [ ] Session type protocol files written for each plan type (typed JSON artifact schemas)
 - [ ] Subagent files (context-scout, context-insurgent, deep-researcher) updated to new design
 - [ ] Config loads in opencode without errors
@@ -21,30 +22,30 @@
 
 | # | Status | Description |
 |---|--------|-------------|
-| 01 | 🔲 pending | Research: memory plugins + plugin API enforcement capabilities — **DeepResearcher (parallel group)** |
-| 02 | 🔲 pending | Design decisions: synthesize research into architecture — **HW direct (collaborative)** |
-| 03 | 🔲 pending | Implement: opencode.json (agents, plugins, MCPs) — **HW direct** |
-| 04 | 🔲 pending | Implement: headwrench.md (new primary agent) — **HW direct** |
-| 05 | 🔲 pending | Implement: slash commands /plan-<type> — **HW direct** |
-| 06 | 🔲 pending | Implement: planning enforcement plugin — **HW direct** |
-| 07 | 🔲 pending | Implement: session type protocol files — **HW direct** |
-| 08 | 🔲 pending | Implement: subagent files (context-scout, context-insurgent, deep-researcher) — **HW direct** |
+| 01 | ✅ complete | Research: memory plugins + plugin API enforcement capabilities — **DeepResearcher (parallel group)** |
+| 02 | 🔄 in_progress | Lock down DAG node schema (collaborative) — **HW direct** |
+| 03 | 🔲 pending | Design /plan-generic JSON + resulting session JSON — **HW direct** |
+| 04 | 🔲 pending | Design /plan-debug JSON + resulting session JSON — **HW direct** |
+| 05 | 🔲 pending | Design /plan-collaborative JSON + resulting session JSON — **HW direct** |
+| 06 | 🔲 pending | Implement planning enforcement plugin — **HW direct** |
+| 07 | 🔲 pending | Implement opencode.json, headwrench.md, slash commands, session type protocols — **HW direct** |
+| 08 | 🔲 pending | Implement subagents (context-scout, context-insurgent, deep-researcher) — **HW direct** |
 | 09 | 🔲 pending | Validation: integration test + manual walkthrough — **HW direct** |
 
 ---
 
 ## Gates
 
-### G1 — Research Review
-**After subtask 01.** HW surfaces memory plugin options and plugin API enforcement capabilities. User selects the memory plugin and approves the enforcement approach before any design work begins.
+### G1 — Research Review ✅ PASSED
+**After subtask 01.** User selected OMEGA Memory as the memory plugin and approved the plugin-driven DAG architecture (next_step built-in tool + chat.message plan-first invariant).
 
 ### G2 — Design Approval
-**After subtask 02.** HW presents the complete architecture design (design.md). User must explicitly approve before any implementation subtask begins.
+**After subtasks 02–05.** Each design subtask ends with a [🚫 GATE] — user approves the DAG node schema, then each plan type design, before implementation begins in subtask 06.
 
 ---
 
 ## Current Focus
-**Not started.** Awaiting user approval of this plan.
+**Subtask 02 — Lock down DAG node schema (collaborative)**
 
 ---
 
@@ -53,7 +54,8 @@
 **In scope:**
 - `~/.config/opencode/` — all global config files (agents, commands, protocols, skills)
 - `opencode/opencode.json` — root config
-- New planning enforcement plugin (npm package or config)
+- New planning enforcement plugin (`plugins/planning-enforcement/` TypeScript npm package)
+- DAG JSON files for each session type (`dags/*.json`)
 - Session type artifact schemas
 
 **Out of scope:**
@@ -65,9 +67,11 @@
 
 ## Patterns & Constraints
 
-- **No markdown-file planning enforcement** — all planning enforcement must be programmatic (plugin or agent protocol with hard artifact checks)
+- **Plugin-driven DAG execution** — slash command loads DAG JSON, plugin drives turns via `next_step` built-in tool and `chat.message` hook
+- **No markdown-file planning enforcement** — all planning enforcement must be programmatic (plugin)
 - **No mid-session agent switching** — all routing decisions resolved at plan time (opencode Issue #5963)
 - **model field in slash command YAML is bugged in v0.6.4** — do not rely on it
-- **No session-local agents** — all implementation subtasks (03–08) are executed by HeadWrench directly
+- **No session-local agents** — all implementation subtasks (06–08) are executed by HeadWrench directly
 - **DCP config carries forward unchanged** — `opencode/dcp.jsonc` is not modified
-- **DeepResearcher is user-gated** for web research; the research in subtask 01 is an approved dispatch
+- **OMEGA Memory selected** — MCP server for cross-session project memory with recency decay
+- **next_step tool** registered by planning enforcement plugin (not MCP); injects next DAG step prompt via `ctx.client.session.prompt({ noReply: true })`

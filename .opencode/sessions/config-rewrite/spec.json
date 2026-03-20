@@ -2,14 +2,14 @@
   "name": "config-rewrite",
   "goal": "Rewrite the entire opencode config from scratch with plugin-enforced planning, cross-session memory, typed session artifacts, and robust subagent routing — replacing all markdown-based workflows with programmatic DAG-executed equivalents.",
   "created": "2026-03-19",
-  "status": "pending",
-  "currentSubtask": 0,
+  "status": "in_progress",
+  "currentSubtask": 1,
   "subtaskCount": 9,
   "circuitBreakerThreshold": 3,
   "step_outputs": {},
-  "completed_steps": [],
+  "completed_steps": ["01"],
   "failed_steps": [],
-  "last_checkpoint": null,
+  "last_checkpoint": "2026-03-19",
   "circuit_breaker": {
     "consecutive_failures": 0,
     "threshold": 3,
@@ -20,48 +20,48 @@
       "id": "01",
       "name": "research-memory-and-plugin-api",
       "description": "Research: memory plugins + plugin API enforcement capabilities (parallel group)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "02",
-      "name": "design-decisions",
-      "description": "Design decisions: synthesize research into architecture (HW direct, collaborative)",
-      "status": "pending"
+      "name": "design-dag-schema",
+      "description": "Lock down DAG node schema (collaborative)",
+      "status": "in_progress"
     },
     {
       "id": "03",
-      "name": "implement-opencode-json",
-      "description": "Implement: opencode.json (agents, plugins, MCPs)",
+      "name": "design-plan-generic",
+      "description": "Design /plan-generic JSON + resulting session JSON",
       "status": "pending"
     },
     {
       "id": "04",
-      "name": "implement-headwrench",
-      "description": "Implement: headwrench.md (new primary agent system prompt)",
+      "name": "design-plan-debug",
+      "description": "Design /plan-debug JSON + resulting session JSON",
       "status": "pending"
     },
     {
       "id": "05",
-      "name": "implement-slash-commands",
-      "description": "Implement: slash commands /plan-<type>",
+      "name": "design-plan-collaborative",
+      "description": "Design /plan-collaborative JSON + resulting session JSON",
       "status": "pending"
     },
     {
       "id": "06",
-      "name": "implement-planning-plugin",
-      "description": "Implement: planning enforcement plugin",
+      "name": "implement-plugin",
+      "description": "Implement planning enforcement plugin",
       "status": "pending"
     },
     {
       "id": "07",
-      "name": "implement-session-types",
-      "description": "Implement: session type protocol files and artifact schemas",
+      "name": "implement-config-files",
+      "description": "Implement opencode.json, headwrench.md, slash commands, session type protocols",
       "status": "pending"
     },
     {
       "id": "08",
       "name": "implement-subagents",
-      "description": "Implement: subagent files (context-scout, context-insurgent, deep-researcher)",
+      "description": "Implement subagent files (context-scout, context-insurgent, deep-researcher)",
       "status": "pending"
     },
     {
