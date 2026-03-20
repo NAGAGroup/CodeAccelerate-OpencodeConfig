@@ -2,7 +2,7 @@
 
 **Goal**: Rewrite the opencode config in `./opencode` to incorporate all findings from the config-reimplementation-research session. Closes 10 identified gaps across context management, skills, agent design, session schema, plan protocols, and checkpoint commands. Phases 1-4 with gates before Phase 3 and Phase 4.
 
-**Status**: pending
+**Status**: in_progress
 
 **Created**: 2026-03-19
 
@@ -12,8 +12,8 @@
 
 | # | Name | Status | Notes |
 |---|------|--------|-------|
-| 01 | context-management-upgrades | pending | Add freshness_sla, context_type, 60% cliff guidance to context-management.md |
-| 02 | skills-progressive-disclosure | pending | Rewrite SKILL.md files with 3-tier progressive disclosure structure |
+| 01 | context-management-upgrades | completed | Add freshness_sla, context_type, 60% cliff guidance to context-management.md; pruning policy |
+| 02 | skills-progressive-disclosure | in_progress | Rewrite SKILL.md files with 3-tier progressive disclosure structure |
 | 03 | subtask-schema-improvements | pending | Add Context Files + Success Criteria sections to session-plan-schema.md |
 | 04 | agent-operational-limits | pending | Add max_iter/max_rpm/max_execution_time to agent frontmatter and skill templates |
 | 05 | plan-protocol-upgrades | pending | Add mode differentiation, 3-pass synthesis, pre-execution validation gate |

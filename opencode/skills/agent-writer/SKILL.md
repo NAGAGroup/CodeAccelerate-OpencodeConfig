@@ -1,13 +1,23 @@
 ---
 name: agent-writer
-description: "Teaches HeadWrench how to create session-local agent .md files in .opencode/agents/ during planning, replacing the deleted SubagentBuilder role."
+description: "Load when a planning session identifies subtasks needing a custom agent. Creates session-local .md files in .opencode/agents/ with correct frontmatter, permission blocks, and system prompts."
+summary: |
+  Load when planning identifies subtasks needing implementation, doc writing, or research agents.
+  - Create one agent per session unless subtasks need meaningfully different model capabilities
+  - Permission block goes INSIDE frontmatter (not body); always use deny-by-default ("*": deny)
+  - Implementation agents: allow edit/write/read/glob/grep/list; bash read-only (cat/ls/find/grep/rg only)
+  - Read-only agents: no edit/write; bash inspection only
+  - Research agents: only specific external tool allows; no bash block at all
+  - Always write PLACEHOLDER_MODEL_ID in model field; tell user to replace before running start
+  - Sonnet-class = standard impl; Haiku-class = mechanical tasks; Opus-class = hard reasoning only
+  - No opencode.json entry needed — agents in .opencode/agents/ are auto-discovered
 ---
 
 # Agent Writer
 
 Teaches HeadWrench how to create session-local agent `.md` files in `.opencode/agents/` during planning. Load this skill whenever a planning session identifies a subtask that needs a custom agent — write the file directly rather than delegating to SubagentBuilder.
 
-## When to Create Session-Local Agents
+## When to Invoke
 
 Create a session-local agent when a subtask requires:
 

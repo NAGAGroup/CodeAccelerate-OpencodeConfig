@@ -1,6 +1,15 @@
 ---
 name: agent-delegation-expert
-description: "Assigns the right agent to each subtask based on task type, complexity, and skill requirements. Load during Step 4 of the planning session after the session plan is drafted to apply routing rules and populate the Delegation section of each subtask file."
+description: "Load during Step 4 of planning (after session plan drafted) to assign agents to subtasks. Applies routing rules and populates the ## Delegation section of each subtask-NN-{name}.md file."
+summary: |
+  Load after session plan is drafted (Step 4) to assign agents and write ## Delegation sections.
+  - ContextScout: read-only quick situational awareness; ContextInsurgent: deep multi-file analysis
+  - DeepResearcher: external web/doc research (user-gated); HeadWrench directly: git, build/test, session ops
+  - Session-local agents (via agent-writer skill): all implementation and doc subtasks
+  - One agent per session unless subtasks need meaningfully different model capabilities
+  - deny-by-default is REQUIRED: "* ": deny in every permission block — NOT "* ": ask
+  - Build/test commands (npm/make/cargo/pytest) are HeadWrench-only — never grant to subagents
+  - Write delegation into ## Delegation section of subtask-NN-{name}.md files only
 ---
 
 # Agent Delegation Expert
