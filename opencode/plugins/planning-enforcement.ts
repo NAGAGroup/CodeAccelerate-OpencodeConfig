@@ -43,11 +43,23 @@ function readDag(dagPath: string): PlanDag {
   return JSON.parse(content) as PlanDag
 }
 
+function expandPath(p: string): string {
+  if (p.startsWith("~/")) {
+    const home = process.env.HOME || process.env.USERPROFILE || ""
+    return path.join(home, p.slice(2))
+  }
+  return p
+}
+
 function readPrompt(promptPath: string, worktree: string): string {
-  // Prompt paths in plan.json may be relative to worktree
-  const resolved = path.isAbsolute(promptPath)
-    ? promptPath
-    : path.join(worktree, promptPath)
+  // Prompt paths may be:
+  //   - absolute (/foo/bar)
+  //   - home-relative (~/foo/bar)
+  //   - worktree-relative (foo/bar)
+  const expanded = expandPath(promptPath)
+  const resolved = path.isAbsolute(expanded)
+    ? expanded
+    : path.join(worktree, expanded)
   return fs.readFileSync(resolved, "utf-8")
 }
 
@@ -118,12 +130,8 @@ export const PlanningEnforcementPlugin: Plugin = async (ctx) => {
           "Start a /plan-generic planning session. Reads the plan-generic DAG and activates the planning workflow for the current session.",
         args: {},
         async execute(_args, context) {
-          const planPath = path.join(
-            context.worktree,
-            "opencode",
-            "planning",
-            "plan-generic",
-            "plan.json",
+          const planPath = expandPath(
+            "~/.config/opencode/planning/plan-generic/plan.json",
           )
           try {
             const dag = readDag(planPath)
@@ -141,12 +149,8 @@ export const PlanningEnforcementPlugin: Plugin = async (ctx) => {
           "Start a /plan-debug planning session. Reads the plan-debug DAG and activates the debug planning workflow for the current session.",
         args: {},
         async execute(_args, context) {
-          const planPath = path.join(
-            context.worktree,
-            "opencode",
-            "planning",
-            "plan-debug",
-            "plan.json",
+          const planPath = expandPath(
+            "~/.config/opencode/planning/plan-debug/plan.json",
           )
           try {
             const dag = readDag(planPath)
@@ -164,12 +168,8 @@ export const PlanningEnforcementPlugin: Plugin = async (ctx) => {
           "Start a /plan-collaborative planning session. Reads the plan-collaborative DAG and activates the collaborative planning workflow for the current session.",
         args: {},
         async execute(_args, context) {
-          const planPath = path.join(
-            context.worktree,
-            "opencode",
-            "planning",
-            "plan-collaborative",
-            "plan.json",
+          const planPath = expandPath(
+            "~/.config/opencode/planning/plan-collaborative/plan.json",
           )
           try {
             const dag = readDag(planPath)
