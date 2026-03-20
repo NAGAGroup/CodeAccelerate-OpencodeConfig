@@ -23,8 +23,8 @@
 | # | Status | Description |
 |---|--------|-------------|
 | 01 | ✅ complete | Research: memory plugins + plugin API enforcement capabilities — **DeepResearcher (parallel group)** |
-| 02 | 🔄 in_progress | Lock down DAG node schema (collaborative) — **HW direct** |
-| 03 | 🔲 pending | Design /plan-generic JSON + resulting session JSON — **HW direct** |
+| 02 | ✅ complete | Lock down DAG node schema (collaborative) — **HW direct** |
+| 03 | 🔄 in_progress | Design /plan-generic JSON + resulting session JSON — **HW direct** |
 | 04 | 🔲 pending | Design /plan-debug JSON + resulting session JSON — **HW direct** |
 | 05 | 🔲 pending | Design /plan-collaborative JSON + resulting session JSON — **HW direct** |
 | 06 | 🔲 pending | Implement planning enforcement plugin — **HW direct** |
@@ -45,7 +45,7 @@
 ---
 
 ## Current Focus
-**Subtask 02 — Lock down DAG node schema (collaborative)**
+**Subtask 03 — Design /plan-generic JSON + resulting session JSON**
 
 ---
 

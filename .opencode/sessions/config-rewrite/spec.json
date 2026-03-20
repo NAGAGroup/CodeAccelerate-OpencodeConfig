@@ -3,11 +3,11 @@
   "goal": "Rewrite the entire opencode config from scratch with plugin-enforced planning, cross-session memory, typed session artifacts, and robust subagent routing — replacing all markdown-based workflows with programmatic DAG-executed equivalents.",
   "created": "2026-03-19",
   "status": "in_progress",
-  "currentSubtask": 1,
+  "currentSubtask": 2,
   "subtaskCount": 9,
   "circuitBreakerThreshold": 3,
   "step_outputs": {},
-  "completed_steps": ["01"],
+  "completed_steps": ["01", "02"],
   "failed_steps": [],
   "last_checkpoint": "2026-03-19",
   "circuit_breaker": {
@@ -26,13 +26,13 @@
       "id": "02",
       "name": "design-dag-schema",
       "description": "Lock down DAG node schema (collaborative)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "id": "03",
       "name": "design-plan-generic",
       "description": "Design /plan-generic JSON + resulting session JSON",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "id": "04",
