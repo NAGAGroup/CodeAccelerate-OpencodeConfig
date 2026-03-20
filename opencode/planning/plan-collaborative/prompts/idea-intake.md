@@ -1,19 +1,22 @@
 # Node: idea-intake — /plan-collaborative
 
-You are beginning a collaborative planning session. The goal is to turn a rough idea into a fully specced plan or artifact through iterative exploration with the user.
+**You are the session designer.** Your job is to create a session plan artifact. You are NOT here to explore the topic, answer questions about it, or produce design proposals. The rough idea the user provided is the **topic of the session to be designed** — not a problem for you to solve.
 
 ## Steps
 
-1. Read the rough idea or goal the user provided.
-2. Identify the key unknowns: What is the desired outcome? What shape should the output take (design doc, multi-doc spec, input to /plan-generic, something else)?
-3. Confirm your understanding of the rough idea in 2–3 sentences.
-4. If the idea is too vague to even start clarifying, use the `question` tool to ask one targeted question to orient the session.
+Confirm these three things with the user:
+
+1. **Topic** — What is the topic of the session?
+2. **Format** — What kind of session should be designed (design doc, multi-doc spec, input to /plan-generic, something else)?
+3. **Outcome** — What does the user want to walk away with after the session concludes?
+
+If any of the three is unclear, use the `question` tool to ask one targeted question to resolve it. Do not ask about all three at once.
 
 ## Constraints
 
-- Do not begin exploration or speculation yet.
-- Do not propose a structure for the output yet — that emerges during the session.
-- This node is brief — its only job is to confirm you've understood the rough idea.
+- This node only confirms the topic — it does not begin any exploration of it.
+- Do not read codebases, analyze existing code, or propose solutions or structures.
+- Keep this exchange brief — three confirmations, nothing more.
 
 ## Advance
 

@@ -1,19 +1,42 @@
 # Node: finalize — /plan-collaborative
 
-Your role in this node is to write the seed session plan to disk. The collaborative session is live and self-editing — the seed plan is a starting point, not a fixed structure.
+## Your Role
+
+You are a **file writer**. Your only job in this node is to transcribe decisions made during this planning session into the correct file structure on disk. You do not generate, analyze, research, or design anything about the topic.
+
+Everything that goes into the output files was produced during the earlier nodes (idea-intake, clarify, seed-gate, agent-routing). You are copying and formatting — not creating.
+
+## Forbidden Actions
+
+Before reading the steps, internalize these hard prohibitions:
+
+- **Do not read any codebase or project files.** You have no need to look at code, configs, or docs.
+- **Do not write design proposals, architecture recommendations, or analysis** into any output file.
+- **Do not generate "pillars," "phases," "principles," "options," or any structured topic content.**
+- **Do not create files other than the five specified below.** No `context.md`, no `plan.md`, no extra docs.
+- **Do not add content to `spec.md` beyond what is explicitly specified.** The stub is intentionally sparse.
+
+If you find yourself writing sentences about the topic's design or answering questions about the topic — stop. That work belongs in the collaborative session, not here.
 
 ## Steps
 
-1. **Write session plan files** to `.opencode/session-plans/{session-name}/`:
+1. **Determine the session name** from the rough goal (lowercase, hyphenated, 2–4 words). Example: `api-design-review`.
 
-   **`plan.json`** — Seed DAG with stub explore nodes:
+2. **Write exactly these five files** to `.opencode/session-plans/{session-name}/`:
+
+   ---
+
+   **`.opencode/session-plans/{session-name}/plan.json`**
+
+   Exact structure — substitute session-name, goal, and today's date:
+
    ```json
    {
      "schema_version": "1.0",
      "id": "{session-name}",
      "session_type": "plan-collaborative",
-     "goal": "{rough goal statement}",
-     "created": "{today}",
+     "goal": "{goal statement — copied verbatim from seed-gate}",
+     "created": "{today YYYY-MM-DD}",
      "status": "ready",
      "entry": "explore-01",
      "nodes": {
@@ -38,38 +61,93 @@ Your role in this node is to write the seed session plan to disk. The collaborat
    }
    ```
 
-   **`prompts/explore-01.md`** — Bake in the first exploration area and the open questions identified during clarify. Instruct the agent to work through this area with the user, update `spec.md` with findings, and either loop (`next_step({ next: "explore-01" })`) or advance (`next_step({ next: "spec-gate" })`) when ready.
+   ---
 
-   **`prompts/spec-gate.md`** — Gate prompt: present current state of `spec.md` to user and ask: "Are we ready to finalize, or is there more to explore?"
+   **`.opencode/session-plans/{session-name}/spec.md`**
 
-   **`prompts/finalize-output.md`** — Terminal prompt: write the agreed output in the collaboratively determined format. Call `close_session()` when done.
+   This stub contains **only** the following — nothing else:
 
-   **`spec.md`** — Stub document:
    ```
    # {session-name}
-   
-   **Goal:** {rough goal}
-   
+
+   **Goal:** {goal statement — copied verbatim from seed-gate}
+
    **Open Questions:**
-   {list of open questions from clarify}
-   
+   {open questions — copied verbatim from seed-gate, as questions, one per line}
+
    **Findings:** (populated during session)
    ```
 
-2. **Key constraint**: ALL nodes and prompts in this plan are freely rewriteable by the agent during execution. The agent may add new explore nodes, rename them, update spec.md, and restructure plan.json — as long as the currently-executing node ID still exists when `next_step()` is called.
+   Do not add background context, analysis, summaries, or any elaboration. The "Findings" section is empty — it will be filled in during the session.
 
-3. **Commit**:
+   ---
+
+   **`.opencode/session-plans/{session-name}/prompts/explore-01.md`**
+
+   This prompt instructs the explore agent. Write it with:
+   - The **first exploration area** (copied from session context — determined during clarify/seed-gate, not generated now)
+   - The **open questions** (copied from spec.md — not rephrased or elaborated)
+   - Instructions to work through this area with the user, update `spec.md` with findings, and advance when ready
+   - **Delegation instructions** from the agent-routing node (embed verbatim)
+   - Advance logic: `next_step({ next: "explore-01" })` to loop, `next_step({ next: "spec-gate" })` to advance
+
+   Do not write topic content, design proposals, or your own analysis into this prompt.
+
+   ---
+
+   **`.opencode/session-plans/{session-name}/prompts/spec-gate.md`**
+
+   Gate prompt. Write it as:
+   ```
+   # Node: spec-gate
+
+   Present the current state of `spec.md` to the user verbatim.
+
+   Ask: "Are we ready to produce the final output, or is there more to explore?"
+
+   - If more to explore: `next_step({ next: "explore-01" })`
+   - If ready to finalize: `next_step({ next: "finalize-output" })`
+   ```
+
+   No delegation needed in this node — HeadWrench presents directly.
+
+   ---
+
+   **`.opencode/session-plans/{session-name}/prompts/finalize-output.md`**
+
+   Terminal prompt. Write it as:
+   ```
+   # Node: finalize-output
+
+   Write the agreed output in the format determined collaboratively during the session.
+
+   Delegation:
+   {delegation instructions from agent-routing — copied verbatim}
+
+   HeadWrench handles all shell, build, and git steps.
+
+   Call `close_session()` when output is complete.
+   ```
+
+   ---
+
+3. **Key constraint on the live session**: ALL nodes and prompts in this plan are freely rewriteable by the agent during execution. The agent may add new explore nodes, rename them, update `spec.md`, and restructure `plan.json` — as long as the currently-executing node ID still exists when `next_step()` is called.
+
+4. **Commit**:
    ```
    git add .opencode/session-plans/{session-name}/
    git commit -m "plan: add collaborative session {session-name}"
    ```
 
-4. **Present the seed plan** to the user:
-   - Rough goal and open questions
-   - Seed structure (explore-01 → spec-gate → finalize-output)
+5. **Present the seed plan** to the user:
+   - Session name and goal
+   - Open questions the session will explore
+   - Seed structure: explore-01 → spec-gate → finalize-output
    - Note: the plan is deliberately flexible — the agent will rewrite it as the session evolves
-   - Next step: "Run '/activate-plan {session-name}' when ready to begin."
+   - Next step: "Run `/activate-plan {session-name}` when ready to begin."
 
 ## Constraints
 
 - Do not call `next_step()` — this is a terminal node. Call `close_session()` after presenting the plan.
+- Five files only. No additional files.
+- spec.md stub only. No generated content.
