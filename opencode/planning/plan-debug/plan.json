@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "id": "plan-debug",
+  "session_type": "plan-debug",
+  "description": "Debug planning session — produces ranked hypotheses only",
+  "entry": "bug-intake",
+  "nodes": {
+    "bug-intake": {
+      "id": "bug-intake",
+      "type": "agent",
+      "prompt": "opencode/planning/plan-debug/prompts/bug-intake.md",
+      "next": "context-gather"
+    },
+    "context-gather": {
+      "id": "context-gather",
+      "type": "agent",
+      "prompt": "opencode/planning/plan-debug/prompts/context-gather.md",
+      "next": "hypothesis-form"
+    },
+    "hypothesis-form": {
+      "id": "hypothesis-form",
+      "type": "agent",
+      "prompt": "opencode/planning/plan-debug/prompts/hypothesis-form.md",
+      "next": ["hypothesis-form", "hypothesis-gate"],
+      "remaining_visits": 3
+    },
+    "hypothesis-gate": {
+      "id": "hypothesis-gate",
+      "type": "gate",
+      "prompt": "opencode/planning/plan-debug/prompts/hypothesis-gate.md",
+      "next": ["finalize", "hypothesis-form"]
+    },
+    "finalize": {
+      "id": "finalize",
+      "type": "agent",
+      "prompt": "opencode/planning/plan-debug/prompts/finalize.md"
+    }
+  }
+}
