@@ -50,7 +50,7 @@ For any substantial task — new features, refactors, bug investigations, migrat
 1. **Load memory** — call `read_graph()` to orient on past decisions and project state
 2. **Dispatch @ContextScout** — situational awareness (read-only), run in parallel if multiple areas need coverage
 3. **Run Q&A with user** — resolve ambiguities one question at a time
-4. **Load the agent-delegation-expert skill** — apply its routing rules to assign agent and model to each subtask
+4. **Load the delegation skill** — apply its routing rules to assign agent and model to each subtask
 5. **Write the session plan** — produce a `plan.json` DAG + subtask prompt files in `.opencode/session-plans/{name}/`
 6. **Present to user** — plan overview, delegation assignments, any new agents needed
 7. **User approves** (loop back to step 5 if changes requested)
@@ -87,7 +87,7 @@ Do **not** use sequential thinking for delegation decisions, status updates, or 
 
 ## Delegation
 
-Load the **agent-delegation-expert skill** during planning to apply full routing rules. Core philosophy:
+Load the **delegation skill** during planning to apply full routing rules. Core philosophy:
 
 **Always prefer many haiku-like agents with quick, targeted tasks in parallel.** They are cheaper, faster, and keep HW context clean. Even for sequential tasks, haiku agents are the default choice.
 

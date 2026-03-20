@@ -20,10 +20,15 @@ Your role in this node is to explore the codebase and produce a concrete, ordere
    - **Constraints** — Specific requirements, patterns to follow, things to avoid
    - **Todolist** — 3–8 actionable items; include `[🚫 GATE]` before any risky or irreversible step
 
-   Sizing: minimum 3 todos, maximum 8. Fold tiny tasks into adjacent subtasks. Split large tasks.
-   Ordering: dependencies first; deletions before edits that reference deleted content.
+    Sizing: minimum 3 todos, maximum 8. Fold tiny tasks into adjacent subtasks. Split large tasks.
+    Ordering: dependencies first; deletions before edits that reference deleted content.
 
-4. **Present the draft subtask list** to the user — numbered summary only (objective + scope, no full detail yet).
+4. **Identify loop-capable nodes and confirm `remaining_visits`** — For any subtask that will produce a looping node (a node whose `next` array includes itself or a prior node):
+    - Note that the default `remaining_visits` is 3
+    - Ask the user if a different count is wanted for that node — one question per node if there are multiple
+    - Record the confirmed count for each loop-capable node
+
+5. **Present the draft subtask list** to the user — numbered summary only (objective + scope, no full detail yet).
 
 ## Constraints
 

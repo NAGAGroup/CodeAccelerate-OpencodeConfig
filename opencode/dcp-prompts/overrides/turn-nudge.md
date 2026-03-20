@@ -1,4 +1,4 @@
-Before evaluating compression candidates, check if a DAG node is active (content exists after the most recent `next_step()` call). If so, exclude that span entirely from compression consideration. Only compress content that predates the most recent `next_step()` call.
+Before evaluating compression candidates, check if a DAG node is active (content exists after the most recent `next_step()` or `activate_plan()` call). The active node span includes all accumulated tool outputs, subagent results, file reads, and planning decisions since that call. Exclude that entire span from compression consideration. Only compress content that predates the most recent `next_step()` or `activate_plan()` call.
 
 Evaluate the conversation for compressible ranges.
 

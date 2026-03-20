@@ -21,7 +21,18 @@ DO NOT COMPRESS IF
 
 - raw context is still relevant and needed for edits or precise references
 - the task in the target range is still actively in progress
-- the content occurred after the most recent `next_step()` call — that span is the active DAG node. Wait for `next_step()` or `close_session()` before treating any of that content as eligible for compression
+- the content occurred after the most recent `next_step()` (or `activate_plan`) call — that entire span is the active DAG node and is off-limits for compression. This includes ALL accumulated outputs since activation: file reads, scout results, planning decisions, tool outputs, and analysis. Wait for the next `next_step()` call or `close_session()` before treating any of that content as eligible for compression
+
+ACTIVE NODE SPAN
+
+The active node span extends from the most recent `next_step()` or `activate_plan` call to the present moment. All content within this span is protected and cannot be compressed, including:
+
+- File reads and results from `read()` tool calls
+- Output from scout operations or subagent invocations
+- Planning decisions, reasoning, and analysis steps taken during this node
+- Tool outputs from `glob()`, `grep()`, or other utility calls executed in this active session
+
+This protection ensures critical intermediate work and generated decisions remain available for reference and continuation when the next node activates.
 
 Evaluate conversation signal-to-noise REGULARLY. Use `compress` deliberately with quality-first summaries. Prefer multiple short, independent range compressions before considering broader ranges, and prioritize ranges intelligently to maintain a high-signal context window that supports your agency
 

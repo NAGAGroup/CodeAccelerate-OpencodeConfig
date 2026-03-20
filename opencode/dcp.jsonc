@@ -86,7 +86,7 @@
     // Flat tool schema: improves tool call reliability but uglier in the TUI
     "flatSchema": true,
     // Tool names whose completed outputs are appended to the compression
-    "protectedTools": [],
+    "protectedTools": ["activate_plan", "close_session", "next_step", "plan_generic", "plan_debug", "plan_collaborative"],
     // Preserve your messages during compression.
     // Warning: large copy-pasted prompts will never be compressed away
     "protectUserMessages": false,

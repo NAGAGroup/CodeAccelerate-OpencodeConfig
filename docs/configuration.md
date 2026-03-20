@@ -43,7 +43,7 @@ Four MCP servers are configured by default. Each has an `enabled` flag you can t
   "exa": {
     "type": "remote",
     "url": "https://mcp.exa.ai/mcp?exaApiKey=${EXA_API_KEY}",
-    "enabled": false
+    "enabled": true
   }
 }
 ```

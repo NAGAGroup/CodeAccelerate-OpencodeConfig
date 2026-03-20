@@ -6,7 +6,9 @@ Your role in this node is to write the debug session plan to disk. The debug ses
 
 1. **Apply delegation instructions** — Delegation recommendations for each prompt file were established in the previous node. Use them when writing `diagnose.md`, `fix.md`, and `verify.md` — embed the appropriate delegation instructions in each.
 
-2. **Write session plan files** to `.opencode/session-plans/{bug-name}/`:
+2. **Confirm diagnose loop count with the user** — Ask: "How many diagnose visits do you want for this session? (default: 3)" Accept their response or use the default. Use this count as the value for `"remaining_visits"` in the `plan.json` template below.
+
+3. **Write session plan files** to `.opencode/session-plans/{bug-name}/`:
 
    **`plan.json`** — DAG with four nodes:
    ```json
@@ -25,13 +27,13 @@ Your role in this node is to write the debug session plan to disk. The debug ses
          "prompt": ".opencode/session-plans/{bug-name}/prompts/session-overview.md",
          "next": "diagnose"
        },
-       "diagnose": {
-         "id": "diagnose",
-         "type": "agent",
-         "prompt": ".opencode/session-plans/{bug-name}/prompts/diagnose.md",
-         "next": ["fix", "diagnose"],
-         "remaining_visits": 5
-       },
+        "diagnose": {
+          "id": "diagnose",
+          "type": "agent",
+          "prompt": ".opencode/session-plans/{bug-name}/prompts/diagnose.md",
+          "next": ["fix", "diagnose"],
+          "remaining_visits": 3
+        },
        "fix": {
          "id": "fix",
          "type": "agent",
@@ -45,10 +47,12 @@ Your role in this node is to write the debug session plan to disk. The debug ses
          "next": ["diagnose"]
        }
      }
-   }
-   ```
+    }
+    ```
 
-   **`prompts/session-overview.md`** — Write this file **verbatim** — do not modify, summarize, or adapt the content:
+    **Recovery note:** If the diagnose loop exhausts its counter and the DAG enters `failed` state, surface this to the user and ask whether they want to continue and with how many additional diagnose visits (default: 3). If they confirm, call `reset_counters({ visits: N })` to restore the counter and resume.
+
+    **`prompts/session-overview.md`** — Write this file **verbatim** — do not modify, summarize, or adapt the content:
 
    ````
    # Session Overview — Debug Session
@@ -85,19 +89,19 @@ Your role in this node is to write the debug session plan to disk. The debug ses
 
    **`prompts/fix.md`** — First line must be `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->`. Start as a placeholder: "No fix identified yet." The agent will overwrite this file during diagnose iterations, accumulating "tried X, result Y" history. Close with `## Advance`: "Call `next_step()` when the fix is applied."
 
-   **`prompts/verify.md`** — First line must be `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->`. Instruct the agent to run the full test suite and any regression checks. Close with `## Advance`: "If all pass: call `close_session()`. If any fail: call `next_step({ next: 'diagnose' })`."
+    **`prompts/verify.md`** — First line must be `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->`. Instruct the agent to run the full test suite and any regression checks. Close with `## Advance`: "If all pass: call `close_session()`. If any fail: call `next_step({ next: 'diagnose' })`."
 
-3. **Commit**:
+4. **Commit**:
    ```
-   git add .opencode/session-plans/{bug-name}/
-   git commit -m "plan: add debug session {bug-name}"
-   ```
+    git add .opencode/session-plans/{bug-name}/
+    git commit -m "plan: add debug session {bug-name}"
+    ```
 
-4. **Present the plan** to the user:
-   - Bug statement and acceptance criteria
-   - Hypothesis list (ranked, as approved)
-   - Session plan structure (diagnose → fix → verify loop, max 5 diagnose visits)
-   - Next step: "Run '/activate-plan {bug-name}' when ready to begin."
+5. **Present the plan** to the user:
+    - Bug statement and acceptance criteria
+    - Hypothesis list (ranked, as approved)
+    - Session plan structure (diagnose → fix → verify loop, with {remaining_visits} diagnose visits as confirmed with you)
+    - Next step: "Run '/activate-plan {bug-name}' when ready to begin."
 
 ## Constraints
 

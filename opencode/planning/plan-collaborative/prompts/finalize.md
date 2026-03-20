@@ -79,9 +79,11 @@ If you find yourself writing sentences about the topic's design or answering que
    }
    ```
 
-   The last explore node's `next` should point to `["explore-NN", "spec-gate"]`. Each earlier explore node points to `["explore-NN", "explore-NN+1"]` — the loop option lets the agent revisit the same question before moving on.
+    The last explore node's `next` should point to `["explore-NN", "spec-gate"]`. Each earlier explore node points to `["explore-NN", "explore-NN+1"]` — the loop option lets the agent revisit the same question before moving on.
 
-   ---
+    **Note on `remaining_visits`:** The `remaining_visits` field is **not** included in the plan.json template by default, because collaborative loops are user-driven and unbounded by design. However, if bounded looping is desired for a specific explore node, you may optionally add `"remaining_visits": {number}` to that node's definition in the plan.
+
+    ---
 
    **`.opencode/session-plans/{session-name}/prompts/session-overview.md`**
 
@@ -98,11 +100,12 @@ If you find yourself writing sentences about the topic's design or answering que
 
    A collaborative session is a structured conversation between you and the user. The goal is to explore open questions together and accumulate findings in `spec.md`.
 
-   - You surface **one question at a time** and wait for the user to respond before proceeding
-   - The **user drives the direction** — you follow their lead, not a predetermined script
-   - You **do not produce answers unprompted** — ask, listen, record
-   - The **plan is yours to restructure** — add nodes, split nodes, reorder, remove — as long as the currently-executing node ID exists in `plan.json` when you call `next_step()`
-   - `spec.md` is the living record — update it as conclusions are reached
+    - You surface **one question at a time** and wait for the user to respond before proceeding
+    - The **user drives the direction** — you follow their lead, not a predetermined script
+    - You **do not produce answers unprompted** — ask, listen, record
+    - The **plan is yours to restructure** — add nodes, split nodes, reorder, remove — as long as the currently-executing node ID exists in `plan.json` when you call `next_step()`
+    - `spec.md` is the living record — update it as conclusions are reached
+    - If an explore node accumulates too many unresolved visits, you may set `remaining_visits` on it (default: 3). If the counter is exhausted and the DAG enters a `failed` state, surface this to the user and ask whether they want to continue and with how many additional visits (default: 3). If they confirm, call `reset_counters({ visits: N })` to restore the counter and resume exploration
 
    ## What You Must Never Do
 

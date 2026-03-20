@@ -79,13 +79,12 @@ function now(): string {
 
 // ─── Plan activation (shared logic for plan_* and activate_plan) ──────────────
 
-async function activateDag(
+function activateDag(
   dag: PlanDag,
   planPath: string,       // absolute path to plan.json — stored in state for next_step
   sessionId: string,
   worktree: string,
-  client: any,
-): Promise<string> {
+): string {
   const entryNode = dag.nodes[dag.entry]
   if (!entryNode) {
     return `Error: entry node "${dag.entry}" not found in DAG "${dag.id}"`
@@ -103,24 +102,14 @@ async function activateDag(
   }
   writeState(statePath, state)
 
-  // Inject first node prompt
+  // Return prompt text as part of the tool result
   const promptText = readPrompt(entryNode.prompt, worktree)
-  await client.session.prompt({
-    path: { id: sessionId },
-    body: {
-      noReply: true,
-      parts: [{ type: "text", text: promptText, synthetic: true }],
-    },
-  })
-
-  return `DAG "${dag.id}" activated. Starting at node: ${dag.entry}. Status: ${state.status}.`
+  return `DAG "${dag.id}" activated. Starting at node: ${dag.entry}. Status: ${state.status}.\n\n---\n\n${promptText}`
 }
 
 // ─── Plugin ───────────────────────────────────────────────────────────────────
 
-export const PlanningEnforcementPlugin: Plugin = async (ctx) => {
-  const { client } = ctx
-
+export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
   return {
     tool: {
 
@@ -135,7 +124,7 @@ export const PlanningEnforcementPlugin: Plugin = async (ctx) => {
           )
           try {
             const dag = readDag(planPath)
-            return await activateDag(dag, planPath, context.sessionID, context.worktree, client)
+            return activateDag(dag, planPath, context.sessionID, context.worktree)
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err)
             return `Error activating plan-generic: ${msg}`
@@ -154,7 +143,7 @@ export const PlanningEnforcementPlugin: Plugin = async (ctx) => {
           )
           try {
             const dag = readDag(planPath)
-            return await activateDag(dag, planPath, context.sessionID, context.worktree, client)
+            return activateDag(dag, planPath, context.sessionID, context.worktree)
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err)
             return `Error activating plan-debug: ${msg}`
@@ -173,7 +162,7 @@ export const PlanningEnforcementPlugin: Plugin = async (ctx) => {
           )
           try {
             const dag = readDag(planPath)
-            return await activateDag(dag, planPath, context.sessionID, context.worktree, client)
+            return activateDag(dag, planPath, context.sessionID, context.worktree)
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err)
             return `Error activating plan-collaborative: ${msg}`
@@ -202,7 +191,7 @@ export const PlanningEnforcementPlugin: Plugin = async (ctx) => {
           )
           try {
             const dag = readDag(planPath)
-            return await activateDag(dag, planPath, context.sessionID, context.worktree, client)
+            return activateDag(dag, planPath, context.sessionID, context.worktree)
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err)
             return `Error activating plan "${plan_name}": ${msg}`
@@ -293,17 +282,9 @@ export const PlanningEnforcementPlugin: Plugin = async (ctx) => {
           state.updated_at = now()
           writeState(statePath, state)
 
-          // Inject next node's prompt
+          // Return next node's prompt as part of the tool result
           const promptText = readPrompt(nextNode.prompt, context.worktree)
-          await client.session.prompt({
-            path: { id: context.sessionID },
-            body: {
-              noReply: true,
-              parts: [{ type: "text", text: promptText, synthetic: true }],
-            },
-          })
-
-          return `Advanced to node "${nextNodeId}" (type: ${nextNode.type}). Status: ${state.status}.`
+          return `Advanced to node "${nextNodeId}" (type: ${nextNode.type}). Status: ${state.status}.\n\n---\n\n${promptText}`
         },
       }),
 
@@ -326,6 +307,56 @@ export const PlanningEnforcementPlugin: Plugin = async (ctx) => {
             const msg = err instanceof Error ? err.message : String(err)
             return `Error closing session: ${msg}`
           }
+        },
+      }),
+
+      // ── reset_counters ────────────────────────────────────────────────────
+      reset_counters: tool({
+        description:
+          "Reset all exhausted remaining_visits counters (those at 0 or below) in the active DAG plan to the given count (default: 3), and set session status back to 'running'. Call this when a loop node has exhausted its counter and the DAG has entered 'failed' state, to resume the session.",
+        args: {
+          visits: tool.schema
+            .number()
+            .optional()
+            .describe(
+              "The number of visits to restore each exhausted counter to. Defaults to 3 if not provided.",
+            ),
+        },
+        async execute({ visits }, context) {
+          const statePath = dagStatePath(context.worktree, context.sessionID)
+          const state = readState(statePath)
+
+          if (!state) {
+            return "No active DAG session found for this session ID."
+          }
+
+          if (!fs.existsSync(state.plan_path)) {
+            return `plan.json not found at stored path "${state.plan_path}". Cannot reset counters.`
+          }
+
+          const dag = readDag(state.plan_path)
+          const restoreTo = typeof visits === "number" && visits > 0 ? visits : 3
+
+          // Reset any remaining_visits that are exhausted (<= 0) back to restoreTo.
+          // Original values are not recoverable after in-place decrement, so we
+          // restore to the caller-specified count or the default of 3.
+          let resetCount = 0
+          for (const node of Object.values(dag.nodes)) {
+            if (typeof node.remaining_visits === "number" && node.remaining_visits <= 0) {
+              node.remaining_visits = restoreTo
+              resetCount++
+            }
+          }
+
+          // Write updated plan.json
+          fs.writeFileSync(state.plan_path, JSON.stringify(dag, null, 2), "utf-8")
+
+          // Restore session status to running
+          state.status = "running"
+          state.updated_at = now()
+          writeState(statePath, state)
+
+          return `Counters reset. ${resetCount} node(s) had their remaining_visits restored to ${restoreTo}. Session status set back to "running". Call next_step() to continue.`
         },
       }),
     },
