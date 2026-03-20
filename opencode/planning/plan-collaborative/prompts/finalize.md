@@ -84,11 +84,12 @@ If you find yourself writing sentences about the topic's design or answering que
 
    **`.opencode/session-plans/{session-name}/prompts/explore-01.md`**
 
-   This prompt instructs the explore agent. Write it with:
-   - The **first exploration area** (copied from session context — determined during clarify/seed-gate, not generated now)
-   - The **open questions** (copied from spec.md — not rephrased or elaborated)
-   - Instructions to work through this area with the user, update `spec.md` with findings, and advance when ready
-   - **Delegation instructions** from the agent-routing node (embed verbatim)
+    This prompt instructs the explore agent for the **first exploration area only** — one question, one node. Write it with:
+    - The **first open question** (the single first item from spec.md — not all of them)
+    - Instructions to **surface this question to the user and explore it collaboratively** — not to work through it autonomously. The agent asks, the user responds, the agent follows the user's lead. The agent does not produce answers unprompted.
+    - Instructions to update `spec.md` with findings as conclusions are reached, then either loop (`explore-01`) or advance (`spec-gate`)
+    - A note that **additional explore nodes should be added to `plan.json` for subsequent questions** — the agent should not cram multiple questions into this node
+    - **Delegation instructions** from the agent-routing node (embed verbatim)
     - Advance logic: `next_step({ next: "explore-01" })` to loop, `next_step({ next: "spec-gate" })` to advance
     - A **`## Session Authority`** section with this exact content:
 
