@@ -146,3 +146,4 @@ opencode/package-lock.json
 .opencode/inbox
 .opencode/bun.lock
 .opencode/package.json
+.opencode/dag-state/

@@ -1,8 +1,0 @@
-{
-  "dag_id": "plan-generic",
-  "plan_path": "/home/jack/CodeAccelerate-OpencodeConfig/opencode/planning/plan-generic/plan.json",
-  "status": "running",
-  "current_node": "clarify",
-  "started_at": "2026-03-20T07:28:56.043Z",
-  "updated_at": "2026-03-20T07:30:13.504Z"
-}
