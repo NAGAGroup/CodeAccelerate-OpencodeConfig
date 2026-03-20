@@ -89,9 +89,25 @@ If you find yourself writing sentences about the topic's design or answering que
    - The **open questions** (copied from spec.md — not rephrased or elaborated)
    - Instructions to work through this area with the user, update `spec.md` with findings, and advance when ready
    - **Delegation instructions** from the agent-routing node (embed verbatim)
-   - Advance logic: `next_step({ next: "explore-01" })` to loop, `next_step({ next: "spec-gate" })` to advance
+    - Advance logic: `next_step({ next: "explore-01" })` to loop, `next_step({ next: "spec-gate" })` to advance
+    - A **`## Session Authority`** section with this exact content:
 
-   Do not write topic content, design proposals, or your own analysis into this prompt.
+      ```
+      ## Session Authority
+
+      This is a collaborative session plan. You have full authority to restructure it as the session evolves:
+
+      - **Add explore nodes** — if a new area of exploration emerges, add it to `plan.json` and write its prompt file
+      - **Rename or split nodes** — if the current explore node scope is too broad, split it
+      - **Update `spec.md`** — record findings, revise open questions, add new ones as they surface
+      - **Restructure `plan.json`** — change node order, add branches, remove nodes that become irrelevant
+
+      **One hard constraint:** The node ID you are currently executing must still exist in `plan.json` when you call `next_step()`. Do not delete or rename the current node mid-execution.
+
+      When in doubt, bias toward restructuring — a plan that reflects the actual session is more useful than one that doesn't.
+      ```
+
+    Do not write topic content, design proposals, or your own analysis into this prompt.
 
    ---
 
