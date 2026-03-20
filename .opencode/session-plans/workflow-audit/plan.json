@@ -1,0 +1,50 @@
+{
+  "name": "workflow-audit",
+  "description": "Node-by-node audit of all four planning workflows to produce a flat list of concrete improvement proposals.",
+  "status": "pending",
+  "current_node": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt_file": "prompts/session-overview.md",
+      "next": ["explore-01"]
+    },
+    "explore-01": {
+      "id": "explore-01",
+      "type": "agent",
+      "prompt_file": "prompts/explore-01.md",
+      "next": ["explore-01", "explore-02"]
+    },
+    "explore-02": {
+      "id": "explore-02",
+      "type": "agent",
+      "prompt_file": "prompts/explore-02.md",
+      "next": ["explore-02", "explore-03"]
+    },
+    "explore-03": {
+      "id": "explore-03",
+      "type": "agent",
+      "prompt_file": "prompts/explore-03.md",
+      "next": ["explore-03", "explore-04"]
+    },
+    "explore-04": {
+      "id": "explore-04",
+      "type": "agent",
+      "prompt_file": "prompts/explore-04.md",
+      "next": ["explore-04", "spec-gate"]
+    },
+    "spec-gate": {
+      "id": "spec-gate",
+      "type": "gate",
+      "prompt_file": "prompts/spec-gate.md",
+      "next": ["explore-04", "finalize-output"]
+    },
+    "finalize-output": {
+      "id": "finalize-output",
+      "type": "agent",
+      "prompt_file": "prompts/finalize-output.md",
+      "next": []
+    }
+  }
+}
