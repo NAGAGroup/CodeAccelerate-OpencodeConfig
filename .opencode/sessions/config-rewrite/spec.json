@@ -3,11 +3,11 @@
   "goal": "Rewrite the entire opencode config from scratch with plugin-enforced planning, cross-session memory, typed session artifacts, and robust subagent routing — replacing all markdown-based workflows with programmatic DAG-executed equivalents.",
   "created": "2026-03-19",
   "status": "in_progress",
-  "currentSubtask": 4,
+  "currentSubtask": 5,
   "subtaskCount": 9,
   "circuitBreakerThreshold": 3,
   "step_outputs": {},
-  "completed_steps": ["01", "02", "03", "04"],
+  "completed_steps": ["01", "02", "03", "04", "05"],
   "failed_steps": [],
   "last_checkpoint": "2026-03-19",
   "circuit_breaker": {
@@ -44,24 +44,24 @@
       "id": "05",
       "name": "design-plan-collaborative",
       "description": "Design /plan-collaborative JSON + resulting session JSON",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "id": "06",
+      "name": "implement-subagents",
+      "description": "Implement subagent files (context-scout, context-insurgent, deep-researcher)",
+      "status": "in_progress"
+    },
+    {
+      "id": "07",
       "name": "implement-plugin",
       "description": "Implement planning enforcement plugin",
       "status": "pending"
     },
     {
-      "id": "07",
+      "id": "08",
       "name": "implement-config-files",
       "description": "Implement opencode.json, headwrench.md, slash commands, session type protocols",
-      "status": "pending"
-    },
-    {
-      "id": "08",
-      "name": "implement-subagents",
-      "description": "Implement subagent files (context-scout, context-insurgent, deep-researcher)",
       "status": "pending"
     },
     {

@@ -26,10 +26,10 @@
 | 02 | ✅ complete | Lock down DAG node schema (collaborative) — **HW direct** |
 | 03 | ✅ complete | Design /plan-generic JSON + resulting session JSON — **HW direct** |
 | 04 | ✅ complete | Design /plan-debug JSON + resulting session JSON — **HW direct** |
-| 05 | 🔄 in_progress | Design /plan-collaborative JSON + resulting session JSON — **HW direct** |
-| 06 | 🔲 pending | Implement planning enforcement plugin — **HW direct** |
-| 07 | 🔲 pending | Implement opencode.json, headwrench.md, slash commands, session type protocols — **HW direct** |
-| 08 | 🔲 pending | Implement subagents (context-scout, context-insurgent, deep-researcher) — **HW direct** |
+| 05 | ✅ complete | Design /plan-collaborative JSON + resulting session JSON — **HW direct** |
+| 06 | 🔄 in_progress | Implement subagents (context-scout, context-insurgent, deep-researcher) — **HW direct** |
+| 07 | 🔲 pending | Implement planning enforcement plugin — **HW direct** |
+| 08 | 🔲 pending | Implement opencode.json, headwrench.md, slash commands, session type protocols — **HW direct** |
 | 09 | 🔲 pending | Validation: integration test + manual walkthrough — **HW direct** |
 
 ---
@@ -45,7 +45,7 @@
 ---
 
 ## Current Focus
-**Subtask 05 — Design /plan-collaborative JSON + resulting session JSON**
+**Subtask 06 — Implement subagents (context-scout, context-insurgent, deep-researcher)**
 
 ---
 
