@@ -1,0 +1,27 @@
+{
+  "name": "v2-release-prep",
+  "status": "ready",
+  "entry": "subtask-01",
+  "nodes": {
+    "subtask-01": {
+      "id": "subtask-01",
+      "type": "agent",
+      "label": "Delete Stale Artifacts",
+      "prompt": ".opencode/sessions/v2-release-prep/subtask-01-delete-stale-artifacts.md",
+      "next": "subtask-02"
+    },
+    "subtask-02": {
+      "id": "subtask-02",
+      "type": "agent",
+      "label": "Write CHANGELOG.md",
+      "prompt": ".opencode/sessions/v2-release-prep/subtask-02-write-changelog.md",
+      "next": "subtask-03"
+    },
+    "subtask-03": {
+      "id": "subtask-03",
+      "type": "agent",
+      "label": "Commit Release Prep",
+      "prompt": ".opencode/sessions/v2-release-prep/subtask-03-commit-release-prep.md"
+    }
+  }
+}
