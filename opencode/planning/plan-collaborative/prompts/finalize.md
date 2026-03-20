@@ -13,7 +13,7 @@ Before reading the steps, internalize these hard prohibitions:
 - **Do not read any codebase or project files.** You have no need to look at code, configs, or docs.
 - **Do not write design proposals, architecture recommendations, or analysis** into any output file.
 - **Do not generate "pillars," "phases," "principles," "options," or any structured topic content.**
-- **Do not create files other than the five specified below.** No `context.md`, no `plan.md`, no extra docs.
+- **Do not create files other than the six specified below.** No `context.md`, no `plan.md`, no extra docs.
 - **Do not add content to `spec.md` beyond what is explicitly specified.** The stub is intentionally sparse.
 
 If you find yourself writing sentences about the topic's design or answering questions about the topic — stop. That work belongs in the collaborative session, not here.
@@ -38,8 +38,14 @@ If you find yourself writing sentences about the topic's design or answering que
      "goal": "{goal statement — copied verbatim from seed-gate}",
      "created": "{today YYYY-MM-DD}",
      "status": "ready",
-     "entry": "explore-01",
+     "entry": "session-overview",
      "nodes": {
+       "session-overview": {
+         "id": "session-overview",
+         "type": "agent",
+         "prompt": ".opencode/session-plans/{session-name}/prompts/session-overview.md",
+         "next": "explore-01"
+       },
        "explore-01": {
          "id": "explore-01",
          "type": "agent",
@@ -74,6 +80,40 @@ If you find yourself writing sentences about the topic's design or answering que
    ```
 
    The last explore node's `next` should point to `["explore-NN", "spec-gate"]`. Each earlier explore node points to `["explore-NN", "explore-NN+1"]` — the loop option lets the agent revisit the same question before moving on.
+
+   ---
+
+   **`.opencode/session-plans/{session-name}/prompts/session-overview.md`**
+
+   Write this file **verbatim** — do not modify, summarize, or adapt the content:
+
+   ````
+   # Session Overview — Collaborative Session
+
+   <!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->
+
+   You are executing a collaborative session. Read this node once, internalize it, then call `next_step()` immediately.
+
+   ## What This Session Is
+
+   A collaborative session is a structured conversation between you and the user. The goal is to explore open questions together and accumulate findings in `spec.md`.
+
+   - You surface **one question at a time** and wait for the user to respond before proceeding
+   - The **user drives the direction** — you follow their lead, not a predetermined script
+   - You **do not produce answers unprompted** — ask, listen, record
+   - The **plan is yours to restructure** — add nodes, split nodes, reorder, remove — as long as the currently-executing node ID exists in `plan.json` when you call `next_step()`
+   - `spec.md` is the living record — update it as conclusions are reached
+
+   ## What You Must Never Do
+
+   - Produce unprompted analysis, design proposals, or answers to the open questions
+   - Work through multiple questions in a single node — one node, one question
+   - Skip the user and advance based on your own reasoning alone
+
+   ## Advance
+
+   Call `next_step()` to proceed to the first exploration node.
+   ````
 
    ---
 
@@ -181,5 +221,6 @@ If you find yourself writing sentences about the topic's design or answering que
 ## Constraints
 
 - Do not call `next_step()` — this is a terminal node. Call `close_session()` after presenting the plan.
-- Five files only. No additional files.
+- Six files only. No additional files.
+- session-overview.md verbatim only. Do not alter the content.
 - spec.md stub only. No generated content.
