@@ -13,8 +13,8 @@
 | # | Name | Status |
 |---|------|--------|
 | 01 | research-round-1-planning-and-session-design | completed |
-| 02 | research-round-2-agent-and-delegation-design | in_progress |
-| 03 | research-round-3-supporting-infrastructure | pending |
+| 02 | research-round-2-agent-and-delegation-design | completed |
+| 03 | research-round-3-supporting-infrastructure | in_progress |
 | 04 | synthesis | pending |
 
 ---
