@@ -1,0 +1,23 @@
+{
+  "name": "dcp-dag-compression-fix",
+  "status": "ready",
+  "goal": "Prevent DCP from compressing active DAG node content by adding next_step() as a compression boundary marker via prompt override files.",
+  "currentSubtask": 1,
+  "totalSubtasks": 2,
+  "circuitBreakerThreshold": 3,
+  "completedSteps": [],
+  "subtasks": [
+    {
+      "id": 1,
+      "name": "Write DCP prompt override files",
+      "description": "Create opencode/dcp-prompts/overrides/ with 4 override files that inject DAG-node awareness. Rule: content after the most recent next_step() call is the active node and is off-limits for compression until next_step() is called again.",
+      "status": "pending"
+    },
+    {
+      "id": 2,
+      "name": "Verify dcp.jsonc needs no changes",
+      "description": "Confirm nudgeForce, nudgeFrequency, and iterationNudgeThreshold are compatible with the override approach. Document findings.",
+      "status": "pending"
+    }
+  ]
+}
