@@ -25,8 +25,8 @@
 | 01 | ✅ complete | Research: memory plugins + plugin API enforcement capabilities — **DeepResearcher (parallel group)** |
 | 02 | ✅ complete | Lock down DAG node schema (collaborative) — **HW direct** |
 | 03 | ✅ complete | Design /plan-generic JSON + resulting session JSON — **HW direct** |
-| 04 | 🔄 in_progress | Design /plan-debug JSON + resulting session JSON — **HW direct** |
-| 05 | 🔲 pending | Design /plan-collaborative JSON + resulting session JSON — **HW direct** |
+| 04 | ✅ complete | Design /plan-debug JSON + resulting session JSON — **HW direct** |
+| 05 | 🔄 in_progress | Design /plan-collaborative JSON + resulting session JSON — **HW direct** |
 | 06 | 🔲 pending | Implement planning enforcement plugin — **HW direct** |
 | 07 | 🔲 pending | Implement opencode.json, headwrench.md, slash commands, session type protocols — **HW direct** |
 | 08 | 🔲 pending | Implement subagents (context-scout, context-insurgent, deep-researcher) — **HW direct** |
@@ -45,7 +45,7 @@
 ---
 
 ## Current Focus
-**Subtask 04 — Design /plan-debug JSON + resulting session JSON**
+**Subtask 05 — Design /plan-collaborative JSON + resulting session JSON**
 
 ---
 
