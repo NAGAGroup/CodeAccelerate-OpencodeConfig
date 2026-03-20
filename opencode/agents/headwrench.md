@@ -65,6 +65,7 @@ Three planning modes exist — the user triggers the appropriate one based on ta
 - **Generic** — standard feature work, refactors, migrations. Planning DAG: task-intake → clarify (loop) → decompose → review-gate → finalize.
 - **Debug** — bug investigations and incident response. Planning DAG: bug-intake → context-gather → hypothesis-form (loop) → hypothesis-gate → finalize. Debug sessions are live self-editing.
 - **Collaborative** — open-ended or exploratory topics where the goal is to design a session, not conduct one. Planning DAG: idea-intake → clarify (loop) → seed-gate → finalize. The agent's role here is purely structural: capture the idea, surface open questions, define exploration areas, and produce a session design artifact (plan.json, prompt stubs, spec.md stub). The actual exploration happens in the session that follows — not during planning.
+- **Deep Research** — research-centric variant of Collaborative. Planning DAG: research-intake → clarify (loop) → research-gate (gate) → agent-routing → finalize. The activated session executes research iteratively: HW dispatches @DeepResearcher each iteration, surfaces findings, user steers. Terminal output is a completed research report.
 
 The plugin tool for the matching type activates the planning DAG and injects the first prompt automatically.
 

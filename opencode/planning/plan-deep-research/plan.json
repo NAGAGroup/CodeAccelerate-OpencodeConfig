@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "id": "plan-deep-research",
+  "session_type": "plan-deep-research",
+  "description": "Research-topic-to-report — planning produces research session plan only",
+  "entry": "research-intake",
+  "nodes": {
+    "research-intake": {
+      "id": "research-intake",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/research-intake.md",
+      "next": "clarify"
+    },
+    "clarify": {
+      "id": "clarify",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/clarify.md",
+      "next": ["clarify", "research-gate"],
+      "remaining_visits": 5
+    },
+    "research-gate": {
+      "id": "research-gate",
+      "type": "gate",
+      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/research-gate.md",
+      "next": ["load-schema", "clarify"]
+    },
+    "load-schema": {
+      "id": "load-schema",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-json-schema.md",
+      "next": "agent-routing"
+    },
+    "agent-routing": {
+      "id": "agent-routing",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/agent-routing.md",
+      "next": "finalize"
+    },
+    "finalize": {
+      "id": "finalize",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/finalize.md"
+    }
+  }
+}

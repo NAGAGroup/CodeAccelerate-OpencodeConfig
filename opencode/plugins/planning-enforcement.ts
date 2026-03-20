@@ -170,6 +170,25 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
+      // ── plan_deep_research ───────────────────────────────────────────────
+      plan_deep_research: tool({
+        description:
+          "Start a /plan-deep-research planning session. Reads the plan-deep-research DAG and activates the research planning workflow for the current session.",
+        args: {},
+        async execute(_args, context) {
+          const planPath = expandPath(
+            "~/.config/opencode/planning/plan-deep-research/plan.json",
+          )
+          try {
+            const dag = readDag(planPath)
+            return activateDag(dag, planPath, context.sessionID, context.worktree)
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err)
+            return `Error activating plan-deep-research: ${msg}`
+          }
+        },
+      }),
+
       // ── activate_plan ─────────────────────────────────────────────────────
       activate_plan: tool({
         description:
