@@ -27,8 +27,8 @@
 | 03 | ✅ complete | Design /plan-generic JSON + resulting session JSON — **HW direct** |
 | 04 | ✅ complete | Design /plan-debug JSON + resulting session JSON — **HW direct** |
 | 05 | ✅ complete | Design /plan-collaborative JSON + resulting session JSON — **HW direct** |
-| 06 | 🔄 in_progress | Implement subagents (context-scout, context-insurgent, deep-researcher) — **HW direct** |
-| 07 | 🔲 pending | Implement planning enforcement plugin — **HW direct** |
+| 06 | ✅ complete | Implement subagents (context-scout, context-insurgent, deep-researcher, junior-dev, quick-doc) — **HW direct** |
+| 07 | 🔄 in_progress | Implement planning enforcement plugin — **HW direct** |
 | 08 | 🔲 pending | Implement opencode.json, headwrench.md, slash commands, session type protocols — **HW direct** |
 | 09 | 🔲 pending | Validation: integration test + manual walkthrough — **HW direct** |
 
@@ -37,7 +37,7 @@
 ## Gates
 
 ### G1 — Research Review ✅ PASSED
-**After subtask 01.** User selected OMEGA Memory as the memory plugin and approved the plugin-driven DAG architecture (next_step built-in tool + chat.message plan-first invariant).
+**After subtask 01.** User selected @modelcontextprotocol/server-memory as the memory plugin and approved the plugin-driven DAG architecture (next_step built-in tool + chat.message plan-first invariant). (Note: user later switched preference to @modelcontextprotocol/server-memory — 81k stars, official MCP server, no recency decay, permanent knowledge graph storage.)
 
 ### G2 — Design Approval
 **After subtasks 02–05.** Each design subtask ends with a [🚫 GATE] — user approves the DAG node schema, then each plan type design, before implementation begins in subtask 06.
@@ -45,7 +45,7 @@
 ---
 
 ## Current Focus
-**Subtask 06 — Implement subagents (context-scout, context-insurgent, deep-researcher)**
+**Subtask 07 — Implement planning enforcement plugin**
 
 ---
 
@@ -73,5 +73,5 @@
 - **model field in slash command YAML is bugged in v0.6.4** — do not rely on it
 - **No session-local agents** — all implementation subtasks (06–08) are executed by HeadWrench directly
 - **DCP config carries forward unchanged** — `opencode/dcp.jsonc` is not modified
-- **OMEGA Memory selected** — MCP server for cross-session project memory with recency decay
+- **@modelcontextprotocol/server-memory selected** — official MCP server for cross-session project memory (knowledge graph: entities, relations, observations; NO recency decay — permanent storage)
 - **next_step tool** registered by planning enforcement plugin (not MCP); injects next DAG step prompt via `ctx.client.session.prompt({ noReply: true })`
