@@ -57,6 +57,17 @@ Machine-readable orchestrator state. Agent/model assignments are **not** stored 
   "currentSubtask": number,         // 0-indexed position of the next subtask to execute
   "subtaskCount": number,           // Total number of non-gate subtasks
   "circuitBreakerThreshold": number,// Max consecutive failures allowed before stopping (default: 3)
+  "step_outputs": {                 // Map of step_id → output artifact path or summary (populated at runtime)
+    "string": "string"
+  },
+  "completed_steps": ["string"],    // Ordered list of step_ids that have finished successfully
+  "failed_steps": ["string"],       // Ordered list of step_ids that have failed
+  "last_checkpoint": "string",      // ISO 8601 timestamp of the most recent checkpoint write (e.g. "2026-03-19T14:00:00Z")
+  "circuit_breaker": {
+    "consecutive_failures": number, // Number of consecutive failures since last success
+    "threshold": number,            // Copy of circuitBreakerThreshold for runtime reference
+    "state": "string"               // "CLOSED" | "OPEN" | "HALF-OPEN"
+  },
   "subtasks": [
     {
       "id": "string",               // 01, 02, GN, etc.
@@ -72,6 +83,58 @@ Machine-readable orchestrator state. Agent/model assignments are **not** stored 
 - **`currentSubtask`**: The 0-indexed position of the task the orchestrator should run next. Updated at each checkpoint.
 - **`subtaskCount`**: Count of executable subtasks only (gates are not counted).
 - **`circuitBreakerThreshold`**: If this many consecutive subtasks fail, the session halts and escalates to the user.
+- **`step_outputs`**: Map of `step_id` → output artifact path or summary string. Populated at runtime as each step completes; empty object `{}` at session creation.
+- **`completed_steps`**: Ordered array of step IDs that have finished successfully. Empty array `[]` at session creation.
+- **`failed_steps`**: Ordered array of step IDs that have failed. Empty array `[]` at session creation.
+- **`last_checkpoint`**: ISO 8601 timestamp of the most recent checkpoint write. `null` before the first checkpoint.
+- **`circuit_breaker.consecutive_failures`**: Increments on each consecutive failure; reset to 0 on any success.
+- **`circuit_breaker.threshold`**: Mirrors `circuitBreakerThreshold` for runtime reference without extra lookups.
+- **`circuit_breaker.state`**: `"CLOSED"` = normal operation; `"OPEN"` = halted, escalation required; `"HALF-OPEN"` = probing after a previous OPEN state.
+
+## plan.json Specification
+`plan.json` is an optional DAG execution artifact. It is **not** required during session bootstrap — not all sessions need a DAG. However, when `plan-end.md` writes it, it is considered authoritative for dependency ordering and parallelism hints.
+
+### When to Write
+- Write `plan.json` during plan finalization **only** when the session has inter-subtask dependencies that benefit from explicit DAG representation (e.g., parallel groups with complex wiring, or subtasks whose inputs depend on specific outputs from earlier steps).
+- Simple linear sessions do not require `plan.json`.
+
+### Schema Definition
+```json
+{
+  "session": "string",              // kebab-case-session-name (matches spec.json "name")
+  "generated": "string",            // ISO 8601 timestamp when this file was written
+  "steps": [
+    {
+      "step_id": "string",          // Matches the subtask id (e.g. "01", "02")
+      "dependencies": ["string"],   // step_ids that must complete before this step can start (empty = no deps)
+      "parallelizable_with": ["string"], // step_ids this step can run concurrently with (empty = serial)
+      "success_criteria": "string", // One-sentence description of what constitutes success for this step
+      "context_boundary": "string"  // What context this step is allowed to read/write (e.g. "subtask-01 scope only")
+    }
+  ]
+}
+```
+
+### Field Descriptions
+- **`step_id`**: Must match the `id` field of the corresponding subtask in `spec.json`.
+- **`dependencies`**: Explicit prerequisite step IDs. Execution is blocked until all listed steps are in `completed_steps` in `spec.json`.
+- **`parallelizable_with`**: Declares safe concurrency — these step IDs have non-overlapping scopes and may be launched simultaneously. Must be consistent (if A lists B, B should list A).
+- **`success_criteria`**: Human-readable one-liner. Complements the `## Success Criteria` section in the subtask file.
+- **`context_boundary`**: Describes the isolation contract for the step — what files/state it is permitted to touch. Enforces the principle that subagents have no awareness of session context beyond their own subtask file.
+
+### File Location
+`.opencode/sessions/{session-name}/plan.json`
+
+### Directory Structure (updated)
+```bash
+.opencode/sessions/{session-name}/
+├── index.md                  # Living plan document (human-readable)
+├── spec.json                 # Machine-readable state (orchestrator-facing)
+├── plan.json                 # (Optional) DAG execution artifact
+├── subtask-NN-{name}.md      # One file per subtask — loaded individually at runtime
+├── notes/                    # Session-specific concept notes
+└── protocols/                # (Optional) Session-specific protocol overrides
+```
 
 ## subtask-NN-{name}.md Specification
 Each subtask has its own isolated file. **Only the current subtask file is loaded at runtime** — this keeps context focused. You read the file for the current subtask and pass it to the assigned subagent.
