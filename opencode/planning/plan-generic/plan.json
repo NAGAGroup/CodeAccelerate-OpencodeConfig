@@ -29,6 +29,12 @@
       "prompt": "~/.config/opencode/planning/plan-generic/prompts/review-gate.md",
       "next": ["agent-routing", "decompose", "clarify"]
     },
+    "load-schema": {
+      "id": "load-schema",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-json-schema.md",
+      "next": "agent-routing"
+    },
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",

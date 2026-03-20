@@ -30,6 +30,12 @@
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/hypothesis-gate.md",
       "next": ["agent-routing", "hypothesis-form"]
     },
+    "load-schema": {
+      "id": "load-schema",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-json-schema.md",
+      "next": "agent-routing"
+    },
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",

@@ -23,6 +23,12 @@
       "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/seed-gate.md",
       "next": ["agent-routing", "clarify"]
     },
+    "load-schema": {
+      "id": "load-schema",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-json-schema.md",
+      "next": "finalize"
+    },
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
