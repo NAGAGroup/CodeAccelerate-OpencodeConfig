@@ -8,32 +8,38 @@
     "bug-intake": {
       "id": "bug-intake",
       "type": "agent",
-      "prompt": "opencode/planning/plan-debug/prompts/bug-intake.md",
+      "prompt": "~/.config/opencode/planning/plan-debug/prompts/bug-intake.md",
       "next": "context-gather"
     },
     "context-gather": {
       "id": "context-gather",
       "type": "agent",
-      "prompt": "opencode/planning/plan-debug/prompts/context-gather.md",
+      "prompt": "~/.config/opencode/planning/plan-debug/prompts/context-gather.md",
       "next": "hypothesis-form"
     },
     "hypothesis-form": {
       "id": "hypothesis-form",
       "type": "agent",
-      "prompt": "opencode/planning/plan-debug/prompts/hypothesis-form.md",
+      "prompt": "~/.config/opencode/planning/plan-debug/prompts/hypothesis-form.md",
       "next": ["hypothesis-form", "hypothesis-gate"],
       "remaining_visits": 3
     },
     "hypothesis-gate": {
       "id": "hypothesis-gate",
       "type": "gate",
-      "prompt": "opencode/planning/plan-debug/prompts/hypothesis-gate.md",
-      "next": ["finalize", "hypothesis-form"]
+      "prompt": "~/.config/opencode/planning/plan-debug/prompts/hypothesis-gate.md",
+      "next": ["agent-routing", "hypothesis-form"]
+    },
+    "agent-routing": {
+      "id": "agent-routing",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-debug/prompts/agent-routing.md",
+      "next": "finalize"
     },
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "opencode/planning/plan-debug/prompts/finalize.md"
+      "prompt": "~/.config/opencode/planning/plan-debug/prompts/finalize.md"
     }
   }
 }

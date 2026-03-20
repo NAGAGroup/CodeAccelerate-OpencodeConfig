@@ -8,25 +8,31 @@
     "idea-intake": {
       "id": "idea-intake",
       "type": "agent",
-      "prompt": "opencode/planning/plan-collaborative/prompts/idea-intake.md",
+      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/idea-intake.md",
       "next": "clarify"
     },
     "clarify": {
       "id": "clarify",
       "type": "agent",
-      "prompt": "opencode/planning/plan-collaborative/prompts/clarify.md",
+      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/clarify.md",
       "next": ["clarify", "seed-gate"]
     },
     "seed-gate": {
       "id": "seed-gate",
       "type": "gate",
-      "prompt": "opencode/planning/plan-collaborative/prompts/seed-gate.md",
-      "next": ["finalize", "clarify"]
+      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/seed-gate.md",
+      "next": ["agent-routing", "clarify"]
+    },
+    "agent-routing": {
+      "id": "agent-routing",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/agent-routing.md",
+      "next": "finalize"
     },
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "opencode/planning/plan-collaborative/prompts/finalize.md"
+      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/finalize.md"
     }
   }
 }
