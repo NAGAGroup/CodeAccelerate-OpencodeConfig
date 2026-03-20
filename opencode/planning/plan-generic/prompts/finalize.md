@@ -4,7 +4,7 @@ Your role in this node is to write all session plan artifacts to disk and regist
 
 ## Steps
 
-1. **Load the agent-delegation-expert skill** — Read `~/.config/opencode/skills/agent-delegation-expert/SKILL.md`. Apply its routing rules to assign an agent and model to each subtask. Fill in each subtask's `## Delegation` section before writing files.
+1. **Apply delegation assignments** — Agent routing was completed in the previous node. Use the routing table established in context to populate each subtask's `## Delegation` section. Do not re-load the skill or re-derive assignments.
 
 2. **Write session files** to `.opencode/sessions/{session-name}/`:
    - `index.md` — session name, goal, status, subtask table, gate locations

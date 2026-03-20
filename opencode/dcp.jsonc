@@ -33,15 +33,13 @@
     "allowSubAgents": true,
     // Enable user-editable prompt overrides under dcp-prompts directories
     // When false (default), prompt override files/directories are ignored
-    "customPrompts": false,
+    "customPrompts": true,
   },
   // Protect file read/write operations from pruning via glob patterns.
   // Patterns match tool parameters.filePath (e.g. read/write/edit).
   // subtask-*.md files are the active working spec during session execution —
   // their read results must not be silently pruned by automatic strategies.
-  "protectedFilePatterns": [
-    ".opencode/sessions/**/index.md"
-  ],
+  "protectedFilePatterns": [],
   // Unified context compression tool and behavior settings
   "compress": {
     // Permission mode: "allow" (no prompt), "ask" (prompt), "deny" (tool not registered)

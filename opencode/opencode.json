@@ -18,15 +18,15 @@
       "description": "Primary orchestrator — plans, delegates, drives sessions",
       "model": "anthropic/claude-sonnet-4-6"
     },
-    "subagents/context-scout": {
+    "context-scout": {
       "description": "Read-only situational awareness for pre-planning",
       "model": "anthropic/claude-haiku-4-5"
     },
-    "subagents/context-insurgent": {
+    "context-insurgent": {
       "description": "Deep multi-file exploration with sequential reasoning",
       "model": "anthropic/claude-sonnet-4-6"
     },
-    "subagents/deep-researcher": {
+    "deep-researcher": {
       "description": "Web and documentation research via exa and Context7",
       "model": "anthropic/claude-haiku-4-5"
     },
@@ -53,6 +53,11 @@
     "exa": {
       "type": "remote",
       "url": "https://mcp.exa.ai/mcp?exaApiKey=${EXA_API_KEY}",
+      "enabled": true
+    },
+    "memory": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
       "enabled": true
     }
   }
