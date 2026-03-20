@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "id": "user-docs",
+  "session_type": "plan-collaborative",
+  "goal": "Produce fully written, committed user-facing documentation for this codebase — a root-level README and a docs/ folder — targeting non-technical end users, starting from scratch.",
+  "created": "2026-03-20",
+  "status": "ready",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/user-docs/prompts/session-overview.md",
+      "next": "explore-01"
+    },
+    "explore-01": {
+      "id": "explore-01",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/user-docs/prompts/explore-01.md",
+      "next": ["explore-01", "explore-02"]
+    },
+    "explore-02": {
+      "id": "explore-02",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/user-docs/prompts/explore-02.md",
+      "next": ["explore-02", "explore-03"]
+    },
+    "explore-03": {
+      "id": "explore-03",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/user-docs/prompts/explore-03.md",
+      "next": ["explore-03", "explore-04"]
+    },
+    "explore-04": {
+      "id": "explore-04",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/user-docs/prompts/explore-04.md",
+      "next": ["explore-04", "explore-05"]
+    },
+    "explore-05": {
+      "id": "explore-05",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/user-docs/prompts/explore-05.md",
+      "next": ["explore-05", "spec-gate"]
+    },
+    "spec-gate": {
+      "id": "spec-gate",
+      "type": "gate",
+      "prompt": ".opencode/session-plans/user-docs/prompts/spec-gate.md",
+      "next": ["finalize-output", "explore-05"]
+    },
+    "finalize-output": {
+      "id": "finalize-output",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/user-docs/prompts/finalize-output.md"
+    }
+  }
+}
