@@ -28,6 +28,17 @@ This is the canonical schema for all `plan.json` execution DAG files produced by
 | `entry` | ✅ | ID of the first node to execute — always `"session-overview"` |
 | `nodes` | ✅ | Map of node ID → DagNode |
 
+### Runtime Fields — Top-Level
+
+| Field | Type | Description |
+|---|---|---|
+| `progress.current_node` | string | ID of the currently executing node |
+| `progress.started_at` | string (ISO 8601) | Timestamp when the plan was activated |
+| `progress.updated_at` | string (ISO 8601) | Timestamp of the last node transition |
+| `progress.completed_at` | string (ISO 8601) | Timestamp when `close_session()` was called (optional) |
+
+> **Note:** These fields are written by the plugin at runtime and **should not be authored manually**.
+
 ## Node Fields
 
 ```json
@@ -47,6 +58,15 @@ This is the canonical schema for all `plan.json` execution DAG files produced by
 | `prompt` | ✅ | Path to the prompt file — see Path Resolution below |
 | `next` | optional | Omit for terminal nodes. String for single next, array for branching. |
 | `remaining_visits` | optional | Loop counter — see Loop Nodes below |
+
+### Runtime Fields — Per-Node
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | `"pending" \| "in_progress" \| "completed"` | Execution status, written by the plugin (optional) |
+| `completed_at` | string (ISO 8601) | Timestamp when the node completed (optional) |
+
+> **Note:** These fields are written by the plugin at runtime and **should not be authored manually**.
 
 ## Path Resolution
 

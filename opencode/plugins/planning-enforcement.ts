@@ -11,6 +11,8 @@ interface DagNode {
   prompt: string
   next?: string | string[]
   remaining_visits?: number
+  status?: "pending" | "in_progress" | "completed"
+  completed_at?: string
 }
 
 interface PlanDag {
@@ -21,6 +23,12 @@ interface PlanDag {
   goal?: string
   entry: string
   nodes: Record<string, DagNode>
+  progress?: {
+    current_node: string
+    started_at: string
+    updated_at: string
+    completed_at?: string
+  }
 }
 
 interface DagSessionState {
@@ -101,6 +109,17 @@ function activateDag(
     updated_at: now(),
   }
   writeState(statePath, state)
+
+  // Write initial progress into plan.json (session plans only)
+  if (planPath.includes(".opencode/session-plans")) {
+    dag.progress = {
+      current_node: dag.entry,
+      started_at: now(),
+      updated_at: now(),
+    }
+    dag.nodes[dag.entry].status = "in_progress"
+    fs.writeFileSync(planPath, JSON.stringify(dag, null, 2), "utf-8")
+  }
 
   // Return prompt text as part of the tool result
   const promptText = readPrompt(entryNode.prompt, worktree)
@@ -265,9 +284,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               writeState(statePath, state)
               return `Node "${state.current_node}" has exhausted its remaining_visits. DAG status set to "failed".`
             }
-            // Write updated remaining_visits back to plan.json
             dag.nodes[state.current_node] = currentNode
-            fs.writeFileSync(state.plan_path, JSON.stringify(dag, null, 2), "utf-8")
           }
 
           // Resolve next node
@@ -283,7 +300,15 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
             nextNodeId = next
           } else {
-            // Terminal node — no next
+            // Terminal node — no next; mark departing node completed in plan.json
+            if (state.plan_path.includes(".opencode/session-plans")) {
+              dag.nodes[state.current_node].status = "completed"
+              dag.nodes[state.current_node].completed_at = now()
+              if (dag.progress) {
+                dag.progress.updated_at = now()
+              }
+              fs.writeFileSync(state.plan_path, JSON.stringify(dag, null, 2), "utf-8")
+            }
             state.status = "complete"
             state.updated_at = now()
             writeState(statePath, state)
@@ -293,6 +318,21 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const nextNode = dag.nodes[nextNodeId]
           if (!nextNode) {
             return `Next node "${nextNodeId}" not found in DAG. DAG may be malformed.`
+          }
+
+          // Update progress in plan.json (session plans only) — consolidated with remaining_visits write
+          if (state.plan_path.includes(".opencode/session-plans")) {
+            dag.nodes[state.current_node].status = "completed"
+            dag.nodes[state.current_node].completed_at = now()
+            dag.nodes[nextNodeId].status = "in_progress"
+            if (dag.progress) {
+              dag.progress.current_node = nextNodeId
+              dag.progress.updated_at = now()
+            }
+            fs.writeFileSync(state.plan_path, JSON.stringify(dag, null, 2), "utf-8")
+          } else if (typeof currentNode.remaining_visits === "number") {
+            // Non-session plan: still need to write remaining_visits
+            fs.writeFileSync(state.plan_path, JSON.stringify(dag, null, 2), "utf-8")
           }
 
           // Update state
@@ -320,6 +360,20 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           }
 
           try {
+            const state = readState(statePath)
+
+            // Write final progress into plan.json (session plans only)
+            if (state && state.plan_path && state.plan_path.includes(".opencode/session-plans") && fs.existsSync(state.plan_path)) {
+              const dag = readDag(state.plan_path)
+              if (dag.progress) {
+                dag.nodes[state.current_node].status = "completed"
+                dag.nodes[state.current_node].completed_at = now()
+                dag.progress.completed_at = now()
+                dag.progress.updated_at = now()
+                fs.writeFileSync(state.plan_path, JSON.stringify(dag, null, 2), "utf-8")
+              }
+            }
+
             fs.unlinkSync(statePath)
             return "DAG session closed. State file removed."
           } catch (err) {
