@@ -15,23 +15,24 @@
       "disable": true
     },
     "headwrench": {
-      "description": "Primary orchestrator — plans, delegates, drives sessions",
       "model": "anthropic/claude-sonnet-4-6"
     },
     "context-scout": {
-      "description": "Read-only situational awareness for pre-planning",
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "quick-doc": {
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "junior-dev": {
       "model": "anthropic/claude-haiku-4-5"
     },
     "context-insurgent": {
-      "description": "Deep multi-file exploration with sequential reasoning",
       "model": "anthropic/claude-sonnet-4-6"
     },
     "deep-researcher": {
-      "description": "Web and documentation research via exa and Context7",
       "model": "anthropic/claude-haiku-4-5"
     },
     "compaction": {
-      "description": "Context compaction handler",
       "model": "anthropic/claude-haiku-4-5"
     }
   },
