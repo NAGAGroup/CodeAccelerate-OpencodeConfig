@@ -65,6 +65,8 @@ created: YYYY-MM-DD
 active: true
 supersedes: ~
 superseded_by: ~
+freshness_sla: ~
+context_type: ~
 ---
 ```
 
@@ -80,6 +82,8 @@ created: YYYY-MM-DD
 last_reviewed: YYYY-MM-DD
 supersedes: ~
 superseded_by: ~
+freshness_sla: "30d"
+context_type: pattern
 ---
 ```
 
@@ -96,6 +100,8 @@ superseded_by: ~
 | `last_reviewed` | context | No | ISO 8601 date. Updated by `/context-audit` each time the item is reviewed. Helps identify stale files. |
 | `supersedes` | both | No | Filename of the older item this replaces. Use `~` when not applicable. Enables explicit version chains. |
 | `superseded_by` | both | No | Filename of the newer item that replaces this. Use `~` otherwise. ContextScout skips items where this is set. |
+| `freshness_sla` | both | No | Duration string indicating how long this item remains fresh before review is recommended. Values: `"7d"`, `"30d"`, `"90d"`, `"never"`, or `~` (no SLA). Checked by `/context-audit` when flagging `[CONTEXT-REVIEW]` items. |
+| `context_type` | both | No | Classifies the nature of the item. One of: `pattern`, `decision`, `convention`, `reference`, `finding`. Use `~` when not applicable. Helps ContextScout prioritize and filter during planning. |
 
 ### Backwards Compatibility
 
@@ -125,6 +131,12 @@ Context files do not expire based on age. They remain readable indefinitely unle
 1. Explicitly superseded by setting `superseded_by: new-file.md` in the header, or
 2. Deleted during a `/context-audit` review.
 
+> **Context Window Position Matters (Liu et al. 2023 — "Lost in the Middle")**
+> Research across 18 frontier models shows a 30%+ performance drop for information placed in the middle of the context window. To mitigate this:
+> - Trigger compaction **before reaching ~60% context utilization**
+> - Place critical context (active subtask file, key constraints) at the **start or end** of the loaded context, not the middle
+> - When context is near capacity, prefer fewer, higher-priority items over comprehensive coverage
+
 ### Config Files (Tier 1)
 
 No staleness mechanism. Config files are updated via protocol sessions whenever they need to change.
@@ -138,7 +150,7 @@ When two items (inbox or context) address the same topic and one supersedes the 
 1. **New item** includes `supersedes: old-item.md` in its header.
 2. **Old item** is updated to include `superseded_by: new-item.md` in its header.
 3. **ContextScout skips** items where `superseded_by:` is set to a non-tilde value.
-4. **Old item is retained** in place (not deleted) for historical reference.
+4. **Superseded inbox items are deleted** during the next `/context-audit` run — they have no retention value once a new item supersedes them. **Superseded context files (Tier 2/3) are archived** to `.opencode/archive/context/` (local) or `~/.config/opencode/archive/context/` (global) during the next `/context-audit` run — they should not remain in the active context directory once superseded.
 
 When a genuine contradiction exists (neither item is definitively correct), both items should be resolved in the same session. Write a new authoritative item that supersedes both, explaining the resolution.
 
@@ -170,7 +182,7 @@ Manual, via `/context-audit` command. You execute file moves and directory creat
 
 - Sessions with `status: in_progress` or `status: pending`
 - Inbox items (inbox is the queue; items are deactivated or promoted, not archived)
-- Context/ files (these are permanent until explicitly deleted or superseded)
+- Context/ files with `active: true` and no `superseded_by:` set (these are permanent until explicitly superseded or deleted)
 
 ---
 
@@ -187,6 +199,8 @@ When ContextScout performs situational awareness at the start of a planning sess
 - `~/.config/opencode/context/` — all global context files (Tier 2)
 - `.opencode/context/` — all local context files (Tier 3)
 - `.opencode/sessions/*/notes/` — only from sessions with `spec.json` showing `status: in_progress` or `status: pending`
+
+**Skip rule**: Within any in-scope directory, skip files where `active: false` or `superseded_by:` is set to a non-null, non-tilde value. These files are deactivated or superseded and must not be read during planning.
 
 ### Out of Scope (do not read during planning)
 
@@ -224,7 +238,7 @@ Present a numbered list of issues found. Use the following flag types:
 - `[ARCHIVE]` — Completed session `X` has `N` notes ready to archive. Indicates a completed session with notes not yet moved to archive.
 - `[RETROFIT]` — Inbox item `file.md` is missing metadata header. Indicates an item that needs YAML front-matter added.
 - `[MISCLASSIFIED]` — Inbox item `file.md` appears to be a session outcome, not a reusable pattern. Heuristic: contains single session name prominently with no generalizable rule. Should be moved to session notes or discarded.
-- `[SUPERSEDED]` — Inbox item `old.md` is marked `superseded_by: new.md`. Already handled; flagged for optional cleanup.
+- `[SUPERSEDED]` — Inbox item `old.md` is marked `superseded_by: new.md`. Already handled; flagged for deletion.
 - `[CONTEXT-REVIEW]` — Context file `file.md` has not been reviewed in >90 days (via `last_reviewed` header). Indicates files that may benefit from a refresh check.
 
 #### Step 3 — Process Inbox Queue
@@ -262,7 +276,9 @@ User approves or rejects each proposed action. You execute only approved actions
 For each approved action, you execute:
 
 - **Inbox promotion**: Create a new context/ file (global or local) with YAML header; mark the inbox item `superseded_by: <new-context-file>`.
+- **Superseded inbox deletion**: Delete inbox items marked `superseded_by:` — they have no retention value.
 - **Session archival**: Create `.opencode/archive/sessions/{session-name}/` (if needed); move the entire session directory from `.opencode/sessions/`.
+- **Context file archival**: Move superseded context files (those with `superseded_by:` set) from `context/` to `.opencode/archive/context/` (or `~/.config/opencode/archive/context/` for global files). Create the archive subdirectory if needed.
 - **Inbox retrofits**: Add YAML front-matter to files missing headers.
 - **Promoted-then-archive**: Create an inbox item for the finding, then archive the source session note.
 
