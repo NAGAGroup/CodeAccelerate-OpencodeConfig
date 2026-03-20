@@ -1,0 +1,35 @@
+{
+  "name": "config-reimplementation-research",
+  "goal": "Research and produce a design brief for re-implementing the opencode config featureset using research-backed, optimal designs unconstrained by current implementation patterns",
+  "created": "2026-03-19",
+  "status": "in_progress",
+  "currentSubtask": 0,
+  "subtaskCount": 4,
+  "circuitBreakerThreshold": 3,
+  "subtasks": [
+    {
+      "id": "01",
+      "name": "research-round-1-planning-and-session-design",
+      "description": "Research planning system design and session plan architecture — how planning modes work, what the ideal session plan structure looks like, and how a planning session produces an optimal execution plan",
+      "status": "in_progress"
+    },
+    {
+      "id": "02",
+      "name": "research-round-2-agent-and-delegation-design",
+      "description": "Research agent design patterns and delegation strategy — how to write ideal subagents, how to route tasks across agents, and how to balance speed/cost/correctness per session",
+      "status": "pending"
+    },
+    {
+      "id": "03",
+      "name": "research-round-3-supporting-infrastructure",
+      "description": "Research context management, protocol systems, skills systems, slash commands, and general UX patterns for AI coding assistants",
+      "status": "pending"
+    },
+    {
+      "id": "04",
+      "name": "synthesis",
+      "description": "HW-direct: read all round findings, compile research-brief.md and design-doc.md covering all 8 feature areas",
+      "status": "pending"
+    }
+  ]
+}
