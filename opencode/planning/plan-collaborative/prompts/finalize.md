@@ -22,13 +22,13 @@ If you find yourself writing sentences about the topic's design or answering que
 
 1. **Determine the session name** from the rough goal (lowercase, hyphenated, 2–4 words). Example: `api-design-review`.
 
-2. **Write exactly these five files** to `.opencode/session-plans/{session-name}/`:
+2. **Write files** to `.opencode/session-plans/{session-name}/`. The number of files depends on how many open questions were identified — write one `explore-NN.md` prompt file per question.
 
    ---
 
    **`.opencode/session-plans/{session-name}/plan.json`**
 
-   Exact structure — substitute session-name, goal, and today's date:
+   Write one node per open question, chained in sequence. Example for three questions — scale to match the actual question count:
 
    ```json
    {
@@ -44,13 +44,25 @@ If you find yourself writing sentences about the topic's design or answering que
          "id": "explore-01",
          "type": "agent",
          "prompt": ".opencode/session-plans/{session-name}/prompts/explore-01.md",
-         "next": ["explore-01", "spec-gate"]
+         "next": ["explore-01", "explore-02"]
+       },
+       "explore-02": {
+         "id": "explore-02",
+         "type": "agent",
+         "prompt": ".opencode/session-plans/{session-name}/prompts/explore-02.md",
+         "next": ["explore-02", "explore-03"]
+       },
+       "explore-03": {
+         "id": "explore-03",
+         "type": "agent",
+         "prompt": ".opencode/session-plans/{session-name}/prompts/explore-03.md",
+         "next": ["explore-03", "spec-gate"]
        },
        "spec-gate": {
          "id": "spec-gate",
          "type": "gate",
          "prompt": ".opencode/session-plans/{session-name}/prompts/spec-gate.md",
-         "next": ["finalize-output", "explore-01"]
+         "next": ["finalize-output", "explore-03"]
        },
        "finalize-output": {
          "id": "finalize-output",
@@ -60,6 +72,8 @@ If you find yourself writing sentences about the topic's design or answering que
      }
    }
    ```
+
+   The last explore node's `next` should point to `["explore-NN", "spec-gate"]`. Each earlier explore node points to `["explore-NN", "explore-NN+1"]` — the loop option lets the agent revisit the same question before moving on.
 
    ---
 
@@ -82,15 +96,14 @@ If you find yourself writing sentences about the topic's design or answering que
 
    ---
 
-   **`.opencode/session-plans/{session-name}/prompts/explore-01.md`**
+   **`.opencode/session-plans/{session-name}/prompts/explore-NN.md`** (one file per open question)
 
-    This prompt instructs the explore agent for the **first exploration area only** — one question, one node. Write it with:
-    - The **first open question** (the single first item from spec.md — not all of them)
-    - Instructions to **surface this question to the user and explore it collaboratively** — not to work through it autonomously. The agent asks, the user responds, the agent follows the user's lead. The agent does not produce answers unprompted.
-    - Instructions to update `spec.md` with findings as conclusions are reached, then either loop (`explore-01`) or advance (`spec-gate`)
-    - A note that **additional explore nodes should be added to `plan.json` for subsequent questions** — the agent should not cram multiple questions into this node
-    - **Delegation instructions** from the agent-routing node (embed verbatim)
-    - Advance logic: `next_step({ next: "explore-01" })` to loop, `next_step({ next: "spec-gate" })` to advance
+    Write one prompt file per open question — `explore-01.md`, `explore-02.md`, etc. Each file covers exactly one question. Write each prompt with:
+    - The **single open question this node covers** (one question only — copied from spec.md, not rephrased)
+    - Instructions to **surface this question to the user and explore it collaboratively** — the agent asks, the user responds, the agent follows the user's lead. The agent does not produce answers unprompted or work through the question autonomously.
+    - Instructions to update `spec.md` with findings as conclusions are reached
+    - **Delegation instructions** from the agent-routing node relevant to this exploration area (embed verbatim)
+    - Advance logic matching the node's `next` array in `plan.json` — loop option and advance option
     - A **`## Session Authority`** section with this exact content:
 
       ```
@@ -122,9 +135,11 @@ If you find yourself writing sentences about the topic's design or answering que
 
    Ask: "Are we ready to produce the final output, or is there more to explore?"
 
-   - If more to explore: `next_step({ next: "explore-01" })`
+   - If more to explore: `next_step({ next: "explore-NN" })` (use the last explore node ID)
    - If ready to finalize: `next_step({ next: "finalize-output" })`
    ```
+
+   Substitute the actual last explore node ID (e.g., `explore-03`) — not the literal string `explore-NN`.
 
    No delegation needed in this node — HeadWrench presents directly.
 
@@ -159,7 +174,7 @@ If you find yourself writing sentences about the topic's design or answering que
 5. **Present the seed plan** to the user:
    - Session name and goal
    - Open questions the session will explore
-   - Seed structure: explore-01 → spec-gate → finalize-output
+   - Seed structure: explore-01 → explore-02 → … → spec-gate → finalize-output (one node per open question)
    - Note: the plan is deliberately flexible — the agent will rewrite it as the session evolves
    - Next step: "Run `/activate-plan {session-name}` when ready to begin."
 
