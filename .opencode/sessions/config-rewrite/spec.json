@@ -1,0 +1,74 @@
+{
+  "name": "config-rewrite",
+  "goal": "Rewrite the entire opencode config from scratch with plugin-enforced planning, cross-session memory, typed session artifacts, and robust subagent routing — replacing all markdown-based workflows with programmatic DAG-executed equivalents.",
+  "created": "2026-03-19",
+  "status": "pending",
+  "currentSubtask": 0,
+  "subtaskCount": 9,
+  "circuitBreakerThreshold": 3,
+  "step_outputs": {},
+  "completed_steps": [],
+  "failed_steps": [],
+  "last_checkpoint": null,
+  "circuit_breaker": {
+    "consecutive_failures": 0,
+    "threshold": 3,
+    "state": "CLOSED"
+  },
+  "subtasks": [
+    {
+      "id": "01",
+      "name": "research-memory-and-plugin-api",
+      "description": "Research: memory plugins + plugin API enforcement capabilities (parallel group)",
+      "status": "pending"
+    },
+    {
+      "id": "02",
+      "name": "design-decisions",
+      "description": "Design decisions: synthesize research into architecture (HW direct, collaborative)",
+      "status": "pending"
+    },
+    {
+      "id": "03",
+      "name": "implement-opencode-json",
+      "description": "Implement: opencode.json (agents, plugins, MCPs)",
+      "status": "pending"
+    },
+    {
+      "id": "04",
+      "name": "implement-headwrench",
+      "description": "Implement: headwrench.md (new primary agent system prompt)",
+      "status": "pending"
+    },
+    {
+      "id": "05",
+      "name": "implement-slash-commands",
+      "description": "Implement: slash commands /plan-<type>",
+      "status": "pending"
+    },
+    {
+      "id": "06",
+      "name": "implement-planning-plugin",
+      "description": "Implement: planning enforcement plugin",
+      "status": "pending"
+    },
+    {
+      "id": "07",
+      "name": "implement-session-types",
+      "description": "Implement: session type protocol files and artifact schemas",
+      "status": "pending"
+    },
+    {
+      "id": "08",
+      "name": "implement-subagents",
+      "description": "Implement: subagent files (context-scout, context-insurgent, deep-researcher)",
+      "status": "pending"
+    },
+    {
+      "id": "09",
+      "name": "validation",
+      "description": "Validation: integration test + manual walkthrough",
+      "status": "pending"
+    }
+  ]
+}
