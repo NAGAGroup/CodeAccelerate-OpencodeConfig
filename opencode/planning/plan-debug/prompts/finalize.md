@@ -81,11 +81,11 @@ Your role in this node is to write the debug session plan to disk. The debug ses
 
    ---
 
-   **`prompts/diagnose.md`** — Bake in the approved hypothesis list. Instruct the agent to: try the top hypothesis (targeted code inspection or test run), write findings to `fix.md`, then route to `fix` if confirmed or back to `diagnose` if refuted.
+   **`prompts/diagnose.md`** — First line must be `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->`. Bake in the approved hypothesis list. Instruct the agent to: try the top hypothesis (targeted code inspection or test run), write findings to `fix.md`, then route to `fix` if confirmed or back to `diagnose` if refuted. Close with `## Advance`: "Call `next_step({ next: 'fix' })` when hypothesis is confirmed, or `next_step({ next: 'diagnose' })` to loop back."
 
-   **`prompts/fix.md`** — Start as a placeholder: "No fix identified yet." The agent will overwrite this file during diagnose iterations, accumulating "tried X, result Y" history.
+   **`prompts/fix.md`** — First line must be `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->`. Start as a placeholder: "No fix identified yet." The agent will overwrite this file during diagnose iterations, accumulating "tried X, result Y" history. Close with `## Advance`: "Call `next_step()` when the fix is applied."
 
-   **`prompts/verify.md`** — Instruct the agent to run the full test suite and any regression checks. If all pass: call `close_session()`. If any fail: call `next_step({ next: "diagnose" })`.
+   **`prompts/verify.md`** — First line must be `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->`. Instruct the agent to run the full test suite and any regression checks. Close with `## Advance`: "If all pass: call `close_session()`. If any fail: call `next_step({ next: 'diagnose' })`."
 
 3. **Commit**:
    ```

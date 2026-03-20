@@ -139,12 +139,13 @@ If you find yourself writing sentences about the topic's design or answering que
    **`.opencode/session-plans/{session-name}/prompts/explore-NN.md`** (one file per open question)
 
     Write one prompt file per open question — `explore-01.md`, `explore-02.md`, etc. Each file covers exactly one question. Write each prompt with:
-    - The **single open question this node covers** (one question only — copied from spec.md, not rephrased)
+     - `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->` as the first line
+     - The **single open question this node covers** (one question only — copied from spec.md, not rephrased)
     - Instructions to **surface this question to the user and explore it collaboratively** — the agent asks, the user responds, the agent follows the user's lead. The agent does not produce answers unprompted or work through the question autonomously.
     - Instructions to update `spec.md` with findings as conclusions are reached
     - **Delegation instructions** from the agent-routing node relevant to this exploration area (embed verbatim)
-    - Advance logic matching the node's `next` array in `plan.json` — loop option and advance option
-    - A **`## Session Authority`** section with this exact content:
+     - A **`## Advance`** section matching the node's `next` array in `plan.json` — include both the loop option (`next_step({ next: 'explore-NN' })`) and the advance option (`next_step({ next: 'explore-NN+1' })` or `next_step({ next: 'spec-gate' })` for the last explore node)
+     - A **`## Session Authority`** section with this exact content:
 
       ```
       ## Session Authority
@@ -167,17 +168,21 @@ If you find yourself writing sentences about the topic's design or answering que
 
    **`.opencode/session-plans/{session-name}/prompts/spec-gate.md`**
 
-   Gate prompt. Write it as:
-   ```
-   # Node: spec-gate
+    Gate prompt. Write it as:
+    ```
+    <!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->
 
-   Present the current state of `spec.md` to the user verbatim.
+    # Node: spec-gate
 
-   Ask: "Are we ready to produce the final output, or is there more to explore?"
+    Present the current state of `spec.md` to the user verbatim.
 
-   - If more to explore: `next_step({ next: "explore-NN" })` (use the last explore node ID)
-   - If ready to finalize: `next_step({ next: "finalize-output" })`
-   ```
+    Ask: "Are we ready to produce the final output, or is there more to explore?"
+
+    ## Advance
+
+    - If more to explore: `next_step({ next: "explore-NN" })` (use the last explore node ID)
+    - If ready to finalize: `next_step({ next: "finalize-output" })`
+    ```
 
    Substitute the actual last explore node ID (e.g., `explore-03`) — not the literal string `explore-NN`.
 
@@ -187,19 +192,23 @@ If you find yourself writing sentences about the topic's design or answering que
 
    **`.opencode/session-plans/{session-name}/prompts/finalize-output.md`**
 
-   Terminal prompt. Write it as:
-   ```
-   # Node: finalize-output
+    Terminal prompt. Write it as:
+    ```
+    <!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->
 
-   Write the agreed output in the format determined collaboratively during the session.
+    # Node: finalize-output
 
-   Delegation:
-   {delegation instructions from agent-routing — copied verbatim}
+    Write the agreed output in the format determined collaboratively during the session.
 
-   HeadWrench handles all shell, build, and git steps.
+    Delegation:
+    {delegation instructions from agent-routing — copied verbatim}
 
-   Call `close_session()` when output is complete.
-   ```
+    HeadWrench handles all shell, build, and git steps.
+
+    ## Advance
+
+    Call `close_session()` when output is complete.
+    ```
 
    ---
 
