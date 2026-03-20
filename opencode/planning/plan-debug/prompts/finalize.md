@@ -6,51 +6,11 @@ Your role in this node is to write the debug session plan to disk. The debug ses
 
 1. **Apply delegation instructions** — Delegation recommendations for each prompt file were established in the previous node. Use them when writing `diagnose.md`, `fix.md`, and `verify.md` — embed the appropriate delegation instructions in each.
 
-2. **Confirm diagnose loop count with the user** — Ask: "How many diagnose visits do you want for this session? (default: 3)" Accept their response or use the default. Use this count as the value for `"remaining_visits"` in the `plan.json` template below.
+2. **Confirm diagnose loop count with the user** — Ask: "How many diagnose visits do you want for this session? (default: 3)" Accept their response or use the default. Use this count as the value for `"remaining_visits"` on the `diagnose` node.
 
 3. **Write session plan files** to `.opencode/session-plans/{bug-name}/`:
 
-   **`plan.json`** — DAG with four nodes:
-   ```json
-   {
-     "schema_version": "1.0",
-     "id": "{bug-name}",
-     "session_type": "plan-debug",
-     "goal": "Fix: {one-sentence bug description}",
-     "created": "{today}",
-     "status": "ready",
-     "entry": "session-overview",
-     "nodes": {
-       "session-overview": {
-         "id": "session-overview",
-         "type": "agent",
-         "prompt": ".opencode/session-plans/{bug-name}/prompts/session-overview.md",
-         "next": "diagnose"
-       },
-        "diagnose": {
-          "id": "diagnose",
-          "type": "agent",
-          "prompt": ".opencode/session-plans/{bug-name}/prompts/diagnose.md",
-          "next": ["fix", "diagnose"],
-          "remaining_visits": 3
-        },
-       "fix": {
-         "id": "fix",
-         "type": "agent",
-         "prompt": ".opencode/session-plans/{bug-name}/prompts/fix.md",
-         "next": "verify"
-       },
-       "verify": {
-         "id": "verify",
-         "type": "agent",
-         "prompt": ".opencode/session-plans/{bug-name}/prompts/verify.md",
-         "next": ["diagnose"]
-       }
-     }
-    }
-    ```
-
-    **Recovery note:** If the diagnose loop exhausts its counter and the DAG enters `failed` state, surface this to the user and ask whether they want to continue and with how many additional diagnose visits (default: 3). If they confirm, call `reset_counters({ visits: N })` to restore the counter and resume.
+   **`plan.json`** — The schema was loaded in the previous node (`load-schema`). Use it now. The debug DAG has four nodes: `session-overview → diagnose (loop) → fix → verify`. Set `remaining_visits` on `diagnose` to the count confirmed with the user in step 2.
 
     **`prompts/session-overview.md`** — Write this file **verbatim** — do not modify, summarize, or adapt the content:
 

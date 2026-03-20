@@ -28,60 +28,7 @@ If you find yourself writing sentences about the topic's design or answering que
 
    **`.opencode/session-plans/{session-name}/plan.json`**
 
-   Write one node per open question, chained in sequence. Example for three questions — scale to match the actual question count:
-
-   ```json
-   {
-     "schema_version": "1.0",
-     "id": "{session-name}",
-     "session_type": "plan-collaborative",
-     "goal": "{goal statement — copied verbatim from seed-gate}",
-     "created": "{today YYYY-MM-DD}",
-     "status": "ready",
-     "entry": "session-overview",
-     "nodes": {
-       "session-overview": {
-         "id": "session-overview",
-         "type": "agent",
-         "prompt": ".opencode/session-plans/{session-name}/prompts/session-overview.md",
-         "next": "explore-01"
-       },
-       "explore-01": {
-         "id": "explore-01",
-         "type": "agent",
-         "prompt": ".opencode/session-plans/{session-name}/prompts/explore-01.md",
-         "next": ["explore-01", "explore-02"]
-       },
-       "explore-02": {
-         "id": "explore-02",
-         "type": "agent",
-         "prompt": ".opencode/session-plans/{session-name}/prompts/explore-02.md",
-         "next": ["explore-02", "explore-03"]
-       },
-       "explore-03": {
-         "id": "explore-03",
-         "type": "agent",
-         "prompt": ".opencode/session-plans/{session-name}/prompts/explore-03.md",
-         "next": ["explore-03", "spec-gate"]
-       },
-       "spec-gate": {
-         "id": "spec-gate",
-         "type": "gate",
-         "prompt": ".opencode/session-plans/{session-name}/prompts/spec-gate.md",
-         "next": ["finalize-output", "explore-03"]
-       },
-       "finalize-output": {
-         "id": "finalize-output",
-         "type": "agent",
-         "prompt": ".opencode/session-plans/{session-name}/prompts/finalize-output.md"
-       }
-     }
-   }
-   ```
-
-    The last explore node's `next` should point to `["explore-NN", "spec-gate"]`. Each earlier explore node points to `["explore-NN", "explore-NN+1"]` — the loop option lets the agent revisit the same question before moving on.
-
-    **Note on `remaining_visits`:** The `remaining_visits` field is **not** included in the plan.json template by default, because collaborative loops are user-driven and unbounded by design. However, if bounded looping is desired for a specific explore node, you may optionally add `"remaining_visits": {number}` to that node's definition in the plan.
+   The schema was loaded in the previous node (`load-schema`). Use it now. Write one node per open question, chained in sequence: `session-overview → explore-01 → … → explore-NN → spec-gate → finalize-output`. Each explore node's `next` is `["explore-NN", "explore-NN+1"]`; the last explore node's `next` is `["explore-NN", "spec-gate"]`. `remaining_visits` is omitted by default — collaborative loops are user-driven and unbounded — but may be added to specific explore nodes if bounded looping is desired.
 
     ---
 

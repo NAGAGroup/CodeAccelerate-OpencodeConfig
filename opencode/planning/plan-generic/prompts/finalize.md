@@ -7,7 +7,6 @@ Your role in this node is to write all session plan artifacts to disk and regist
 1. **Apply delegation assignments** — Agent routing was completed in the previous node. Use the routing table established in context to populate each subtask's `## Delegation` section. Do not re-load the skill or re-derive assignments.
 
 2. **Write session files** to `.opencode/session-plans/{session-name}/`:
-   - `index.md` — session name, goal, status, subtask table, gate locations
    - `prompts/session-overview.md` — content is decided per session (not a fixed template), but must include:
       - `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->` as the first line
       - A brief "what this session is" summary: goal, subtask count, any gates or loop nodes
@@ -17,17 +16,7 @@ Your role in this node is to write all session plan artifacts to disk and regist
      - Fully populated `## Objective`, `## Scope`, `## Constraints`, `## Todolist`, and `## Delegation` sections
      - An `## Advance` section at the end: "Call `next_step()` when this subtask is complete." For the terminal subtask: "Call `next_step()` when this subtask is complete — the DAG will detect it is terminal and prompt you to call `close_session()`."
 
-3. **Write the execution plan** to `.opencode/session-plans/{session-name}/plan.json` using the DAG schema:
-   - `entry` must be `"session-overview"`
-   - First node is `session-overview` (`type: "agent"`, prompt: `.opencode/session-plans/{session-name}/prompts/session-overview.md`, `next`: first subtask node ID)
-   - One node per subtask (`type: "agent"`)
-   - Each subtask node's `prompt` field points to the corresponding `.opencode/session-plans/{session-name}/prompts/subtask-NN-{name}.md` file
-   - Sequential `next` links; include `remaining_visits` on any loop-capable nodes
-     - **Default value**: `remaining_visits: 3`
-     - If the decompose node captured a user-confirmed visit count, use that; otherwise default to 3
-     - If a loop node exhausts its counter and the DAG enters `failed` state, surface this to the user and ask whether they want to continue and with how many additional visits (default: 3). If they confirm, call `reset_counters({ visits: N })` to restore the counter and resume
-   - Terminal node (last subtask) has no `next`
-   - Set `status: "ready"` on the plan
+3. **Write the execution plan** to `.opencode/session-plans/{session-name}/plan.json` — the schema was loaded in the previous node (`load-schema`). Use it now.
 
 4. **Commit the session**:
     ```
