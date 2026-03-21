@@ -1,16 +1,33 @@
 # CodeAccelerate-OpencodeConfig
 
-A pre-built AI agent configuration for [OpenCode](https://opencode.ai/) that gives you a structured, multi-agent development workflow — planning, debugging, research, and code editing — ready to use in any project. Ships as three profiles for different model providers: Anthropic (paid API), GitHub Copilot, and OpenCode Zen free-tier.
+A multi-agent development system for [OpenCode](https://opencode.ai/) that plans, debugs, researches, and writes code as a coordinated team — not a single general-purpose assistant.
 
-## What is this?
+You talk to one agent, **HeadWrench**. It reads your intent, delegates to the right specialist, and tracks everything across sessions so you never re-explain your codebase. Planning sessions produce structured execution plans. Debug sessions run hypothesis-driven investigations. Research sessions explore documentation and codebases in depth. All of it persists.
 
-OpenCode is an AI coding assistant that runs in your terminal. This repository is a drop-in configuration for it: a set of agents, prompts, and tool integrations that work together as a coordinated system rather than a single general-purpose assistant.
+Ships as three profiles: Anthropic (paid API), GitHub Copilot, and OpenCode Zen (free).
 
-Once set up, you interact with a primary agent called HeadWrench. It understands your intent — planning a feature, debugging a problem, exploring an idea — and routes work to the right specialized agent automatically. Sessions are persistent, and the system remembers past decisions across conversations so you're not repeating context.
+## What it looks like
+
+```
+$ ocx oc -p naga
+
+> I need to refactor the auth module to support OAuth2 in addition to API keys
+
+HeadWrench → activating generic planning...
+  → context-scout: scanning auth module structure, existing key-based flow
+  → clarify: Do you need to support all OAuth2 grant types, or just authorization code?
+
+> Just authorization code for now, and we need to keep the API key path working
+
+  → decompose: breaking into tasks...
+  → finalize: plan written to .opencode/plans/plan-generic-20260321.json
+
+Plan ready — 6 tasks across 3 agents. Run /activate-plan to start execution.
+```
 
 ## Quick Start
 
-Install OCX:
+Install OCX and add the registry:
 
 ```sh
 curl -fsSL https://ocx.kdco.dev/install.sh | sh
@@ -18,7 +35,7 @@ ocx init --global
 ocx registry add https://ocx-registry.nagagroup.workers.dev --name naga-group --global
 ```
 
-Pick a profile and install it:
+Pick a profile:
 
 ```sh
 ocx profile add naga --global --source naga-group/ocx-default         # Anthropic (paid API)
@@ -26,33 +43,49 @@ ocx profile add naga-copilot --global --source naga-group/ocx-copilot # GitHub C
 ocx profile add naga-free --global --source naga-group/ocx-free       # OpenCode Zen free-tier
 ```
 
-Then launch with your chosen profile:
+Launch:
 
 ```sh
 ocx oc -p naga
-# or: ocx oc -p naga-copilot
-# or: ocx oc -p naga-free
 ```
 
-## Features
+## How it works
 
-**Planning modes.** There are three ways to start a planning session. Generic planning walks you through scoping a feature, refactor, or migration with guided questions before producing a structured execution plan. Debug planning takes a bug report and works through a hypothesis-driven investigation to produce a diagnosis and fix plan. Collaborative planning is for open-ended exploration — you describe an idea, the system asks questions, and together you shape it into something actionable.
+HeadWrench is the primary orchestrator. Every message goes through it first. Based on what you're asking, it routes work to specialized agents:
 
-**Activate a plan.** Once a plan exists, you can resume it in a later session and execute it step by step. The system tracks where you are and picks up where you left off.
+- **context-scout** — reads and maps codebases, gathers structural context before any changes happen
+- **context-insurgent** — deep-dives into specific files and logic paths when the scout's overview isn't enough
+- **junior-dev** — executes targeted code edits under HeadWrench's direction
+- **deep-researcher** — searches external documentation, APIs, and references via web and MCP tools
+- **quick-doc** — generates documentation from code and context
 
-**Agent delegation.** You don't need to think about which agent to use. HeadWrench, the primary orchestrator, reads what you're asking and dispatches work to the right specialist — whether that's deep codebase research, a targeted code edit, or external documentation lookup.
+You don't pick agents. HeadWrench does, based on what the current task needs.
 
-**Cross-session memory.** The system maintains a memory layer across sessions. Decisions, findings, and context from past conversations are available in future ones, so you're not re-explaining your codebase every time.
+A **memory layer** runs alongside everything. Decisions, findings, and context from past sessions carry forward automatically — start a new session tomorrow and the system already knows what you decided yesterday.
 
-**Configuration.** Models, MCP servers, and agent behavior are all controlled through the installed profile's `opencode.jsonc`. The default model assignments reflect the chosen profile's provider — swap them out for whatever models you use. You can also enable or disable the Exa web-search integration and adjust per-agent settings without touching any prompts.
+## Planning modes
+
+| Mode | Trigger | What it does |
+|---|---|---|
+| **Generic** | `/plan-generic` | Scopes a feature, refactor, or migration through guided questions → structured execution plan |
+| **Debug** | `/plan-debug` | Takes a bug report → hypothesis-driven investigation → diagnosis and fix plan |
+| **Collaborative** | `/plan-collaborative` | Open-ended exploration → the system asks questions, you shape an idea into something actionable together |
+| **Deep Research** | `/plan-deep-research` | Researches a topic across docs, code, and the web → synthesized findings |
+| **Deep Review** | `/plan-deep-review` | Reviews code or architecture in depth → structured critique and recommendations |
+
+Once a plan exists, `/activate-plan` picks it up and executes it step by step. Plans persist across sessions — come back later and continue where you left off.
+
+## Configuration
+
+Models, MCP servers, and agent behavior are controlled through the profile's `opencode.jsonc`. The defaults reflect each profile's provider. You can swap models, enable or disable the Exa web-search integration, and adjust per-agent settings without touching any prompts.
 
 ## Documentation
 
-- [Getting Started](docs/getting-started.md) — Installation, prerequisites, and first-time setup
-- [Planning](docs/planning.md) — The three planning modes and how to use them
+- [Getting Started](docs/getting-started.md) — Installation, prerequisites, first-time setup
+- [Planning](docs/planning.md) — Planning modes and how to use them
 - [Agents](docs/agents.md) — What each agent does and when it runs
-- [Configuration](docs/configuration.md) — Customizing models, MCP servers, and agent behavior
-- [Commands](docs/commands.md) — Available commands and how to trigger them
+- [Configuration](docs/configuration.md) — Models, MCP servers, agent behavior
+- [Commands](docs/commands.md) — Available commands
 
 ## License
 
