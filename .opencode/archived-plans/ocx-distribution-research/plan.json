@@ -16,7 +16,9 @@
           "desc": "Begin research iterations",
           "choose_when": "Session overview complete"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T04:07:52.809Z"
     },
     "research-execute": {
       "id": "research-execute",
@@ -32,7 +34,9 @@
           "choose_when": "Loop counter exhausted or research complete"
         }
       },
-      "remaining_visits": 5
+      "remaining_visits": 4,
+      "status": "completed",
+      "completed_at": "2026-03-21T04:11:56.581Z"
     },
     "synthesis-gate": {
       "id": "synthesis-gate",
@@ -47,7 +51,8 @@
           "desc": "Advance to write final report",
           "choose_when": "Research complete, ready to write"
         }
-      }
+      },
+      "status": "in_progress"
     },
     "report-write": {
       "id": "report-write",
@@ -65,5 +70,10 @@
       "type": "agent",
       "prompt": ".opencode/session-plans/ocx-distribution-research/prompts/finalize-output.md"
     }
+  },
+  "progress": {
+    "current_node": "synthesis-gate",
+    "started_at": "2026-03-21T04:07:46.539Z",
+    "updated_at": "2026-03-21T04:11:56.581Z"
   }
 }
