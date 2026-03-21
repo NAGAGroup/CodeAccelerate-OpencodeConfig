@@ -1,6 +1,6 @@
 # Configuration
 
-All configuration lives in `opencode.json`. If you followed the setup guide, this file is at `~/.config/opencode/opencode.json` — which is the `opencode/opencode.json` file from this repository.
+All configuration lives in `opencode.jsonc`. After installing a profile, this file is at `~/.config/opencode/profiles/<name>/opencode.jsonc` — where `<name>` is the profile you installed (`naga`, `naga-copilot`, or `naga-free`).
 
 Edit this file directly to customize models, MCP servers, and agent behavior.
 

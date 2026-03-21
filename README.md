@@ -1,6 +1,6 @@
 # CodeAccelerate-OpencodeConfig
 
-A pre-built AI agent configuration for [OpenCode](https://opencode.ai/) that gives you a structured, multi-agent development workflow — planning, debugging, research, and code editing — ready to use in any project.
+A pre-built AI agent configuration for [OpenCode](https://opencode.ai/) that gives you a structured, multi-agent development workflow — planning, debugging, research, and code editing — ready to use in any project. Ships as three profiles for different model providers: Anthropic (paid API), GitHub Copilot, and OpenCode Zen free-tier.
 
 ## What is this?
 
@@ -10,21 +10,29 @@ Once set up, you interact with a primary agent called HeadWrench. It understands
 
 ## Quick Start
 
-```bash
-git clone https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig
+Install OCX:
+
+```sh
+curl -fsSL https://ocx.kdco.dev/install.sh | sh
+ocx init --global
+ocx registry add https://ocx-registry.nagagroup.workers.dev --name naga-group --global
 ```
 
-Then copy or symlink the `opencode/` directory to OpenCode's config location:
+Pick a profile and install it:
 
-```bash
-# Symlink (recommended — keeps it in sync with the repo)
-ln -s /path/to/CodeAccelerate-OpencodeConfig/opencode ~/.config/opencode
-
-# Or copy if you prefer a standalone setup
-cp -r /path/to/CodeAccelerate-OpencodeConfig/opencode ~/.config/opencode
+```sh
+ocx profile add naga --global --source naga-group/ocx-default         # Anthropic (paid API)
+ocx profile add naga-copilot --global --source naga-group/ocx-copilot # GitHub Copilot
+ocx profile add naga-free --global --source naga-group/ocx-free       # OpenCode Zen free-tier
 ```
 
-Then open a terminal in any project and run `opencode`.
+Then launch with your chosen profile:
+
+```sh
+ocx oc -p naga
+# or: ocx oc -p naga-copilot
+# or: ocx oc -p naga-free
+```
 
 ## Features
 
@@ -36,7 +44,7 @@ Then open a terminal in any project and run `opencode`.
 
 **Cross-session memory.** The system maintains a memory layer across sessions. Decisions, findings, and context from past conversations are available in future ones, so you're not re-explaining your codebase every time.
 
-**Configuration.** Models, MCP servers, and agent behavior are all controlled through `opencode.json`. The default model assignments are what the maintainer uses personally — swap them out for whatever providers you use. You can also enable or disable the Exa web-search integration and adjust per-agent settings without touching any prompts.
+**Configuration.** Models, MCP servers, and agent behavior are all controlled through the installed profile's `opencode.jsonc`. The default model assignments reflect the chosen profile's provider — swap them out for whatever models you use. You can also enable or disable the Exa web-search integration and adjust per-agent settings without touching any prompts.
 
 ## Documentation
 

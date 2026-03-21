@@ -2,36 +2,39 @@
 
 ## Install
 
-Clone the repo:
+Install OCX:
 
 ```sh
-git clone https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig
+curl -fsSL https://ocx.kdco.dev/install.sh | sh
+ocx init --global
+ocx registry add https://ocx-registry.nagagroup.workers.dev --name naga-group --global
 ```
 
-## Configure
+## Profile
 
-Symlink `opencode/` to your OpenCode config directory (recommended — keeps your config in sync with upstream):
+Pick a profile and install it globally. Three options — choose the one that matches your model provider:
 
 ```sh
-ln -s /path/to/CodeAccelerate-OpencodeConfig/opencode ~/.config/opencode
+ocx profile add naga --global --source naga-group/ocx-default         # Anthropic (paid API)
+ocx profile add naga-copilot --global --source naga-group/ocx-copilot # GitHub Copilot
+ocx profile add naga-free --global --source naga-group/ocx-free       # OpenCode Zen free-tier
 ```
-
-Or copy it if you prefer a local snapshot:
-
-```sh
-cp -r /path/to/CodeAccelerate-OpencodeConfig/opencode ~/.config/opencode
-```
-
-> If `~/.config/opencode` already exists, back it up or remove it first.
 
 ## API Keys
 
-Make sure you have API keys set for whatever model providers are referenced in `opencode.json`. The config ships with specific model choices — swap them out freely if you use different providers.
+What each profile requires:
+- **naga** — Anthropic API key (`ANTHROPIC_API_KEY`)
+- **naga-copilot** — GitHub Copilot subscription (no API key needed)
+- **naga-free** — Nothing required; uses OpenCode Zen free-tier models
 
 ## Run
 
+Launch with your chosen profile:
+
 ```sh
-opencode
+ocx oc -p naga
+# or: ocx oc -p naga-copilot
+# or: ocx oc -p naga-free
 ```
 
-That's it. Run `opencode` from any project directory and the config is picked up automatically.
+Run this from any project directory — the profile is picked up automatically.
