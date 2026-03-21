@@ -53,6 +53,8 @@ During clarify, proactively identify which steps in the planned review session w
 - Questions must be about *how* to structure the session, not *what* the code does.
 - Ask in priority order; skip categories already made clear by flags or prior responses.
 
+You are in a loop node. You have ONE action: identify the single most important session-design question using the `question` tool, then call `next_step()` immediately. Do NOT ask more than one question. Do NOT analyze code or produce findings. After calling `next_step()`, stop — the DAG determines whether to loop again or advance. You MUST NOT make that determination yourself.
+
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

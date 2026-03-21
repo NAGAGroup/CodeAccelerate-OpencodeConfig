@@ -28,7 +28,9 @@ Then present a brief overview:
 - Do NOT execute any fixes — structure and summarize only
 - Do NOT ask clarifying questions — surface open questions or ambiguities in the summary text, then advance immediately
 - Groups must be concrete and independently fixable
+- You MUST NOT propose solutions or implementation approaches of any kind.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

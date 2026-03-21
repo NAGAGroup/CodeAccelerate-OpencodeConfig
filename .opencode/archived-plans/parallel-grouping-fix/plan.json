@@ -16,7 +16,9 @@
           "desc": "Proceed to update core planning docs in parallel",
           "choose_when": "Session overview has been read and internalized"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T12:19:40.364Z"
     },
     "subtask-01-update-planning-docs": {
       "id": "subtask-01-update-planning-docs",
@@ -27,12 +29,22 @@
           "desc": "Proceed to update delegation skill",
           "choose_when": "All three parallel QuickDoc edits have returned and been confirmed"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T12:21:14.867Z"
     },
     "subtask-02-update-delegation-skill": {
       "id": "subtask-02-update-delegation-skill",
       "type": "agent",
-      "prompt": ".opencode/session-plans/parallel-grouping-fix/prompts/subtask-02-update-delegation-skill.md"
+      "prompt": ".opencode/session-plans/parallel-grouping-fix/prompts/subtask-02-update-delegation-skill.md",
+      "status": "completed",
+      "completed_at": "2026-03-21T12:21:40.575Z"
     }
+  },
+  "progress": {
+    "current_node": "subtask-02-update-delegation-skill",
+    "started_at": "2026-03-21T12:19:32.820Z",
+    "updated_at": "2026-03-21T12:21:40.575Z",
+    "completed_at": "2026-03-21T12:21:40.575Z"
   }
 }

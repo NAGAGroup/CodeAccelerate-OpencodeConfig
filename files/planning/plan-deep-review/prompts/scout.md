@@ -42,7 +42,9 @@ Return findings as a structured list or table with:
 - Do NOT synthesize or analyze findings here — scouts report observations, not conclusions
 - Do NOT start filtering or prioritizing — that happens at `synthesize`
 - Scouts return findings to HeadWrench; they do not perform additional reasoning
+- You MUST NOT propose solutions or implementation approaches of any kind.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

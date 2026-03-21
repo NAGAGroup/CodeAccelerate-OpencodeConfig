@@ -26,4 +26,4 @@ Ask the user to confirm or correct the scope and flags. If they confirm, proceed
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

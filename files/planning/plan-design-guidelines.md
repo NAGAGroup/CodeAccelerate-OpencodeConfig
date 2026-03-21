@@ -125,7 +125,26 @@ Before finalizing a loop node:
 - **Looping without cap:** A loop node without `remaining_visits` risks infinite loops.
 - **Multiple loop branches:** If two different branches both lead back, the exit condition is unclear.
 - **Hidden loops:** A step that implicitly repeats via back-and-forth agent dispatch without a declared loop node.
-- **Loop + terminal on same node:** A node cannot have both a loop `next` and no `next` (terminal).
+- **Loop + terminal on same node:** A node cannot have both a loop `next` and no `next` (terminal). This is the single most common planning mistake. **The mandatory fix:** add a dedicated terminal node (e.g., `close`) with no `next` field. The loop node's exit branch points to `close`. Example:
+
+  ```json
+  "verify": {
+    "next": {
+      "close": { "desc": "All checks pass", "choose_when": "Verified" },
+      "fix":   { "desc": "Re-run fix",       "choose_when": "Checks failed" }
+    },
+    "remaining_visits": 3
+  },
+  "close": {
+    "id": "close",
+    "type": "agent",
+    "prompt": "prompts/close.md"
+  }
+  ```
+
+  Never omit `next` from a loop node to "make it terminal." That is structurally invalid.
+
+- **Build/test subtask without a loop node:** Any subtask that (a) writes code AND (b) runs a build or test suite is **automatically** a loop node candidate. Do not represent fix-verify cycles as two sequential non-looping nodes. The verify node must loop back to fix, and a separate `close`/`complete` terminal node must follow the loop.
 
 #### Asking the User About `remaining_visits`
 
@@ -144,6 +163,31 @@ If the user does not respond, use 3.
 Surface the **full picture** to the user at the gate. Run `agent-routing` before any gate node (`review-gate`, `seed-gate`, `research-gate`) so the user approves a complete plan — including agent delegation assignments — not just the task list.
 
 **Exception:** The Debug planning gate (`hypothesis-gate`) is about hypothesis confidence, not plan approval. In that workflow, `agent-routing` runs after the gate.
+
+### Parallel Work Grouping
+
+Parallel subagent dispatches must happen **within a single subtask node**, not across multiple DAG nodes. The DAG plugin executes nodes sequentially — there is no mechanism for two nodes to run simultaneously.
+
+**The rule:** When multiple agents will be dispatched in parallel (e.g., three @JuniorDev agents editing three files), group all of them into a single subtask node. That node's prompt instructs the agent to dispatch all agents in one response, wait for all to return, then call `next_step()`.
+
+**Bad — separate nodes per parallel task:**
+```json
+"subtask-01-edit-foo": { ... "next": { "subtask-02-edit-bar": { ... } } },
+"subtask-02-edit-bar": { ... "next": { "subtask-03-edit-baz": { ... } } }
+```
+(This runs sequentially — each file edit waits for the previous one to finish.)
+
+**Good — one node for all parallel work:**
+```json
+"subtask-01-parallel-edits": {
+  "id": "subtask-01-parallel-edits",
+  "type": "agent",
+  "prompt": "prompts/subtask-01-parallel-edits.md"
+}
+```
+(The prompt instructs: dispatch @JuniorDev for foo.ts, @JuniorDev for bar.ts, and @JuniorDev for baz.ts simultaneously. Wait for all three. Then `next_step()`.)
+
+The distinction: **parallelism is intra-node** (one agent dispatches N subagents in one response). It is never inter-node (N nodes running at the same time).
 
 ### Hardcoded Node IDs in Prompts
 
@@ -262,7 +306,7 @@ This is the canonical schema for all `plan.json` execution DAG files produced by
 {
   "schema_version": "1.0",
   "id": "{session-name}",
-  "session_type": "plan-generic | plan-debug | plan-collaborative | plan-deep-research",
+  "session_type": "plan-generic | plan-debug | plan-collaborative | plan-deep-research | plan-deep-review",
   "goal": "{one-sentence goal — optional but recommended}",
   "created": "{today YYYY-MM-DD}",
   "status": "ready",
@@ -275,7 +319,7 @@ This is the canonical schema for all `plan.json` execution DAG files produced by
 |---|---|---|
 | `schema_version` | ✅ | Always `"1.0"` |
 | `id` | ✅ | Matches the session name (directory name under `.opencode/session-plans/`) |
-| `session_type` | ✅ | One of `plan-generic`, `plan-debug`, `plan-collaborative`, `plan-deep-research` |
+| `session_type` | ✅ | One of `plan-generic`, `plan-debug`, `plan-collaborative`, `plan-deep-research`, `plan-deep-review` |
 | `goal` | optional | Human-readable goal statement |
 | `created` | optional | ISO date `YYYY-MM-DD` |
 | `status` | ✅ | Set to `"ready"` when writing the plan |

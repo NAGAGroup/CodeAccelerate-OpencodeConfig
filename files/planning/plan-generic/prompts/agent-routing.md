@@ -9,6 +9,8 @@ Your role in this node is to assign an agent and model to every subtask in the s
    - Default to `@ContextScout` (haiku) for mechanical reads and quick inspection tasks
    - Use `@ContextInsurgent` (sonnet) only when deep multi-file analysis is genuinely required
    - Use `@JuniorDev` (haiku) for all scoped code edits — prefer parallelism over sequential single-agent work
+
+     > **Parallel = intra-node:** When routing multiple independent @JuniorDev (or @QuickDoc) tasks as parallel, they must be grouped into a **single subtask node** in the generated plan. That node's prompt dispatches all agents simultaneously. Do NOT produce one subtask node per agent — the DAG does not support parallel node execution.
    - Use `@QuickDoc` (haiku) for single-file documentation tasks
    - HeadWrench handles all shell, build, test, and git directly — never delegate these
 

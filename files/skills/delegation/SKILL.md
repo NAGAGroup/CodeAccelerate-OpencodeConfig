@@ -58,6 +58,7 @@ Apply this skill during planning to assign the correct agent and model tier to e
 - Do **not** re-delegate
 - Does not compile, test, or verify its own output — HW handles that
 - **If the task requires complex reasoning or judgment** → HW handles directly. Output tokens are cheap; HW having full context is worth more than the token savings.
+- **One node per parallel batch:** When routing multiple independent tasks as parallel (e.g., `@JuniorDev (parallel × 3)`), they must be grouped into a **single subtask node** in the generated `plan.json`. That node's prompt dispatches all agents simultaneously in one response, waits for all to return, then calls `next_step()`. Do NOT produce one subtask node per parallel agent — the DAG plugin executes nodes sequentially and has no mechanism for parallel node execution.
 
 ### @QuickDoc
 **Use when:** writing a single document, updating documentation, making targeted edits to existing docs.

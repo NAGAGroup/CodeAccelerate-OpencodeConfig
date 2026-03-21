@@ -24,7 +24,9 @@ Your role in this node is to route each finding group from synthesis to the appr
 - Escalate to HeadWrench only for work requiring shell access, build modifications, cross-project impact, or security judgment.
 - Do not write or execute any fixes in this node — routing decisions only.
 - Do not call the delegation skill to perform fixes; use it only to guide routing decisions.
+- You MUST NOT propose solutions or implementation approaches of any kind.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

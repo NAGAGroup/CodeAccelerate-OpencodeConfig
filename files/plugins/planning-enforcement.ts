@@ -279,6 +279,33 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
+      // ── plan_deep_review ─────────────────────────────────────────────────
+      plan_deep_review: tool({
+        description:
+          "Start a /plan-deep-review planning session. Reads the plan-deep-review DAG and activates the deep review planning workflow for the current session.",
+        args: {},
+        async execute(_args, context) {
+          const planPath = path.join(
+            CONFIG_ROOT,
+            "planning",
+            "plan-deep-review",
+            "plan.json",
+          );
+          try {
+            const dag = readDag(planPath);
+            return activateDag(
+              dag,
+              planPath,
+              context.sessionID,
+              context.worktree,
+            );
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            return `Error activating plan-deep-review: ${msg}`;
+          }
+        },
+      }),
+
       // ── activate_plan ─────────────────────────────────────────────────────
       activate_plan: tool({
         description:

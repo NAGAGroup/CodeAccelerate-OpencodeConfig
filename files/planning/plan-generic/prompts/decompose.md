@@ -12,6 +12,11 @@ Your role in this node is to produce a concrete, ordered subtask breakdown from 
 
     Sizing: minimum 3 todos, maximum 8. Fold tiny tasks into adjacent subtasks. Split large tasks.
     Ordering: dependencies first; deletions before edits that reference deleted content.
+    **Parallel work grouping** — When multiple independent tasks will be delegated to the same agent type simultaneously (e.g., three @JuniorDev edits to three different files), group them into a **single subtask node**. The prompt for that node instructs the executing agent to dispatch all subagents in one response and wait for all to return. Do NOT create one subtask node per parallel agent — the DAG is sequential; "parallel subtask nodes" is not a valid concept.
+
+    Self-check before finalizing the subtask list:
+    - Does any set of subtasks represent work that should run simultaneously? → Collapse them into one node.
+    - Does any subtask say "dispatch @JuniorDev for X" and the next subtask say "dispatch @JuniorDev for Y" where X and Y are independent? → These belong in one node.
 
 2. **Identify loop-capable nodes and confirm `remaining_visits`** — Break this into two sub-steps:
 

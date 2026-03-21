@@ -41,4 +41,4 @@ This is a gate node. Your role is to present a complete **fix session design** a
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Present the complete fix plan to the user. Then stop and wait. Do NOT call `next_step()` until the user has provided an explicit approval or redirect response. Do NOT infer approval from silence or partial responses. When the user responds, call `next_step({ next: "chosen-branch-id" })` exactly once with the branch the user selected.

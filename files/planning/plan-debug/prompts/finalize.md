@@ -11,14 +11,19 @@ Your role in this node is to write the debug execution session plan to disk. The
 3. **Determine the session shape** from context (confirm-mode answer):
 
    **With confirmation (confirm-mode: yes):**
-   - DAG: `session-overview → diagnose → hypothesis-gate (gate: ["fix","diagnose"]) → fix → verify → [loop back to diagnose or close]`
+   - DAG: `session-overview → diagnose → hypothesis-gate (gate) → fix → verify → [loop back to diagnose OR advance to close]`
    - `diagnose` has `next: ["hypothesis-gate"]`
-   - `verify` has `next: ["diagnose"]` with `remaining_visits` as confirmed, or omit `next` to make it terminal with a manual close
+   - `hypothesis-gate` has `next: ["fix", "diagnose"]`
+   - `verify` has `next: { "diagnose": { loop back }, "close": { all checks pass } }` with `remaining_visits` as confirmed
+   - `close` has NO `next` field — it is the terminal node
 
    **Without confirmation (confirm-mode: no):**
-   - DAG: `session-overview → diagnose → fix → verify → [loop back to diagnose or close]`
+   - DAG: `session-overview → diagnose → fix → verify → [loop back to diagnose OR advance to close]`
    - `diagnose` has `next: ["fix"]`
-   - `verify` has `next: ["diagnose"]` with `remaining_visits` as confirmed, or omit `next`
+   - `verify` has `next: { "diagnose": { loop back }, "close": { all checks pass } }` with `remaining_visits` as confirmed
+   - `close` has NO `next` field — it is the terminal node
+
+   > **Critical:** `verify` MUST NOT be made terminal by omitting its `next` field. `verify` is a loop node — it always has two branches: a back-loop and an exit to `close`. The `close` node is the only terminal node. This is non-negotiable.
 
 4. **Generate a session-specific `session-overview.md`** — Do NOT copy a static template. Generate it dynamically. It must include:
    - `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->` as the first line
@@ -80,8 +85,25 @@ Your role in this node is to write the debug execution session plan to disk. The
 
    Do NOT run additional commands. Do NOT take any other action. Do NOT interpret results beyond the pass/fail criteria below.
 
-   **If all steps pass:** Call `close_session()` exactly once. Stop.
-   **If any step fails:** Call `next_step()` exactly once. Stop. Do NOT attempt to fix anything here — that is the diagnose node's job.
+   **If all steps pass:** Call `next_step({ next: "close" })` exactly once. Stop.
+   **If any step fails:** Call `next_step({ next: "diagnose" })` exactly once. Stop. Do NOT attempt to fix anything here — that is the diagnose node's job.
+   ```
+
+   **`prompts/close.md`** — First line: `<!-- DO NOT COMPACT THIS NODE -->`. Terminal node — no fix work, just confirmation:
+
+   ```
+   # Node: close
+
+   All verification checks passed. The bug is resolved.
+
+   Present a brief summary to the user:
+   - Bug that was fixed
+   - What changed (from the fix.md history)
+   - Acceptance criteria met
+
+   ## Advance
+
+   Call `close_session()` exactly once. Do NOT call `next_step()` — this is a terminal node. Do NOT take any other action.
    ```
 
 6. **Commit**:

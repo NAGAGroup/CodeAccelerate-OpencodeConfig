@@ -31,10 +31,6 @@ A deep research planning session produces a structured research execution plan. 
 - Your job is to design the session, not to conduct it
 - **You are a planner, not an executor — never conduct the research being planned**
 
-## How to Advance Through Your Planning Tasks
+## Advance
 
-Just like the session plan you'll be creating, your current session is itself a built-in plan artifact. To advance through the planning process:
-
-- **Call `next_step()`** once you've completed the current task node (in this case, after you've read this session overview)
-- The tool call will provide you with options of node names you can advance to
-- Typically, there is only one option. If presented with multiple, think carefully about which you'll advance to. Usually, multiple nodes indicate a looping option, but can also mean a branching option.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.
