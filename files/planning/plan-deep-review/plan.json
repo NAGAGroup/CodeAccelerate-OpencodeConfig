@@ -9,7 +9,7 @@
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/session-overview.md",
+      "prompt": "planning/plan-deep-review/prompts/session-overview.md",
       "next": {
         "load-guidelines": {
           "desc": "Load plan design guidelines",
@@ -20,7 +20,7 @@
     "load-guidelines": {
       "id": "load-guidelines",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
+      "prompt": "planning/plan-design-guidelines.md",
       "next": {
         "scout": {
           "desc": "Dispatch scouts to gather review context",
@@ -31,7 +31,7 @@
     "review-intake": {
       "id": "review-intake",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/review-intake.md",
+      "prompt": "planning/plan-deep-review/prompts/review-intake.md",
       "next": {
         "clarify": {
           "desc": "Ask clarifying questions to refine scope",
@@ -42,7 +42,7 @@
     "clarify": {
       "id": "clarify",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/clarify.md",
+      "prompt": "planning/plan-deep-review/prompts/clarify.md",
       "next": {
         "agent-routing": {
           "desc": "Proceed to agent routing",
@@ -57,7 +57,7 @@
     "scout": {
       "id": "scout",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/scout.md",
+      "prompt": "planning/plan-deep-review/prompts/scout.md",
       "next": {
         "review-intake": {
           "desc": "Proceed to review intake",
@@ -68,7 +68,7 @@
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/agent-routing.md",
+      "prompt": "planning/plan-deep-review/prompts/agent-routing.md",
       "next": {
         "review-gate": {
           "desc": "Present plan for user approval",
@@ -79,7 +79,7 @@
     "review-gate": {
       "id": "review-gate",
       "type": "gate",
-      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/review-gate.md",
+      "prompt": "planning/plan-deep-review/prompts/review-gate.md",
       "next": {
         "finalize": {
           "desc": "Generate fix session plan",
@@ -94,7 +94,7 @@
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/finalize.md"
+      "prompt": "planning/plan-deep-review/prompts/finalize.md"
     }
   }
 }

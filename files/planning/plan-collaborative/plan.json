@@ -8,31 +8,31 @@
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/session-overview.md",
+      "prompt": "planning/plan-collaborative/prompts/session-overview.md",
       "next": "load-guidelines"
     },
     "load-guidelines": {
       "id": "load-guidelines",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
+      "prompt": "planning/plan-design-guidelines.md",
       "next": "scout"
     },
     "scout": {
       "id": "scout",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/scout.md",
+      "prompt": "planning/plan-collaborative/prompts/scout.md",
       "next": "idea-intake"
     },
     "idea-intake": {
       "id": "idea-intake",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/idea-intake.md",
+      "prompt": "planning/plan-collaborative/prompts/idea-intake.md",
       "next": "clarify"
     },
     "clarify": {
       "id": "clarify",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/clarify.md",
+      "prompt": "planning/plan-collaborative/prompts/clarify.md",
       "next": {
         "clarify": {
           "desc": "Continue gathering session-design context",
@@ -47,13 +47,13 @@
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/agent-routing.md",
+      "prompt": "planning/plan-collaborative/prompts/agent-routing.md",
       "next": "seed-gate"
     },
     "seed-gate": {
       "id": "seed-gate",
       "type": "gate",
-      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/seed-gate.md",
+      "prompt": "planning/plan-collaborative/prompts/seed-gate.md",
       "next": {
         "finalize": {
           "desc": "Approve and write the seed plan",
@@ -68,7 +68,7 @@
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/finalize.md"
+      "prompt": "planning/plan-collaborative/prompts/finalize.md"
     }
   }
 }

@@ -11,7 +11,7 @@
   "version": "2.0.0",
   "author": "Jack Myers",
   // Compatibility versions
-  "opencode": "1.0.0", // Minimum OpenCode version required
+  "opencode": "1.27.0", // Minimum OpenCode version required
   "ocx": "1.0.16", // Minimum OCX CLI version required
   "components": [
     // Add your components here
@@ -24,15 +24,11 @@
     //   - bundle    - Collections of related components
     //   - profile   - Shareable profile configuration
     {
-      "name": "ocx-plugins",
-      "type": "plugin",
+      "name": "ocx-tools",
+      "type": "tool",
       "description": "NAGAGroup's plugins",
       "files": [
-        {
-          "path": "plugins/package.json",
-          "target": "plugins/package.json"
-        },
-        "plugins/planning-enforcement.ts",
+        "plugins/planning-enforcement.js",
         "planning/plan-collaborative/plan.json",
         "planning/plan-collaborative/prompts/agent-routing.md",
         "planning/plan-collaborative/prompts/clarify.md",
@@ -104,13 +100,13 @@
         "skills/hello-world/SKILL.md"
       ],
       "dependencies": [
-        "ocx-plugins"
+        "ocx-tools"
       ]
     },
     {
       "name": "ocx-default",
       "type": "profile",
-      "description": "NAGAGroup's base opencode distro files",
+      "description": "NAGAGroup's default profile (Anthropic)",
       "files": [
         {
           "path": "profiles/default/opencode.jsonc",
@@ -126,9 +122,27 @@
       ]
     },
     {
+      "name": "ocx-copilot",
+      "type": "profile",
+      "description": "NAGAGroup's copilot profile",
+      "files": [
+        {
+          "path": "profiles/copilot/opencode.jsonc",
+          "target": "opencode.jsonc"
+        },
+        {
+          "path": "profiles/copilot/ocx.jsonc",
+          "target": "ocx.jsonc"
+        }
+      ],
+      "dependencies": [
+        "ocx-bundle"
+      ]
+    },
+    {
       "name": "ocx-free",
       "type": "profile",
-      "description": "NAGAGroup's base opencode distro files",
+      "description": "NAGAGroup's free config (using Opencode Zen)",
       "files": [
         {
           "path": "profiles/free/opencode.jsonc",

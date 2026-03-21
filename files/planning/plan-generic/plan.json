@@ -8,7 +8,7 @@
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-generic/prompts/session-overview.md",
+      "prompt": "planning/plan-generic/prompts/session-overview.md",
       "next": {
         "load-guidelines": {
           "desc": "Load the plan design guidelines and schema reference.",
@@ -19,7 +19,7 @@
     "load-guidelines": {
       "id": "load-guidelines",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
+      "prompt": "planning/plan-design-guidelines.md",
       "next": {
         "scout": {
           "desc": "Dispatch parallel scouts to explore the codebase.",
@@ -30,7 +30,7 @@
     "task-intake": {
       "id": "task-intake",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-generic/prompts/task-intake.md",
+      "prompt": "planning/plan-generic/prompts/task-intake.md",
       "next": {
         "clarify": {
           "desc": "Begin asking targeted clarifying questions.",
@@ -41,7 +41,7 @@
     "clarify": {
       "id": "clarify",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-generic/prompts/clarify.md",
+      "prompt": "planning/plan-generic/prompts/clarify.md",
       "next": {
         "synthesize": {
           "desc": "Synthesize scout findings into a coherent codebase understanding.",
@@ -56,7 +56,7 @@
     "synthesize": {
       "id": "synthesize",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-generic/prompts/synthesize.md",
+      "prompt": "planning/plan-generic/prompts/synthesize.md",
       "next": {
         "decompose": {
           "desc": "Break the work into concrete, ordered subtasks.",
@@ -67,7 +67,7 @@
     "scout": {
       "id": "scout",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-generic/prompts/scout.md",
+      "prompt": "planning/plan-generic/prompts/scout.md",
       "next": {
         "task-intake": {
           "desc": "Capture and clarify the task description.",
@@ -78,7 +78,7 @@
     "decompose": {
       "id": "decompose",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-generic/prompts/decompose.md",
+      "prompt": "planning/plan-generic/prompts/decompose.md",
       "next": {
         "agent-routing": {
           "desc": "Assign agents and models to each subtask.",
@@ -89,7 +89,7 @@
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-generic/prompts/agent-routing.md",
+      "prompt": "planning/plan-generic/prompts/agent-routing.md",
       "next": {
         "review-gate": {
           "desc": "Present the complete plan for user approval.",
@@ -100,7 +100,7 @@
     "review-gate": {
       "id": "review-gate",
       "type": "gate",
-      "prompt": "~/.config/opencode/planning/plan-generic/prompts/review-gate.md",
+      "prompt": "planning/plan-generic/prompts/review-gate.md",
       "next": {
         "finalize": {
           "desc": "Write all session plan artifacts to disk.",
@@ -119,7 +119,7 @@
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-generic/prompts/finalize.md"
+      "prompt": "planning/plan-generic/prompts/finalize.md"
     }
   }
 }

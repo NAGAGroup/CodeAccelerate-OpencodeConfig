@@ -8,7 +8,7 @@
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/session-overview.md",
+      "prompt": "planning/plan-deep-research/prompts/session-overview.md",
       "next": {
         "load-guidelines": {
           "desc": "Proceed to load design guidelines",
@@ -19,7 +19,7 @@
     "load-guidelines": {
       "id": "load-guidelines",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
+      "prompt": "planning/plan-design-guidelines.md",
       "next": {
         "scout": {
           "desc": "Proceed to scout for research context",
@@ -30,13 +30,13 @@
     "scout": {
       "id": "scout",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/scout.md",
+      "prompt": "planning/plan-deep-research/prompts/scout.md",
       "next": "research-intake"
     },
     "research-intake": {
       "id": "research-intake",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/research-intake.md",
+      "prompt": "planning/plan-deep-research/prompts/research-intake.md",
       "next": {
         "clarify": {
           "desc": "Proceed to clarify research requirements",
@@ -47,7 +47,7 @@
     "clarify": {
       "id": "clarify",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/clarify.md",
+      "prompt": "planning/plan-deep-research/prompts/clarify.md",
       "next": {
         "clarify": {
           "desc": "Loop for more clarification",
@@ -62,7 +62,7 @@
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/agent-routing.md",
+      "prompt": "planning/plan-deep-research/prompts/agent-routing.md",
       "next": {
         "research-gate": {
           "desc": "Proceed to research gate for approval",
@@ -73,7 +73,7 @@
     "research-gate": {
       "id": "research-gate",
       "type": "gate",
-      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/research-gate.md",
+      "prompt": "planning/plan-deep-research/prompts/research-gate.md",
       "next": {
         "finalize": {
           "desc": "Proceed to finalize the research plan",
@@ -88,7 +88,7 @@
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/finalize.md"
+      "prompt": "planning/plan-deep-research/prompts/finalize.md"
     }
   }
 }

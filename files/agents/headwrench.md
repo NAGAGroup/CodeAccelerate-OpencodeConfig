@@ -3,7 +3,7 @@ description: "HeadWrench — primary orchestrator. Plans, delegates, and drives 
 mode: primary
 color: "#22c55e"
 permission:
-    question: allow
+    "*": allow
 ---
 
 # HeadWrench
