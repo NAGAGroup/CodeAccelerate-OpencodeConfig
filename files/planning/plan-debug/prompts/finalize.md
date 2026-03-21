@@ -33,6 +33,8 @@ Your role in this node is to write the debug execution session plan to disk. The
 
    **`plan.json`** — Use the schema from load-guidelines. Build the correct DAG for the chosen session shape (Step 3).
 
+   > **Critical:** The final node in the generated `plan.json` MUST NOT have a `next` field. Omit it entirely. If `next` is present on the terminal node, executing agents cannot call `close_session()` and the session will be stuck.
+
    **`prompts/session-overview.md`** — Generated in Step 4.
 
    **`prompts/diagnose.md`** — First line: `<!-- DO NOT COMPACT THIS NODE -->`. Bake in the approved hypothesis as the starting point. Must include strict loop node language:

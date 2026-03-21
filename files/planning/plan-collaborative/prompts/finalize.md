@@ -30,6 +30,8 @@ If you find yourself writing sentences about the topic's design or answering que
 
    The schema was loaded in the `load-guidelines` node. Use it now. Write one node per open question, chained in sequence: `session-overview → explore-01 → … → explore-NN → spec-gate → finalize-output`. Each explore node's `next` is `["explore-NN", "explore-NN+1"]`; the last explore node's `next` is `["explore-NN", "spec-gate"]`. `remaining_visits` is omitted by default — collaborative loops are user-driven and unbounded — but may be added to specific explore nodes if bounded looping is desired.
 
+    > **Critical:** The final node in the generated `plan.json` MUST NOT have a `next` field. Omit it entirely. If `next` is present on the terminal node, executing agents cannot call `close_session()` and the session will be stuck.
+
     ---
 
    **`.opencode/session-plans/{session-name}/prompts/session-overview.md`**

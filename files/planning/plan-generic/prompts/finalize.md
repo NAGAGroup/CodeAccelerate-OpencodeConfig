@@ -24,6 +24,8 @@ Your role in this node is to write all session plan artifacts to disk and regist
 
 4. **Write the execution plan** to `.opencode/session-plans/{session-name}/plan.json` — use the schema and best-practices loaded in the load-guidelines node.
 
+> **Critical:** The final node in the generated `plan.json` MUST NOT have a `next` field. Omit it entirely. If `next` is present on the terminal node, executing agents cannot call `close_session()` and the session will be stuck.
+
 5. **Commit the session**:
     ```
     git add .opencode/session-plans/{session-name}/

@@ -42,6 +42,7 @@ Before writing files: confirm with the user how many research-execute iterations
    - `synthesis-gate`: type `gate`, next `["report-write", "research-execute"]`
    - `report-write`: type `agent`, next `["finalize-output"]`
    - `finalize-output`: type `agent`, terminal (no next, or `next: []`)
+   > **Critical:** The final node in the generated `plan.json` MUST NOT have a `next` field. Omit it entirely. If `next` is present on the terminal node, executing agents cannot call `close_session()` and the session will be stuck.
 
    Prompt paths: `~/.config/opencode/session-plans/{session-name}/prompts/{node-name}.md`
 

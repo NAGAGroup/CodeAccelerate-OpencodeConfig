@@ -242,6 +242,31 @@ Use home-relative paths for shared planning infrastructure prompts:
 
 A node with no `next` field is terminal. When `next_step()` is called on a terminal node, the DAG transitions to `complete` and instructs the agent to call `close_session()`.
 
+### Generated Session Plans
+
+When writing session plans for users to execute, the **last node in every generated session plan must have NO `next` field**. This is how executing agents know to call `close_session()` and close the session cleanly. If the last node includes `next`, the executing agent cannot determine the session is complete and the session stalls.
+
+This applies regardless of what the final subtask is named — `finalize`, `complete`, `deliver`, etc. The absence of `next` is the signal, not the node name.
+
+**Bad:**
+```json
+"finalize": {
+  "id": "finalize",
+  "type": "agent",
+  "prompt": "prompts/finalize.md",
+  "next": {}  
+}
+```
+
+**Good:**
+```json
+"finalize": {
+  "id": "finalize",
+  "type": "agent",
+  "prompt": "prompts/finalize.md"
+}
+```
+
 ### Loop Nodes
 
 A node whose `next` object includes its own ID (or a prior node ID) as a key is a loop node. Add `remaining_visits` to cap the loop:
