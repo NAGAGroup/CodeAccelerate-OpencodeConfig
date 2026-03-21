@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "id": "add-scout-to-all-workflows",
+  "session_type": "plan-generic",
+  "goal": "Add/reposition scout node to all 5 planning workflows after load-guidelines",
+  "created": "2026-03-20",
+  "status": "ready",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/add-scout-to-all-workflows/prompts/session-overview.md",
+      "next": ["subtask-01"]
+    },
+    "subtask-01": {
+      "id": "subtask-01",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/add-scout-to-all-workflows/prompts/subtask-01.md"
+    },
+    "subtask-02": {
+      "id": "subtask-02",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/add-scout-to-all-workflows/prompts/subtask-02.md"
+    },
+    "subtask-03": {
+      "id": "subtask-03",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/add-scout-to-all-workflows/prompts/subtask-03.md"
+    },
+    "subtask-04": {
+      "id": "subtask-04",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/add-scout-to-all-workflows/prompts/subtask-04.md"
+    },
+    "subtask-05": {
+      "id": "subtask-05",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/add-scout-to-all-workflows/prompts/subtask-05.md"
+    }
+  }
+}
