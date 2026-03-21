@@ -28,7 +28,7 @@
       "type": "tool",
       "description": "NAGAGroup's plugins and planning scaffolds",
       "files": [
-        "plugins/planning-enforcement.ts",
+        "plugins/planning-enforcement.js",
         "planning/README.md",
         "planning/plan-generic/plan.json",
         "planning/plan-generic/prompts/session-overview.md",

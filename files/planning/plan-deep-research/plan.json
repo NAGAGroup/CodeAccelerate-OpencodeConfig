@@ -9,31 +9,31 @@
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/session-overview.md",
+      "prompt": "planning/plan-deep-research/prompts/session-overview.md",
       "next": "research-intake"
     },
     "research-intake": {
       "id": "research-intake",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/research-intake.md",
+      "prompt": "planning/plan-deep-research/prompts/research-intake.md",
       "next": "scout"
     },
     "scout": {
       "id": "scout",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/scout.md",
+      "prompt": "planning/plan-deep-research/prompts/scout.md",
       "next": "clarify"
     },
     "clarify": {
       "id": "clarify",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/clarify.md",
+      "prompt": "planning/plan-deep-research/prompts/clarify.md",
       "next": "evaluate-understanding"
     },
     "evaluate-understanding": {
       "id": "evaluate-understanding",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/evaluate-understanding.md",
+      "prompt": "planning/plan-deep-research/prompts/evaluate-understanding.md",
       "next": {
         "scout": {
           "desc": "Need more context about research question or existing work",
@@ -48,13 +48,13 @@
     "propose-research-angles": {
       "id": "propose-research-angles",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/propose-research-angles.md",
+      "prompt": "planning/plan-deep-research/prompts/propose-research-angles.md",
       "next": "evaluate-research-angles"
     },
     "evaluate-research-angles": {
       "id": "evaluate-research-angles",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/evaluate-research-angles.md",
+      "prompt": "planning/plan-deep-research/prompts/evaluate-research-angles.md",
       "next": {
         "propose-research-angles": {
           "desc": "Research angles need adjustment; reconsider what aspects matter",
@@ -69,13 +69,13 @@
     "propose-sources": {
       "id": "propose-sources",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/propose-sources.md",
+      "prompt": "planning/plan-deep-research/prompts/propose-sources.md",
       "next": "evaluate-sources"
     },
     "evaluate-sources": {
       "id": "evaluate-sources",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/evaluate-sources.md",
+      "prompt": "planning/plan-deep-research/prompts/evaluate-sources.md",
       "next": {
         "propose-sources": {
           "desc": "Source priorities need adjustment; reconsider where to look",
@@ -90,13 +90,13 @@
     "propose-research-shape": {
       "id": "propose-research-shape",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/propose-research-shape.md",
+      "prompt": "planning/plan-deep-research/prompts/propose-research-shape.md",
       "next": "evaluate-research-shape"
     },
     "evaluate-research-shape": {
       "id": "evaluate-research-shape",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/evaluate-research-shape.md",
+      "prompt": "planning/plan-deep-research/prompts/evaluate-research-shape.md",
       "next": {
         "propose-research-shape": {
           "desc": "Research shape doesn't fit; reconsider research structure",
@@ -111,61 +111,61 @@
     "identify-success-criteria": {
       "id": "identify-success-criteria",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/identify-success-criteria.md",
+      "prompt": "planning/plan-deep-research/prompts/identify-success-criteria.md",
       "next": "info-prime"
     },
     "info-prime": {
       "id": "info-prime",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/info-prime.md",
+      "prompt": "planning/plan-deep-research/prompts/info-prime.md",
       "next": "info-loop-analysis"
     },
     "info-loop-analysis": {
       "id": "info-loop-analysis",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/info-loop-analysis.md",
+      "prompt": "planning/plan-deep-research/prompts/info-loop-analysis.md",
       "next": "info-visit-counter"
     },
     "info-visit-counter": {
       "id": "info-visit-counter",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/info-visit-counter.md",
+      "prompt": "planning/plan-deep-research/prompts/info-visit-counter.md",
       "next": "info-gate-analysis"
     },
     "info-gate-analysis": {
       "id": "info-gate-analysis",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/info-gate-analysis.md",
+      "prompt": "planning/plan-deep-research/prompts/info-gate-analysis.md",
       "next": "info-shape-ref"
     },
     "info-shape-ref": {
       "id": "info-shape-ref",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/info-shape-ref.md",
+      "prompt": "planning/plan-deep-research/prompts/info-shape-ref.md",
       "next": "info-validity-checks"
     },
     "info-validity-checks": {
       "id": "info-validity-checks",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/info-validity-checks.md",
+      "prompt": "planning/plan-deep-research/prompts/info-validity-checks.md",
       "next": "info-flow-specific"
     },
     "info-flow-specific": {
       "id": "info-flow-specific",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/info-flow-specific.md",
+      "prompt": "planning/plan-deep-research/prompts/info-flow-specific.md",
       "next": "info-summarize-consumption"
     },
     "info-summarize-consumption": {
       "id": "info-summarize-consumption",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/info-summarize-consumption.md",
+      "prompt": "planning/plan-deep-research/prompts/info-summarize-consumption.md",
       "next": "planning-gate"
     },
     "planning-gate": {
       "id": "planning-gate",
       "type": "gate",
-      "prompt": "plan-deep-research/prompts/planning-gate.md",
+      "prompt": "planning/plan-deep-research/prompts/planning-gate.md",
       "next": {
         "finalize": {
           "desc": "Research plan is sound; proceed to write the project DAG",
@@ -188,7 +188,7 @@
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "plan-deep-research/prompts/finalize.md"
+      "prompt": "planning/plan-deep-research/prompts/finalize.md"
     }
   }
 }

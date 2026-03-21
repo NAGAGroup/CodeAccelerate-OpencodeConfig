@@ -9,31 +9,31 @@
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/session-overview.md",
+      "prompt": "planning/plan-collaborative/prompts/session-overview.md",
       "next": "intake"
     },
     "intake": {
       "id": "intake",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/intake.md",
+      "prompt": "planning/plan-collaborative/prompts/intake.md",
       "next": "context-gather"
     },
     "context-gather": {
       "id": "context-gather",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/context-gather.md",
+      "prompt": "planning/plan-collaborative/prompts/context-gather.md",
       "next": "clarify"
     },
     "clarify": {
       "id": "clarify",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/clarify.md",
+      "prompt": "planning/plan-collaborative/prompts/clarify.md",
       "next": "evaluate-understanding"
     },
     "evaluate-understanding": {
       "id": "evaluate-understanding",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/evaluate-understanding.md",
+      "prompt": "planning/plan-collaborative/prompts/evaluate-understanding.md",
       "next": {
         "context-gather": {
           "desc": "Need more context about the collaboration topic or constraints",
@@ -48,13 +48,13 @@
     "propose-success-criteria": {
       "id": "propose-success-criteria",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/propose-success-criteria.md",
+      "prompt": "planning/plan-collaborative/prompts/propose-success-criteria.md",
       "next": "evaluate-success-criteria"
     },
     "evaluate-success-criteria": {
       "id": "evaluate-success-criteria",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/evaluate-success-criteria.md",
+      "prompt": "planning/plan-collaborative/prompts/evaluate-success-criteria.md",
       "next": {
         "propose-success-criteria": {
           "desc": "Success criteria need refinement; redefine what success means",
@@ -69,13 +69,13 @@
     "propose-collaboration-shape": {
       "id": "propose-collaboration-shape",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/propose-collaboration-shape.md",
+      "prompt": "planning/plan-collaborative/prompts/propose-collaboration-shape.md",
       "next": "evaluate-collaboration-shape"
     },
     "evaluate-collaboration-shape": {
       "id": "evaluate-collaboration-shape",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/evaluate-collaboration-shape.md",
+      "prompt": "planning/plan-collaborative/prompts/evaluate-collaboration-shape.md",
       "next": {
         "propose-collaboration-shape": {
           "desc": "Collaboration shape doesn't fit; reconsider dialogue structure",
@@ -90,61 +90,61 @@
     "identify-output-artifact": {
       "id": "identify-output-artifact",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/identify-output-artifact.md",
+      "prompt": "planning/plan-collaborative/prompts/identify-output-artifact.md",
       "next": "info-prime"
     },
     "info-prime": {
       "id": "info-prime",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/info-prime.md",
+      "prompt": "planning/plan-collaborative/prompts/info-prime.md",
       "next": "info-loop-analysis"
     },
     "info-loop-analysis": {
       "id": "info-loop-analysis",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/info-loop-analysis.md",
+      "prompt": "planning/plan-collaborative/prompts/info-loop-analysis.md",
       "next": "info-visit-counter"
     },
     "info-visit-counter": {
       "id": "info-visit-counter",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/info-visit-counter.md",
+      "prompt": "planning/plan-collaborative/prompts/info-visit-counter.md",
       "next": "info-gate-analysis"
     },
     "info-gate-analysis": {
       "id": "info-gate-analysis",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/info-gate-analysis.md",
+      "prompt": "planning/plan-collaborative/prompts/info-gate-analysis.md",
       "next": "info-shape-ref"
     },
     "info-shape-ref": {
       "id": "info-shape-ref",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/info-shape-ref.md",
+      "prompt": "planning/plan-collaborative/prompts/info-shape-ref.md",
       "next": "info-validity-checks"
     },
     "info-validity-checks": {
       "id": "info-validity-checks",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/info-validity-checks.md",
+      "prompt": "planning/plan-collaborative/prompts/info-validity-checks.md",
       "next": "info-flow-specific"
     },
     "info-flow-specific": {
       "id": "info-flow-specific",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/info-flow-specific.md",
+      "prompt": "planning/plan-collaborative/prompts/info-flow-specific.md",
       "next": "info-summarize-consumption"
     },
     "info-summarize-consumption": {
       "id": "info-summarize-consumption",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/info-summarize-consumption.md",
+      "prompt": "planning/plan-collaborative/prompts/info-summarize-consumption.md",
       "next": "planning-gate"
     },
     "planning-gate": {
       "id": "planning-gate",
       "type": "gate",
-      "prompt": "plan-collaborative/prompts/planning-gate.md",
+      "prompt": "planning/plan-collaborative/prompts/planning-gate.md",
       "next": {
         "finalize": {
           "desc": "Collaboration plan is sound; proceed to write the project DAG",
@@ -167,7 +167,7 @@
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "plan-collaborative/prompts/finalize.md"
+      "prompt": "planning/plan-collaborative/prompts/finalize.md"
     }
   }
 }

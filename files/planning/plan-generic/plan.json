@@ -9,31 +9,31 @@
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "plan-generic/prompts/session-overview.md",
+      "prompt": "planning/plan-generic/prompts/session-overview.md",
       "next": "task-intake"
     },
     "task-intake": {
       "id": "task-intake",
       "type": "agent",
-      "prompt": "plan-generic/prompts/task-intake.md",
+      "prompt": "planning/plan-generic/prompts/task-intake.md",
       "next": "scout"
     },
     "scout": {
       "id": "scout",
       "type": "agent",
-      "prompt": "plan-generic/prompts/scout.md",
+      "prompt": "planning/plan-generic/prompts/scout.md",
       "next": "clarify"
     },
     "clarify": {
       "id": "clarify",
       "type": "agent",
-      "prompt": "plan-generic/prompts/clarify.md",
+      "prompt": "planning/plan-generic/prompts/clarify.md",
       "next": "evaluate-understanding"
     },
     "evaluate-understanding": {
       "id": "evaluate-understanding",
       "type": "agent",
-      "prompt": "plan-generic/prompts/evaluate-understanding.md",
+      "prompt": "planning/plan-generic/prompts/evaluate-understanding.md",
       "next": {
         "scout": {
           "desc": "Need more context to understand task and codebase",
@@ -48,13 +48,13 @@
     "propose-shape": {
       "id": "propose-shape",
       "type": "agent",
-      "prompt": "plan-generic/prompts/propose-shape.md",
+      "prompt": "planning/plan-generic/prompts/propose-shape.md",
       "next": "evaluate-shape"
     },
     "evaluate-shape": {
       "id": "evaluate-shape",
       "type": "agent",
-      "prompt": "plan-generic/prompts/evaluate-shape.md",
+      "prompt": "planning/plan-generic/prompts/evaluate-shape.md",
       "next": {
         "propose-shape": {
           "desc": "Shape doesn't fit task; reconceptualize",
@@ -69,13 +69,13 @@
     "propose-decomposition": {
       "id": "propose-decomposition",
       "type": "agent",
-      "prompt": "plan-generic/prompts/propose-decomposition.md",
+      "prompt": "planning/plan-generic/prompts/propose-decomposition.md",
       "next": "evaluate-decomposition"
     },
     "evaluate-decomposition": {
       "id": "evaluate-decomposition",
       "type": "agent",
-      "prompt": "plan-generic/prompts/evaluate-decomposition.md",
+      "prompt": "planning/plan-generic/prompts/evaluate-decomposition.md",
       "next": {
         "refine-decomposition": {
           "desc": "Decomposition needs adjustment; refine boundaries or granularity",
@@ -90,67 +90,67 @@
     "refine-decomposition": {
       "id": "refine-decomposition",
       "type": "agent",
-      "prompt": "plan-generic/prompts/refine-decomposition.md",
+      "prompt": "planning/plan-generic/prompts/refine-decomposition.md",
       "next": "evaluate-decomposition"
     },
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
-      "prompt": "plan-generic/prompts/agent-routing.md",
+      "prompt": "planning/plan-generic/prompts/agent-routing.md",
       "next": "info-prime"
     },
     "info-prime": {
       "id": "info-prime",
       "type": "agent",
-      "prompt": "plan-generic/prompts/info-prime.md",
+      "prompt": "planning/plan-generic/prompts/info-prime.md",
       "next": "info-loop-analysis"
     },
     "info-loop-analysis": {
       "id": "info-loop-analysis",
       "type": "agent",
-      "prompt": "plan-generic/prompts/info-loop-analysis.md",
+      "prompt": "planning/plan-generic/prompts/info-loop-analysis.md",
       "next": "info-visit-counter"
     },
     "info-visit-counter": {
       "id": "info-visit-counter",
       "type": "agent",
-      "prompt": "plan-generic/prompts/info-visit-counter.md",
+      "prompt": "planning/plan-generic/prompts/info-visit-counter.md",
       "next": "info-gate-analysis"
     },
     "info-gate-analysis": {
       "id": "info-gate-analysis",
       "type": "agent",
-      "prompt": "plan-generic/prompts/info-gate-analysis.md",
+      "prompt": "planning/plan-generic/prompts/info-gate-analysis.md",
       "next": "info-shape-ref"
     },
     "info-shape-ref": {
       "id": "info-shape-ref",
       "type": "agent",
-      "prompt": "plan-generic/prompts/info-shape-ref.md",
+      "prompt": "planning/plan-generic/prompts/info-shape-ref.md",
       "next": "info-validity-checks"
     },
     "info-validity-checks": {
       "id": "info-validity-checks",
       "type": "agent",
-      "prompt": "plan-generic/prompts/info-validity-checks.md",
+      "prompt": "planning/plan-generic/prompts/info-validity-checks.md",
       "next": "info-flow-specific"
     },
     "info-flow-specific": {
       "id": "info-flow-specific",
       "type": "agent",
-      "prompt": "plan-generic/prompts/info-flow-specific.md",
+      "prompt": "planning/plan-generic/prompts/info-flow-specific.md",
       "next": "info-summarize-consumption"
     },
     "info-summarize-consumption": {
       "id": "info-summarize-consumption",
       "type": "agent",
-      "prompt": "plan-generic/prompts/info-summarize-consumption.md",
+      "prompt": "planning/plan-generic/prompts/info-summarize-consumption.md",
       "next": "planning-gate"
     },
     "planning-gate": {
       "id": "planning-gate",
       "type": "gate",
-      "prompt": "plan-generic/prompts/planning-gate.md",
+      "prompt": "planning/plan-generic/prompts/planning-gate.md",
       "next": {
         "finalize": {
           "desc": "Approach is sound; proceed to write the project DAG",
@@ -173,7 +173,7 @@
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "plan-generic/prompts/finalize.md"
+      "prompt": "planning/plan-generic/prompts/finalize.md"
     }
   }
 }

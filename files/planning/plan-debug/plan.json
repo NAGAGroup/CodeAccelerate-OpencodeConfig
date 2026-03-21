@@ -9,31 +9,31 @@
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "plan-debug/prompts/session-overview.md",
+      "prompt": "planning/plan-debug/prompts/session-overview.md",
       "next": "bug-intake"
     },
     "bug-intake": {
       "id": "bug-intake",
       "type": "agent",
-      "prompt": "plan-debug/prompts/bug-intake.md",
+      "prompt": "planning/plan-debug/prompts/bug-intake.md",
       "next": "scout"
     },
     "scout": {
       "id": "scout",
       "type": "agent",
-      "prompt": "plan-debug/prompts/scout.md",
+      "prompt": "planning/plan-debug/prompts/scout.md",
       "next": "clarify"
     },
     "clarify": {
       "id": "clarify",
       "type": "agent",
-      "prompt": "plan-debug/prompts/clarify.md",
+      "prompt": "planning/plan-debug/prompts/clarify.md",
       "next": "evaluate-understanding"
     },
     "evaluate-understanding": {
       "id": "evaluate-understanding",
       "type": "agent",
-      "prompt": "plan-debug/prompts/evaluate-understanding.md",
+      "prompt": "planning/plan-debug/prompts/evaluate-understanding.md",
       "next": {
         "scout": {
           "desc": "Need more context about affected code or systems",
@@ -48,25 +48,25 @@
     "propose-hypothesis": {
       "id": "propose-hypothesis",
       "type": "agent",
-      "prompt": "plan-debug/prompts/propose-hypothesis.md",
+      "prompt": "planning/plan-debug/prompts/propose-hypothesis.md",
       "next": "evaluate-hypothesis"
     },
     "evaluate-hypothesis": {
       "id": "evaluate-hypothesis",
       "type": "agent",
-      "prompt": "plan-debug/prompts/evaluate-hypothesis.md",
+      "prompt": "planning/plan-debug/prompts/evaluate-hypothesis.md",
       "next": "propose-investigation-shape"
     },
     "propose-investigation-shape": {
       "id": "propose-investigation-shape",
       "type": "agent",
-      "prompt": "plan-debug/prompts/propose-investigation-shape.md",
+      "prompt": "planning/plan-debug/prompts/propose-investigation-shape.md",
       "next": "evaluate-investigation-shape"
     },
     "evaluate-investigation-shape": {
       "id": "evaluate-investigation-shape",
       "type": "agent",
-      "prompt": "plan-debug/prompts/evaluate-investigation-shape.md",
+      "prompt": "planning/plan-debug/prompts/evaluate-investigation-shape.md",
       "next": {
         "propose-investigation-shape": {
           "desc": "Shape doesn't match bug complexity; reconsider investigation structure",
@@ -81,61 +81,61 @@
     "propose-test-strategy": {
       "id": "propose-test-strategy",
       "type": "agent",
-      "prompt": "plan-debug/prompts/propose-test-strategy.md",
+      "prompt": "planning/plan-debug/prompts/propose-test-strategy.md",
       "next": "info-prime"
     },
     "info-prime": {
       "id": "info-prime",
       "type": "agent",
-      "prompt": "plan-debug/prompts/info-prime.md",
+      "prompt": "planning/plan-debug/prompts/info-prime.md",
       "next": "info-loop-analysis"
     },
     "info-loop-analysis": {
       "id": "info-loop-analysis",
       "type": "agent",
-      "prompt": "plan-debug/prompts/info-loop-analysis.md",
+      "prompt": "planning/plan-debug/prompts/info-loop-analysis.md",
       "next": "info-visit-counter"
     },
     "info-visit-counter": {
       "id": "info-visit-counter",
       "type": "agent",
-      "prompt": "plan-debug/prompts/info-visit-counter.md",
+      "prompt": "planning/plan-debug/prompts/info-visit-counter.md",
       "next": "info-gate-analysis"
     },
     "info-gate-analysis": {
       "id": "info-gate-analysis",
       "type": "agent",
-      "prompt": "plan-debug/prompts/info-gate-analysis.md",
+      "prompt": "planning/plan-debug/prompts/info-gate-analysis.md",
       "next": "info-shape-ref"
     },
     "info-shape-ref": {
       "id": "info-shape-ref",
       "type": "agent",
-      "prompt": "plan-debug/prompts/info-shape-ref.md",
+      "prompt": "planning/plan-debug/prompts/info-shape-ref.md",
       "next": "info-validity-checks"
     },
     "info-validity-checks": {
       "id": "info-validity-checks",
       "type": "agent",
-      "prompt": "plan-debug/prompts/info-validity-checks.md",
+      "prompt": "planning/plan-debug/prompts/info-validity-checks.md",
       "next": "info-flow-specific"
     },
     "info-flow-specific": {
       "id": "info-flow-specific",
       "type": "agent",
-      "prompt": "plan-debug/prompts/info-flow-specific.md",
+      "prompt": "planning/plan-debug/prompts/info-flow-specific.md",
       "next": "info-summarize-consumption"
     },
     "info-summarize-consumption": {
       "id": "info-summarize-consumption",
       "type": "agent",
-      "prompt": "plan-debug/prompts/info-summarize-consumption.md",
+      "prompt": "planning/plan-debug/prompts/info-summarize-consumption.md",
       "next": "planning-gate"
     },
     "planning-gate": {
       "id": "planning-gate",
       "type": "gate",
-      "prompt": "plan-debug/prompts/planning-gate.md",
+      "prompt": "planning/plan-debug/prompts/planning-gate.md",
       "next": {
         "finalize": {
           "desc": "Investigation strategy is sound; proceed to write the project DAG",
@@ -154,7 +154,7 @@
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "plan-debug/prompts/finalize.md"
+      "prompt": "planning/plan-debug/prompts/finalize.md"
     }
   }
 }
