@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "id": "plan-deep-review",
+  "session_type": "plan-deep-review",
+  "status": "ready",
+  "entry": "session-overview",
+  "created": "2026-03-20",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/session-overview.md",
+      "next": ["load-guidelines"]
+    },
+    "load-guidelines": {
+      "id": "load-guidelines",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
+      "next": ["review-intake"]
+    },
+    "review-intake": {
+      "id": "review-intake",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/review-intake.md",
+      "next": ["clarify"]
+    },
+    "clarify": {
+      "id": "clarify",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/clarify.md",
+      "next": ["clarify", "scout"],
+      "remaining_visits": 3
+    },
+    "scout": {
+      "id": "scout",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/scout.md",
+      "next": ["synthesize"]
+    },
+    "synthesize": {
+      "id": "synthesize",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/synthesize.md",
+      "next": ["agent-routing"]
+    },
+    "agent-routing": {
+      "id": "agent-routing",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/agent-routing.md",
+      "next": ["review-gate"]
+    },
+    "review-gate": {
+      "id": "review-gate",
+      "type": "gate",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/review-gate.md",
+      "next": ["finalize", "clarify"]
+    },
+    "finalize": {
+      "id": "finalize",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/finalize.md"
+    }
+  }
+}
