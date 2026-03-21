@@ -76,12 +76,14 @@
       "id": "subtask-08-update-guidelines",
       "type": "agent",
       "prompt": ".opencode/session-plans/distill-load-guidelines-phase/prompts/subtask-08-update-guidelines.md",
-      "status": "in_progress"
+      "status": "completed",
+      "completed_at": "2026-03-21T14:14:37.129Z"
     }
   },
   "progress": {
     "current_node": "subtask-08-update-guidelines",
     "started_at": "2026-03-21T14:09:11.591Z",
-    "updated_at": "2026-03-21T14:14:07.355Z"
+    "updated_at": "2026-03-21T14:14:37.129Z",
+    "completed_at": "2026-03-21T14:14:37.129Z"
   }
 }
