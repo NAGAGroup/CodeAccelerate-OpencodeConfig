@@ -16,7 +16,8 @@
           "desc": "Create naga-haiku profile files",
           "choose_when": "Session overview internalized"
         }
-      }
+      },
+      "status": "in_progress"
     },
     "subtask-01-naga-haiku": {
       "id": "subtask-01-naga-haiku",
@@ -56,5 +57,10 @@
       "type": "agent",
       "prompt": ".opencode/session-plans/add-naga-haiku-profiles/prompts/subtask-04-build.md"
     }
+  },
+  "progress": {
+    "current_node": "session-overview",
+    "started_at": "2026-03-21T15:28:20.722Z",
+    "updated_at": "2026-03-21T15:28:20.722Z"
   }
 }
