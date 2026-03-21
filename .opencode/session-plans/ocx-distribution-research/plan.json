@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "id": "ocx-distribution-research",
+  "session_type": "plan-deep-research",
+  "goal": "Research how to distribute opencode config via GitHub repo (kdcokenny/ocx)",
+  "created": "2026-03-20",
+  "status": "ready",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/ocx-distribution-research/prompts/session-overview.md",
+      "next": {
+        "research-execute": {
+          "desc": "Begin research iterations",
+          "choose_when": "Session overview complete"
+        }
+      }
+    },
+    "research-execute": {
+      "id": "research-execute",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/ocx-distribution-research/prompts/research-execute.md",
+      "next": {
+        "research-execute": {
+          "desc": "Loop for another research iteration",
+          "choose_when": "More research needed"
+        },
+        "synthesis-gate": {
+          "desc": "Advance to synthesis gate",
+          "choose_when": "Loop counter exhausted or research complete"
+        }
+      },
+      "remaining_visits": 5
+    },
+    "synthesis-gate": {
+      "id": "synthesis-gate",
+      "type": "gate",
+      "prompt": ".opencode/session-plans/ocx-distribution-research/prompts/synthesis-gate.md",
+      "next": {
+        "research-execute": {
+          "desc": "Loop back to research for more investigation",
+          "choose_when": "Need more research"
+        },
+        "report-write": {
+          "desc": "Advance to write final report",
+          "choose_when": "Research complete, ready to write"
+        }
+      }
+    },
+    "report-write": {
+      "id": "report-write",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/ocx-distribution-research/prompts/report-write.md",
+      "next": {
+        "finalize-output": {
+          "desc": "Finalize and present report",
+          "choose_when": "Report written"
+        }
+      }
+    },
+    "finalize-output": {
+      "id": "finalize-output",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/ocx-distribution-research/prompts/finalize-output.md"
+    }
+  }
+}
