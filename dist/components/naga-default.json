@@ -1,0 +1,22 @@
+{
+  "name": "naga-default",
+  "versions": {
+    "1.0.0": {
+      "name": "naga-default",
+      "type": "profile",
+      "description": "NAGAGroup's base opencode distro files",
+      "files": [
+        {
+          "path": "profiles/default/opencode.jsonc",
+          "target": "opencode.jsonc"
+        }
+      ],
+      "dependencies": [
+        "naga-base"
+      ]
+    }
+  },
+  "dist-tags": {
+    "latest": "1.0.0"
+  }
+}

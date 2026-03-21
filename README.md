@@ -1,51 +1,150 @@
-# CodeAccelerate-OpencodeConfig
+# OCX Registry Starter
 
-A pre-built AI agent configuration for [OpenCode](https://opencode.ai/) that gives you a structured, multi-agent development workflow — planning, debugging, research, and code editing — ready to use in any project.
+A ready-to-deploy component registry for [OpenCode](https://opencode.ai).
 
-## What is this?
+## One-Click Deploy
 
-OpenCode is an AI coding assistant that runs in your terminal. This repository is a drop-in configuration for it: a set of agents, prompts, and tool integrations that work together as a coordinated system rather than a single general-purpose assistant.
+Deploy your registry instantly to your preferred platform:
 
-Once set up, you interact with a primary agent called HeadWrench. It understands your intent — planning a feature, debugging a problem, exploring an idea — and routes work to the right specialized agent automatically. Sessions are persistent, and the system remembers past decisions across conversations so you're not repeating context.
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/YOUR_USERNAME/YOUR_REPO)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/YOUR_REPO)
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/YOUR_USERNAME/YOUR_REPO)
+
+> **After forking:** Update the deploy button URLs above to point to your repository.
 
 ## Quick Start
 
-```bash
-git clone https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig
-```
-
-Then copy or symlink the `opencode/` directory to OpenCode's config location:
+### 1. Install Dependencies
 
 ```bash
-# Symlink (recommended — keeps it in sync with the repo)
-ln -s /path/to/CodeAccelerate-OpencodeConfig/opencode ~/.config/opencode
-
-# Or copy if you prefer a standalone setup
-cp -r /path/to/CodeAccelerate-OpencodeConfig/opencode ~/.config/opencode
+bun install
 ```
 
-Then open a terminal in any project and run `opencode`.
+### 2. Build the Registry
 
-## Features
+```bash
+bun run build
+```
 
-**Planning modes.** There are three ways to start a planning session. Generic planning walks you through scoping a feature, refactor, or migration with guided questions before producing a structured execution plan. Debug planning takes a bug report and works through a hypothesis-driven investigation to produce a diagnosis and fix plan. Collaborative planning is for open-ended exploration — you describe an idea, the system asks questions, and together you shape it into something actionable.
+### 3. Local Development
 
-**Activate a plan.** Once a plan exists, you can resume it in a later session and execute it step by step. The system tracks where you are and picks up where you left off.
+```bash
+bun run dev
+```
 
-**Agent delegation.** You don't need to think about which agent to use. HeadWrench, the primary orchestrator, reads what you're asking and dispatches work to the right specialist — whether that's deep codebase research, a targeted code edit, or external documentation lookup.
+This starts a local server at `http://localhost:8787`.
 
-**Cross-session memory.** The system maintains a memory layer across sessions. Decisions, findings, and context from past conversations are available in future ones, so you're not re-explaining your codebase every time.
+### 4. Deploy
 
-**Configuration.** Models, MCP servers, and agent behavior are all controlled through `opencode.json`. The default model assignments are what the maintainer uses personally — swap them out for whatever providers you use. You can also enable or disable the Exa web-search integration and adjust per-agent settings without touching any prompts.
+```bash
+bun run deploy
+```
+
+## Using Your Registry
+
+Once deployed, users can add components from your registry:
+
+```bash
+# Add a component directly (using --from for ephemeral access)
+ocx add hello-world --from https://your-registry.workers.dev
+
+# Or add the registry permanently with a custom alias
+ocx registry add https://your-registry.workers.dev --name myreg
+ocx add myreg/hello-world
+
+# Or install a profile
+ocx profile add my-profile --source myreg/my-profile --from https://your-registry.workers.dev --global
+```
+
+## Project Structure
+
+```
+├── registry.jsonc         # Registry manifest
+├── files/                  # Component source files
+│   └── skills/
+│       └── hello-world/
+│           └── SKILL.md   # Example skill
+├── dist/                   # Built output (generated)
+├── wrangler.jsonc          # Cloudflare Workers config
+├── vercel.json             # Vercel config
+├── netlify.toml            # Netlify config
+└── AGENTS.md               # AI assistant guidelines
+```
+
+## Adding Components
+
+### 1. Create your component file
+
+```bash
+# Skill
+mkdir -p files/skills/my-skill
+echo "# My Skill\n\nInstructions..." > files/skills/my-skill/SKILL.md
+
+# Plugin
+touch files/plugins/my-plugin.ts
+
+# Agent
+touch files/agents/my-agent.md
+```
+
+### 2. Register it in `registry.jsonc`
+
+```json
+{
+  "components": [
+    {
+      "name": "my-skill",
+      "type": "skill",
+      "description": "What it does",
+      "files": ["skills/my-skill/SKILL.md"]
+    }
+  ]
+}
+```
+
+### 3. Build and deploy
+
+```bash
+bun run build && bun run deploy
+```
+
+## Component Types
+
+| Type | Purpose | Format |
+|------|---------|--------|
+| `skill` | AI behavior instructions | Markdown |
+| `plugin` | OpenCode extensions | TypeScript |
+| `agent` | Agent role definitions | Markdown |
+| `command` | Custom TUI commands | Markdown |
+| `tool` | Custom tool implementations | TypeScript |
+| `bundle` | Component collections | JSON |
+| `profile` | Shareable profile configuration | JSON |
+
+See [AGENTS.md](./AGENTS.md) for detailed documentation on each type.
+
+## Configuration
+
+### Cloudflare Workers (default)
+
+Edit `wrangler.jsonc` to customize your worker name and settings.
+
+### Vercel
+
+Edit `vercel.json`. Build command and output directory are pre-configured.
+
+### Netlify
+
+Edit `netlify.toml`. Build command and publish directory are pre-configured.
 
 ## Documentation
 
-- [Getting Started](docs/getting-started.md) — Installation, prerequisites, and first-time setup
-- [Planning](docs/planning.md) — The three planning modes and how to use them
-- [Agents](docs/agents.md) — What each agent does and when it runs
-- [Configuration](docs/configuration.md) — Customizing models, MCP servers, and agent behavior
-- [Commands](docs/commands.md) — Available commands and how to trigger them
+- [AGENTS.md](./AGENTS.md) - Complete guide including [best practices](./AGENTS.md#best-practices)
+- [OCX CLI Documentation](https://ocx.kdco.dev/cli/commands)
+- [OpenCode Reference](https://ocx.kdco.dev/reference/opencode)
+- [Registry Protocol](https://ocx.kdco.dev/registries/protocol)
 
 ## License
 
-MIT — NAGA Compute Group 2026
+MIT

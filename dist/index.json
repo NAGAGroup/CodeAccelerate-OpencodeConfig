@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ocx.kdco.dev/schemas/v2/registry.json",
+  "name": "Naga Group",
+  "version": "2.0.0",
+  "author": "Jack Myers",
+  "opencode": "1.0.0",
+  "ocx": "1.0.16",
+  "components": [
+    {
+      "name": "ocx-bundle",
+      "type": "bundle",
+      "description": "NAGAGroup's base opencode distro files"
+    },
+    {
+      "name": "ocx-default",
+      "type": "profile",
+      "description": "NAGAGroup's base opencode distro files"
+    },
+    {
+      "name": "ocx-free",
+      "type": "profile",
+      "description": "NAGAGroup's base opencode distro files"
+    }
+  ]
+}

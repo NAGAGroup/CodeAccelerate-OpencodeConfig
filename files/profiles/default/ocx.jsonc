@@ -1,0 +1,11 @@
+{
+  "$schema": "https://ocx.kdco.dev/schemas/profile.json",
+  "registries": {
+    "naga-group": {
+      "url": "https://nagagroup.github.io/CodeAccelerate-OpencodeConfig"
+    }
+  },
+  "renameWindow": true,
+  "exclude": [],
+  "include": []
+}

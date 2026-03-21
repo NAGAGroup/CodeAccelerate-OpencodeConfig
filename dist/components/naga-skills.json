@@ -1,0 +1,17 @@
+{
+  "name": "naga-skills",
+  "versions": {
+    "1.0.0": {
+      "name": "naga-skills",
+      "type": "bundle",
+      "description": "NAGAGroup's opencode skills",
+      "files": [
+        "skills/delegation/SKILL.md"
+      ],
+      "dependencies": []
+    }
+  },
+  "dist-tags": {
+    "latest": "1.0.0"
+  }
+}

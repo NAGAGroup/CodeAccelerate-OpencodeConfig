@@ -1,0 +1,26 @@
+{
+  "name": "ocx-free",
+  "versions": {
+    "1.0.0": {
+      "name": "ocx-free",
+      "type": "profile",
+      "description": "NAGAGroup's base opencode distro files",
+      "files": [
+        {
+          "path": "profiles/free/opencode.jsonc",
+          "target": "opencode.jsonc"
+        },
+        {
+          "path": "profiles/free/ocx.jsonc",
+          "target": "ocx.jsonc"
+        }
+      ],
+      "dependencies": [
+        "ocx-bundle"
+      ]
+    }
+  },
+  "dist-tags": {
+    "latest": "1.0.0"
+  }
+}

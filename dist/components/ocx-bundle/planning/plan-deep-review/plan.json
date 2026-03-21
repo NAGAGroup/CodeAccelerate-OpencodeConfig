@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0",
+  "id": "plan-deep-review",
+  "session_type": "plan-deep-review",
+  "status": "ready",
+  "entry": "session-overview",
+  "created": "2026-03-20",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/session-overview.md",
+      "next": {
+        "load-guidelines": {
+          "desc": "Load plan design guidelines",
+          "choose_when": "Session overview read and internalized"
+        }
+      }
+    },
+    "load-guidelines": {
+      "id": "load-guidelines",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
+      "next": {
+        "scout": {
+          "desc": "Dispatch scouts to gather review context",
+          "choose_when": "Guidelines loaded and understood"
+        }
+      }
+    },
+    "review-intake": {
+      "id": "review-intake",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/review-intake.md",
+      "next": {
+        "clarify": {
+          "desc": "Ask clarifying questions to refine scope",
+          "choose_when": "More information needed before proceeding"
+        }
+      }
+    },
+    "clarify": {
+      "id": "clarify",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/clarify.md",
+      "next": {
+        "agent-routing": {
+          "desc": "Proceed to agent routing",
+          "choose_when": "Clarification complete, enough context to design session"
+        },
+        "clarify": {
+          "desc": "Ask another clarifying question",
+          "choose_when": "More clarification needed before routing agents"
+        }
+      }
+    },
+    "scout": {
+      "id": "scout",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/scout.md",
+      "next": {
+        "review-intake": {
+          "desc": "Proceed to review intake",
+          "choose_when": "Scout findings gathered"
+        }
+      }
+    },
+    "agent-routing": {
+      "id": "agent-routing",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/agent-routing.md",
+      "next": {
+        "review-gate": {
+          "desc": "Present plan for user approval",
+          "choose_when": "Agent routing assignments determined"
+        }
+      }
+    },
+    "review-gate": {
+      "id": "review-gate",
+      "type": "gate",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/review-gate.md",
+      "next": {
+        "finalize": {
+          "desc": "Generate fix session plan",
+          "choose_when": "User approved the fix plan"
+        },
+        "clarify": {
+          "desc": "Loop back to clarify with changes",
+          "choose_when": "User requested revisions to the plan"
+        }
+      }
+    },
+    "finalize": {
+      "id": "finalize",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/finalize.md"
+    }
+  }
+}
