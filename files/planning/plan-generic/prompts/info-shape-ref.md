@@ -13,7 +13,7 @@ overview → step1 → step2 → step3 → finalize
 ```
 overview → design → [loop: implement → test → verify] → document → finalize
 ```
-Verify node branches: "pass" (exit) or "fail" (loop back).
+Verify node branches: use semantic node IDs as keys (e.g., "success-verified" or "needs-rework"), **NOT generic labels like "pass"/"fail"**.
 
 **1C - Linear with Decision Gate:** Early uncertainty about direction.
 ```
@@ -29,7 +29,7 @@ overview → research → gate(which approach?) → [path-A or path-B] → final
 ```
 overview → [loop: propose → evaluate → user-gate] → finalize
 ```
-User gate branches: "good" (exit) or "refine" (loop back).
+User gate branches: use semantic node IDs as keys (e.g., "approach-solid" or "refine-approach"), **NOT generic labels like "good"/"refine"**.
 
 **1F - Complex DAG:** Multiple gates and loops combined.
 

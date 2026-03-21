@@ -26,10 +26,36 @@ You will create:
 - **Node names:** Use subtask names from decomposition
 - **Node types:** "agent" for execution nodes, "gate" for decision points
 - **`next` field:** Single string for linear; object with branches for loops/gates
-- **`remaining_visits`:** Set on loop-branching nodes
+  - **String format:** `"next": "node-id"` (single path)
+  - **Array format:** `"next": ["node-1", "node-2"]` (multiple paths, no metadata)
+  - **Object format (branching):** `"next": { "node-1": { "desc": "...", "choose_when": "..." }, ... }`
+  - **CONSTRAINT:** Keys in object-format `next` MUST be actual node IDs. Do NOT use generic labels like "pass", "fail", "yes", "no" as keys.
+- **`remaining_visits`:** Set on loop-branching nodes (evaluation/decision nodes in loops)
 - **`prompt`:** Worktree-relative path to prompt file (e.g., ".opencode/session-plans/{session-name}/prompts/implement.md")
 - **Entry:** First node (usually "session-overview")
 - **Terminal:** Finalize node with no `next` field
+
+### Example: Correct Branching with Object-Format `next`
+
+```json
+{
+  "id": "evaluate-approach",
+  "type": "gate",
+  "prompt": ".opencode/session-plans/example/prompts/evaluate-approach.md",
+  "next": {
+    "implement-solution": {
+      "desc": "Approach is sound; proceed to implementation",
+      "choose_when": "Analysis shows the approach addresses all requirements"
+    },
+    "explore-alternatives": {
+      "desc": "Approach has gaps; explore other directions",
+      "choose_when": "Analysis reveals the approach doesn't address all requirements"
+    }
+  }
+}
+```
+
+**Keys are actual node IDs:** `"implement-solution"` and `"explore-alternatives"` are real nodes in the DAG. **NOT** generic labels like `"pass"` or `"fail"`.
 
 ## Session-Overview Content
 
