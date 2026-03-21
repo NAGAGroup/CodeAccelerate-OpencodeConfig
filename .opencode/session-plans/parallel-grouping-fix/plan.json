@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "id": "parallel-grouping-fix",
+  "session_type": "plan-generic",
+  "goal": "Fix planning prompts so agents group parallel subagent dispatches into a single subtask node, not multiple sequential DAG nodes",
+  "created": "2026-03-21",
+  "status": "ready",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/parallel-grouping-fix/prompts/session-overview.md",
+      "next": {
+        "subtask-01-update-planning-docs": {
+          "desc": "Proceed to update core planning docs in parallel",
+          "choose_when": "Session overview has been read and internalized"
+        }
+      }
+    },
+    "subtask-01-update-planning-docs": {
+      "id": "subtask-01-update-planning-docs",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/parallel-grouping-fix/prompts/subtask-01-update-planning-docs.md",
+      "next": {
+        "subtask-02-update-delegation-skill": {
+          "desc": "Proceed to update delegation skill",
+          "choose_when": "All three parallel QuickDoc edits have returned and been confirmed"
+        }
+      }
+    },
+    "subtask-02-update-delegation-skill": {
+      "id": "subtask-02-update-delegation-skill",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/parallel-grouping-fix/prompts/subtask-02-update-delegation-skill.md"
+    }
+  }
+}
