@@ -128,7 +128,7 @@
     "info-flow-specific": {
       "id": "info-flow-specific",
       "type": "agent",
-      "prompt": "planning/_shared/info-flow-specific.md",
+      "prompt": "planning/plan-deep-research/prompts/info-flow-specific.md",
       "next": {
         "info-schema-ref": {
           "desc": "Proceed to schema reference",

@@ -155,7 +155,7 @@
     "info-flow-specific": {
       "id": "info-flow-specific",
       "type": "agent",
-      "prompt": "planning/_shared/info-flow-specific.md",
+      "prompt": "planning/plan-generic/prompts/info-flow-specific.md",
       "next": {
         "info-schema-ref": {
           "desc": "Review schema reference.",
