@@ -44,13 +44,24 @@
       "type": "agent",
       "prompt": "planning/plan-deep-review/prompts/clarify.md",
       "next": {
-        "agent-routing": {
-          "desc": "Proceed to agent routing",
-          "choose_when": "Clarification complete, enough context to design session"
-        },
+        "assess": {
+          "desc": "Evaluate whether enough review context has been gathered.",
+          "choose_when": "Clarifying question has been asked."
+        }
+      }
+    },
+    "assess": {
+      "id": "assess",
+      "type": "agent",
+      "prompt": "planning/plan-deep-review/prompts/assess.md",
+      "next": {
         "clarify": {
-          "desc": "Ask another clarifying question",
-          "choose_when": "More clarification needed before routing agents"
+          "desc": "Ask another clarifying question.",
+          "choose_when": "More clarification needed before routing agents."
+        },
+        "agent-routing": {
+          "desc": "Proceed to agent routing.",
+          "choose_when": "Clarification complete, enough context to design session."
         }
       }
     },

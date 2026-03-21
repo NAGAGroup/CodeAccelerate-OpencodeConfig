@@ -31,7 +31,16 @@ A `load-guidelines` node (pointing to this file) should be the **second node** i
 
 ### Loop Nodes
 
-A node whose `next` object includes its own ID is a loop node. Always add `remaining_visits` (default: `3`) to cap the loop. If the counter is exhausted and the DAG enters `failed` state, surface this to the user and ask whether to continue and with how many additional visits (default: 3). If they confirm, call `reset_counters({ visits: N })` to restore the counter and resume.
+A **loop** is a directed cycle across **two or more nodes**. Every loop must have a minimum of two nodes. Self-referencing nodes (a node whose `next` includes its own ID) are **prohibited**.
+
+**Why:** Agents don't reliably self-terminate. If a node can loop to itself, the agent decides when to stop — and agents are bad at that. When the loop is a cycle across multiple nodes, every `next_step()` call is a hard boundary the agent cannot bypass. The DAG's `remaining_visits` counter fires on every node transition, so the loop cap is enforced implicitly without requiring the agent to track iteration counts.
+
+**The canonical pattern:** separate each responsibility into its own node, then chain them into a cycle.
+- Q&A loop: `clarify → assess → clarify` (clarify asks one question; assess evaluates readiness and decides: loop or advance)
+- Fix/verify loop: `fix → build → verify → fix` (fix writes; build runs; verify checks; verify decides: loop or advance)
+- Research loop: `research-execute → accumulate → research-execute` (execute dispatches; accumulate stores; accumulate decides: loop or advance)
+
+Add `remaining_visits` (default: `3`) to the **decision node** — the node that decides to loop back or exit. If the counter is exhausted and the DAG enters `failed` state, surface this to the user and ask whether to continue and with how many additional visits (default: 3). If they confirm, call `reset_counters({ visits: N })` to restore the counter and resume.
 
 ### Loop Node Design
 
@@ -49,50 +58,63 @@ Do NOT use a loop node for simple branching, parallel dispatch, or one-shot sequ
 
 #### Structural Patterns
 
-There are three valid loop patterns:
+Every loop is a cycle of two or more nodes. The decision node holds `remaining_visits` and has two exits: one that loops back, one that advances.
 
-**Pattern 1 — Self-loop (step loops to itself):**
+**Pattern 1 — Two-node cycle (minimum):**
 ```json
-"loop-node": {
-  "id": "loop-node",
+"clarify": {
+  "id": "clarify",
   "type": "agent",
   "prompt": "...",
   "next": {
-    "loop-node": {
-      "desc": "Repeat this step",
-      "choose_when": "Not yet complete"
+    "assess": {
+      "desc": "Evaluate whether enough context has been gathered",
+      "choose_when": "Question asked"
+    }
+  }
+},
+"assess": {
+  "id": "assess",
+  "type": "agent",
+  "prompt": "...",
+  "next": {
+    "clarify": {
+      "desc": "Ask another clarifying question",
+      "choose_when": "More context needed"
     },
-    "next-step": {
-      "desc": "Advance to next step",
-      "choose_when": "Complete"
+    "decompose": {
+      "desc": "Proceed to decomposition",
+      "choose_when": "Enough context gathered"
     }
   },
   "remaining_visits": 3
 }
 ```
 
-**Pattern 2 — Back-loop (step loops to a prior node):**
+**Pattern 2 — Three-node cycle (preferred for fix/build/verify):**
 ```json
-"refine": {
-  "id": "refine",
+"fix": {
+  "id": "fix",
   "type": "agent",
   "prompt": "...",
   "next": {
-    "scout": {
-      "desc": "Re-run scouts with refined scope",
-      "choose_when": "Need more context"
-    },
-    "finalize": {
-      "desc": "Proceed to finalize",
-      "choose_when": "Refinement complete"
+    "build": {
+      "desc": "Run the build",
+      "choose_when": "Fix applied"
     }
-  },
-  "remaining_visits": 3
-}
-```
-
-**Pattern 3 — Exit-first loop (advance branch first, loop second):**
-```json
+  }
+},
+"build": {
+  "id": "build",
+  "type": "agent",
+  "prompt": "...",
+  "next": {
+    "verify": {
+      "desc": "Check results",
+      "choose_when": "Build complete"
+    }
+  }
+},
 "verify": {
   "id": "verify",
   "type": "agent",
@@ -103,7 +125,7 @@ There are three valid loop patterns:
       "choose_when": "Verified"
     },
     "fix": {
-      "desc": "Re-run fix with feedback",
+      "desc": "Re-apply fix with feedback",
       "choose_when": "Checks failed"
     }
   },
@@ -113,16 +135,18 @@ There are three valid loop patterns:
 
 #### Design Checklist
 
-Before finalizing a loop node:
-- [ ] The node has exactly one looping `next` entry pointing to itself or a prior node
-- [ ] `remaining_visits` is set (default: 3; adjust based on expected iteration count)
-- [ ] There is at least one non-looping exit branch
-- [ ] The prompt makes the loop's purpose and exit condition explicit
-- [ ] The prompt enforces one action per visit (ask one question, dispatch one agent, etc.)
+Before finalizing any loop:
+- [ ] The loop spans at least two nodes — no self-referencing nodes
+- [ ] Each node in the cycle has exactly one job
+- [ ] `remaining_visits` is set on the decision node (default: 3; adjust based on expected iteration count)
+- [ ] The decision node has exactly one looping exit and at least one non-looping exit
+- [ ] The prompt for each node enforces one action only (ask one question, run one command, etc.)
+- [ ] There is a separate terminal node (`close`, `complete`, etc.) that the loop exits to
 
 #### Anti-patterns
 
-- **Looping without cap:** A loop node without `remaining_visits` risks infinite loops.
+- **Self-referencing node (prohibited):** A node whose `next` includes its own ID. The agent decides when to stop — agents are unreliable at this. **The mandatory fix:** split into at least two nodes. The first does the work; the second evaluates and decides whether to loop back or advance.
+- **Looping without cap:** A decision node without `remaining_visits` risks infinite loops.
 - **Multiple loop branches:** If two different branches both lead back, the exit condition is unclear.
 - **Hidden loops:** A step that implicitly repeats via back-and-forth agent dispatch without a declared loop node.
 - **Loop + terminal on same node:** A node cannot have both a loop `next` and no `next` (terminal). This is the single most common planning mistake. **The mandatory fix:** add a dedicated terminal node (e.g., `close`) with no `next` field. The loop node's exit branch points to `close`. Example:
@@ -146,7 +170,11 @@ Before finalizing a loop node:
 
 - **Build/test subtask without a loop node:** Any subtask that (a) writes code AND (b) runs a build or test suite is **automatically** a loop node candidate. Do not represent fix-verify cycles as two sequential non-looping nodes. The verify node must loop back to fix, and a separate `close`/`complete` terminal node must follow the loop.
 
-#### Asking the User About `remaining_visits`
+#### `remaining_visits` in Built-in vs. Generated Plans
+
+**Built-in planning DAGs** (the `plan-*.json` files in the planning infrastructure) do **not** use `remaining_visits`. These DAGs are shared across all sessions — a counter set on a shared DAG would exhaust and block all future sessions. Built-in loops are structurally multi-node cycles but uncapped.
+
+**Generated session plans** (the `plan.json` files written by a `finalize` node for a specific user session) **must** use `remaining_visits` on every decision node. These plans are session-specific and should fail loudly when a loop exceeds expected iterations.
 
 When a loop node is first identified during planning:
 1. Note the proposed `remaining_visits` count (default: 3)
@@ -419,21 +447,32 @@ This applies regardless of what the final subtask is named — `finalize`, `comp
 
 ### Loop Nodes
 
-A node whose `next` object includes its own ID (or a prior node ID) as a key is a loop node. Add `remaining_visits` to cap the loop:
+A loop is a directed cycle across two or more nodes. Self-referencing nodes (a node whose `next` includes its own ID) are prohibited. The `remaining_visits` counter goes on the **decision node** — the node that decides to loop back or exit:
 
 ```json
-"diagnose": {
-  "id": "diagnose",
+"clarify": {
+  "id": "clarify",
   "type": "agent",
   "prompt": "...",
   "next": {
-    "diagnose": {
-      "desc": "Repeat diagnosis",
-      "choose_when": "Need further diagnosis"
+    "assess": {
+      "desc": "Evaluate readiness",
+      "choose_when": "Question asked"
+    }
+  }
+},
+"assess": {
+  "id": "assess",
+  "type": "agent",
+  "prompt": "...",
+  "next": {
+    "clarify": {
+      "desc": "Ask another question",
+      "choose_when": "Need more context"
     },
-    "fix": {
-      "desc": "Proceed to fix",
-      "choose_when": "Diagnosis complete"
+    "decompose": {
+      "desc": "Proceed to decomposition",
+      "choose_when": "Enough context gathered"
     }
   },
   "remaining_visits": 3

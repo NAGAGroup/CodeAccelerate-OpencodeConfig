@@ -43,13 +43,24 @@
       "type": "agent",
       "prompt": "planning/plan-generic/prompts/clarify.md",
       "next": {
-        "synthesize": {
-          "desc": "Synthesize scout findings into a coherent codebase understanding.",
-          "choose_when": "Enough information has been gathered to proceed with decomposition."
-        },
+        "assess": {
+          "desc": "Evaluate whether enough context has been gathered to proceed.",
+          "choose_when": "Clarifying question has been asked."
+        }
+      }
+    },
+    "assess": {
+      "id": "assess",
+      "type": "agent",
+      "prompt": "planning/plan-generic/prompts/assess.md",
+      "next": {
         "clarify": {
           "desc": "Ask another clarifying question.",
           "choose_when": "There are still critical unknowns that would block decomposition."
+        },
+        "synthesize": {
+          "desc": "Synthesize scout findings into a coherent codebase understanding.",
+          "choose_when": "Enough information has been gathered to proceed with decomposition."
         }
       }
     },

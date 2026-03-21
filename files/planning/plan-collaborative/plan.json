@@ -34,13 +34,24 @@
       "type": "agent",
       "prompt": "planning/plan-collaborative/prompts/clarify.md",
       "next": {
+        "assess": {
+          "desc": "Evaluate whether enough session-design context has been gathered.",
+          "choose_when": "Clarifying question has been asked."
+        }
+      }
+    },
+    "assess": {
+      "id": "assess",
+      "type": "agent",
+      "prompt": "planning/plan-collaborative/prompts/assess.md",
+      "next": {
         "clarify": {
-          "desc": "Continue gathering session-design context",
-          "choose_when": "Need further clarification"
+          "desc": "Continue gathering session-design context.",
+          "choose_when": "More context needed before writing a seed plan."
         },
         "agent-routing": {
-          "desc": "Proceed to agent routing",
-          "choose_when": "Enough context to write a seed plan"
+          "desc": "Proceed to agent routing.",
+          "choose_when": "Enough context to write a seed plan."
         }
       }
     },

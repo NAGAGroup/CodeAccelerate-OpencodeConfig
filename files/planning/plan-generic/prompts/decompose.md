@@ -20,28 +20,37 @@ Your role in this node is to produce a concrete, ordered subtask breakdown from 
 
 2. **Identify loop-capable nodes and confirm `remaining_visits`** — Break this into two sub-steps:
 
-    **2a. Recognize loop-capable steps** — A step is loop-capable when:
-    - It involves a question-answer cycle (clarify → assess → clarify again or advance)
-    - It involves iterative refinement (attempt → evaluate → refine or advance)
-    - The same work may need repeating with different input
-    - A fix-execute-verify cycle is needed
+    **2a. Recognize loop-capable steps** — A step is loop-capable when the same work may need to repeat until a condition is met. Common signals:
+    - A question-answer cycle (e.g., ask → assess → ask again or advance)
+    - An iterative refinement cycle (e.g., attempt → evaluate → refine or advance)
+    - A fix-build-verify cycle (e.g., fix → build → verify → fix or close)
+    - A research-synthesize cycle (e.g., dispatch → accumulate → assess → dispatch or advance)
+
+    **Every loop must span at least two nodes.** No self-referencing nodes. Each node in the cycle has one job; the transition between nodes IS the loop mechanism. The **decision node** (the one that chooses to loop or advance) gets `remaining_visits`.
+
+    Example — a fix/verify loop:
+    - `fix`: applies the fix, calls `next_step()` unconditionally → goes to `build`
+    - `build`: runs the build, calls `next_step()` unconditionally → goes to `verify`
+    - `verify`: checks results, calls `next_step({ next: "fix" })` if failing or `next_step({ next: "close" })` if passing — this is the decision node with `remaining_visits`
+    - `close`: terminal node, no `next`
 
     Steps that are **NOT loop-capable:**
     - Simple sequential work with no repetition
     - Parallel independent dispatches
     - One-shot reads or writes
 
-    **2b. Confirm `remaining_visits` for each loop-capable node:**
+    **2b. Confirm `remaining_visits` for each loop's decision node:**
     - Default is `remaining_visits: 3`
-    - Ask the user if they want a different count — one question per loop-capable node
+    - Ask the user if they want a different count — one question per loop
     - State the default explicitly: "Default is 3. Want to change this?"
-    - If multiple loop-capable nodes exist, ask one at a time in order
+    - If multiple loops exist, ask one at a time in order
     - Record the confirmed count for each
 
     **Self-check before advancing:**
-    - Every declared loop node has `remaining_visits` set
-    - Every declared loop node has at least one non-looping exit branch
-    - The loop's purpose and exit condition are clear from the prompt
+    - Every loop spans at least 2 nodes (no self-references)
+    - The decision node has `remaining_visits` set
+    - The decision node has exactly one looping exit and one non-looping exit
+    - There is a separate terminal node the loop exits to
 
 3. **Present the draft subtask list** to the user — numbered summary only (objective + scope, no full detail yet).
 

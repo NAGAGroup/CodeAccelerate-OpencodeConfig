@@ -49,13 +49,24 @@
       "type": "agent",
       "prompt": "planning/plan-deep-research/prompts/clarify.md",
       "next": {
+        "assess": {
+          "desc": "Evaluate whether enough research context has been gathered.",
+          "choose_when": "Clarifying question has been asked."
+        }
+      }
+    },
+    "assess": {
+      "id": "assess",
+      "type": "agent",
+      "prompt": "planning/plan-deep-research/prompts/assess.md",
+      "next": {
         "clarify": {
-          "desc": "Loop for more clarification",
-          "choose_when": "Need further clarification on research scope"
+          "desc": "Ask another clarifying question.",
+          "choose_when": "Need further clarification on research scope."
         },
         "agent-routing": {
-          "desc": "Proceed to agent routing",
-          "choose_when": "Enough session-design context gathered to write a research plan"
+          "desc": "Proceed to agent routing.",
+          "choose_when": "Enough session-design context gathered to write a research plan."
         }
       }
     },
