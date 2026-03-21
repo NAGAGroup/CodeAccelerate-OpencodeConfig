@@ -81,9 +81,97 @@
       "type": "agent",
       "prompt": "planning/plan-deep-review/prompts/agent-routing.md",
       "next": {
+        "info-prime": {
+          "desc": "Begin informational gathering phase",
+          "choose_when": "Agent routing assignments determined"
+        }
+      }
+    },
+    "info-prime": {
+      "id": "info-prime",
+      "type": "agent",
+      "prompt": "planning/_shared/info-prime.md",
+      "next": {
+        "info-loop-analysis": {
+          "desc": "Analyze loops in the plan",
+          "choose_when": "Primary informational context established"
+        }
+      }
+    },
+    "info-loop-analysis": {
+      "id": "info-loop-analysis",
+      "type": "agent",
+      "prompt": "planning/_shared/info-loop-analysis.md",
+      "next": {
+        "info-visit-counter": {
+          "desc": "Count node visits to detect runaway loops",
+          "choose_when": "Loop analysis complete"
+        }
+      }
+    },
+    "info-visit-counter": {
+      "id": "info-visit-counter",
+      "type": "agent",
+      "prompt": "planning/_shared/info-visit-counter.md",
+      "next": {
+        "info-gate-analysis": {
+          "desc": "Analyze gate conditions in the plan",
+          "choose_when": "Visit counts tallied"
+        }
+      }
+    },
+    "info-gate-analysis": {
+      "id": "info-gate-analysis",
+      "type": "agent",
+      "prompt": "planning/_shared/info-gate-analysis.md",
+      "next": {
+        "info-flow-specific": {
+          "desc": "Analyze flow-specific patterns",
+          "choose_when": "Gate analysis complete"
+        }
+      }
+    },
+    "info-flow-specific": {
+      "id": "info-flow-specific",
+      "type": "agent",
+      "prompt": "planning/_shared/info-flow-specific.md",
+      "next": {
+        "info-schema-ref": {
+          "desc": "Reference schema definitions",
+          "choose_when": "Flow-specific analysis complete"
+        }
+      }
+    },
+    "info-schema-ref": {
+      "id": "info-schema-ref",
+      "type": "agent",
+      "prompt": "planning/_shared/info-schema-ref.md",
+      "next": {
+        "info-validity-checks": {
+          "desc": "Run validity checks on the plan",
+          "choose_when": "Schema references resolved"
+        }
+      }
+    },
+    "info-validity-checks": {
+      "id": "info-validity-checks",
+      "type": "agent",
+      "prompt": "planning/_shared/info-validity-checks.md",
+      "next": {
+        "info-summarize-consumption": {
+          "desc": "Summarize informational consumption",
+          "choose_when": "Validity checks passed"
+        }
+      }
+    },
+    "info-summarize-consumption": {
+      "id": "info-summarize-consumption",
+      "type": "agent",
+      "prompt": "planning/_shared/info-summarize-consumption.md",
+      "next": {
         "review-gate": {
           "desc": "Present plan for user approval",
-          "choose_when": "Agent routing assignments determined"
+          "choose_when": "Informational phase summarized"
         }
       }
     },

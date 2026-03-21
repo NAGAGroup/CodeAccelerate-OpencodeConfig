@@ -27,7 +27,28 @@ Do NOT copy a static verbatim template for `session-overview.md`. Generate it dy
 
 ### Guidelines Node Placement
 
+**Phase 1 — Task Understanding (beginning of session):**
 A `load-guidelines` node (pointing to this file) should be the **second node** in every planning DAG — immediately after `session-overview`. This ensures the agent knows the schema and planning principles before it starts building anything.
+
+**Phase 2 — Informational Phase (before user gate):**
+After decomposition and agent-routing, but before the user gate (`review-gate`, `seed-gate`, `research-gate`), insert an informational phase. This teaches the planning agent how to design a proper plan spec without cluttering the task-understanding phase with educational content.
+
+The informational phase consists of 8 lightweight nodes:
+1. `info-prime` — Priming: "The following teaches you how to design a proper plan spec"
+2. `info-loop-analysis` — Identify and summarize loop patterns
+3. `info-visit-counter` — Recommend `remaining_visits` for each decision node
+4. `info-gate-analysis` — Recommend gate placement; ask user (skip for collaborative)
+5. `info-flow-specific` — Flow-type reminders (debug/research/review/generic)
+6. `info-schema-ref` — Schema reminder (required fields, types, terminal behavior)
+7. `info-validity-checks` — DAG invariant checklist before finalize
+8. `info-summarize-consumption` — Explicit summary of decisions made
+
+These prompts live in `planning/_shared/` and are shared across all planning DAGs. Each node does one cognitive thing — consume and internalize, not produce output.
+
+**Why informational content comes at the end:**
+- Keeps the task-understanding phase focused on gathering context
+- Allows the agent to apply learnings directly to the plan being constructed
+- Creates explicit acknowledgment that the agent has consumed the design principles
 
 ### Loop Nodes
 

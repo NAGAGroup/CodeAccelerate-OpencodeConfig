@@ -76,9 +76,99 @@
       "type": "agent",
       "prompt": "planning/plan-debug/prompts/agent-routing.md",
       "next": {
+        "info-prime": {
+          "desc": "Prime the informational analysis by establishing the investigation scope",
+          "choose_when": "Delegation routing decisions have been made for all prompt files"
+        }
+      }
+    },
+    "info-prime": {
+      "id": "info-prime",
+      "type": "agent",
+      "prompt": "planning/_shared/info-prime.md",
+      "next": {
+        "info-loop-analysis": {
+          "desc": "Analyze loops and iteration patterns relevant to the bug",
+          "choose_when": "Informational investigation scope has been established"
+        }
+      }
+    },
+    "info-loop-analysis": {
+      "id": "info-loop-analysis",
+      "type": "agent",
+      "prompt": "planning/_shared/info-loop-analysis.md",
+      "next": {
+        "info-visit-counter": {
+          "desc": "Track visit counts and detect runaway iteration",
+          "choose_when": "Loop analysis has been completed"
+        }
+      }
+    },
+    "info-visit-counter": {
+      "id": "info-visit-counter",
+      "type": "agent",
+      "prompt": "planning/_shared/info-visit-counter.md",
+      "next": {
+        "info-gate-analysis": {
+          "desc": "Analyze gate conditions and decision branches",
+          "choose_when": "Visit counter analysis has been completed",
+          "remaining_visits": 3
+        }
+      }
+    },
+    "info-gate-analysis": {
+      "id": "info-gate-analysis",
+      "type": "agent",
+      "prompt": "planning/_shared/info-gate-analysis.md",
+      "next": {
+        "info-flow-specific": {
+          "desc": "Examine flow-specific behavior and edge cases",
+          "choose_when": "Gate analysis has been completed",
+          "remaining_visits": 3
+        }
+      }
+    },
+    "info-flow-specific": {
+      "id": "info-flow-specific",
+      "type": "agent",
+      "prompt": "planning/_shared/info-flow-specific.md",
+      "next": {
+        "info-schema-ref": {
+          "desc": "Reference relevant schemas and type definitions",
+          "choose_when": "Flow-specific analysis has been completed"
+        }
+      }
+    },
+    "info-schema-ref": {
+      "id": "info-schema-ref",
+      "type": "agent",
+      "prompt": "planning/_shared/info-schema-ref.md",
+      "next": {
+        "info-validity-checks": {
+          "desc": "Run validity checks on gathered information",
+          "choose_when": "Schema references have been collected"
+        }
+      }
+    },
+    "info-validity-checks": {
+      "id": "info-validity-checks",
+      "type": "agent",
+      "prompt": "planning/_shared/info-validity-checks.md",
+      "next": {
+        "info-summarize-consumption": {
+          "desc": "Summarize all consumed information for the finalize step",
+          "choose_when": "Validity checks have been completed"
+        }
+      }
+    },
+    "info-summarize-consumption": {
+      "id": "info-summarize-consumption",
+      "type": "agent",
+      "prompt": "planning/_shared/info-summarize-consumption.md",
+      "next": {
         "finalize": {
           "desc": "Write the debug execution session plan to disk and present it to the user",
-          "choose_when": "Delegation routing decisions have been made for all prompt files"
+          "choose_when": "Informational consumption has been summarized"
         }
       }
     },

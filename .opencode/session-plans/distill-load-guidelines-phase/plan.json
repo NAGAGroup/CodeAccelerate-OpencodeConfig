@@ -16,7 +16,9 @@
           "desc": "Analyze current DAG structures",
           "choose_when": "Session overview internalized"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T14:09:18.764Z"
     },
     "subtask-01-analyze-dags": {
       "id": "subtask-01-analyze-dags",
@@ -27,7 +29,9 @@
           "desc": "Design informational phase architecture",
           "choose_when": "DAG analysis complete"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T14:10:23.365Z"
     },
     "subtask-02-design-info-phase": {
       "id": "subtask-02-design-info-phase",
@@ -38,7 +42,9 @@
           "desc": "Update plan-generic",
           "choose_when": "Design complete"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T14:10:58.268Z"
     },
     "subtask-03-update-plan-generic": {
       "id": "subtask-03-update-plan-generic",
@@ -49,7 +55,9 @@
           "desc": "Update remaining 4 DAGs in parallel batch",
           "choose_when": "plan-generic updated"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T14:12:55.190Z"
     },
     "subtask-04-07-batch": {
       "id": "subtask-04-07-batch",
@@ -60,12 +68,20 @@
           "desc": "Update plan-design-guidelines.md",
           "choose_when": "All DAGs updated"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T14:14:07.355Z"
     },
     "subtask-08-update-guidelines": {
       "id": "subtask-08-update-guidelines",
       "type": "agent",
-      "prompt": ".opencode/session-plans/distill-load-guidelines-phase/prompts/subtask-08-update-guidelines.md"
+      "prompt": ".opencode/session-plans/distill-load-guidelines-phase/prompts/subtask-08-update-guidelines.md",
+      "status": "in_progress"
     }
+  },
+  "progress": {
+    "current_node": "subtask-08-update-guidelines",
+    "started_at": "2026-03-21T14:09:11.591Z",
+    "updated_at": "2026-03-21T14:14:07.355Z"
   }
 }
