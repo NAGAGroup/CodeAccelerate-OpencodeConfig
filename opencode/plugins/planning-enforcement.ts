@@ -369,9 +369,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const promptText = readPrompt(nextNode.prompt, context.worktree)
           let result = `Advanced to node "${nextNodeId}" (type: ${nextNode.type}). Status: ${state.status}.\n\n---\n\n${promptText}`
 
-          // Append Available Next Steps if the departing node had branching options (object format)
-          if (typeof currentNode.next === "object" && currentNode.next !== null && !Array.isArray(currentNode.next)) {
-            const nextOptions = currentNode.next as Record<string, { desc: string; choose_when: string }>
+          // Append Available Next Steps if the newly active node has branching options (object format)
+          if (typeof nextNode.next === "object" && nextNode.next !== null && !Array.isArray(nextNode.next)) {
+            const nextOptions = nextNode.next as Record<string, { desc: string; choose_when: string }>
             const optionsList = Object.entries(nextOptions)
               .map(([key, val]) => `- **${key}**: ${val.desc} _(choose when: ${val.choose_when})_`)
               .join("\n")
