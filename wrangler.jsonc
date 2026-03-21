@@ -1,8 +1,8 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "naga-group",
-	"compatibility_date": "2025-01-01",
-	"assets": {
-		"directory": "./dist"
-	}
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ocx-registry",
+  "compatibility_date": "2025-01-01",
+  "assets": {
+    "directory": "./dist"
+  }
 }

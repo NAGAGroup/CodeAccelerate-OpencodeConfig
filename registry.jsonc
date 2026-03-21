@@ -24,22 +24,15 @@
     //   - bundle    - Collections of related components
     //   - profile   - Shareable profile configuration
     {
-      "name": "ocx-bundle",
-      "type": "bundle",
-      "description": "NAGAGroup's base opencode distro files",
+      "name": "ocx-plugins",
+      "type": "plugin",
+      "description": "NAGAGroup's plugins",
       "files": [
-        "agents/context-insurgent.md",
-        "agents/context-scout.md",
-        "agents/deep-researcher.md",
-        "agents/headwrench.md",
-        "agents/junior-dev.md",
-        "agents/quick-doc.md",
-        "commands/activate-plan.md",
-        "commands/plan-collaborative.md",
-        "commands/plan-debug.md",
-        "commands/plan-deep-research.md",
-        "commands/plan-deep-review.md",
-        "commands/plan-generic.md",
+        {
+          "path": "plugins/package.json",
+          "target": "plugins/package.json"
+        },
+        "plugins/planning-enforcement.ts",
         "planning/plan-collaborative/plan.json",
         "planning/plan-collaborative/prompts/agent-routing.md",
         "planning/plan-collaborative/prompts/clarify.md",
@@ -87,10 +80,31 @@
         "planning/plan-generic/prompts/scout.md",
         "planning/plan-generic/prompts/session-overview.md",
         "planning/plan-generic/prompts/synthesize.md",
-        "planning/plan-generic/prompts/task-intake.md",
-        "plugins/planning-enforcement.ts",
+        "planning/plan-generic/prompts/task-intake.md"
+      ]
+    },
+    {
+      "name": "ocx-bundle",
+      "type": "bundle",
+      "description": "NAGAGroup's base opencode distro files",
+      "files": [
+        "agents/context-insurgent.md",
+        "agents/context-scout.md",
+        "agents/deep-researcher.md",
+        "agents/headwrench.md",
+        "agents/junior-dev.md",
+        "agents/quick-doc.md",
+        "commands/activate-plan.md",
+        "commands/plan-collaborative.md",
+        "commands/plan-debug.md",
+        "commands/plan-deep-research.md",
+        "commands/plan-deep-review.md",
+        "commands/plan-generic.md",
         "skills/delegation/SKILL.md",
         "skills/hello-world/SKILL.md"
+      ],
+      "dependencies": [
+        "ocx-plugins"
       ]
     },
     {
