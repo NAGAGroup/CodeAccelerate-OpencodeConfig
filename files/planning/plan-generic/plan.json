@@ -173,7 +173,7 @@
     "design-plan": {
       "id": "design-plan",
       "type": "agent",
-      "prompt": "planning/plan-generic/prompts/finalize.md",
+      "prompt": "planning/plan-generic/prompts/design-plan.md",
       "next": "preview-gate"
     },
     "preview-gate": {
