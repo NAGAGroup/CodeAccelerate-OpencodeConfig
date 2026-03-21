@@ -199,6 +199,42 @@
       ]
     },
     {
+      "name": "ocx-haiku",
+      "type": "profile",
+      "description": "NAGAGroup's haiku profile (Anthropic, all haiku models)",
+      "files": [
+        {
+          "path": "profiles/haiku/opencode.jsonc",
+          "target": "opencode.jsonc"
+        },
+        {
+          "path": "profiles/haiku/ocx.jsonc",
+          "target": "ocx.jsonc"
+        }
+      ],
+      "dependencies": [
+        "ocx-bundle"
+      ]
+    },
+    {
+      "name": "ocx-haiku-copilot",
+      "type": "profile",
+      "description": "NAGAGroup's haiku copilot profile (GitHub Copilot, all haiku models)",
+      "files": [
+        {
+          "path": "profiles/haiku-copilot/opencode.jsonc",
+          "target": "opencode.jsonc"
+        },
+        {
+          "path": "profiles/haiku-copilot/ocx.jsonc",
+          "target": "ocx.jsonc"
+        }
+      ],
+      "dependencies": [
+        "ocx-bundle"
+      ]
+    },
+    {
       "name": "ocx-free",
       "type": "profile",
       "description": "NAGAGroup's free config (using Opencode Zen)",

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://ocx.kdco.dev/schemas/profile.json",
+  "registries": {
+    "naga-group": {
+      "url": "https://ocx-registry.nagagroup.workers.dev"
+    }
+  },
+  "renameWindow": true,
+  "exclude": [],
+  "include": []
+}

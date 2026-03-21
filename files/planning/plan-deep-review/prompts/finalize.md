@@ -28,7 +28,7 @@ You will create:
 - **Node names:** Use assessment step names from decomposition
 - **Node types:** "agent" for review steps, "gate" for risk-based decisions (if any)
 - **`next` field:** Single string for linear; object with branches if gates present
-- **`prompt`:** Relative path to prompt file
+- **`prompt`:** Worktree-relative path to prompt file (e.g., ".opencode/session-plans/{session-name}/prompts/assessment-step.md")
 - **Entry:** First node (usually "session-overview")
 - **Terminal:** Finalize node with no `next` field
 

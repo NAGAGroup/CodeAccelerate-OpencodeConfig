@@ -29,7 +29,7 @@ You will create:
 - **Node types:** "agent" for design nodes, "gate" for user decisions
 - **`next` field:** Single string for linear; object with branches for loops/gates
 - **`remaining_visits`:** Set on user gate nodes that gate feedback loops
-- **`prompt`:** Relative path to prompt file
+- **`prompt`:** Worktree-relative path to prompt file (e.g., ".opencode/session-plans/{session-name}/prompts/design-step.md")
 - **Entry:** First node (usually "session-overview")
 - **Terminal:** Finalize node with no `next` field
 

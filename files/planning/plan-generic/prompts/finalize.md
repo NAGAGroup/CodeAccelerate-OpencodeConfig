@@ -27,7 +27,7 @@ You will create:
 - **Node types:** "agent" for execution nodes, "gate" for decision points
 - **`next` field:** Single string for linear; object with branches for loops/gates
 - **`remaining_visits`:** Set on loop-branching nodes
-- **`prompt`:** Relative path to prompt file (e.g., "prompts/implement.md")
+- **`prompt`:** Worktree-relative path to prompt file (e.g., ".opencode/session-plans/{session-name}/prompts/implement.md")
 - **Entry:** First node (usually "session-overview")
 - **Terminal:** Finalize node with no `next` field
 

@@ -30,7 +30,7 @@ You will create:
 - **Node types:** "agent" for research nodes, "gate" for angle decisions
 - **`next` field:** Single string for linear; object with branches for loops/gates
 - **`remaining_visits`:** Set on synthesis/evaluation nodes that gate evidence loops
-- **`prompt`:** Relative path to prompt file
+- **`prompt`:** Worktree-relative path to prompt file (e.g., ".opencode/session-plans/{session-name}/prompts/research-step.md")
 - **Entry:** First node (usually "session-overview")
 - **Terminal:** Finalize node with no `next` field
 
