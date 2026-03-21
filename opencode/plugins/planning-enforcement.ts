@@ -123,7 +123,18 @@ function activateDag(
 
   // Return prompt text as part of the tool result
   const promptText = readPrompt(entryNode.prompt, worktree)
-  return `DAG "${dag.id}" activated. Starting at node: ${dag.entry}. Status: ${state.status}.\n\n---\n\n${promptText}`
+  let result = `DAG "${dag.id}" activated. Starting at node: ${dag.entry}. Status: ${state.status}.\n\n---\n\n${promptText}`
+
+  // Append Available Next Steps if the entry node has branching options (object format)
+  if (typeof entryNode.next === "object" && entryNode.next !== null && !Array.isArray(entryNode.next)) {
+    const nextOptions = entryNode.next as Record<string, { desc: string; choose_when: string }>
+    const optionsList = Object.entries(nextOptions)
+      .map(([key, val]) => `- **${key}**: ${val.desc} _(choose when: ${val.choose_when})_`)
+      .join("\n")
+    result += `\n\n## Available Next Steps\n\n${optionsList}`
+  }
+
+  return result
 }
 
 // ─── Plugin ───────────────────────────────────────────────────────────────────
@@ -356,7 +367,18 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           // Return next node's prompt as part of the tool result
           const promptText = readPrompt(nextNode.prompt, context.worktree)
-          return `Advanced to node "${nextNodeId}" (type: ${nextNode.type}). Status: ${state.status}.\n\n---\n\n${promptText}`
+          let result = `Advanced to node "${nextNodeId}" (type: ${nextNode.type}). Status: ${state.status}.\n\n---\n\n${promptText}`
+
+          // Append Available Next Steps if the departing node had branching options (object format)
+          if (typeof currentNode.next === "object" && currentNode.next !== null && !Array.isArray(currentNode.next)) {
+            const nextOptions = currentNode.next as Record<string, { desc: string; choose_when: string }>
+            const optionsList = Object.entries(nextOptions)
+              .map(([key, val]) => `- **${key}**: ${val.desc} _(choose when: ${val.choose_when})_`)
+              .join("\n")
+            result += `\n\n## Available Next Steps\n\n${optionsList}`
+          }
+
+          return result
         },
       }),
 
