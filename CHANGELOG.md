@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-03-21
+
+### Added
+- OCX-based distribution: move registry to OCX component format with `bunx ocx build` workflow
+- `Available Next Steps` block appended on successful `activate_plan` execution
+- Execution progress written into `plan.json` from `activate_plan`, `next_step`, and `close_session`
+- `plan-deep-review` planning workflow for structured design and architecture reviews
+- `plan-deep-research` planning workflow for iterative research sessions
+- `choose_when` guidance injected via `next_step` to help users understand when to advance
+- Terminal node constraint: `close_session` only allowed at nodes with no `next` defined
+
+### Changed
+- All four planning workflows restructured per workflow-audit recommendations
+- Planning DAG paths now resolve as config-root-relative for OCX global installation compatibility
+- README.md revised for clarity on multi-agent orchestration system
+- Installation documentation updated to reflect OCX-based distribution workflow
+
+### Fixed
+- Missing schema task node in planning DAG schemas
+- Planning prompts with clearer language patterns and constraints
+
 ## [2.0.0] - 2026-03-20
 
 ### Added
@@ -72,3 +93,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - DCP override paths correctly resolved on Linux and macOS
+
+[2.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.1...v2.0.0
+[1.0.1]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v0.1.0...v1.0.0
+[0.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/tree/v0.1.0
+[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v2.1.0...HEAD

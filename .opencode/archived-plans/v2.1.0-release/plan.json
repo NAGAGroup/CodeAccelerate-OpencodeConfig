@@ -16,7 +16,9 @@
           "desc": "Proceed to write the CHANGELOG.md [2.1.0] section",
           "choose_when": "Session overview has been read and internalized"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T11:46:38.091Z"
     },
     "subtask-01-changelog": {
       "id": "subtask-01-changelog",
@@ -27,7 +29,9 @@
           "desc": "Proceed to bump the registry version",
           "choose_when": "CHANGELOG.md [2.1.0] section has been written"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T11:48:15.084Z"
     },
     "subtask-02-bump-version": {
       "id": "subtask-02-bump-version",
@@ -38,12 +42,22 @@
           "desc": "Proceed to build and verify",
           "choose_when": "registry.jsonc version has been bumped to 2.1.0"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T11:48:31.651Z"
     },
     "subtask-03-build-verify": {
       "id": "subtask-03-build-verify",
       "type": "agent",
-      "prompt": ".opencode/session-plans/v2.1.0-release/prompts/subtask-03-build-verify.md"
+      "prompt": ".opencode/session-plans/v2.1.0-release/prompts/subtask-03-build-verify.md",
+      "status": "completed",
+      "completed_at": "2026-03-21T11:48:47.431Z"
     }
+  },
+  "progress": {
+    "current_node": "subtask-03-build-verify",
+    "started_at": "2026-03-21T11:46:26.833Z",
+    "updated_at": "2026-03-21T11:48:47.431Z",
+    "completed_at": "2026-03-21T11:48:47.431Z"
   }
 }
