@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "id": "close-session-archive",
+  "session_type": "plan-generic",
+  "goal": "Modify close_session to instruct the calling agent to archive the session plan and commit as a chore",
+  "created": "2026-03-20",
+  "status": "ready",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/close-session-archive/prompts/session-overview.md",
+      "next": "subtask-archive-instruction"
+    },
+    "subtask-archive-instruction": {
+      "id": "subtask-archive-instruction",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/close-session-archive/prompts/subtask-archive-instruction.md"
+    }
+  }
+}
