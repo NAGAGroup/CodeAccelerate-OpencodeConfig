@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "id": "distill-load-guidelines-phase",
+  "session_type": "plan-generic",
+  "goal": "Restructure all 5 planning DAGs to move informational content to end before user gate",
+  "created": "2026-03-21",
+  "status": "ready",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/distill-load-guidelines-phase/prompts/session-overview.md",
+      "next": {
+        "subtask-01-analyze-dags": {
+          "desc": "Analyze current DAG structures",
+          "choose_when": "Session overview internalized"
+        }
+      }
+    },
+    "subtask-01-analyze-dags": {
+      "id": "subtask-01-analyze-dags",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/distill-load-guidelines-phase/prompts/subtask-01-analyze-dags.md",
+      "next": {
+        "subtask-02-design-info-phase": {
+          "desc": "Design informational phase architecture",
+          "choose_when": "DAG analysis complete"
+        }
+      }
+    },
+    "subtask-02-design-info-phase": {
+      "id": "subtask-02-design-info-phase",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/distill-load-guidelines-phase/prompts/subtask-02-design-info-phase.md",
+      "next": {
+        "subtask-03-update-plan-generic": {
+          "desc": "Update plan-generic",
+          "choose_when": "Design complete"
+        }
+      }
+    },
+    "subtask-03-update-plan-generic": {
+      "id": "subtask-03-update-plan-generic",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/distill-load-guidelines-phase/prompts/subtask-03-update-plan-generic.md",
+      "next": {
+        "subtask-04-07-batch": {
+          "desc": "Update remaining 4 DAGs in parallel batch",
+          "choose_when": "plan-generic updated"
+        }
+      }
+    },
+    "subtask-04-07-batch": {
+      "id": "subtask-04-07-batch",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/distill-load-guidelines-phase/prompts/subtask-04-07-batch.md",
+      "next": {
+        "subtask-08-update-guidelines": {
+          "desc": "Update plan-design-guidelines.md",
+          "choose_when": "All DAGs updated"
+        }
+      }
+    },
+    "subtask-08-update-guidelines": {
+      "id": "subtask-08-update-guidelines",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/distill-load-guidelines-phase/prompts/subtask-08-update-guidelines.md"
+    }
+  }
+}
