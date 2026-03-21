@@ -17,8 +17,4 @@ This is a gate node. Your role is to present the complete plan to the user and c
 
 ## Advance
 
-Based on the user's response, call `next_step()` and select the appropriate branch:
-
-- Approve → advance to finalize
-- Revise decomposition → go back to decompose
-- Revise requirements → go back to clarify
+**Call `next_step()`** to advance.

@@ -24,4 +24,4 @@ Assign each scout a focused, non-overlapping target. Good targets include:
 
 ## Advance
 
-After all scouts have returned their findings, call `next_step()` to proceed to the research-intake phase.
+After all scouts have returned their findings, call `next_step()` to proceed.

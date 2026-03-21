@@ -41,7 +41,4 @@ This is a gate node. Your role is to present a complete **fix session design** a
 
 ## Advance
 
-Call `next_step()` and select the appropriate branch based on user response:
-
-- **Approved** → `next_step({next: "finalize"})` — generates the fix session plan artifacts and proceeds to implementation
-- **Loop back / changes needed** → `next_step({next: "clarify"})` — returns to the clarification loop to adjust the plan
+**Call `next_step()`** to advance.

@@ -50,4 +50,4 @@ The nodes in this planning session run in order:
 
 ## Advance
 
-Call `next_step()` to proceed to `load-guidelines`.
+**Call `next_step()`** to advance.

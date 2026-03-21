@@ -18,10 +18,12 @@ Your role in this node is to assign an agent and model to every subtask in the s
    - Model tier (haiku / sonnet)
    - One-sentence rationale
 
-4. **Call `next_step()`** to advance. The routing table in context will be used by review-gate and finalize.
-
 ## Constraints
 
 - Every subtask must have an assignment. Do not leave any as TBD.
 - Prefer haiku agents in parallel over a single sonnet agent unless complexity justifies escalation.
 - Do not write any files in this node — routing decisions only.
+
+## Advance
+
+**Call `next_step()`** to advance.

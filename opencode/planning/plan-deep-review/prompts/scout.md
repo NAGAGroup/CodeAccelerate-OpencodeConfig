@@ -45,4 +45,4 @@ Return findings as a structured list or table with:
 
 ## Advance
 
-After **all scouts have returned their findings**, call `next_step()` with no arguments to proceed to `synthesize`.
+**Call `next_step()`** to advance.

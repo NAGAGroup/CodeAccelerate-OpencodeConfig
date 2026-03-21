@@ -37,5 +37,4 @@ This is a gate node. Your role is to present a proposed **session structure** an
 
 ## Advance
 
-- Call `next_step()` and select the finalize option — user approves the session structure
-- Call `next_step()` and select the clarify option — user wants to adjust the structure before starting
+**Call `next_step()`** to advance.

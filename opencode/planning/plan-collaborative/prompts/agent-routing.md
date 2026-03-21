@@ -25,10 +25,13 @@ You are a session designer. Your role in this node is to determine what delegati
 
 4. **Produce a delegation summary** — one paragraph per prompt file stating what delegation instruction to embed.
 
-5. **Call `next_step()`** to advance. Finalize will use these instructions when writing the prompt files.
 
 ## Constraints
 
 - Do not write any files in this node.
 - The collaborative plan is intentionally flexible — your routing recommendations should cover the most likely scenarios, not every possible one.
 - Prefer haiku agents by default. Escalate to sonnet only if the exploration area is genuinely complex.
+
+## Advance
+
+**Call `next_step()`** to advance.

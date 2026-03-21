@@ -27,5 +27,4 @@ You are **NOT** starting to explore the topic, answer its questions, or engage w
 
 ## Advance
 
-- If more clarification is needed: call `next_step()` and select the loop option.
-- If there is enough to write a seed plan: call `next_step()` and select the advance option.
+**Call `next_step()`** to advance.

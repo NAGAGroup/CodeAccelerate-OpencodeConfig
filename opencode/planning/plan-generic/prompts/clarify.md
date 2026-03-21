@@ -22,5 +22,4 @@ Your role in this node is to ask targeted clarifying questions before codebase e
 
 ## Advance
 
-- If more clarification is needed: call `next_step()` and select the loop option.
-- If you have enough information to proceed: call `next_step()` and select the advance option.
+**Call `next_step()`** to advance.

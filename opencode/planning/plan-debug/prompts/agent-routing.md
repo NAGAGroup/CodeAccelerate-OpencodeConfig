@@ -26,9 +26,11 @@ Your role in this node is to determine what delegation instructions should be em
 
 4. **Produce a delegation summary** — one paragraph per prompt file stating what delegation instruction to embed.
 
-5. **Call `next_step()`** to advance. Finalize will use these instructions when writing the prompt files.
-
 ## Constraints
 
 - Do not write any files in this node.
 - Base your routing recommendations on actual bug complexity from context — do not default to the most expensive agent.
+
+## Advance
+
+**Call `next_step()`** to advance.

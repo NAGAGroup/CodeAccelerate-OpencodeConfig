@@ -21,4 +21,4 @@ Present the synthesis as a brief codebase context summary (bullet points preferr
 
 ## Advance
 
-Call `next_step()` to proceed to `decompose`.
+**Call `next_step()`** to advance.

@@ -16,7 +16,6 @@ Your role in this node is to route each finding group from synthesis to the appr
    - Model Tier
    - Rationale
 4. **Flag risky or ambiguous routing decisions** with `[🚫 GATE]` notation. Include a brief explanation of the risk (e.g., "unclear scope boundary", "potential side effects", "security concern").
-5. **Call `next_step()`** to advance to `review-gate`. The routing table will be available in context for gate review.
 
 ## Constraints
 
@@ -25,3 +24,7 @@ Your role in this node is to route each finding group from synthesis to the appr
 - Escalate to HeadWrench only for work requiring shell access, build modifications, cross-project impact, or security judgment.
 - Do not write or execute any fixes in this node — routing decisions only.
 - Do not call the delegation skill to perform fixes; use it only to guide routing decisions.
+
+## Advance
+
+**Call `next_step()`** to advance.

@@ -39,4 +39,4 @@ This is a gate node. Your role is to present a proposed **research session struc
 
 ## Advance
 
-Call `next_step()` to proceed. The DAG plugin will present the available branch options — select finalize to proceed with the approved session, or select clarify to loop back and adjust.
+**Call `next_step()`** to advance.

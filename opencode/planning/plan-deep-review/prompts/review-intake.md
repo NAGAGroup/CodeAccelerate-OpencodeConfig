@@ -26,4 +26,4 @@ Ask the user to confirm or correct the scope and flags. If they confirm, proceed
 
 ## Advance
 
-Call `next_step()` to proceed to the `scout` node.
+**Call `next_step()`** to advance.

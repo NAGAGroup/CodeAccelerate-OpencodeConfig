@@ -31,4 +31,4 @@ Then present a brief overview:
 
 ## Advance
 
-Call `next_step()` to proceed to `agent-routing`.
+**Call `next_step()`** to advance.

@@ -24,4 +24,4 @@ Assign each scout a focused, non-overlapping target. Good targets include:
 
 ## Advance
 
-After all scouts have returned their findings, call `next_step()` to proceed to `synthesize`.
+**Call `next_step()`** to advance.

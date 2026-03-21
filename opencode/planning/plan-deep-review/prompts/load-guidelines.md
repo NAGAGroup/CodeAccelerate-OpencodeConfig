@@ -6,4 +6,4 @@ Internalize the schema requirements and planning best-practices before proceedin
 
 ## Advance
 
-Call `next_step()` to proceed to `review-intake`.
+**Call `next_step()`** to advance.
