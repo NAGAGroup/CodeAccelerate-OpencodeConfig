@@ -9,7 +9,7 @@ interface DagNode {
   id: string
   type: "agent" | "gate"
   prompt: string
-  next?: string | string[]
+  next?: Record<string, { desc: string; choose_when: string }> | string | undefined
   remaining_visits?: number
   status?: "pending" | "in_progress" | "completed"
   completed_at?: string
@@ -299,6 +299,19 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               return `Invalid next node "${next}". Valid options for "${state.current_node}": [${currentNode.next.join(", ")}]`
             }
             nextNodeId = next
+          } else if (typeof currentNode.next === "object" && currentNode.next !== null && !Array.isArray(currentNode.next)) {
+            const nextOptions = currentNode.next as Record<string, { desc: string; choose_when: string }>
+            const validKeys = Object.keys(nextOptions)
+            if (!next) {
+              const optionsList = validKeys
+                .map((key) => `- **${key}**: ${nextOptions[key].desc} _(choose when: ${nextOptions[key].choose_when})_`)
+                .join("\n")
+              return `Node "${state.current_node}" has multiple next options. Call next_step with the 'next' argument specifying which node to advance to.\n\n## Available Next Steps\n\n${optionsList}`
+            }
+            if (!validKeys.includes(next)) {
+              return `Invalid next node "${next}". Valid options for "${state.current_node}": [${validKeys.join(", ")}]`
+            }
+            nextNodeId = next
           } else {
             // Terminal node — no next; mark departing node completed in plan.json
             if (state.plan_path.includes(".opencode/session-plans")) {
@@ -365,6 +378,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             // Write final progress into plan.json (session plans only)
             if (state && state.plan_path && state.plan_path.includes(".opencode/session-plans") && fs.existsSync(state.plan_path)) {
               const dag = readDag(state.plan_path)
+
+              // Guard: only allow close_session on terminal nodes
+              const currentNodeForClose = dag.nodes[state.current_node]
+              if (currentNodeForClose && currentNodeForClose.next !== undefined) {
+                return `close_session() may only be called on terminal nodes. Current node '${state.current_node}' has a next field.`
+              }
+
               if (dag.progress) {
                 dag.nodes[state.current_node].status = "completed"
                 dag.nodes[state.current_node].completed_at = now()

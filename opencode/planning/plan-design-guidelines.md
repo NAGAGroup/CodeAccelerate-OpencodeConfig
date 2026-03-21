@@ -31,7 +31,7 @@ A `load-guidelines` node (pointing to this file) should be the **second node** i
 
 ### Loop Nodes
 
-A node whose `next` array includes its own ID is a loop node. Always add `remaining_visits` (default: `3`) to cap the loop. If the counter is exhausted and the DAG enters `failed` state, surface this to the user and ask whether to continue and with how many additional visits (default: 3). If they confirm, call `reset_counters({ visits: N })` to restore the counter and resume.
+A node whose `next` object includes its own ID is a loop node. Always add `remaining_visits` (default: `3`) to cap the loop. If the counter is exhausted and the DAG enters `failed` state, surface this to the user and ask whether to continue and with how many additional visits (default: 3). If they confirm, call `reset_counters({ visits: N })` to restore the counter and resume.
 
 ### Gate Placement
 
@@ -110,7 +110,12 @@ This is the canonical schema for all `plan.json` execution DAG files produced by
   "id": "my-node",
   "type": "agent",
   "prompt": ".opencode/session-plans/{session-name}/prompts/my-node.md",
-  "next": "next-node-id",
+  "next": {
+    "next-node-id": {
+      "desc": "Proceed to the next step",
+      "choose_when": "Current step completed successfully"
+    }
+  },
   "remaining_visits": 3
 }
 ```
@@ -120,7 +125,7 @@ This is the canonical schema for all `plan.json` execution DAG files produced by
 | `id` | ✅ | Unique node identifier — must match its key in `nodes` |
 | `type` | ✅ | `"agent"` (LLM executes) or `"gate"` (waits for user approval) |
 | `prompt` | ✅ | Path to the prompt file — see Path Resolution below |
-| `next` | optional | Omit for terminal nodes. String for single next, array for branching. |
+| `next` | optional | Omit for terminal nodes. Can be a string (single next), an object mapping branch IDs to descriptions (with optional `choose_when`), or undefined. Type: `Record<string, { desc: string; choose_when: string }> | string | undefined`. |
 | `remaining_visits` | optional | Loop counter — see Loop Nodes below |
 
 #### Runtime Fields — Per-Node
@@ -155,14 +160,23 @@ A node with no `next` field is terminal. When `next_step()` is called on a termi
 
 ### Loop Nodes
 
-A node whose `next` array includes its own ID (or a prior node ID) is a loop node. Add `remaining_visits` to cap the loop:
+A node whose `next` object includes its own ID (or a prior node ID) as a key is a loop node. Add `remaining_visits` to cap the loop:
 
 ```json
 "diagnose": {
   "id": "diagnose",
   "type": "agent",
   "prompt": "...",
-  "next": ["diagnose", "fix"],
+  "next": {
+    "diagnose": {
+      "desc": "Repeat diagnosis",
+      "choose_when": "Need further diagnosis"
+    },
+    "fix": {
+      "desc": "Proceed to fix",
+      "choose_when": "Diagnosis complete"
+    }
+  },
   "remaining_visits": 3
 }
 ```
@@ -181,7 +195,16 @@ Gate nodes pause execution and wait for explicit user approval before advancing:
   "id": "review-gate",
   "type": "gate",
   "prompt": "...",
-  "next": ["approved-branch", "rejected-branch"]
+  "next": {
+    "approved-branch": {
+      "desc": "Proceed to approved branch",
+      "choose_when": "User approved the plan"
+    },
+    "rejected-branch": {
+      "desc": "Proceed to rejected branch",
+      "choose_when": "User rejected the plan"
+    }
+  }
 }
 ```
 
@@ -203,7 +226,12 @@ The agent presents findings, waits for user input, then calls `next_step({ next:
       "id": "session-overview",
       "type": "agent",
       "prompt": ".opencode/session-plans/my-feature/prompts/session-overview.md",
-      "next": "subtask-01-add-toggle"
+      "next": {
+        "subtask-01-add-toggle": {
+          "desc": "Proceed to add toggle subtask",
+          "choose_when": "Session overview completed"
+        }
+      }
     },
     "subtask-01-add-toggle": {
       "id": "subtask-01-add-toggle",

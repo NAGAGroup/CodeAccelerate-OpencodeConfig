@@ -9,13 +9,23 @@
       "id": "session-overview",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/session-overview.md",
-      "next": ["load-guidelines"]
+      "next": {
+        "load-guidelines": {
+          "desc": "Proceed to load design guidelines",
+          "choose_when": "Session overview completed"
+        }
+      }
     },
     "load-guidelines": {
       "id": "load-guidelines",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
-      "next": ["scout"]
+      "next": {
+        "scout": {
+          "desc": "Proceed to scout for research context",
+          "choose_when": "Guidelines loaded successfully"
+        }
+      }
     },
     "scout": {
       "id": "scout",
@@ -27,25 +37,53 @@
       "id": "research-intake",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/research-intake.md",
-      "next": ["clarify"]
+      "next": {
+        "clarify": {
+          "desc": "Proceed to clarify research requirements",
+          "choose_when": "Research intake completed"
+        }
+      }
     },
     "clarify": {
       "id": "clarify",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/clarify.md",
-      "next": ["clarify", "agent-routing"]
+      "next": {
+        "clarify": {
+          "desc": "Loop for more clarification",
+          "choose_when": "Need further clarification on research scope"
+        },
+        "agent-routing": {
+          "desc": "Proceed to agent routing",
+          "choose_when": "Enough session-design context gathered to write a research plan"
+        }
+      }
     },
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/agent-routing.md",
-      "next": ["research-gate"]
+      "next": {
+        "research-gate": {
+          "desc": "Proceed to research gate for approval",
+          "choose_when": "Agent routing completed"
+        }
+      }
     },
     "research-gate": {
       "id": "research-gate",
       "type": "gate",
       "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/research-gate.md",
-      "next": ["finalize", "clarify"]
+      "next": {
+        "finalize": {
+          "desc": "Proceed to finalize the research plan",
+          "choose_when": "User approved the research session design"
+        },
+        "clarify": {
+          "desc": "Loop back to clarify further",
+          "choose_when": "User requested revisions to the research scope"
+        }
+      }
     },
     "finalize": {
       "id": "finalize",

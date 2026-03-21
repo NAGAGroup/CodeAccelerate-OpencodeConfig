@@ -9,43 +9,78 @@
       "id": "session-overview",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/session-overview.md",
-      "next": ["load-guidelines"]
+      "next": {
+        "load-guidelines": {
+          "desc": "Load plan design guidelines and schema reference",
+          "choose_when": "Session overview has been read and internalized"
+        }
+      }
     },
     "load-guidelines": {
       "id": "load-guidelines",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
-      "next": ["scout"]
+      "next": {
+        "scout": {
+          "desc": "Gather codebase context relevant to the bug",
+          "choose_when": "Plan design guidelines have been loaded"
+        }
+      }
     },
     "bug-intake": {
       "id": "bug-intake",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/bug-intake.md",
-      "next": ["hypothesis-form"]
+      "next": {
+        "hypothesis-form": {
+          "desc": "Form a best-guess hypothesis about the root cause",
+          "choose_when": "Bug description, symptoms, reproduction steps, and acceptance criteria are captured"
+        }
+      }
     },
     "scout": {
       "id": "scout",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/context-gather.md",
-      "next": ["bug-intake"]
+      "next": {
+        "bug-intake": {
+          "desc": "Capture a precise, reproducible problem statement from the user",
+          "choose_when": "Context scouts have returned and findings have been synthesized"
+        }
+      }
     },
     "hypothesis-form": {
       "id": "hypothesis-form",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/hypothesis-form.md",
-      "next": ["confirm-mode"]
+      "next": {
+        "confirm-mode": {
+          "desc": "Ask user whether the execution loop should pause for confirmation on each hypothesis",
+          "choose_when": "One best-guess hypothesis has been formulated and presented"
+        }
+      }
     },
     "confirm-mode": {
       "id": "confirm-mode",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/confirm-mode.md",
-      "next": ["agent-routing"]
+      "next": {
+        "agent-routing": {
+          "desc": "Determine delegation instructions for each debug session prompt file",
+          "choose_when": "User has confirmed whether the debugging loop should pause for hypothesis approval"
+        }
+      }
     },
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/agent-routing.md",
-      "next": ["finalize"]
+      "next": {
+        "finalize": {
+          "desc": "Write the debug execution session plan to disk and present it to the user",
+          "choose_when": "Delegation routing decisions have been made for all prompt files"
+        }
+      }
     },
     "finalize": {
       "id": "finalize",
