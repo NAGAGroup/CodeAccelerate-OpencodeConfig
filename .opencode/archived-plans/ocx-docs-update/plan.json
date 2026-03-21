@@ -16,7 +16,9 @@
           "desc": "Rewrite README.md with OCX install flow",
           "choose_when": "Session overview has been read and internalized"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T09:58:02.059Z"
     },
     "subtask-01-readme": {
       "id": "subtask-01-readme",
@@ -27,7 +29,9 @@
           "desc": "Rewrite docs/getting-started.md with OCX install flow",
           "choose_when": "README.md has been rewritten"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T09:58:43.428Z"
     },
     "subtask-02-getting-started": {
       "id": "subtask-02-getting-started",
@@ -38,7 +42,9 @@
           "desc": "Update docs/configuration.md file paths",
           "choose_when": "docs/getting-started.md has been rewritten"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T09:59:06.165Z"
     },
     "subtask-03-configuration": {
       "id": "subtask-03-configuration",
@@ -49,12 +55,22 @@
           "desc": "Scan and fix planning/agents/commands docs",
           "choose_when": "docs/configuration.md has been updated"
         }
-      }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T09:59:33.794Z"
     },
     "subtask-04-scan-remaining-docs": {
       "id": "subtask-04-scan-remaining-docs",
       "type": "agent",
-      "prompt": ".opencode/session-plans/ocx-docs-update/prompts/subtask-04-scan-remaining-docs.md"
+      "prompt": ".opencode/session-plans/ocx-docs-update/prompts/subtask-04-scan-remaining-docs.md",
+      "status": "completed",
+      "completed_at": "2026-03-21T09:59:46.223Z"
     }
+  },
+  "progress": {
+    "current_node": "subtask-04-scan-remaining-docs",
+    "started_at": "2026-03-21T09:57:57.549Z",
+    "updated_at": "2026-03-21T09:59:46.223Z",
+    "completed_at": "2026-03-21T09:59:46.223Z"
   }
 }
