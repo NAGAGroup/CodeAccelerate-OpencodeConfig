@@ -1,129 +1,69 @@
-# Node: finalize — /plan-debug
+# Finalize: Write the Project DAG
 
-Your role in this node is to write the debug execution session plan to disk. The shape of the generated session depends on the user's answer in `confirm-mode`.
+Your task is to **write the investigation project DAG** that was just approved.
 
-## Steps
+## What You Have
 
-1. **Apply delegation instructions** — Use the delegation recommendations from agent-routing to embed the appropriate delegation instructions in `diagnose.md`, `fix.md`, and (if applicable) `hypothesis-gate.md`.
+From planning:
+- Bug symptoms, reproduction path, and impact
+- Primary and alternative hypotheses
+- Chosen investigation shape (1A, 1B, 1D, 1E, or 1F)
+- Diagnosis steps with hypothesis testing details
+- Test strategy per step
+- Agent routing: assignments and model tiers
+- Loop/gate details (if applicable)
+- User approval
 
-2. **Confirm diagnose loop count with the user** — Ask: "How many diagnose iterations do you want for this session? (default: 3)" Use their response as `remaining_visits` on the `diagnose` node.
+## What You Write
 
-3. **Determine the session shape** from context (confirm-mode answer):
+You will create:
+1. **plan.json** — The executable investigation DAG matching the chosen shape
+2. **session-overview.md** — Context for the investigating agent
+3. **prompts/{diagnosis-step}.md** — One prompt per diagnosis step
+4. **prompts/finalize.md** — Prompt for the investigation's finalize node
 
-   **With confirmation (confirm-mode: yes):**
-   - DAG: `session-overview → diagnose → hypothesis-gate (gate) → fix → verify → [loop back to diagnose OR advance to close]`
-   - `diagnose` has `next: ["hypothesis-gate"]`
-   - `hypothesis-gate` has `next: ["fix", "diagnose"]`
-   - `verify` has `next: { "diagnose": { loop back }, "close": { all checks pass } }` with `remaining_visits` as confirmed
-   - `close` has NO `next` field — it is the terminal node
+## How to Write plan.json
 
-   **Without confirmation (confirm-mode: no):**
-   - DAG: `session-overview → diagnose → fix → verify → [loop back to diagnose OR advance to close]`
-   - `diagnose` has `next: ["fix"]`
-   - `verify` has `next: { "diagnose": { loop back }, "close": { all checks pass } }` with `remaining_visits` as confirmed
-   - `close` has NO `next` field — it is the terminal node
+- **Nodes:** Match your investigation shape (1A, 1B, 1D, 1E, 1F)
+- **Node names:** Use diagnosis step names from decomposition
+- **Node types:** "agent" for investigation nodes, "gate" for hypothesis decisions
+- **`next` field:** Single string for linear; object with branches for loops/gates
+- **`remaining_visits`:** Set on evaluation nodes that gate diagnosis loops
+- **`prompt`:** Relative path to prompt file
+- **Entry:** First node (usually "session-overview")
+- **Terminal:** Finalize node with no `next` field
 
-   > **Critical:** `verify` MUST NOT be made terminal by omitting its `next` field. `verify` is a loop node — it always has two branches: a back-loop and an exit to `close`. The `close` node is the only terminal node. This is non-negotiable.
+## Session-Overview Content
 
-4. **Generate a session-specific `session-overview.md`** — Do NOT copy a static template. Generate it dynamically. It must include:
-   - `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->` as the first line
-   - The bug description and acceptance criteria (from bug-intake)
-   - The approved hypothesis (from hypothesis-form) — this is the execution starting point
-   - The execution mode: confirmation on or off
-   - The session structure (node-by-node for the chosen shape)
-   - Self-editing authority: the agent may rewrite `fix.md` during the session; must not delete or rename the currently-executing node
-   - `## Advance`: "Read this overview once, internalize it, then call `next_step()` immediately."
+Write for the **investigating agent**:
+- Bug symptoms and reproduction path
+- Impact and severity
+- Primary and alternative hypotheses
+- High-level investigation structure
+- Key diagnosis loops and decision points
+- Subtask overview
+- Note: "This investigation may reveal the root cause early or require hypothesis branching. Each step produces evidence that guides the next."
 
-5. **Write session plan files** to `.opencode/session-plans/{bug-name}/`:
+## Diagnosis Prompts
 
-   **`plan.json`** — Use the schema from load-guidelines. Build the correct DAG for the chosen session shape (Step 3).
+For each diagnosis step:
+- Clear instruction on what investigation to perform
+- What evidence to gather and how
+- What results confirm or falsify the hypothesis
+- How to advance to next node
 
-   > **Critical:** The final node in the generated `plan.json` MUST NOT have a `next` field. Omit it entirely. If `next` is present on the terminal node, executing agents cannot call `close_session()` and the session will be stuck.
+## Output
 
-   **`prompts/session-overview.md`** — Generated in Step 4.
+Write `.opencode/session-plans/{bug-name}/`:
+```
+plan.json
+session-overview.md
+prompts/
+  session-overview.md
+  {diagnosis-step-1}.md
+  {diagnosis-step-2}.md
+  ...
+  finalize.md
+```
 
-   **`prompts/diagnose.md`** — First line: `<!-- DO NOT COMPACT THIS NODE -->`. Bake in the approved hypothesis as the starting point. Must include strict loop node language:
-
-   ```
-   ## Constraints
-
-   You are in a loop node. You have ONE action: inspect the code path, write your findings to `fix.md`, then call `next_step()` immediately. Do NOT summarize, analyze, propose multiple solutions, or take any other action. After calling `next_step()`, stop — the DAG determines whether to loop again or advance. You MUST NOT make that determination yourself.
-   ```
-
-   The prompt must instruct the agent to write targeted findings to `fix.md` — not to call `next_step()` themselves.
-
-   **`prompts/hypothesis-gate.md`** (only if confirm-mode: yes) — First line: `<!-- DO NOT COMPACT THIS NODE -->`. Present the current diagnosis from `diagnose.md`. Ask the user: "Proceed with this fix?" — Yes advances to `fix`, No loops back to `diagnose`. Must use strict gate node language:
-
-   ```
-   ## Constraints
-
-   Present the diagnosis to the user. Then stop and wait. Do NOT call `next_step()` until the user has provided an explicit approval or redirect response. Do NOT infer approval from silence or partial responses. When the user responds:
-   - If **Yes**: Call `next_step({ next: "fix" })` exactly once. Stop.
-   - If **No**: Call `next_step({ next: "diagnose" })` exactly once. Stop.
-   ```
-
-   **`prompts/fix.md`** — First line: `<!-- DO NOT COMPACT THIS NODE -->`. Starts as a placeholder: "No fix identified yet." The agent overwrites this file during iterations, accumulating "tried X, result Y" history. Must include:
-
-   ```
-   ## Constraints
-
-   - You MUST NOT run tests, verification commands, or any check to confirm the fix works. That is `verify.md`'s job.
-   - You MUST NOT call `next_step()` or `close_session()` directly. Let the workflow control progression.
-   - You MUST write only to `fix.md` — describe what you changed and why.
-   ```
-
-   **`prompts/verify.md`** — First line: `<!-- DO NOT COMPACT THIS NODE -->`. Must use the strict verification pattern:
-
-   ```
-   ## Verification Steps
-
-   Execute ONLY the following steps, in order, exactly once:
-
-   1. [specific step 1 — e.g., "Run the test suite: `npm test`"]
-   2. [specific step 2 — e.g., "Check the specific failing test output"]
-   3. [specific step 3 — e.g., "Confirm error is resolved"]
-
-   Do NOT run additional commands. Do NOT take any other action. Do NOT interpret results beyond the pass/fail criteria below.
-
-   **If all steps pass:** Call `next_step({ next: "close" })` exactly once. Stop.
-   **If any step fails:** Call `next_step({ next: "diagnose" })` exactly once. Stop. Do NOT attempt to fix anything here — that is the diagnose node's job.
-   ```
-
-   **`prompts/close.md`** — First line: `<!-- DO NOT COMPACT THIS NODE -->`. Terminal node — no fix work, just confirmation:
-
-   ```
-   # Node: close
-
-   All verification checks passed. The bug is resolved.
-
-   Present a brief summary to the user:
-   - Bug that was fixed
-   - What changed (from the fix.md history)
-   - Acceptance criteria met
-
-   ## Advance
-
-   Call `close_session()` exactly once. Do NOT call `next_step()` — this is a terminal node. Do NOT take any other action.
-   ```
-
-6. **Commit**:
-   ```
-   git add .opencode/session-plans/{bug-name}/
-   git commit -m "plan: add debug session {bug-name}"
-   ```
-
-7. **Present the plan** to the user:
-   - Bug statement and acceptance criteria
-   - The hypothesis
-   - Session structure (chosen shape, diagnose visit count)
-   - Next step: "Run '/activate-plan {bug-name}' when ready to begin."
-
-## Constraints
-
-- `fix.md` must start as a placeholder — it is intentionally empty at plan creation time.
-- You MUST NOT execute any fixes or run any verification commands during plan creation.
-- You MUST NOT modify the DAG after `close_session()` is called.
-
-## Advance
-
-Call `close_session()` exactly once. Do this exactly once. Do NOT call `next_step()` — this is a terminal node. Do NOT read session files or DAG state. Do NOT take any other action before or after calling `close_session()`.
+Call `close_session()` when done.

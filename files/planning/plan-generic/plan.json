@@ -1,224 +1,179 @@
 {
   "schema_version": "1.0",
   "id": "plan-generic",
-  "session_type": "plan-generic",
-  "status": "ready",
+  "session_type": "generic",
+  "description": "Planning scaffold for generating generic project DAGs. Decomposes work into subtasks, routes agents, selects DAG shape (1A-1F), gathers design input, and writes the project DAG.",
+  "goal": "Enable planning agents to generate valid generic project DAGs by understanding task requirements, decomposing into subtasks, routing agents, and selecting the right execution shape.",
   "entry": "session-overview",
   "nodes": {
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "planning/plan-generic/prompts/session-overview.md",
-      "next": {
-        "load-guidelines": {
-          "desc": "Load the plan design guidelines and schema reference.",
-          "choose_when": "Session overview has been read and internalized."
-        }
-      }
-    },
-    "load-guidelines": {
-      "id": "load-guidelines",
-      "type": "agent",
-      "prompt": "planning/plan-design-guidelines.md",
-      "next": {
-        "scout": {
-          "desc": "Dispatch parallel scouts to explore the codebase.",
-          "choose_when": "Design guidelines and plan schema have been loaded."
-        }
-      }
+      "prompt": "plan-generic/prompts/session-overview.md",
+      "next": "task-intake"
     },
     "task-intake": {
       "id": "task-intake",
       "type": "agent",
-      "prompt": "planning/plan-generic/prompts/task-intake.md",
-      "next": {
-        "clarify": {
-          "desc": "Begin asking targeted clarifying questions.",
-          "choose_when": "Task description has been captured and initial ambiguities identified."
-        }
-      }
-    },
-    "clarify": {
-      "id": "clarify",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/clarify.md",
-      "next": {
-        "assess": {
-          "desc": "Evaluate whether enough context has been gathered to proceed.",
-          "choose_when": "Clarifying question has been asked."
-        }
-      }
-    },
-    "assess": {
-      "id": "assess",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/assess.md",
-      "next": {
-        "clarify": {
-          "desc": "Ask another clarifying question.",
-          "choose_when": "There are still critical unknowns that would block decomposition."
-        },
-        "synthesize": {
-          "desc": "Synthesize scout findings into a coherent codebase understanding.",
-          "choose_when": "Enough information has been gathered to proceed with decomposition."
-        }
-      }
-    },
-    "synthesize": {
-      "id": "synthesize",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/synthesize.md",
-      "next": {
-        "decompose": {
-          "desc": "Break the work into concrete, ordered subtasks.",
-          "choose_when": "Codebase understanding has been synthesized and presented to the user."
-        }
-      }
+      "prompt": "plan-generic/prompts/task-intake.md",
+      "next": "scout"
     },
     "scout": {
       "id": "scout",
       "type": "agent",
-      "prompt": "planning/plan-generic/prompts/scout.md",
+      "prompt": "plan-generic/prompts/scout.md",
+      "next": "clarify"
+    },
+    "clarify": {
+      "id": "clarify",
+      "type": "agent",
+      "prompt": "plan-generic/prompts/clarify.md",
+      "next": "evaluate-understanding"
+    },
+    "evaluate-understanding": {
+      "id": "evaluate-understanding",
+      "type": "agent",
+      "prompt": "plan-generic/prompts/evaluate-understanding.md",
       "next": {
-        "task-intake": {
-          "desc": "Capture and clarify the task description.",
-          "choose_when": "Scout agents have returned their codebase findings."
+        "scout": {
+          "desc": "Need more context to understand task and codebase",
+          "choose_when": "Understanding of task, constraints, or codebase is insufficient"
+        },
+        "propose-shape": {
+          "desc": "Sufficient context gathered; ready to select DAG shape",
+          "choose_when": "Enough context to understand task decomposition"
         }
       }
     },
-    "decompose": {
-      "id": "decompose",
+    "propose-shape": {
+      "id": "propose-shape",
       "type": "agent",
-      "prompt": "planning/plan-generic/prompts/decompose.md",
+      "prompt": "plan-generic/prompts/propose-shape.md",
+      "next": "evaluate-shape"
+    },
+    "evaluate-shape": {
+      "id": "evaluate-shape",
+      "type": "agent",
+      "prompt": "plan-generic/prompts/evaluate-shape.md",
       "next": {
-        "agent-routing": {
-          "desc": "Assign agents and models to each subtask.",
-          "choose_when": "Subtask breakdown has been drafted and presented to the user."
+        "propose-shape": {
+          "desc": "Shape doesn't fit task; reconceptualize",
+          "choose_when": "Proposed shape doesn't address the task's complexity or unknowns"
+        },
+        "propose-decomposition": {
+          "desc": "Shape is appropriate; proceed to break task into subtasks",
+          "choose_when": "Selected shape fits the task well"
         }
       }
+    },
+    "propose-decomposition": {
+      "id": "propose-decomposition",
+      "type": "agent",
+      "prompt": "plan-generic/prompts/propose-decomposition.md",
+      "next": "evaluate-decomposition"
+    },
+    "evaluate-decomposition": {
+      "id": "evaluate-decomposition",
+      "type": "agent",
+      "prompt": "plan-generic/prompts/evaluate-decomposition.md",
+      "next": {
+        "refine-decomposition": {
+          "desc": "Decomposition needs adjustment; refine boundaries or granularity",
+          "choose_when": "Subtasks are too broad, too fine, or have unclear dependencies"
+        },
+        "agent-routing": {
+          "desc": "Decomposition is solid; proceed to assign agents to subtasks",
+          "choose_when": "Subtasks are well-scoped, boundaries clear, dependencies explicit"
+        }
+      }
+    },
+    "refine-decomposition": {
+      "id": "refine-decomposition",
+      "type": "agent",
+      "prompt": "plan-generic/prompts/refine-decomposition.md",
+      "next": "evaluate-decomposition"
     },
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
-      "prompt": "planning/plan-generic/prompts/agent-routing.md",
-      "next": {
-        "info-prime": {
-          "desc": "Begin informational phase — priming.",
-          "choose_when": "Agent routing assignments have been completed for all subtasks."
-        }
-      }
+      "prompt": "plan-generic/prompts/agent-routing.md",
+      "next": "info-prime"
     },
     "info-prime": {
       "id": "info-prime",
       "type": "agent",
-      "prompt": "planning/_shared/info-prime.md",
-      "next": {
-        "info-loop-analysis": {
-          "desc": "Identify loop patterns in the plan.",
-          "choose_when": "Priming content internalized."
-        }
-      }
+      "prompt": "plan-generic/prompts/info-prime.md",
+      "next": "info-loop-analysis"
     },
     "info-loop-analysis": {
       "id": "info-loop-analysis",
       "type": "agent",
-      "prompt": "planning/_shared/info-loop-analysis.md",
-      "next": {
-        "info-visit-counter": {
-          "desc": "Recommend visit counters for loops.",
-          "choose_when": "Loops identified and summarized."
-        }
-      }
+      "prompt": "plan-generic/prompts/info-loop-analysis.md",
+      "next": "info-visit-counter"
     },
     "info-visit-counter": {
       "id": "info-visit-counter",
       "type": "agent",
-      "prompt": "planning/_shared/info-visit-counter.md",
-      "next": {
-        "info-gate-analysis": {
-          "desc": "Analyze gate placement options.",
-          "choose_when": "Visit counter recommendations recorded."
-        }
-      }
+      "prompt": "plan-generic/prompts/info-visit-counter.md",
+      "next": "info-gate-analysis"
     },
     "info-gate-analysis": {
       "id": "info-gate-analysis",
       "type": "agent",
-      "prompt": "planning/_shared/info-gate-analysis.md",
-      "next": {
-        "info-flow-specific": {
-          "desc": "Review flow-specific considerations.",
-          "choose_when": "Gate decisions recorded."
-        }
-      }
+      "prompt": "plan-generic/prompts/info-gate-analysis.md",
+      "next": "info-shape-ref"
     },
-    "info-flow-specific": {
-      "id": "info-flow-specific",
+    "info-shape-ref": {
+      "id": "info-shape-ref",
       "type": "agent",
-      "prompt": "planning/plan-generic/prompts/info-flow-specific.md",
-      "next": {
-        "info-schema-ref": {
-          "desc": "Review schema reference.",
-          "choose_when": "Flow-specific notes internalized."
-        }
-      }
-    },
-    "info-schema-ref": {
-      "id": "info-schema-ref",
-      "type": "agent",
-      "prompt": "planning/_shared/info-schema-ref.md",
-      "next": {
-        "info-validity-checks": {
-          "desc": "Run validity checks.",
-          "choose_when": "Schema reference internalized."
-        }
-      }
+      "prompt": "plan-generic/prompts/info-shape-ref.md",
+      "next": "info-validity-checks"
     },
     "info-validity-checks": {
       "id": "info-validity-checks",
       "type": "agent",
-      "prompt": "planning/_shared/info-validity-checks.md",
-      "next": {
-        "info-summarize-consumption": {
-          "desc": "Summarize informational phase consumption.",
-          "choose_when": "Validity checks complete."
-        }
-      }
+      "prompt": "plan-generic/prompts/info-validity-checks.md",
+      "next": "info-flow-specific"
+    },
+    "info-flow-specific": {
+      "id": "info-flow-specific",
+      "type": "agent",
+      "prompt": "plan-generic/prompts/info-flow-specific.md",
+      "next": "info-summarize-consumption"
     },
     "info-summarize-consumption": {
       "id": "info-summarize-consumption",
       "type": "agent",
-      "prompt": "planning/_shared/info-summarize-consumption.md",
-      "next": {
-        "review-gate": {
-          "desc": "Present the complete plan for user approval.",
-          "choose_when": "Summary complete."
-        }
-      }
+      "prompt": "plan-generic/prompts/info-summarize-consumption.md",
+      "next": "planning-gate"
     },
-    "review-gate": {
-      "id": "review-gate",
+    "planning-gate": {
+      "id": "planning-gate",
       "type": "gate",
-      "prompt": "planning/plan-generic/prompts/review-gate.md",
+      "prompt": "plan-generic/prompts/planning-gate.md",
       "next": {
         "finalize": {
-          "desc": "Write all session plan artifacts to disk.",
-          "choose_when": "User has approved the plan as presented."
-        },
-        "decompose": {
-          "desc": "Rework the subtask breakdown based on user feedback.",
-          "choose_when": "User wants to add more subtasks or restructure the task list."
+          "desc": "Approach is sound; proceed to write the project DAG",
+          "choose_when": "All planning decisions are solid and ready to commit"
         },
         "clarify": {
-          "desc": "Return to clarifying requirements before rebuilding the plan.",
-          "choose_when": "User has identified gaps or changes in the original requirements."
+          "desc": "Need more understanding of task or context",
+          "choose_when": "Task understanding is insufficient"
+        },
+        "propose-shape": {
+          "desc": "Reconsider which DAG shape is right",
+          "choose_when": "Selected shape doesn't fit the task"
+        },
+        "propose-decomposition": {
+          "desc": "Refine the task decomposition",
+          "choose_when": "Subtask breakdown needs adjustment"
         }
       }
     },
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "planning/plan-generic/prompts/finalize.md"
+      "prompt": "plan-generic/prompts/finalize.md"
     }
   }
 }

@@ -1,136 +1,173 @@
 {
   "schema_version": "1.0",
   "id": "plan-collaborative",
-  "session_type": "plan-collaborative",
-  "description": "Rough-idea-to-detailed-spec — planning produces seed plan only",
+  "session_type": "collaborative",
+  "description": "Planning scaffold for generating collaborative project DAGs. Understands collaboration topic, identifies success criteria, selects dialogue shape (3A-3D), gathers design input, and writes the project DAG.",
+  "goal": "Enable planning agents to generate valid collaborative project DAGs by understanding the topic, defining success, selecting the right collaboration structure, and setting up the dialogue loop.",
   "entry": "session-overview",
   "nodes": {
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "planning/plan-collaborative/prompts/session-overview.md",
-      "next": "load-guidelines"
+      "prompt": "plan-collaborative/prompts/session-overview.md",
+      "next": "intake"
     },
-    "load-guidelines": {
-      "id": "load-guidelines",
+    "intake": {
+      "id": "intake",
       "type": "agent",
-      "prompt": "planning/plan-design-guidelines.md",
-      "next": "scout"
+      "prompt": "plan-collaborative/prompts/intake.md",
+      "next": "context-gather"
     },
-    "scout": {
-      "id": "scout",
+    "context-gather": {
+      "id": "context-gather",
       "type": "agent",
-      "prompt": "planning/plan-collaborative/prompts/scout.md",
-      "next": "idea-intake"
-    },
-    "idea-intake": {
-      "id": "idea-intake",
-      "type": "agent",
-      "prompt": "planning/plan-collaborative/prompts/idea-intake.md",
+      "prompt": "plan-collaborative/prompts/context-gather.md",
       "next": "clarify"
     },
     "clarify": {
       "id": "clarify",
       "type": "agent",
-      "prompt": "planning/plan-collaborative/prompts/clarify.md",
-      "next": {
-        "assess": {
-          "desc": "Evaluate whether enough session-design context has been gathered.",
-          "choose_when": "Clarifying question has been asked."
-        }
-      }
+      "prompt": "plan-collaborative/prompts/clarify.md",
+      "next": "evaluate-understanding"
     },
-    "assess": {
-      "id": "assess",
+    "evaluate-understanding": {
+      "id": "evaluate-understanding",
       "type": "agent",
-      "prompt": "planning/plan-collaborative/prompts/assess.md",
+      "prompt": "plan-collaborative/prompts/evaluate-understanding.md",
       "next": {
-        "clarify": {
-          "desc": "Continue gathering session-design context.",
-          "choose_when": "More context needed before writing a seed plan."
+        "context-gather": {
+          "desc": "Need more context about the collaboration topic or constraints",
+          "choose_when": "Understanding of topic, constraints, or context is insufficient"
         },
-        "agent-routing": {
-          "desc": "Proceed to agent routing.",
-          "choose_when": "Enough context to write a seed plan."
+        "propose-success-criteria": {
+          "desc": "Sufficient context gathered; ready to define success criteria",
+          "choose_when": "Enough context to understand what makes the collaboration successful"
         }
       }
     },
-    "agent-routing": {
-      "id": "agent-routing",
+    "propose-success-criteria": {
+      "id": "propose-success-criteria",
       "type": "agent",
-      "prompt": "planning/plan-collaborative/prompts/agent-routing.md",
+      "prompt": "plan-collaborative/prompts/propose-success-criteria.md",
+      "next": "evaluate-success-criteria"
+    },
+    "evaluate-success-criteria": {
+      "id": "evaluate-success-criteria",
+      "type": "agent",
+      "prompt": "plan-collaborative/prompts/evaluate-success-criteria.md",
+      "next": {
+        "propose-success-criteria": {
+          "desc": "Success criteria need refinement; redefine what success means",
+          "choose_when": "Proposed criteria don't capture what makes collaboration successful"
+        },
+        "propose-collaboration-shape": {
+          "desc": "Success criteria are sound; proceed to select collaboration shape",
+          "choose_when": "Success criteria are clear and appropriate"
+        }
+      }
+    },
+    "propose-collaboration-shape": {
+      "id": "propose-collaboration-shape",
+      "type": "agent",
+      "prompt": "plan-collaborative/prompts/propose-collaboration-shape.md",
+      "next": "evaluate-collaboration-shape"
+    },
+    "evaluate-collaboration-shape": {
+      "id": "evaluate-collaboration-shape",
+      "type": "agent",
+      "prompt": "plan-collaborative/prompts/evaluate-collaboration-shape.md",
+      "next": {
+        "propose-collaboration-shape": {
+          "desc": "Collaboration shape doesn't fit; reconsider dialogue structure",
+          "choose_when": "Proposed shape doesn't support good user-agent collaboration"
+        },
+        "identify-output-artifact": {
+          "desc": "Collaboration shape is appropriate; proceed to identify output artifact",
+          "choose_when": "Selected shape fits the collaboration well"
+        }
+      }
+    },
+    "identify-output-artifact": {
+      "id": "identify-output-artifact",
+      "type": "agent",
+      "prompt": "plan-collaborative/prompts/identify-output-artifact.md",
       "next": "info-prime"
     },
     "info-prime": {
       "id": "info-prime",
       "type": "agent",
-      "prompt": "planning/_shared/info-prime.md",
+      "prompt": "plan-collaborative/prompts/info-prime.md",
       "next": "info-loop-analysis"
     },
     "info-loop-analysis": {
       "id": "info-loop-analysis",
       "type": "agent",
-      "prompt": "planning/_shared/info-loop-analysis.md",
+      "prompt": "plan-collaborative/prompts/info-loop-analysis.md",
       "next": "info-visit-counter"
     },
     "info-visit-counter": {
       "id": "info-visit-counter",
       "type": "agent",
-      "prompt": "planning/_shared/info-visit-counter.md",
+      "prompt": "plan-collaborative/prompts/info-visit-counter.md",
       "next": "info-gate-analysis"
     },
     "info-gate-analysis": {
       "id": "info-gate-analysis",
       "type": "agent",
-      "prompt": "planning/_shared/info-gate-analysis.md",
-      "context": {
-        "skip_auto_gate": true
-      },
-      "next": "info-flow-specific"
+      "prompt": "plan-collaborative/prompts/info-gate-analysis.md",
+      "next": "info-shape-ref"
     },
-    "info-flow-specific": {
-      "id": "info-flow-specific",
+    "info-shape-ref": {
+      "id": "info-shape-ref",
       "type": "agent",
-      "prompt": "planning/plan-collaborative/prompts/info-flow-specific.md",
-      "next": "info-schema-ref"
-    },
-    "info-schema-ref": {
-      "id": "info-schema-ref",
-      "type": "agent",
-      "prompt": "planning/_shared/info-schema-ref.md",
+      "prompt": "plan-collaborative/prompts/info-shape-ref.md",
       "next": "info-validity-checks"
     },
     "info-validity-checks": {
       "id": "info-validity-checks",
       "type": "agent",
-      "prompt": "planning/_shared/info-validity-checks.md",
+      "prompt": "plan-collaborative/prompts/info-validity-checks.md",
+      "next": "info-flow-specific"
+    },
+    "info-flow-specific": {
+      "id": "info-flow-specific",
+      "type": "agent",
+      "prompt": "plan-collaborative/prompts/info-flow-specific.md",
       "next": "info-summarize-consumption"
     },
     "info-summarize-consumption": {
       "id": "info-summarize-consumption",
       "type": "agent",
-      "prompt": "planning/_shared/info-summarize-consumption.md",
-      "next": "seed-gate"
+      "prompt": "plan-collaborative/prompts/info-summarize-consumption.md",
+      "next": "planning-gate"
     },
-    "seed-gate": {
-      "id": "seed-gate",
+    "planning-gate": {
+      "id": "planning-gate",
       "type": "gate",
-      "prompt": "planning/plan-collaborative/prompts/seed-gate.md",
+      "prompt": "plan-collaborative/prompts/planning-gate.md",
       "next": {
         "finalize": {
-          "desc": "Approve and write the seed plan",
-          "choose_when": "User approved the session design"
+          "desc": "Collaboration plan is sound; proceed to write the project DAG",
+          "choose_when": "All collaboration decisions are solid and ready to commit"
         },
         "clarify": {
-          "desc": "Revise the session structure",
-          "choose_when": "User wants to refine the structure"
+          "desc": "Need more understanding of topic or context",
+          "choose_when": "Topic understanding is insufficient"
+        },
+        "propose-success-criteria": {
+          "desc": "Refine what success means for this collaboration",
+          "choose_when": "Success criteria need adjustment"
+        },
+        "propose-collaboration-shape": {
+          "desc": "Reconsider which dialogue structure is right",
+          "choose_when": "Selected shape doesn't fit the collaboration"
         }
       }
     },
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "planning/plan-collaborative/prompts/finalize.md"
+      "prompt": "plan-collaborative/prompts/finalize.md"
     }
   }
 }

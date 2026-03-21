@@ -1,28 +1,26 @@
-# Scout — Research Context Gathering
+# Knowledge Scout
 
-Dispatch **2–4 @ContextScout agents in parallel**, each targeting a different relevant area of the codebase or project to gather context that informs the research direction.
+Your task is to **explore existing knowledge and research angles**.
 
-## Dispatch Guidelines
+## What to Do
 
-Assign each scout a focused, non-overlapping target. Good targets include:
-- **Project structure** — overall layout, key directories, and important files
-- **Relevant documentation** — READMEs, design docs, API docs, or comments that explain the system
-- **Existing patterns** — how similar features or research tasks have been approached in the codebase
-- **Configuration and setup** — build systems, dependencies, and environment details that affect research
+Survey the knowledge landscape for:
+1. **Existing Knowledge** — What's already documented or known about this topic?
+2. **Knowledge Gaps** — What questions remain unanswered?
+3. **Research Precedent** — How has similar research been conducted before?
+4. **Key Sources** — What primary sources, papers, or expertise are available?
+5. **Related Research** — What adjacent questions or findings exist?
 
-## Prompt Each Scout With
+Build a foundation for targeted research angles.
 
-- Specific file paths, directories, or documentation to examine (derived from the research task)
-- A focused question: what context do they need to gather to inform the research?
-- What to return: relevant file contents, observed patterns, key findings, and open questions
+## Output
 
-## Constraints
+Summarize findings:
+- What's already known about the topic
+- Key knowledge gaps to address
+- Research precedents or methodologies
+- Available sources and expertise
+- 2-3 related research findings
+- Suggested research angles
 
-- You MUST dispatch all scouts simultaneously in a single response (parallel, not sequential).
-- You MUST NOT synthesize findings here. Wait for all scouts to return, then call `next_step()`.
-- You MUST NOT start decomposing — that comes after synthesis.
-- Violating these constraints means this node has failed. Stop and re-read the objective.
-
-## Advance
-
-After all scouts have returned their findings, call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.
+Call `next_step()` when ready.

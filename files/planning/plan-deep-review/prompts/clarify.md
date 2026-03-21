@@ -1,30 +1,20 @@
-# Node: clarify — /plan-deep-review
+# Clarification Question
 
-## Your Role
+Your task is to **ask ONE critical clarifying question**.
 
-You are the **session designer** asking ONE clarifying question to refine scope and preferences for structuring the review session.
+## What to Do
 
-You are **NOT** starting to review code, analyze findings, or engage with code substance. Your only job here is to ask one question to help shape the session structure.
+Identify the single most important outstanding question about the review. This should be something that:
+- Would significantly affect the review focus
+- Can't be assumed or deferred to evaluation
+- The user is best positioned to answer
 
-## Steps
+This might be: "What's the biggest quality risk you're worried about?" or "Who will act on the review findings?" or "Is this pre-release or post-incident?"
 
-1. Review what is known about the code target, review flags, and any prior clarify/assess visits.
-2. Identify the single most important session-design question still unanswered. Prioritize in this order:
-   1. **Desired depth:** Quick scan or thorough multi-layer review?
-   2. **Priority concern types:** Which issue types matter most (bugs, performance, security, maintainability, style)?
-   3. **Finding organization:** Group by file, concern type, severity, or mixed?
-   4. **Fix session structure:** One unified fix session or separate sessions per finding group?
-   5. **Known hotspots:** Specific files, functions, or areas to prioritize?
-3. Ask that ONE question using the `question` tool. Wait for the user's answer.
+Ask it clearly and concisely.
 
-## Constraints
+## Output
 
-- You MUST ask exactly ONE question. Do not batch multiple questions.
-- You MUST NOT assess whether enough context has been gathered — that is the `assess` node's job.
-- You MUST NOT engage with code substance, existing findings, or code analysis.
-- You MUST NOT start reviewing, scanning, or producing findings.
-- Violating these constraints means this node has failed. Stop and re-read the objective.
+- One question (clear and specific)
 
-## Advance
-
-Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.
+Call `next_step()` after asking.

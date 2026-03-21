@@ -1,193 +1,194 @@
 {
   "schema_version": "1.0",
   "id": "plan-deep-research",
-  "session_type": "plan-deep-research",
-  "status": "ready",
+  "session_type": "deep-research",
+  "description": "Planning scaffold for generating deep-research project DAGs. Understands research question, identifies angles and sources, selects research shape (4A-4D), gathers design input, and writes the project DAG.",
+  "goal": "Enable planning agents to generate valid deep-research project DAGs by understanding the research question, identifying angles and sources, selecting the right research structure, and setting up the research loop.",
   "entry": "session-overview",
   "nodes": {
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "planning/plan-deep-research/prompts/session-overview.md",
-      "next": {
-        "load-guidelines": {
-          "desc": "Proceed to load design guidelines",
-          "choose_when": "Session overview completed"
-        }
-      }
-    },
-    "load-guidelines": {
-      "id": "load-guidelines",
-      "type": "agent",
-      "prompt": "planning/plan-design-guidelines.md",
-      "next": {
-        "scout": {
-          "desc": "Proceed to scout for research context",
-          "choose_when": "Guidelines loaded successfully"
-        }
-      }
-    },
-    "scout": {
-      "id": "scout",
-      "type": "agent",
-      "prompt": "planning/plan-deep-research/prompts/scout.md",
+      "prompt": "plan-deep-research/prompts/session-overview.md",
       "next": "research-intake"
     },
     "research-intake": {
       "id": "research-intake",
       "type": "agent",
-      "prompt": "planning/plan-deep-research/prompts/research-intake.md",
-      "next": {
-        "clarify": {
-          "desc": "Proceed to clarify research requirements",
-          "choose_when": "Research intake completed"
-        }
-      }
+      "prompt": "plan-deep-research/prompts/research-intake.md",
+      "next": "scout"
+    },
+    "scout": {
+      "id": "scout",
+      "type": "agent",
+      "prompt": "plan-deep-research/prompts/scout.md",
+      "next": "clarify"
     },
     "clarify": {
       "id": "clarify",
       "type": "agent",
-      "prompt": "planning/plan-deep-research/prompts/clarify.md",
-      "next": {
-        "assess": {
-          "desc": "Evaluate whether enough research context has been gathered.",
-          "choose_when": "Clarifying question has been asked."
-        }
-      }
+      "prompt": "plan-deep-research/prompts/clarify.md",
+      "next": "evaluate-understanding"
     },
-    "assess": {
-      "id": "assess",
+    "evaluate-understanding": {
+      "id": "evaluate-understanding",
       "type": "agent",
-      "prompt": "planning/plan-deep-research/prompts/assess.md",
+      "prompt": "plan-deep-research/prompts/evaluate-understanding.md",
       "next": {
-        "clarify": {
-          "desc": "Ask another clarifying question.",
-          "choose_when": "Need further clarification on research scope."
+        "scout": {
+          "desc": "Need more context about research question or existing work",
+          "choose_when": "Research question or scope is unclear"
         },
-        "agent-routing": {
-          "desc": "Proceed to agent routing.",
-          "choose_when": "Enough session-design context gathered to write a research plan."
+        "propose-research-angles": {
+          "desc": "Research question is clear; ready to identify angles",
+          "choose_when": "Sufficient understanding of what to research"
         }
       }
     },
-    "agent-routing": {
-      "id": "agent-routing",
+    "propose-research-angles": {
+      "id": "propose-research-angles",
       "type": "agent",
-      "prompt": "planning/plan-deep-research/prompts/agent-routing.md",
+      "prompt": "plan-deep-research/prompts/propose-research-angles.md",
+      "next": "evaluate-research-angles"
+    },
+    "evaluate-research-angles": {
+      "id": "evaluate-research-angles",
+      "type": "agent",
+      "prompt": "plan-deep-research/prompts/evaluate-research-angles.md",
       "next": {
-        "info-prime": {
-          "desc": "Proceed to prime informational context",
-          "choose_when": "Agent routing completed"
+        "propose-research-angles": {
+          "desc": "Research angles need adjustment; reconsider what aspects matter",
+          "choose_when": "Proposed angles don't cover the research space"
+        },
+        "propose-sources": {
+          "desc": "Research angles are sound; ready to identify sources",
+          "choose_when": "Research angles are appropriate and comprehensive"
         }
       }
+    },
+    "propose-sources": {
+      "id": "propose-sources",
+      "type": "agent",
+      "prompt": "plan-deep-research/prompts/propose-sources.md",
+      "next": "evaluate-sources"
+    },
+    "evaluate-sources": {
+      "id": "evaluate-sources",
+      "type": "agent",
+      "prompt": "plan-deep-research/prompts/evaluate-sources.md",
+      "next": {
+        "propose-sources": {
+          "desc": "Source priorities need adjustment; reconsider where to look",
+          "choose_when": "Proposed sources don't cover the evidence space well"
+        },
+        "propose-research-shape": {
+          "desc": "Source priorities are sound; ready to select research shape",
+          "choose_when": "Sources are well-prioritized for the research"
+        }
+      }
+    },
+    "propose-research-shape": {
+      "id": "propose-research-shape",
+      "type": "agent",
+      "prompt": "plan-deep-research/prompts/propose-research-shape.md",
+      "next": "evaluate-research-shape"
+    },
+    "evaluate-research-shape": {
+      "id": "evaluate-research-shape",
+      "type": "agent",
+      "prompt": "plan-deep-research/prompts/evaluate-research-shape.md",
+      "next": {
+        "propose-research-shape": {
+          "desc": "Research shape doesn't fit; reconsider research structure",
+          "choose_when": "Proposed shape doesn't match the research question"
+        },
+        "identify-success-criteria": {
+          "desc": "Research shape is appropriate; ready to define success criteria",
+          "choose_when": "Selected shape fits the research well"
+        }
+      }
+    },
+    "identify-success-criteria": {
+      "id": "identify-success-criteria",
+      "type": "agent",
+      "prompt": "plan-deep-research/prompts/identify-success-criteria.md",
+      "next": "info-prime"
     },
     "info-prime": {
       "id": "info-prime",
       "type": "agent",
-      "prompt": "planning/_shared/info-prime.md",
-      "next": {
-        "info-loop-analysis": {
-          "desc": "Proceed to loop analysis",
-          "choose_when": "Informational priming completed"
-        }
-      }
+      "prompt": "plan-deep-research/prompts/info-prime.md",
+      "next": "info-loop-analysis"
     },
     "info-loop-analysis": {
       "id": "info-loop-analysis",
       "type": "agent",
-      "prompt": "planning/_shared/info-loop-analysis.md",
-      "next": {
-        "info-visit-counter": {
-          "desc": "Proceed to visit counter",
-          "choose_when": "Loop analysis completed"
-        }
-      }
+      "prompt": "plan-deep-research/prompts/info-loop-analysis.md",
+      "next": "info-visit-counter"
     },
     "info-visit-counter": {
       "id": "info-visit-counter",
       "type": "agent",
-      "prompt": "planning/_shared/info-visit-counter.md",
-      "next": {
-        "info-gate-analysis": {
-          "desc": "Proceed to gate analysis",
-          "choose_when": "Visit counter completed"
-        }
-      }
+      "prompt": "plan-deep-research/prompts/info-visit-counter.md",
+      "next": "info-gate-analysis"
     },
     "info-gate-analysis": {
       "id": "info-gate-analysis",
       "type": "agent",
-      "prompt": "planning/_shared/info-gate-analysis.md",
-      "next": {
-        "info-flow-specific": {
-          "desc": "Proceed to flow-specific analysis",
-          "choose_when": "Gate analysis completed"
-        }
-      }
+      "prompt": "plan-deep-research/prompts/info-gate-analysis.md",
+      "next": "info-shape-ref"
     },
-    "info-flow-specific": {
-      "id": "info-flow-specific",
+    "info-shape-ref": {
+      "id": "info-shape-ref",
       "type": "agent",
-      "prompt": "planning/plan-deep-research/prompts/info-flow-specific.md",
-      "next": {
-        "info-schema-ref": {
-          "desc": "Proceed to schema reference",
-          "choose_when": "Flow-specific analysis completed"
-        }
-      }
-    },
-    "info-schema-ref": {
-      "id": "info-schema-ref",
-      "type": "agent",
-      "prompt": "planning/_shared/info-schema-ref.md",
-      "next": {
-        "info-validity-checks": {
-          "desc": "Proceed to validity checks",
-          "choose_when": "Schema reference completed"
-        }
-      }
+      "prompt": "plan-deep-research/prompts/info-shape-ref.md",
+      "next": "info-validity-checks"
     },
     "info-validity-checks": {
       "id": "info-validity-checks",
       "type": "agent",
-      "prompt": "planning/_shared/info-validity-checks.md",
-      "next": {
-        "info-summarize-consumption": {
-          "desc": "Proceed to summarize consumption",
-          "choose_when": "Validity checks completed"
-        }
-      }
+      "prompt": "plan-deep-research/prompts/info-validity-checks.md",
+      "next": "info-flow-specific"
+    },
+    "info-flow-specific": {
+      "id": "info-flow-specific",
+      "type": "agent",
+      "prompt": "plan-deep-research/prompts/info-flow-specific.md",
+      "next": "info-summarize-consumption"
     },
     "info-summarize-consumption": {
       "id": "info-summarize-consumption",
       "type": "agent",
-      "prompt": "planning/_shared/info-summarize-consumption.md",
-      "next": {
-        "research-gate": {
-          "desc": "Proceed to research gate for approval",
-          "choose_when": "Informational summarization completed"
-        }
-      }
+      "prompt": "plan-deep-research/prompts/info-summarize-consumption.md",
+      "next": "planning-gate"
     },
-    "research-gate": {
-      "id": "research-gate",
+    "planning-gate": {
+      "id": "planning-gate",
       "type": "gate",
-      "prompt": "planning/plan-deep-research/prompts/research-gate.md",
+      "prompt": "plan-deep-research/prompts/planning-gate.md",
       "next": {
         "finalize": {
-          "desc": "Proceed to finalize the research plan",
-          "choose_when": "User approved the research session design"
+          "desc": "Research plan is sound; proceed to write the project DAG",
+          "choose_when": "All research decisions are solid and ready to commit"
         },
-        "clarify": {
-          "desc": "Loop back to clarify further",
-          "choose_when": "User requested revisions to the research scope"
+        "propose-research-angles": {
+          "desc": "Reconsider which research angles are important",
+          "choose_when": "Research angles need adjustment"
+        },
+        "propose-sources": {
+          "desc": "Reconsider where to prioritize research effort",
+          "choose_when": "Source priorities need adjustment"
+        },
+        "propose-research-shape": {
+          "desc": "Reconsider which research structure is right",
+          "choose_when": "Selected shape doesn't fit the research question"
         }
       }
     },
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "planning/plan-deep-research/prompts/finalize.md"
+      "prompt": "plan-deep-research/prompts/finalize.md"
     }
   }
 }

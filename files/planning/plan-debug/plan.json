@@ -1,181 +1,160 @@
 {
   "schema_version": "1.0",
   "id": "plan-debug",
-  "session_type": "plan-debug",
-  "status": "ready",
+  "session_type": "debug",
+  "description": "Planning scaffold for generating debug project DAGs. Understands bug, scouts code, forms hypothesis, selects investigation shape (2A-2D), gathers design input, and writes the project DAG.",
+  "goal": "Enable planning agents to generate valid debug project DAGs by understanding the bug, forming an initial hypothesis, selecting the right investigation structure, and setting up the diagnosis loop.",
   "entry": "session-overview",
   "nodes": {
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "planning/plan-debug/prompts/session-overview.md",
-      "next": {
-        "load-guidelines": {
-          "desc": "Load plan design guidelines and schema reference",
-          "choose_when": "Session overview has been read and internalized"
-        }
-      }
-    },
-    "load-guidelines": {
-      "id": "load-guidelines",
-      "type": "agent",
-      "prompt": "planning/plan-design-guidelines.md",
-      "next": {
-        "scout": {
-          "desc": "Gather codebase context relevant to the bug",
-          "choose_when": "Plan design guidelines have been loaded"
-        }
-      }
+      "prompt": "plan-debug/prompts/session-overview.md",
+      "next": "bug-intake"
     },
     "bug-intake": {
       "id": "bug-intake",
       "type": "agent",
-      "prompt": "planning/plan-debug/prompts/bug-intake.md",
-      "next": {
-        "hypothesis-form": {
-          "desc": "Form a best-guess hypothesis about the root cause",
-          "choose_when": "Bug description, symptoms, reproduction steps, and acceptance criteria are captured"
-        }
-      }
+      "prompt": "plan-debug/prompts/bug-intake.md",
+      "next": "scout"
     },
     "scout": {
       "id": "scout",
       "type": "agent",
-      "prompt": "planning/plan-debug/prompts/context-gather.md",
+      "prompt": "plan-debug/prompts/scout.md",
+      "next": "clarify"
+    },
+    "clarify": {
+      "id": "clarify",
+      "type": "agent",
+      "prompt": "plan-debug/prompts/clarify.md",
+      "next": "evaluate-understanding"
+    },
+    "evaluate-understanding": {
+      "id": "evaluate-understanding",
+      "type": "agent",
+      "prompt": "plan-debug/prompts/evaluate-understanding.md",
       "next": {
-        "bug-intake": {
-          "desc": "Capture a precise, reproducible problem statement from the user",
-          "choose_when": "Context scouts have returned and findings have been synthesized"
+        "scout": {
+          "desc": "Need more context about affected code or systems",
+          "choose_when": "Understanding of bug, reproduction steps, or affected code is insufficient"
+        },
+        "propose-hypothesis": {
+          "desc": "Sufficient context gathered; ready to form hypothesis",
+          "choose_when": "Enough context to propose initial root cause hypothesis"
         }
       }
     },
-    "hypothesis-form": {
-      "id": "hypothesis-form",
+    "propose-hypothesis": {
+      "id": "propose-hypothesis",
       "type": "agent",
-      "prompt": "planning/plan-debug/prompts/hypothesis-form.md",
+      "prompt": "plan-debug/prompts/propose-hypothesis.md",
+      "next": "evaluate-hypothesis"
+    },
+    "evaluate-hypothesis": {
+      "id": "evaluate-hypothesis",
+      "type": "agent",
+      "prompt": "plan-debug/prompts/evaluate-hypothesis.md",
+      "next": "propose-investigation-shape"
+    },
+    "propose-investigation-shape": {
+      "id": "propose-investigation-shape",
+      "type": "agent",
+      "prompt": "plan-debug/prompts/propose-investigation-shape.md",
+      "next": "evaluate-investigation-shape"
+    },
+    "evaluate-investigation-shape": {
+      "id": "evaluate-investigation-shape",
+      "type": "agent",
+      "prompt": "plan-debug/prompts/evaluate-investigation-shape.md",
       "next": {
-        "confirm-mode": {
-          "desc": "Ask user whether the execution loop should pause for confirmation on each hypothesis",
-          "choose_when": "One best-guess hypothesis has been formulated and presented"
+        "propose-investigation-shape": {
+          "desc": "Shape doesn't match bug complexity; reconsider investigation structure",
+          "choose_when": "Proposed shape doesn't fit hypothesis confidence or bug complexity"
+        },
+        "propose-test-strategy": {
+          "desc": "Investigation shape is appropriate; proceed to outline test/verification strategy",
+          "choose_when": "Selected investigation shape fits the bug's complexity level"
         }
       }
     },
-    "confirm-mode": {
-      "id": "confirm-mode",
+    "propose-test-strategy": {
+      "id": "propose-test-strategy",
       "type": "agent",
-      "prompt": "planning/plan-debug/prompts/confirm-mode.md",
-      "next": {
-        "agent-routing": {
-          "desc": "Determine delegation instructions for each debug session prompt file",
-          "choose_when": "User has confirmed whether the debugging loop should pause for hypothesis approval"
-        }
-      }
-    },
-    "agent-routing": {
-      "id": "agent-routing",
-      "type": "agent",
-      "prompt": "planning/plan-debug/prompts/agent-routing.md",
-      "next": {
-        "info-prime": {
-          "desc": "Prime the informational analysis by establishing the investigation scope",
-          "choose_when": "Delegation routing decisions have been made for all prompt files"
-        }
-      }
+      "prompt": "plan-debug/prompts/propose-test-strategy.md",
+      "next": "info-prime"
     },
     "info-prime": {
       "id": "info-prime",
       "type": "agent",
-      "prompt": "planning/_shared/info-prime.md",
-      "next": {
-        "info-loop-analysis": {
-          "desc": "Analyze loops and iteration patterns relevant to the bug",
-          "choose_when": "Informational investigation scope has been established"
-        }
-      }
+      "prompt": "plan-debug/prompts/info-prime.md",
+      "next": "info-loop-analysis"
     },
     "info-loop-analysis": {
       "id": "info-loop-analysis",
       "type": "agent",
-      "prompt": "planning/_shared/info-loop-analysis.md",
-      "next": {
-        "info-visit-counter": {
-          "desc": "Track visit counts and detect runaway iteration",
-          "choose_when": "Loop analysis has been completed"
-        }
-      }
+      "prompt": "plan-debug/prompts/info-loop-analysis.md",
+      "next": "info-visit-counter"
     },
     "info-visit-counter": {
       "id": "info-visit-counter",
       "type": "agent",
-      "prompt": "planning/_shared/info-visit-counter.md",
-      "next": {
-        "info-gate-analysis": {
-          "desc": "Analyze gate conditions and decision branches",
-          "choose_when": "Visit counter analysis has been completed",
-          "remaining_visits": 3
-        }
-      }
+      "prompt": "plan-debug/prompts/info-visit-counter.md",
+      "next": "info-gate-analysis"
     },
     "info-gate-analysis": {
       "id": "info-gate-analysis",
       "type": "agent",
-      "prompt": "planning/_shared/info-gate-analysis.md",
-      "next": {
-        "info-flow-specific": {
-          "desc": "Examine flow-specific behavior and edge cases",
-          "choose_when": "Gate analysis has been completed",
-          "remaining_visits": 3
-        }
-      }
+      "prompt": "plan-debug/prompts/info-gate-analysis.md",
+      "next": "info-shape-ref"
     },
-    "info-flow-specific": {
-      "id": "info-flow-specific",
+    "info-shape-ref": {
+      "id": "info-shape-ref",
       "type": "agent",
-      "prompt": "planning/plan-debug/prompts/info-flow-specific.md",
-      "next": {
-        "info-schema-ref": {
-          "desc": "Reference relevant schemas and type definitions",
-          "choose_when": "Flow-specific analysis has been completed"
-        }
-      }
-    },
-    "info-schema-ref": {
-      "id": "info-schema-ref",
-      "type": "agent",
-      "prompt": "planning/_shared/info-schema-ref.md",
-      "next": {
-        "info-validity-checks": {
-          "desc": "Run validity checks on gathered information",
-          "choose_when": "Schema references have been collected"
-        }
-      }
+      "prompt": "plan-debug/prompts/info-shape-ref.md",
+      "next": "info-validity-checks"
     },
     "info-validity-checks": {
       "id": "info-validity-checks",
       "type": "agent",
-      "prompt": "planning/_shared/info-validity-checks.md",
-      "next": {
-        "info-summarize-consumption": {
-          "desc": "Summarize all consumed information for the finalize step",
-          "choose_when": "Validity checks have been completed"
-        }
-      }
+      "prompt": "plan-debug/prompts/info-validity-checks.md",
+      "next": "info-flow-specific"
+    },
+    "info-flow-specific": {
+      "id": "info-flow-specific",
+      "type": "agent",
+      "prompt": "plan-debug/prompts/info-flow-specific.md",
+      "next": "info-summarize-consumption"
     },
     "info-summarize-consumption": {
       "id": "info-summarize-consumption",
       "type": "agent",
-      "prompt": "planning/_shared/info-summarize-consumption.md",
+      "prompt": "plan-debug/prompts/info-summarize-consumption.md",
+      "next": "planning-gate"
+    },
+    "planning-gate": {
+      "id": "planning-gate",
+      "type": "gate",
+      "prompt": "plan-debug/prompts/planning-gate.md",
       "next": {
         "finalize": {
-          "desc": "Write the debug execution session plan to disk and present it to the user",
-          "choose_when": "Informational consumption has been summarized"
+          "desc": "Investigation strategy is sound; proceed to write the project DAG",
+          "choose_when": "Hypothesis, investigation shape, and test strategy are solid"
+        },
+        "propose-hypothesis": {
+          "desc": "Reconsider the initial hypothesis",
+          "choose_when": "Proposed hypothesis doesn't fit the bug"
+        },
+        "propose-investigation-shape": {
+          "desc": "Reconsider which investigation structure is right",
+          "choose_when": "Selected investigation shape doesn't fit the bug's complexity"
         }
       }
     },
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "planning/plan-debug/prompts/finalize.md"
+      "prompt": "plan-debug/prompts/finalize.md"
     }
   }
 }

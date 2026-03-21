@@ -1,199 +1,142 @@
 {
   "schema_version": "1.0",
   "id": "plan-deep-review",
-  "session_type": "plan-deep-review",
-  "status": "ready",
+  "session_type": "deep-review",
+  "description": "Planning scaffold for generating deep-review project DAGs. Conducts systematic code/document review with evaluation loops and quality gates.",
+  "goal": "Enable planning agents to generate deep-review project DAGs by understanding what to review, establishing review criteria, and setting up evaluation loops.",
   "entry": "session-overview",
-  "created": "2026-03-20",
   "nodes": {
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt": "planning/plan-deep-review/prompts/session-overview.md",
-      "next": {
-        "load-guidelines": {
-          "desc": "Load plan design guidelines",
-          "choose_when": "Session overview read and internalized"
-        }
-      }
-    },
-    "load-guidelines": {
-      "id": "load-guidelines",
-      "type": "agent",
-      "prompt": "planning/plan-design-guidelines.md",
-      "next": {
-        "scout": {
-          "desc": "Dispatch scouts to gather review context",
-          "choose_when": "Guidelines loaded and understood"
-        }
-      }
+      "prompt": "plan-deep-review/prompts/session-overview.md",
+      "next": "review-intake"
     },
     "review-intake": {
       "id": "review-intake",
       "type": "agent",
-      "prompt": "planning/plan-deep-review/prompts/review-intake.md",
-      "next": {
-        "clarify": {
-          "desc": "Ask clarifying questions to refine scope",
-          "choose_when": "More information needed before proceeding"
-        }
-      }
-    },
-    "clarify": {
-      "id": "clarify",
-      "type": "agent",
-      "prompt": "planning/plan-deep-review/prompts/clarify.md",
-      "next": {
-        "assess": {
-          "desc": "Evaluate whether enough review context has been gathered.",
-          "choose_when": "Clarifying question has been asked."
-        }
-      }
-    },
-    "assess": {
-      "id": "assess",
-      "type": "agent",
-      "prompt": "planning/plan-deep-review/prompts/assess.md",
-      "next": {
-        "clarify": {
-          "desc": "Ask another clarifying question.",
-          "choose_when": "More clarification needed before routing agents."
-        },
-        "agent-routing": {
-          "desc": "Proceed to agent routing.",
-          "choose_when": "Clarification complete, enough context to design session."
-        }
-      }
+      "prompt": "plan-deep-review/prompts/review-intake.md",
+      "next": "scout"
     },
     "scout": {
       "id": "scout",
       "type": "agent",
-      "prompt": "planning/plan-deep-review/prompts/scout.md",
+      "prompt": "plan-deep-review/prompts/scout.md",
+      "next": "clarify"
+    },
+    "clarify": {
+      "id": "clarify",
+      "type": "agent",
+      "prompt": "plan-deep-review/prompts/clarify.md",
+      "next": "evaluate-understanding"
+    },
+    "evaluate-understanding": {
+      "id": "evaluate-understanding",
+      "type": "agent",
+      "prompt": "plan-deep-review/prompts/evaluate-understanding.md",
       "next": {
-        "review-intake": {
-          "desc": "Proceed to review intake",
-          "choose_when": "Scout findings gathered"
+        "scout": {
+          "desc": "Need more context about what to review or evaluation scope",
+          "choose_when": "Understanding of review target or scope is insufficient"
+        },
+        "propose-review-criteria": {
+          "desc": "Sufficient context gathered; ready to identify review criteria",
+          "choose_when": "Enough context to establish what will be reviewed"
         }
       }
     },
-    "agent-routing": {
-      "id": "agent-routing",
+    "propose-review-criteria": {
+      "id": "propose-review-criteria",
       "type": "agent",
-      "prompt": "planning/plan-deep-review/prompts/agent-routing.md",
+      "prompt": "plan-deep-review/prompts/propose-review-criteria.md",
+      "next": "evaluate-review-criteria"
+    },
+    "evaluate-review-criteria": {
+      "id": "evaluate-review-criteria",
+      "type": "agent",
+      "prompt": "plan-deep-review/prompts/evaluate-review-criteria.md",
       "next": {
-        "info-prime": {
-          "desc": "Begin informational gathering phase",
-          "choose_when": "Agent routing assignments determined"
+        "propose-review-criteria": {
+          "desc": "Review criteria need adjustment; reconsider evaluation standards",
+          "choose_when": "Proposed criteria don't capture what matters for the review"
+        },
+        "identify-review-scope": {
+          "desc": "Review criteria are sound; ready to identify review scope",
+          "choose_when": "Criteria are appropriate and comprehensive"
         }
       }
+    },
+    "identify-review-scope": {
+      "id": "identify-review-scope",
+      "type": "agent",
+      "prompt": "plan-deep-review/prompts/identify-review-scope.md",
+      "next": "info-prime"
     },
     "info-prime": {
       "id": "info-prime",
       "type": "agent",
-      "prompt": "planning/_shared/info-prime.md",
-      "next": {
-        "info-loop-analysis": {
-          "desc": "Analyze loops in the plan",
-          "choose_when": "Primary informational context established"
-        }
-      }
+      "prompt": "plan-deep-review/prompts/info-prime.md",
+      "next": "info-loop-analysis"
     },
     "info-loop-analysis": {
       "id": "info-loop-analysis",
       "type": "agent",
-      "prompt": "planning/_shared/info-loop-analysis.md",
-      "next": {
-        "info-visit-counter": {
-          "desc": "Count node visits to detect runaway loops",
-          "choose_when": "Loop analysis complete"
-        }
-      }
+      "prompt": "plan-deep-review/prompts/info-loop-analysis.md",
+      "next": "info-visit-counter"
     },
     "info-visit-counter": {
       "id": "info-visit-counter",
       "type": "agent",
-      "prompt": "planning/_shared/info-visit-counter.md",
-      "next": {
-        "info-gate-analysis": {
-          "desc": "Analyze gate conditions in the plan",
-          "choose_when": "Visit counts tallied"
-        }
-      }
+      "prompt": "plan-deep-review/prompts/info-visit-counter.md",
+      "next": "info-gate-analysis"
     },
     "info-gate-analysis": {
       "id": "info-gate-analysis",
       "type": "agent",
-      "prompt": "planning/_shared/info-gate-analysis.md",
-      "next": {
-        "info-flow-specific": {
-          "desc": "Analyze flow-specific patterns",
-          "choose_when": "Gate analysis complete"
-        }
-      }
-    },
-    "info-flow-specific": {
-      "id": "info-flow-specific",
-      "type": "agent",
-      "prompt": "planning/plan-deep-review/prompts/info-flow-specific.md",
-      "next": {
-        "info-schema-ref": {
-          "desc": "Reference schema definitions",
-          "choose_when": "Flow-specific analysis complete"
-        }
-      }
-    },
-    "info-schema-ref": {
-      "id": "info-schema-ref",
-      "type": "agent",
-      "prompt": "planning/_shared/info-schema-ref.md",
-      "next": {
-        "info-validity-checks": {
-          "desc": "Run validity checks on the plan",
-          "choose_when": "Schema references resolved"
-        }
-      }
+      "prompt": "plan-deep-review/prompts/info-gate-analysis.md",
+      "next": "info-validity-checks"
     },
     "info-validity-checks": {
       "id": "info-validity-checks",
       "type": "agent",
-      "prompt": "planning/_shared/info-validity-checks.md",
-      "next": {
-        "info-summarize-consumption": {
-          "desc": "Summarize informational consumption",
-          "choose_when": "Validity checks passed"
-        }
-      }
+      "prompt": "plan-deep-review/prompts/info-validity-checks.md",
+      "next": "info-flow-specific"
+    },
+    "info-flow-specific": {
+      "id": "info-flow-specific",
+      "type": "agent",
+      "prompt": "plan-deep-review/prompts/info-flow-specific.md",
+      "next": "info-summarize-consumption"
     },
     "info-summarize-consumption": {
       "id": "info-summarize-consumption",
       "type": "agent",
-      "prompt": "planning/_shared/info-summarize-consumption.md",
-      "next": {
-        "review-gate": {
-          "desc": "Present plan for user approval",
-          "choose_when": "Informational phase summarized"
-        }
-      }
+      "prompt": "plan-deep-review/prompts/info-summarize-consumption.md",
+      "next": "planning-gate"
     },
-    "review-gate": {
-      "id": "review-gate",
+    "planning-gate": {
+      "id": "planning-gate",
       "type": "gate",
-      "prompt": "planning/plan-deep-review/prompts/review-gate.md",
+      "prompt": "plan-deep-review/prompts/planning-gate.md",
       "next": {
         "finalize": {
-          "desc": "Generate fix session plan",
-          "choose_when": "User approved the fix plan"
+          "desc": "Review plan is sound; proceed to write the project DAG",
+          "choose_when": "All review planning decisions are solid and ready to commit"
         },
-        "clarify": {
-          "desc": "Loop back to clarify with changes",
-          "choose_when": "User requested revisions to the plan"
+        "propose-review-criteria": {
+          "desc": "Reconsider what criteria to use for review",
+          "choose_when": "Review criteria need adjustment"
+        },
+        "identify-review-scope": {
+          "desc": "Refine the scope of what will be reviewed",
+          "choose_when": "Review scope needs clarification"
         }
       }
     },
     "finalize": {
       "id": "finalize",
       "type": "agent",
-      "prompt": "planning/plan-deep-review/prompts/finalize.md"
+      "prompt": "plan-deep-review/prompts/finalize.md"
     }
   }
 }

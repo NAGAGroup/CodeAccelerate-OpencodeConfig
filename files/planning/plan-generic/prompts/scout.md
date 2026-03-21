@@ -1,29 +1,23 @@
-# Scout — Codebase Context Gathering
+# Codebase Scout
 
-Dispatch **2–4 @ContextScout agents in parallel**, each targeting a different relevant area of the codebase based on the task description gathered in task-intake and clarify.
+Your task is to **explore the codebase and understand relevant context**.
 
-## Dispatch Guidelines
+## What to Do
 
-Assign each scout a focused, non-overlapping target. Good targets include:
-- **Entry points** — where the feature or change begins (routes, handlers, CLI entrypoints)
-- **Affected files** — files most likely to change based on the task description
-- **Test patterns** — how existing tests are structured; what testing conventions are in use
-- **Existing conventions** — related code that establishes patterns to follow (naming, structure, error handling)
+Survey the codebase for:
+1. **Affected Areas** — What parts of the codebase does this task touch?
+2. **Patterns & Architecture** — How is the code organized? What patterns matter?
+3. **Dependencies** — What other systems does this depend on?
+4. **Relevant Code** — Show examples of patterns the task needs to follow.
 
-## Prompt Each Scout With
+Be thorough but concise. Focus on what matters for decomposing this task.
 
-- Specific file paths or glob patterns to read (derived from the task context)
-- A focused question: what are they looking for?
-- What to return: relevant file contents, patterns observed, open questions
+## Output
 
-## Constraints
+Summarize findings:
+- Key code areas affected
+- Architectural patterns to follow
+- Notable dependencies
+- 2-3 code examples
 
-- Dispatch all scouts simultaneously in a single response (parallel, not sequential)
-- Do NOT synthesize findings here — wait for all scouts to return, then call `next_step()`
-- You MUST NOT begin decomposing the work. Stop immediately if you find yourself doing so.
-- You MUST NOT propose solutions or implementation approaches of any kind.
-- Violating these constraints means this node has failed. Stop and re-read the objective.
-
-## Advance
-
-Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.
+Call `next_step()` when ready.

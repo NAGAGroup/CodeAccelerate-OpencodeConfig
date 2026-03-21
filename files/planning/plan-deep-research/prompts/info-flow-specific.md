@@ -1,12 +1,25 @@
-# Info: Flow-Specific Considerations — Deep Research Planning
+# INFO: Research-Specific Principles
 
-Deep research is for research-centric exploration. Key reminders:
+These principles apply specifically to **research project DAGs**:
 
-- **Research loop** — research-execute → accumulate → assess cycles build knowledge progressively
-- **Research gate** — user approval at research-gate to steer the direction
-- **Iteration planning** — each iteration should have a clear research question
-- **Evidence synthesis** — accumulate findings before deciding to continue or exit
+## 1. Angle Exploration is Intentional
 
-## Advance
+Each research angle should be a deliberate investigation path. Don't explore tangents; stay focused on angles that inform the central research question.
 
-Call `next_step()` to proceed to schema reference.
+## 2. Evidence Hierarchy Guides Decisions
+
+Decisions about which angles to explore next should be based on preliminary evidence and the evidence hierarchy established at planning. Don't chase every lead.
+
+## 3. Synthesis is Ongoing
+
+Don't wait until all research is complete to start synthesis. Integrate findings progressively. This allows earlier discovery of gaps or contradictions.
+
+## 4. Validation Prevents Bias
+
+Use multiple sources per angle. Cross-check findings. Look for contradictions and reconcile them. Avoid confirmation bias.
+
+## 5. Research Loops Handle Unknowns
+
+If you discover new angles or gaps during investigation, use loops to circle back. The `remaining_visits` counter prevents endless discovery while allowing realistic research.
+
+Call `next_step()` to summarize your decisions.

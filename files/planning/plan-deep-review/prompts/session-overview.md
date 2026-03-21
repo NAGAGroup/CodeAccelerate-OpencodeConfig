@@ -1,37 +1,27 @@
-# Node: session-overview — /plan-deep-review
+# Deep Review Planning Session
 
-<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->
+You are beginning a **deep review planning session**. Your role is to understand what needs reviewing, design a systematic evaluation approach, and create a structured quality assessment DAG.
 
-You are executing a **deep review planning session**. Read this node once, internalize it, then call `next_step()` immediately.
+## What Will Happen
 
-## CRITICAL — Your Sole Output Is a Session Plan
+This planning session will walk you through:
+1. **Review Understanding** — Gather the review scope, context, and quality goals
+2. **Codebase Exploration** — Scout the artifact or system to be reviewed
+3. **Review Scope** — Clarify the most critical review dimensions before evaluating
+4. **Review Criteria** — Decide which evaluation criteria and quality standards apply
+5. **Decomposition** — Break review into 3-5 evaluation steps with assessment scope
+6. **Agent Routing** — Assign reviewers and model tiers
+7. **Learning** — Learn how to structure quality review DAGs
+8. **Validation** — Get user approval of the review approach
+9. **Finalization** — Write the project DAG
 
-**You are ONLY here to write plan artifacts into `.opencode/session-plans/`.**
+## Your Job
 
-You do NOT review code, apply fixes, refactor, or otherwise act on the codebase being discussed. That work is entirely out of scope for this session. It will be done later by the execution agent the user chooses to run the plan.
+Plan a structured review DAG by:
+- Understanding what's being reviewed and why
+- Identifying quality dimensions and review criteria
+- Designing systematic evaluation approach
+- Decomposing review into measurable assessment steps
+- Routing agents appropriately for review tasks
 
-If you find yourself reviewing code, writing fixes, editing files, or solving any problem — **stop immediately**. Your only deliverables are:
-
-- `.opencode/session-plans/<session-name>/plan.json`
-- `.opencode/session-plans/<session-name>/session-overview.md`
-- `.opencode/session-plans/<session-name>/<prompt-files>.md`
-
-Nothing else. No code review. No fixes. No implementation.
-
-## What This Session Is
-
-A deep review planning session produces a structured fix session plan. The output is a session artifact — a set of files that organize findings into fix subtasks, orchestrate review and synthesis, and route agents to implementation work.
-
-**Your role is structural:** confirm the review scope and findings, clarify the output format and audience, determine agent routing, then produce the session artifact. You do not start reviewing code here.
-
-## Operating Principles
-
-- One question at a time — do not batch questions unless using the `question` tool
-- Scope and flags come from `$ARGUMENTS` — do not re-negotiate session bounds without explicit user direction
-- Do NOT start reviewing code yet — that happens at the `scout` node
-- Your job is to design the fix session, not to execute it
-- **You are a planner, not an executor — never implement, fix, or review the work being planned**
-
-## Advance
-
-Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.
+Advance with `next_step()` when ready.

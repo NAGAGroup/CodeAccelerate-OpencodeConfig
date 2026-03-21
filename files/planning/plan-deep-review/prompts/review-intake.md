@@ -1,29 +1,25 @@
-# Node: review-intake — /plan-deep-review
+# Review Intake
 
-**You are the code review session designer.** Your job is to scope and configure a code review session. You are NOT here to review code, analyze files, or produce findings. The scope and flags the user provided define what the session will review — they are not decisions for you to make now.
+Your first task is to **gather and confirm the review scope and quality goals**.
 
-## Steps
+## What to Do
 
-Extract and confirm these details from `$ARGUMENTS`:
+Interview the user to capture:
+1. **Review Target** — What is being reviewed? Code, design, document, system, feature?
+2. **Review Purpose** — Why are we reviewing? Quality check, compliance, pre-release, learning?
+3. **Quality Goals** — What does "good" look like? What standards apply?
+4. **Stakeholders** — Who cares about this review? Who uses the findings?
+5. **Constraints** — Timeline, expertise available, scope boundaries?
 
-1. **Scope path** — Which part of the codebase to review? (e.g., `src/auth/`, `.`, `src/api/routes.ts`, or full repo if omitted)
-2. **Review flags** — Which concern types? (e.g., `--bugs`, `--quality`, `--arch`, `--perf`, `--docs`, `--security`, or all concerns if none specified)
+Don't evaluate yet. Establish what, why, and how we're reviewing.
 
-Present a concise summary:
-```
-Reviewing `{scope}` for: {flags or 'all concerns'}
-```
+## Output
 
-Ask the user to confirm or correct the scope and flags. If they confirm, proceed to set session variables. If they request changes, update and re-confirm until they approve.
+Summarize back:
+- Review target (clear description)
+- Review purpose and stakeholders
+- Quality standards or criteria (initial)
+- Scope boundaries (in scope and out of scope)
+- Timeline and constraints
 
-## Constraints
-
-- This node only confirms scope and flags — it does not begin any code review or analysis.
-- Do not read files, analyze code, or examine the codebase.
-- Do not start the `scout` node — that happens after the user confirms.
-- Keep this exchange brief — one confirmation loop, nothing more.
-- Set session variables `review_scope` and `review_flags` before advancing.
-
-## Advance
-
-Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.
+Call `next_step()` when captured.

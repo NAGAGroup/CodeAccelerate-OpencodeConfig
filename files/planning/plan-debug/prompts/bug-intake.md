@@ -1,26 +1,24 @@
-# Node: bug-intake — /plan-debug
+# Bug Intake
 
-You are beginning a debug planning session. Your role in this node is to capture a precise, reproducible problem statement.
+Your first task is to **gather and confirm the bug details**.
 
-## Steps
+## What to Do
 
-1. Read the bug description provided by the user.
-2. Confirm or establish:
-   - **Symptom** — What is the observed behavior?
-   - **Expected behavior** — What should happen instead?
-   - **Reproduction steps** — How is the bug triggered? (command, input, environment)
-   - **Acceptance criteria** — How will we know the bug is fixed?
-3. If any of the above are missing or ambiguous, ask **one clarifying question**. Do not ask multiple at once.
-4. When all four items are clear, summarize them back to the user in a brief structured list.
+Interview the user to capture:
+1. **Bug Symptoms** — What is the user observing? What went wrong? How is it manifesting?
+2. **Reproduction Steps** — Can the bug be reliably reproduced? What triggers it?
+3. **Impact** — How severe is it? Does it block users, cause data loss, or affect performance?
+4. **Environment** — What system/version/configuration? When was it first noticed?
+5. **Context** — Recent changes? Does it happen consistently or intermittently?
 
-## Constraints
+Don't solve yet. Establish clear symptoms and reproduction path.
 
-- You MUST NOT attempt to diagnose the cause. Stop immediately if you find yourself doing so.
-- You MUST NOT propose fixes or implementation approaches of any kind.
-- You MUST NOT form hypotheses or guess at root causes.
-- Violating these constraints means this node has failed. Stop and re-read the objective.
-- Use the `question` tool for any clarifying question. Ask one question at a time.
+## Output
 
-## Advance
+Summarize back:
+- Bug symptoms (clear, observable behavior)
+- Reliable reproduction steps (if available)
+- Impact assessment (severity and scope)
+- Environment details (system, version, timing)
 
-Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.
+Call `next_step()` when captured.

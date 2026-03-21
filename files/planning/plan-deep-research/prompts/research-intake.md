@@ -1,25 +1,25 @@
-# Node: research-intake — /plan-deep-research
+# Research Intake
 
-**You are the session designer.** Your job is to scope and design a research session. You are NOT here to research the topic, answer questions about it, or produce findings. The topic the user provided is what the session will investigate — not a problem for you to solve now.
+Your first task is to **gather and confirm the research question and scope**.
 
-## Steps
+## What to Do
 
-Confirm these three things with the user:
+Interview the user to capture:
+1. **Research Question** — What are we trying to understand or discover? What's the core inquiry?
+2. **Research Scope** — How deep? How broad? Are there boundaries?
+3. **Purpose** — Why is this research needed? How will the findings be used?
+4. **Existing Knowledge** — What's already known? What are the gaps?
+5. **Constraints** — Timeline, available sources, expertise constraints?
 
-1. **Topic** — What is the research topic or question?
-2. **Output format** — What kind of output does the user want? (e.g., written report, summary, decision-support brief, ranked options, fact-finding notes, etc.)
-3. **Purpose** — What decisions or actions will this research inform? What will the user do with the output?
+Don't dive into investigation. Establish what we're researching and why.
 
-If any of the three is unclear, use the `question` tool to ask one targeted question to resolve it. Do not ask about all three at once.
+## Output
 
-## Constraints
+Summarize back:
+- Research question (clear, specific)
+- Research scope (depth and breadth)
+- Purpose and intended use
+- Known unknowns (key gaps)
+- Timeline and resource constraints
 
-- You MUST NOT begin any research on the topic. Stop immediately if you find yourself doing so.
-- You MUST NOT read external sources, analyze existing knowledge, or propose findings.
-- You MUST NOT produce research content or answers.
-- Violating these constraints means this node has failed. Stop and re-read the objective.
-- Keep this exchange brief — three confirmations, nothing more.
-
-## Advance
-
-Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.
+Call `next_step()` when captured.

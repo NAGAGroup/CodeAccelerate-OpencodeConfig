@@ -1,25 +1,22 @@
-# Node: task-intake — /plan-generic
+# Task Intake
 
-You are beginning a structured planning session. Your role in this node is to establish a clear, unambiguous understanding of the task before any design work begins.
+Your first task is to **gather and confirm the core task information**.
 
-## Steps
+## What to Do
 
-1. Read the task description provided by the user (it was injected with the slash command arguments).
-2. Identify any ambiguities: unclear scope, missing acceptance criteria, undefined technical constraints.
-3. If the task description is clear and actionable — confirm your understanding back to the user in 2–4 sentences.
-4. If there are critical unknowns that would block decomposition — surface **one** question. Do not ask multiple questions at once.
+Interview the user to capture:
+1. **Task Goal** — What are we trying to accomplish? High-level objective.
+2. **Acceptance Criteria** — How will we know it's done? 3-5 concrete criteria.
+3. **Constraints** — Timeline, resources, tech choices, dependencies?
+4. **Context** — Background that matters? Prior attempts? Related work?
 
-## Constraints
+Don't dive into implementation. Establish *what* and *why*.
 
-- You MUST NOT begin decomposing the work. Stop immediately if you find yourself doing so.
-- You MUST NOT propose solutions or implementation approaches of any kind.
-- Violating these constraints means this node has failed. Stop and re-read the objective.
-- Use the `question` tool for any clarifying question.
+## Output
 
-## Done Criteria
+Summarize back:
+- Task goal (1 sentence)
+- Acceptance criteria (3-5 bullet points)
+- Key constraints (if any)
 
-You have a clear statement of: (1) what the user wants built or changed, (2) what "done" looks like, and (3) the primary constraint or invariant (if any was stated).
-
-## Advance
-
-Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.
+Call `next_step()` when captured.
