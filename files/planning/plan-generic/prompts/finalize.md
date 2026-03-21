@@ -20,19 +20,27 @@ Your role in this node is to write all session plan artifacts to disk and regist
      - `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->` as the first line
      - Fully populated `## Objective`, `## Scope`, `## Constraints`, `## Todolist`, and `## Delegation` sections
      - An `## Advance` section at the end: "Call `next_step()` when this subtask is complete."
-     - For the terminal subtask: "Call `next_step()` when this subtask is complete — the DAG will detect it is terminal and prompt you to call `close_session()`."
+   - A prompt file for every node in `plan.json` — including terminal nodes, gate nodes, and any `close`/`complete`/`finalize` nodes.
 
-4. **Write the execution plan** to `.opencode/session-plans/{session-name}/plan.json` — use the schema and best-practices loaded in the load-guidelines node.
+4. **Validate the DAG before writing** — Apply these two invariants to every node in `plan.json`:
 
-> **Critical:** The final node in the generated `plan.json` MUST NOT have a `next` field. Omit it entirely. If `next` is present on the terminal node, executing agents cannot call `close_session()` and the session will be stuck.
+   **Invariant 1 — Every loop node has a non-looping exit.**
+   For each node whose `next` includes a back-edge (pointing to a prior node in the flow): does it also have at least one branch that does NOT loop back? If any loop node has only looping branches, the plan is broken. Add the missing exit branch.
 
-5. **Commit the session**:
+   **Invariant 2 — Every path through the DAG eventually reaches a terminal node.**
+   A terminal node is one with no `next` field. Starting from `session-overview`, trace every possible branch sequence. Does every possible path eventually land on a terminal node? If any path cycles forever with no way out, the plan is broken. There may be multiple terminal nodes — that is fine. But every reachable branch must lead to one.
+
+   > Do this mentally as a graph traversal before writing any files. If either invariant fails, fix the DAG structure first.
+
+5. **Write the execution plan** to `.opencode/session-plans/{session-name}/plan.json` — use the schema and best-practices loaded in the load-guidelines node.
+
+6. **Commit the session**:
     ```
     git add .opencode/session-plans/{session-name}/
     git commit -m "plan: add session {session-name}"
     ```
 
-6. **Present the final overview** to the user:
+7. **Present the final overview** to the user:
    - Subtask list with delegation assignments
    - Gate locations
    - Next step: "Run '/activate-plan {session-name}' when ready to begin execution."

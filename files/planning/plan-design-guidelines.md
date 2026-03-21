@@ -133,7 +133,17 @@ Every loop is a cycle of two or more nodes. The decision node holds `remaining_v
 }
 ```
 
-#### Design Checklist
+#### Two Invariants Every DAG Must Satisfy
+
+These are structural correctness requirements. Violating either produces a broken plan that traps the executing agent.
+
+**Invariant 1 — Every loop node has at least one non-looping exit branch.**
+A loop node (a decision node whose `next` includes a back-edge to a prior node) MUST also have at least one branch that does NOT loop back. That exit can point anywhere in the DAG — the next sequential subtask, a gate, another loop, a terminal node. It just cannot be stuck in the cycle with no way out.
+
+**Invariant 2 — Every path through the DAG eventually reaches a terminal node.**
+A terminal node is one with no `next` field. Starting from the entry node, trace every possible branch sequence. Every path must eventually land on a terminal node. There may be multiple terminal nodes — that is fine. But every reachable branch must lead to one. No path may cycle forever.
+
+> These invariants are checked during `finalize` as a mandatory DAG validation step before writing any files.
 
 Before finalizing any loop:
 - [ ] The loop spans at least two nodes — no self-referencing nodes
@@ -149,24 +159,9 @@ Before finalizing any loop:
 - **Looping without cap:** A decision node without `remaining_visits` risks infinite loops.
 - **Multiple loop branches:** If two different branches both lead back, the exit condition is unclear.
 - **Hidden loops:** A step that implicitly repeats via back-and-forth agent dispatch without a declared loop node.
-- **Loop + terminal on same node:** A node cannot have both a loop `next` and no `next` (terminal). This is the single most common planning mistake. **The mandatory fix:** add a dedicated terminal node (e.g., `close`) with no `next` field. The loop node's exit branch points to `close`. Example:
-
-  ```json
-  "verify": {
-    "next": {
-      "close": { "desc": "All checks pass", "choose_when": "Verified" },
-      "fix":   { "desc": "Re-run fix",       "choose_when": "Checks failed" }
-    },
-    "remaining_visits": 3
-  },
-  "close": {
-    "id": "close",
-    "type": "agent",
-    "prompt": "prompts/close.md"
-  }
-  ```
-
-  Never omit `next` from a loop node to "make it terminal." That is structurally invalid.
+- **No non-looping exit (Invariant 1 violation):** A loop node whose every `next` branch loops back. The executing agent has no way to leave the cycle. **The fix:** add at least one exit branch pointing forward — to the next subtask, a gate, or a terminal node.
+- **Unreachable terminal (Invariant 2 violation):** A path through the DAG that cycles forever with no terminal node reachable. **The fix:** trace every branch sequence before writing; ensure every path lands somewhere with no `next`.
+- **Loop + no `next` on same node:** A node cannot simultaneously be a loop node and a terminal node. Omitting `next` makes a node terminal — it cannot also have back-edges. These are mutually exclusive.
 
 - **Build/test subtask without a loop node:** Any subtask that (a) writes code AND (b) runs a build or test suite is **automatically** a loop node candidate. Do not represent fix-verify cycles as two sequential non-looping nodes. The verify node must loop back to fix, and a separate `close`/`complete` terminal node must follow the loop.
 
