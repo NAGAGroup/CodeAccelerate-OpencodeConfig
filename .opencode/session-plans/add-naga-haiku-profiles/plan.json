@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "id": "add-naga-haiku-profiles",
+  "session_type": "plan-generic",
+  "goal": "Add two new OCX profiles (naga-haiku and naga-haiku-pilot) with all agents set to haiku 4.5",
+  "created": "2026-03-21",
+  "status": "ready",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/add-naga-haiku-profiles/prompts/session-overview.md",
+      "next": {
+        "subtask-01-naga-haiku": {
+          "desc": "Create naga-haiku profile files",
+          "choose_when": "Session overview internalized"
+        }
+      }
+    },
+    "subtask-01-naga-haiku": {
+      "id": "subtask-01-naga-haiku",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/add-naga-haiku-profiles/prompts/subtask-01-naga-haiku.md",
+      "next": {
+        "subtask-02-naga-haiku-pilot": {
+          "desc": "Create naga-haiku-pilot profile files",
+          "choose_when": "naga-haiku files created"
+        }
+      }
+    },
+    "subtask-02-naga-haiku-pilot": {
+      "id": "subtask-02-naga-haiku-pilot",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/add-naga-haiku-profiles/prompts/subtask-02-naga-haiku-pilot.md",
+      "next": {
+        "subtask-03-register": {
+          "desc": "Register profiles in registry.jsonc",
+          "choose_when": "naga-haiku-pilot files created"
+        }
+      }
+    },
+    "subtask-03-register": {
+      "id": "subtask-03-register",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/add-naga-haiku-profiles/prompts/subtask-03-register.md",
+      "next": {
+        "subtask-04-build": {
+          "desc": "Build and verify",
+          "choose_when": "Profiles registered in registry.jsonc"
+        }
+      }
+    },
+    "subtask-04-build": {
+      "id": "subtask-04-build",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/add-naga-haiku-profiles/prompts/subtask-04-build.md"
+    }
+  }
+}
