@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "id": "plan-deep-review-impl",
+  "session_type": "plan-generic",
+  "goal": "Build the /plan-deep-review planning workflow — slash command, 9-node planning DAG, and all node prompt files",
+  "created": "2026-03-20",
+  "status": "ready",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-deep-review-impl/prompts/session-overview.md",
+      "next": "subtask-01-slash-command"
+    },
+    "subtask-01-slash-command": {
+      "id": "subtask-01-slash-command",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-deep-review-impl/prompts/subtask-01-slash-command.md",
+      "next": "subtask-02-plan-json"
+    },
+    "subtask-02-plan-json": {
+      "id": "subtask-02-plan-json",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-deep-review-impl/prompts/subtask-02-plan-json.md",
+      "next": "subtask-03-session-overview-load-guidelines"
+    },
+    "subtask-03-session-overview-load-guidelines": {
+      "id": "subtask-03-session-overview-load-guidelines",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-deep-review-impl/prompts/subtask-03-session-overview-load-guidelines.md",
+      "next": "subtask-04-review-intake-clarify-scout"
+    },
+    "subtask-04-review-intake-clarify-scout": {
+      "id": "subtask-04-review-intake-clarify-scout",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-deep-review-impl/prompts/subtask-04-review-intake-clarify-scout.md",
+      "next": "subtask-05-synthesize-agent-routing-review-gate"
+    },
+    "subtask-05-synthesize-agent-routing-review-gate": {
+      "id": "subtask-05-synthesize-agent-routing-review-gate",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-deep-review-impl/prompts/subtask-05-synthesize-agent-routing-review-gate.md",
+      "next": "subtask-06-finalize"
+    },
+    "subtask-06-finalize": {
+      "id": "subtask-06-finalize",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-deep-review-impl/prompts/subtask-06-finalize.md"
+    }
+  }
+}
