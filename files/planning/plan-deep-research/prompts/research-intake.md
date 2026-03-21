@@ -14,10 +14,12 @@ If any of the three is unclear, use the `question` tool to ask one targeted ques
 
 ## Constraints
 
-- This node only confirms scope — it does not begin any research on the topic.
-- Do not read external sources, analyze existing knowledge, or propose findings.
+- You MUST NOT begin any research on the topic. Stop immediately if you find yourself doing so.
+- You MUST NOT read external sources, analyze existing knowledge, or propose findings.
+- You MUST NOT produce research content or answers.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 - Keep this exchange brief — three confirmations, nothing more.
 
 ## Advance
 
-Call `next_step()` to proceed.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

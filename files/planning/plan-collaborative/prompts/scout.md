@@ -18,10 +18,11 @@ Assign each scout a focused, non-overlapping target. Good targets include:
 
 ## Constraints
 
-- Dispatch all scouts simultaneously in a single response (parallel, not sequential)
-- Do NOT synthesize findings here — wait for all scouts to return, then call `next_step()`
-- Do NOT start solving or decomposing the problem — that comes after synthesis in the planning process
+- You MUST dispatch all scouts simultaneously in a single response (parallel, not sequential).
+- You MUST NOT synthesize findings here. Wait for all scouts to return, then call `next_step()`.
+- You MUST NOT start solving or decomposing the problem — that comes after synthesis in the planning process.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 
 ## Advance
 
-After all scouts have returned their findings, call `next_step()` to proceed to the next step in the collaborative planning workflow.
+After all scouts have returned their findings, call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

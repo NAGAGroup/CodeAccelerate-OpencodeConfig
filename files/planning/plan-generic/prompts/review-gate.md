@@ -15,6 +15,11 @@ This is a gate node. Your role is to present the complete plan to the user and c
 
 3. Wait for the user's response.
 
+## Constraints
+
+- You MUST NOT propose solutions or implementation approaches of any kind.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
+
 ## Advance
 
-**Call `next_step()`** to advance.
+Present the complete summary to the user. Then stop and wait. Do NOT call `next_step()` until the user has provided an explicit approval or redirect response. Do NOT infer approval from silence or partial responses. When the user responds, call `next_step({ next: "chosen-branch-id" })` exactly once with the branch the user selected.

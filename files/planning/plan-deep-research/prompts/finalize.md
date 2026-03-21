@@ -106,6 +106,14 @@ Before writing files: confirm with the user how many research-execute iterations
    - Instructions to loop automatically via `next_step()` without surfacing findings or waiting for user input — the loop is fully unsupervised
    - Instructions: when the loop counter is exhausted, the DAG advances automatically to `synthesis-gate` — no action needed
    - **Delegation instructions** from the agent-routing node for research-execute (embed verbatim)
+   - A **`## Constraints`** section with this exact content:
+
+     ```
+     ## Constraints
+
+     You are in a loop node. You have ONE action: dispatch all @DeepResearcher agents in parallel, wait for all to return, accumulate findings to `research-brief.md`, then call `next_step()` immediately. Do NOT surface findings to the user mid-loop. Do NOT wait for user input between iterations. Do NOT synthesize or interpret findings here — that happens at synthesis-gate. After calling `next_step()`, stop — the DAG determines whether to loop again or advance. You MUST NOT make that determination yourself.
+     ```
+
    - A **`## Advance`** section: "Call `next_step()` to loop for another research iteration, or advance to synthesis-gate when the loop counter is exhausted. The DAG plugin will present the available options — do not hardcode branch IDs."
 
    Do not write research content, topic analysis, or answers to the questions in this prompt.
@@ -122,11 +130,17 @@ Before writing files: confirm with the user how many research-execute iterations
 
    Read `research-brief.md` and present a structured summary of all findings accumulated so far, organized by open question or theme.
 
-   Ask the user: "Does this cover what you need? Approve to write the final report, or redirect back to research for more investigation."
+    Ask the user: "Does this cover what you need? Approve to write the final report, or redirect back to research for more investigation."
 
-    ## Advance
+     ## Constraints
 
-    Call `next_step()` to proceed. The DAG plugin will present the available options — select to loop back to research-execute or advance to report-write. Do not hardcode branch IDs.
+     You are in a gate node. Present the question to the user. Then stop and wait. Do NOT call `next_step()` until the user has provided an explicit response. Do NOT infer a response from silence or partial responses. When the user responds:
+     - If **redirect back to research**: Call `next_step()` exactly once. Stop.
+     - If **approve to write report**: Call `next_step()` exactly once. Stop.
+
+     ## Advance
+
+     Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state. Do NOT take any other action before or after calling `next_step()`.
    ```
 
    No delegation needed in this node — HeadWrench presents directly.
@@ -187,12 +201,13 @@ Before writing files: confirm with the user how many research-execute iterations
 
 ## Constraints
 
-- Do not call `next_step()` — this is a terminal node. Call `close_session()` after presenting the plan.
+- You MUST NOT call `next_step()` — this is a terminal node. Call `close_session()` after presenting the plan.
 - Seven files only: `plan.json`, `session-overview.md`, `research-brief.md`, `research-execute.md`, `synthesis-gate.md`, `report-write.md`, `finalize-output.md`. No additional files.
 - `session-overview.md` must be dynamically generated — do not copy a static template.
 - `research-brief.md` stub only. No generated research content.
 - All open questions and format/audience details must be **copied verbatim** from earlier planning nodes — do not paraphrase.
+- You MUST NOT engage with the research topic's content in any way.
 
 ## Advance
 
-This is a terminal node. Call `close_session()` after presenting the final overview.
+Call `close_session()` exactly once. Do this exactly once. Do NOT call `next_step()` — this is a terminal node. Do NOT read session files or DAG state. Do NOT take any other action before or after calling `close_session()`.

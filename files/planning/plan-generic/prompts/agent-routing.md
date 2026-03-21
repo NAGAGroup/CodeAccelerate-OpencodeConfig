@@ -23,7 +23,9 @@ Your role in this node is to assign an agent and model to every subtask in the s
 - Every subtask must have an assignment. Do not leave any as TBD.
 - Prefer haiku agents in parallel over a single sonnet agent unless complexity justifies escalation.
 - Do not write any files in this node — routing decisions only.
+- You MUST NOT propose solutions or implementation approaches of any kind.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

@@ -32,11 +32,14 @@ This is a gate node. Your role is to present a proposed **research session struc
 ## Constraints
 
 - No content generated in this node should constitute actual research on the topic.
-- Do not answer the research questions — only list them.
-- Do not analyze sources, propose findings, or recommend positions.
+- You MUST NOT answer the research questions — only list them.
+- You MUST NOT analyze sources, propose findings, or recommend positions.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
+
+You are in a gate node. Present the research session design to the user. Then stop and wait. Do NOT call `next_step()` until the user has provided an explicit approval or redirect response. Do NOT infer approval from silence or partial responses. When the user responds, call `next_step()` exactly once and stop.
 
 ---
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

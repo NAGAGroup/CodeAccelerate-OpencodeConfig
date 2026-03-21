@@ -15,6 +15,10 @@ Your role in this node is to ask the user how they want the debugging execution 
 
 3. Record the user's answer in context.
 
+## Constraints
+
+You are in a gate node. Present the question to the user. Then stop and wait. Do NOT call `next_step()` until the user has provided an explicit response to the question above. Do NOT infer a response from silence or partial responses. Do NOT summarize, analyze, or propose solutions. When the user responds, call `next_step()` exactly once and stop.
+
 ## Advance
 
-Call `next_step()`.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

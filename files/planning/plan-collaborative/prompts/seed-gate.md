@@ -30,11 +30,14 @@ This is a gate node. Your role is to present a proposed **session structure** an
 ## Constraints
 
 - No content generated in this node should constitute design work on the topic itself.
-- Do not propose solutions, architecture pillars, trade-offs, or recommendations.
-- Do not analyze or answer the open questions — only list them.
+- You MUST NOT propose solutions, architecture pillars, trade-offs, or recommendations.
+- You MUST NOT analyze or answer the open questions — only list them.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
+
+You are in a gate node. Present the session design to the user. Then stop and wait. Do NOT call `next_step()` until the user has provided an explicit approval or redirect response. Do NOT infer approval from silence or partial responses. When the user responds, call `next_step()` exactly once and stop.
 
 ---
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

@@ -20,8 +20,10 @@ Assign each scout a focused, non-overlapping target. Good targets include:
 
 - Dispatch all scouts simultaneously in a single response (parallel, not sequential)
 - Do NOT synthesize findings here — wait for all scouts to return, then call `next_step()`
-- Do NOT start decomposing — that comes after synthesize
+- You MUST NOT begin decomposing the work. Stop immediately if you find yourself doing so.
+- You MUST NOT propose solutions or implementation approaches of any kind.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

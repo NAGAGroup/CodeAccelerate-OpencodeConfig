@@ -28,11 +28,12 @@ You are a session designer. Your role in this node is to determine what delegati
 
 ## Constraints
 
-- Do not write any files in this node.
-- Do not engage with the research topic's content or provide any findings.
+- You MUST NOT write any files in this node. Stop immediately if you find yourself doing so.
+- You MUST NOT engage with the research topic's content or provide any findings.
 - Prefer `@DeepResearcher` for all web/documentation research work. This is research-mode's core delegation difference from other planning modes.
 - Prefer haiku agents by default. HeadWrench handles synthesis, presentation, and any complex writing.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

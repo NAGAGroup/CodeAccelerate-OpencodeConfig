@@ -24,8 +24,10 @@ Your role in this node is to produce a concrete, ordered subtask breakdown from 
 
 - Do not write any files yet.
 - Do not assign agents yet.
+- You MUST NOT propose solutions or implementation approaches of any kind.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 - Subtask count: aim for 3–9 subtasks. Fewer than 3 is a single task, not a plan. More than 9 needs splitting.
 
 ## Advance
 
-Call `next_step()`.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

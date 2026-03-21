@@ -38,4 +38,9 @@ Your role in this node is to write all session plan artifacts to disk and regist
 ## Constraints
 
 - All `## Delegation` sections must be filled before writing files. Do not write `TBD`.
-- Do not call `next_step()` — this is a terminal node. Call `close_session()` after the overview is presented.
+- You MUST NOT propose solutions or implementation approaches of any kind.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
+
+## Advance
+
+Call `close_session()` exactly once. Do this exactly once. Do NOT call `next_step()` — this is a terminal node. Do NOT read session files or DAG state. Do NOT take any other action before or after calling `close_session()`.

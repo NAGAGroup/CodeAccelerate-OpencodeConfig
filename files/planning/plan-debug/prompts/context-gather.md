@@ -20,9 +20,11 @@ Your role in this node is to gather codebase context relevant to the bug before 
 
 ## Constraints
 
-- Do not form hypotheses yet.
-- Do not write any files.
+- You MUST NOT form hypotheses yet. Stop immediately if you find yourself doing so.
+- You MUST NOT write any files. Do not modify the codebase in any way.
+- You MUST NOT propose fixes or diagnose root causes.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 
 ## Advance
 
-Call `next_step()`.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

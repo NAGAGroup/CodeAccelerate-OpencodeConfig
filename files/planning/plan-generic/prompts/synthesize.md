@@ -18,7 +18,9 @@ Present the synthesis as a brief codebase context summary (bullet points preferr
 
 - Do NOT decompose into subtasks yet — that is decompose's job
 - Do NOT ask clarifying questions here — surface open questions in the summary, then advance
+- You MUST NOT propose solutions or implementation approaches of any kind.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

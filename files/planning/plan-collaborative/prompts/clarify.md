@@ -20,11 +20,14 @@ You are **NOT** starting to explore the topic, answer its questions, or engage w
 
 ## Constraints
 
-- Do not engage with the topic's content, substance, or domain in this node.
-- Do not propose solutions, designs, analyses, or answers related to the topic.
-- Do not ask about the topic's problem details, success criteria, architecture, or design constraints — those belong in the session itself.
+- You MUST NOT engage with the topic's content, substance, or domain in this node. Stop immediately if you find yourself doing so.
+- You MUST NOT propose solutions, designs, analyses, or answers related to the topic.
+- You MUST NOT ask about the topic's problem details, success criteria, architecture, or design constraints — those belong in the session itself.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 - The seed plan produced by `finalize` will be rough by design — you only need enough session-design context to structure a starting point, not a complete spec.
+
+You are in a loop node. You have ONE action: generate focused session-design questions, ask one targeted question using the `question` tool, then call `next_step()` immediately. Do NOT ask more than one question. Do NOT summarize, analyze, or propose solutions. After calling `next_step()`, stop — the DAG determines whether to loop again or advance. You MUST NOT make that determination yourself.
 
 ## Advance
 
-**Call `next_step()`** to advance.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

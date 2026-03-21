@@ -62,6 +62,90 @@ When executing a session plan, you have authority to restructure `plan.json` (ad
 
 ---
 
+## Prompt Strictness Standards
+
+### 1. Advance Sections
+
+**Bad:**
+```markdown
+## Advance
+
+Call `next_step()` to advance.
+```
+
+**Good:**
+```markdown
+## Advance
+
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.
+```
+
+### 2. Constraints Sections
+
+**Bad:**
+```markdown
+## Constraints
+
+- Do not begin decomposing the work yet.
+- Do not propose solutions.
+```
+
+**Good:**
+```markdown
+## Constraints
+
+- You MUST NOT begin decomposing the work. Stop immediately if you find yourself doing so.
+- You MUST NOT propose solutions or implementation approaches of any kind.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
+```
+
+### 3. Loop Nodes
+
+**Bad:**
+```markdown
+Loop back if more questions are needed.
+```
+
+**Good:**
+```markdown
+You are in a loop node. You have ONE action: ask the single most important clarifying question using the `question` tool, then call `next_step()` immediately. Do NOT ask more than one question. Do NOT summarize, analyze, or propose solutions. After calling `next_step()`, stop — the DAG determines whether to loop again or advance. You MUST NOT make that determination yourself.
+```
+
+### 4. Verification Nodes
+
+**Bad:**
+```markdown
+Run the full test suite. If all pass: call `close_session()`. If any fail: call `next_step()` to loop back.
+```
+
+**Good:**
+```markdown
+## Verification Steps
+
+Execute ONLY the following steps, in order, exactly once:
+
+1. [specific step 1]
+2. [specific step 2]
+3. [specific step 3]
+
+Do NOT run additional commands. Do NOT take any other action. Do NOT interpret results beyond the pass/fail criteria below.
+
+**If all steps pass:** Call `close_session()` exactly once. Stop.
+**If any step fails:** Call `next_step()` exactly once. Stop. Do NOT attempt to fix anything here — that is the diagnose node's job.
+```
+
+### 5. Gate Nodes
+
+**Bad:**
+```markdown
+Present the plan and ask for approval.
+```
+
+**Good:**
+```markdown
+Present the complete summary to the user. Then stop and wait. Do NOT call `next_step()` until the user has provided an explicit approval or redirect response. Do NOT infer approval from silence or partial responses. When the user responds, call `next_step({ next: "chosen-branch-id" })` exactly once with the branch the user selected.
+```
+
 ## plan.json Schema Reference
 
 This is the canonical schema for all `plan.json` execution DAG files produced by planning sessions.

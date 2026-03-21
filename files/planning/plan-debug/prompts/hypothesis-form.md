@@ -14,10 +14,11 @@ Your role in this node is to produce one best-guess hypothesis about the root ca
 
 ## Constraints
 
-- One hypothesis only — the best-guess based on current evidence.
+- You MUST produce exactly one hypothesis — the single best-guess based on current evidence.
 - Hypotheses must be grounded in evidence from the codebase — no speculation without backing.
-- Do not propose fixes yet — only diagnoses.
+- You MUST NOT propose fixes. Diagnose only — fixes belong in the fix node.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 
 ## Advance
 
-Call `next_step()`.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

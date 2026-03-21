@@ -15,10 +15,12 @@ You are beginning a debug planning session. Your role in this node is to capture
 
 ## Constraints
 
-- Do not attempt to diagnose the cause yet.
-- Do not propose fixes.
-- Use the `question` tool for any clarifying question.
+- You MUST NOT attempt to diagnose the cause. Stop immediately if you find yourself doing so.
+- You MUST NOT propose fixes or implementation approaches of any kind.
+- You MUST NOT form hypotheses or guess at root causes.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
+- Use the `question` tool for any clarifying question. Ask one question at a time.
 
 ## Advance
 
-Call `next_step()`.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

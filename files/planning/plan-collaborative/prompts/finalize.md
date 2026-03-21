@@ -113,10 +113,15 @@ If you find yourself writing sentences about the topic's design or answering que
 
     Ask: "Are we ready to produce the final output, or is there more to explore?"
 
+    ## Constraints
+
+    You are in a gate node. Present the question to the user. Then stop and wait. Do NOT call `next_step()` until the user has provided an explicit response. Do NOT infer a response from silence or partial responses. When the user responds:
+    - If **more to explore**: Call `next_step()` exactly once. Stop.
+    - If **ready to finalize**: Call `next_step()` exactly once. Stop.
+
     ## Advance
 
-    - If more to explore: call `next_step()` and select the explore node to return to
-    - If ready to finalize: call `next_step()` and select the finalize-output option
+    Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state. Do NOT take any other action before or after calling `next_step()`.
     ```
 
    Substitute the actual last explore node ID (e.g., `explore-03`) — not the literal string `explore-NN`.
@@ -164,7 +169,12 @@ If you find yourself writing sentences about the topic's design or answering que
 
 ## Constraints
 
-- Do not call `next_step()` — this is a terminal node. Call `close_session()` after presenting the plan.
+- You MUST NOT call `next_step()` — this is a terminal node. Call `close_session()` after presenting the plan.
 - Six files only. No additional files.
 - session-overview.md must be dynamically generated — do not copy a static template.
 - spec.md stub only. No generated content.
+- You MUST NOT engage with the topic's content in any way. Copy verbatim from earlier nodes only.
+
+## Advance
+
+Call `close_session()` exactly once. Do this exactly once. Do NOT call `next_step()` — this is a terminal node. Do NOT read session files or DAG state. Do NOT take any other action before or after calling `close_session()`.

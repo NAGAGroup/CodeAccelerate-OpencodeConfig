@@ -20,11 +20,14 @@ You are **NOT** starting to research the topic, answer its questions, or engage 
 
 ## Constraints
 
-- Do not engage with the topic's content, substance, or domain in this node.
-- Do not propose research directions, findings, analyses, or answers related to the topic.
-- Do not ask about the topic's research questions, domain details, or methodological constraints — those belong in the session itself.
+- You MUST NOT engage with the topic's content, substance, or domain in this node. Stop immediately if you find yourself doing so.
+- You MUST NOT propose research directions, findings, analyses, or answers related to the topic.
+- You MUST NOT ask about the topic's research questions, domain details, or methodological constraints — those belong in the session itself.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 - The research plan produced by `finalize` will be structured by design to guide the research session, not to pre-answer it.
+
+You are in a loop node. You have ONE action: generate focused session-design questions, ask one targeted question using the `question` tool, then call `next_step()` immediately. Do NOT ask more than one question. Do NOT summarize, analyze, or propose solutions. After calling `next_step()`, stop — the DAG determines whether to loop again or advance. You MUST NOT make that determination yourself.
 
 ## Advance
 
-Call `next_step()` to loop for more clarification, or advance when there is enough to write a research plan. The DAG plugin will present the available options.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.

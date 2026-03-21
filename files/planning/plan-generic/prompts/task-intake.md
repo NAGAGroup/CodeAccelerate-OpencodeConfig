@@ -11,8 +11,9 @@ You are beginning a structured planning session. Your role in this node is to es
 
 ## Constraints
 
-- Do not begin decomposing the work yet.
-- Do not propose solutions or implementation approaches.
+- You MUST NOT begin decomposing the work. Stop immediately if you find yourself doing so.
+- You MUST NOT propose solutions or implementation approaches of any kind.
+- Violating these constraints means this node has failed. Stop and re-read the objective.
 - Use the `question` tool for any clarifying question.
 
 ## Done Criteria
@@ -21,4 +22,4 @@ You have a clear statement of: (1) what the user wants built or changed, (2) wha
 
 ## Advance
 
-Call `next_step()`.
+Call `next_step()` NOW. Do this exactly once. Do NOT read session files or DAG state to determine whether to advance. Do NOT take any other action before or after calling `next_step()`.
