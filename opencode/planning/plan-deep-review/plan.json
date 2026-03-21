@@ -16,7 +16,7 @@
       "id": "load-guidelines",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
-      "next": ["review-intake"]
+      "next": ["scout"]
     },
     "review-intake": {
       "id": "review-intake",
@@ -28,20 +28,13 @@
       "id": "clarify",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/clarify.md",
-      "next": ["clarify", "scout"],
-      "remaining_visits": 3
+      "next": ["agent-routing", "clarify"]
     },
     "scout": {
       "id": "scout",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/scout.md",
-      "next": ["synthesize"]
-    },
-    "synthesize": {
-      "id": "synthesize",
-      "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-deep-review/prompts/synthesize.md",
-      "next": ["agent-routing"]
+      "next": ["review-intake"]
     },
     "agent-routing": {
       "id": "agent-routing",

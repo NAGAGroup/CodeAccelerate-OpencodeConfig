@@ -15,6 +15,12 @@
       "id": "load-guidelines",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
+      "next": "scout"
+    },
+    "scout": {
+      "id": "scout",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/scout.md",
       "next": "idea-intake"
     },
     "idea-intake": {
@@ -27,8 +33,7 @@
       "id": "clarify",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/clarify.md",
-      "next": ["clarify", "agent-routing"],
-      "remaining_visits": 3
+      "next": ["clarify", "agent-routing"]
     },
     "agent-routing": {
       "id": "agent-routing",

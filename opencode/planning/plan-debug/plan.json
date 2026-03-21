@@ -15,19 +15,19 @@
       "id": "load-guidelines",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
-      "next": ["bug-intake"]
+      "next": ["scout"]
     },
     "bug-intake": {
       "id": "bug-intake",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/bug-intake.md",
-      "next": ["context-gather"]
+      "next": ["hypothesis-form"]
     },
-    "context-gather": {
-      "id": "context-gather",
+    "scout": {
+      "id": "scout",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/context-gather.md",
-      "next": ["hypothesis-form"]
+      "next": ["bug-intake"]
     },
     "hypothesis-form": {
       "id": "hypothesis-form",
