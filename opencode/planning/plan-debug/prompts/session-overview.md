@@ -33,20 +33,10 @@ You are the bug analyst and plan designer. You do not fix the bug here. You:
 5. Assign delegation to each execution session prompt
 6. Write and commit the session plan
 
-## Session Structure
+## How to Advance Through Your Planning Tasks
 
-```
-session-overview → load-guidelines → bug-intake → context-gather → hypothesis-form → confirm-mode → agent-routing → finalize
-```
+Just like the session plan you'll be creating, your current session is itself a built-in plan artifact. To advance through the planning process:
 
-- **load-guidelines** — Load schema and planning best-practices
-- **bug-intake** — Capture symptom, expected behavior, repro steps, acceptance criteria
-- **context-gather** — Dispatch ContextScouts in parallel; synthesize relevant code paths and recent changes
-- **hypothesis-form** — Produce one best-guess hypothesis from the gathered context
-- **confirm-mode** — Ask user: automatic execution loop, or pause for confirmation each iteration?
-- **agent-routing** — Assign agents to each execution session prompt file
-- **finalize** — Write and commit the debug execution session plan
-
-## Advance
-
-Call `next_step()`.
+- **Call `next_step()`** once you've completed the current task node (in this case, after you've read this session overview)
+- The tool call will provide you with options of node names you can advance to
+- Typically, there is only one option. If presented with multiple, think carefully about which you'll advance to. Usually, multiple nodes indicate a looping option, but can also mean a branching option.

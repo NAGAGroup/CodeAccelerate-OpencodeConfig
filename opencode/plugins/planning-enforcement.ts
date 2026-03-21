@@ -375,6 +375,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
 
             fs.unlinkSync(statePath)
+
+            if (state?.plan_path?.includes(".opencode/session-plans")) {
+              const sessionName = state.plan_path.split(".opencode/session-plans/")[1]?.split("/")[0]
+              if (sessionName) {
+                return `DAG session closed. State file removed.\n\nTo complete archival: move the session plan "${sessionName}" from .opencode/session-plans/ to .opencode/archived-plans/ and commit the change as a chore.`
+              }
+            }
             return "DAG session closed. State file removed."
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err)

@@ -11,12 +11,22 @@
       "id": "session-overview",
       "type": "agent",
       "prompt": ".opencode/session-plans/close-session-archive/prompts/session-overview.md",
-      "next": "subtask-archive-instruction"
+      "next": "subtask-archive-instruction",
+      "status": "completed",
+      "completed_at": "2026-03-21T02:36:32.734Z"
     },
     "subtask-archive-instruction": {
       "id": "subtask-archive-instruction",
       "type": "agent",
-      "prompt": ".opencode/session-plans/close-session-archive/prompts/subtask-archive-instruction.md"
+      "prompt": ".opencode/session-plans/close-session-archive/prompts/subtask-archive-instruction.md",
+      "status": "completed",
+      "completed_at": "2026-03-21T02:37:07.805Z"
     }
+  },
+  "progress": {
+    "current_node": "subtask-archive-instruction",
+    "started_at": "2026-03-21T02:36:29.475Z",
+    "updated_at": "2026-03-21T02:37:07.805Z",
+    "completed_at": "2026-03-21T02:37:07.805Z"
   }
 }
