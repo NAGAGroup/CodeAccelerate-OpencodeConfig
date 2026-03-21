@@ -11,12 +11,18 @@
       "id": "session-overview",
       "type": "agent",
       "prompt": ".opencode/session-plans/add-scout-to-all-workflows/prompts/session-overview.md",
-      "next": ["subtask-01"]
+      "next": [
+        "subtask-01"
+      ],
+      "status": "completed",
+      "completed_at": "2026-03-21T01:32:57.272Z"
     },
     "subtask-01": {
       "id": "subtask-01",
       "type": "agent",
-      "prompt": ".opencode/session-plans/add-scout-to-all-workflows/prompts/subtask-01.md"
+      "prompt": ".opencode/session-plans/add-scout-to-all-workflows/prompts/subtask-01.md",
+      "status": "completed",
+      "completed_at": "2026-03-21T01:46:08.495Z"
     },
     "subtask-02": {
       "id": "subtask-02",
@@ -38,5 +44,11 @@
       "type": "agent",
       "prompt": ".opencode/session-plans/add-scout-to-all-workflows/prompts/subtask-05.md"
     }
+  },
+  "progress": {
+    "current_node": "subtask-01",
+    "started_at": "2026-03-21T01:32:52.140Z",
+    "updated_at": "2026-03-21T01:46:08.495Z",
+    "completed_at": "2026-03-21T01:46:08.495Z"
   }
 }
