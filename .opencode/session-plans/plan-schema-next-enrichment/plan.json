@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "id": "plan-schema-next-enrichment",
+  "session_type": "plan-generic",
+  "goal": "Enrich next field with desc/choose_when, inject via next_step, guard close_session",
+  "created": "2026-03-20",
+  "status": "ready",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-schema-next-enrichment/prompts/session-overview.md",
+      "next": "subtask-01-update-schema-docs"
+    },
+    "subtask-01-update-schema-docs": {
+      "id": "subtask-01-update-schema-docs",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-schema-next-enrichment/prompts/subtask-01-update-schema-docs.md",
+      "next": "subtask-02-update-dagnode-type"
+    },
+    "subtask-02-update-dagnode-type": {
+      "id": "subtask-02-update-dagnode-type",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-schema-next-enrichment/prompts/subtask-02-update-dagnode-type.md",
+      "next": "subtask-03-update-next-step-injection"
+    },
+    "subtask-03-update-next-step-injection": {
+      "id": "subtask-03-update-next-step-injection",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-schema-next-enrichment/prompts/subtask-03-update-next-step-injection.md",
+      "next": "subtask-04-add-close-session-guard"
+    },
+    "subtask-04-add-close-session-guard": {
+      "id": "subtask-04-add-close-session-guard",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-schema-next-enrichment/prompts/subtask-04-add-close-session-guard.md",
+      "next": "subtask-05-migrate-plan-jsons"
+    },
+    "subtask-05-migrate-plan-jsons": {
+      "id": "subtask-05-migrate-plan-jsons",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/plan-schema-next-enrichment/prompts/subtask-05-migrate-plan-jsons.md"
+    }
+  }
+}
