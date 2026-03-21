@@ -23,6 +23,28 @@ Draw clarifications from these categories, in priority order:
 3. Present that ONE question to the user. Wait for their response.
 4. After they respond, assess: is there enough context to design and dispatch scouts?
 
+## Loop Node Awareness
+
+During clarify, proactively identify which steps in the planned review session will be loop nodes.
+
+**Canonical loops in deep-review sessions:**
+- **Fix-execute loop** — apply fixes, verify, assess whether more fixes are needed
+- **Review-execute loop** — dispatch scouts, synthesize findings, decide whether to iterate
+
+**Confirm `remaining_visits` for each loop node you identify:**
+- Default is `remaining_visits: 3`
+- Ask the user: "For the [loop node name] step, default remaining_visits is 3. Want to change this?"
+- Record the confirmed count for each
+
+**Other loop-capable steps to watch for:**
+- Iterative finding refinement or prioritization
+- Multiple rounds of fix planning
+- Gap-filling scout dispatches
+
+**Enforce one question per visit.** If you identify multiple loop nodes, surface their remaining_visits one at a time across separate visits — do not combine into a single question.
+
+**Before agent-routing:** Surface all confirmed loop node counts so the user can see the full session structure, including fix-execute and review-execute loops.
+
 ## Constraints
 
 - Ask exactly ONE question per visit. Do not batch multiple questions.

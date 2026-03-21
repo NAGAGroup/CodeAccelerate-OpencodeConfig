@@ -18,6 +18,27 @@ You are **NOT** starting to research the topic, answer its questions, or engage 
 3. Use the `question` tool to present the questions to the user. You may batch multiple related questions in one `question` call.
 4. After the user responds, assess: is there enough session-design context to write a useful research plan?
 
+## Loop Node Awareness
+
+During clarify, proactively identify which steps in the planned research session will be loop nodes.
+
+**The canonical loop in deep-research sessions is the research-execute loop** — dispatching agents, waiting for findings, synthesizing, and deciding whether to iterate or advance. Confirm `remaining_visits` for this loop (default: 3; 4–5 may be suitable for very broad topics).
+
+**For any other loop-capable steps you identify:**
+1. Note the proposed `remaining_visits` count (default: 3)
+2. Include it as one of your session-design questions
+3. Record the confirmed count
+
+**Loop recognition signals for deep-research sessions:**
+- The research-execute dispatch cycle (always a loop candidate)
+- Iterative source refinement or expansion
+- Multiple research waves with different scopes
+- Synthesis → gap-analysis → re-research cycles
+
+**Enforce one question per visit.** If you identify multiple loop nodes, surface their remaining_visits one at a time across separate visits — do not combine into a single question.
+
+**Before agent-routing:** Surface all confirmed loop node counts so the user can see the full session structure, including the research-execute loop.
+
 ## Constraints
 
 - You MUST NOT engage with the topic's content, substance, or domain in this node. Stop immediately if you find yourself doing so.

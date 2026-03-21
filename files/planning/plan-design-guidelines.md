@@ -33,6 +33,112 @@ A `load-guidelines` node (pointing to this file) should be the **second node** i
 
 A node whose `next` object includes its own ID is a loop node. Always add `remaining_visits` (default: `3`) to cap the loop. If the counter is exhausted and the DAG enters `failed` state, surface this to the user and ask whether to continue and with how many additional visits (default: 3). If they confirm, call `reset_counters({ visits: N })` to restore the counter and resume.
 
+### Loop Node Design
+
+Add loop node design guidance here based on the session type and context.
+
+#### When to Use a Loop Node
+
+Use a loop node when a step needs to repeat until a condition is met. Common signals:
+- A question-answer cycle (ask → wait → assess → ask again or advance)
+- A research-execute cycle (dispatch → wait → synthesize → dispatch again or advance)
+- An iterative refinement loop (attempt → evaluate → refine or advance)
+- A bug investigation cycle (diagnose → hypothesize → test → diagnose again or advance)
+
+Do NOT use a loop node for simple branching, parallel dispatch, or one-shot sequential steps.
+
+#### Structural Patterns
+
+There are three valid loop patterns:
+
+**Pattern 1 — Self-loop (step loops to itself):**
+```json
+"loop-node": {
+  "id": "loop-node",
+  "type": "agent",
+  "prompt": "...",
+  "next": {
+    "loop-node": {
+      "desc": "Repeat this step",
+      "choose_when": "Not yet complete"
+    },
+    "next-step": {
+      "desc": "Advance to next step",
+      "choose_when": "Complete"
+    }
+  },
+  "remaining_visits": 3
+}
+```
+
+**Pattern 2 — Back-loop (step loops to a prior node):**
+```json
+"refine": {
+  "id": "refine",
+  "type": "agent",
+  "prompt": "...",
+  "next": {
+    "scout": {
+      "desc": "Re-run scouts with refined scope",
+      "choose_when": "Need more context"
+    },
+    "finalize": {
+      "desc": "Proceed to finalize",
+      "choose_when": "Refinement complete"
+    }
+  },
+  "remaining_visits": 3
+}
+```
+
+**Pattern 3 — Exit-first loop (advance branch first, loop second):**
+```json
+"verify": {
+  "id": "verify",
+  "type": "agent",
+  "prompt": "...",
+  "next": {
+    "close": {
+      "desc": "All checks pass",
+      "choose_when": "Verified"
+    },
+    "fix": {
+      "desc": "Re-run fix with feedback",
+      "choose_when": "Checks failed"
+    }
+  },
+  "remaining_visits": 3
+}
+```
+
+#### Design Checklist
+
+Before finalizing a loop node:
+- [ ] The node has exactly one looping `next` entry pointing to itself or a prior node
+- [ ] `remaining_visits` is set (default: 3; adjust based on expected iteration count)
+- [ ] There is at least one non-looping exit branch
+- [ ] The prompt makes the loop's purpose and exit condition explicit
+- [ ] The prompt enforces one action per visit (ask one question, dispatch one agent, etc.)
+
+#### Anti-patterns
+
+- **Looping without cap:** A loop node without `remaining_visits` risks infinite loops.
+- **Multiple loop branches:** If two different branches both lead back, the exit condition is unclear.
+- **Hidden loops:** A step that implicitly repeats via back-and-forth agent dispatch without a declared loop node.
+- **Loop + terminal on same node:** A node cannot have both a loop `next` and no `next` (terminal).
+
+#### Asking the User About `remaining_visits`
+
+When a loop node is first identified during planning:
+1. Note the proposed `remaining_visits` count (default: 3)
+2. Ask the user if they want a different count — one question per loop node
+3. Record the confirmed count
+
+**Example prompt for the planning agent:**
+> "The 'diagnose' node will loop back to itself. Default `remaining_visits` is 3. Want to change this?"
+
+If the user does not respond, use 3.
+
 ### Gate Placement
 
 Surface the **full picture** to the user at the gate. Run `agent-routing` before any gate node (`review-gate`, `seed-gate`, `research-gate`) so the user approves a complete plan — including agent delegation assignments — not just the task list.

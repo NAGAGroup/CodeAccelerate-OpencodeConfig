@@ -18,6 +18,24 @@ You are **NOT** starting to explore the topic, answer its questions, or engage w
 3. Use the `question` tool to present the questions to the user. You may batch multiple related questions in one `question` call.
 4. After the user responds, assess: is there enough session-design context to write a useful seed plan?
 
+## Loop Node Awareness
+
+During clarify, proactively identify which steps in the planned session will be loop nodes.
+
+**For each loop-capable step you identify:**
+1. Note the proposed `remaining_visits` count (default: 3)
+2. Include it as one of your session-design questions: "For the [step name] step, default remaining_visits is 3. Want to change this?"
+3. Record the confirmed count
+
+**Loop recognition signals for collaborative sessions:**
+- Any step that gathers user input iteratively (ask → assess → ask again)
+- Any step that refines a design, idea, or plan based on feedback
+- Any step that might need multiple passes to fully explore a topic
+
+**Enforce one question per visit.** If you identify multiple loop nodes, surface their remaining_visits one at a time across separate visits — do not combine into a single question.
+
+**Before agent-routing:** Surface all confirmed loop node counts so the user can see the full session structure.
+
 ## Constraints
 
 - You MUST NOT engage with the topic's content, substance, or domain in this node. Stop immediately if you find yourself doing so.

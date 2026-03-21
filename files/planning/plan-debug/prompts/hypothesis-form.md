@@ -12,6 +12,28 @@ Your role in this node is to produce one best-guess hypothesis about the root ca
 
 2. Present the hypothesis to the user.
 
+## Debug Session Loop Design
+
+After forming the hypothesis, explicitly design the execution loop for the fix-verify cycle.
+
+**For the canonical debug execution loop, identify:**
+1. **Loop head** — The node that will repeat (typically the "fix" or "diagnose" node)
+2. **Exit condition** — What verified passing means: specific test names, output patterns, or behavioral criteria
+3. **Back-loop target** — Where execution goes on failure (typically back to the fix or diagnose node)
+4. **`remaining_visits`** — Default is 3; ask the user if they want a different count
+
+**If multiple loops exist** (e.g., a diagnose loop plus a fix loop), identify each one separately with its own head, exit condition, back-loop target, and remaining_visits.
+
+**Reflect loop design in the hypothesis summary:**
+- Include the loop head node name
+- State the exit condition clearly
+- Note the confirmed `remaining_visits` count
+
+This ensures the loop design carries forward into the session execution and is visible to the user before agent-routing.
+
+**Example loop design annotation:**
+> **Execution Loop:** Head: `fix` → Exit: "all tests pass" → Back to: `diagnose` → `remaining_visits: 3`
+
 ## Constraints
 
 - You MUST produce exactly one hypothesis — the single best-guess based on current evidence.
