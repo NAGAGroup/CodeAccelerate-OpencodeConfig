@@ -1,69 +1,61 @@
 # Node: finalize — /plan-debug
 
-Your role in this node is to write the debug session plan to disk. The debug session IS the implementation — it runs iteratively, updating its own fix node as it progresses.
+Your role in this node is to write the debug execution session plan to disk. The shape of the generated session depends on the user's answer in `confirm-mode`.
 
 ## Steps
 
-1. **Apply delegation instructions** — Delegation recommendations for each prompt file were established in the previous node. Use them when writing `diagnose.md`, `fix.md`, and `verify.md` — embed the appropriate delegation instructions in each.
+1. **Apply delegation instructions** — Use the delegation recommendations from agent-routing to embed the appropriate delegation instructions in `diagnose.md`, `fix.md`, and (if applicable) `hypothesis-gate.md`.
 
-2. **Confirm diagnose loop count with the user** — Ask: "How many diagnose visits do you want for this session? (default: 3)" Accept their response or use the default. Use this count as the value for `"remaining_visits"` on the `diagnose` node.
+2. **Confirm diagnose loop count with the user** — Ask: "How many diagnose iterations do you want for this session? (default: 3)" Use their response as `remaining_visits` on the `diagnose` node.
 
-3. **Write session plan files** to `.opencode/session-plans/{bug-name}/`:
+3. **Determine the session shape** from context (confirm-mode answer):
 
-   **`plan.json`** — The schema was loaded in the previous node (`load-schema`). Use it now. The debug DAG has four nodes: `session-overview → diagnose (loop) → fix → verify`. Set `remaining_visits` on `diagnose` to the count confirmed with the user in step 2.
+   **With confirmation (confirm-mode: yes):**
+   - DAG: `session-overview → diagnose → hypothesis-gate (gate: ["fix","diagnose"]) → fix → verify → [loop back to diagnose or close]`
+   - `diagnose` has `next: ["hypothesis-gate"]`
+   - `verify` has `next: ["diagnose"]` with `remaining_visits` as confirmed, or omit `next` to make it terminal with a manual close
 
-    **`prompts/session-overview.md`** — Write this file **verbatim** — do not modify, summarize, or adapt the content:
+   **Without confirmation (confirm-mode: no):**
+   - DAG: `session-overview → diagnose → fix → verify → [loop back to diagnose or close]`
+   - `diagnose` has `next: ["fix"]`
+   - `verify` has `next: ["diagnose"]` with `remaining_visits` as confirmed, or omit `next`
 
-   ````
-   # Session Overview — Debug Session
+4. **Generate a session-specific `session-overview.md`** — Do NOT copy a static template. Generate it dynamically. It must include:
+   - `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->` as the first line
+   - The bug description and acceptance criteria (from bug-intake)
+   - The approved hypothesis (from hypothesis-form) — this is the execution starting point
+   - The execution mode: confirmation on or off
+   - The session structure (node-by-node for the chosen shape)
+   - Self-editing authority: the agent may rewrite `fix.md` during the session; must not delete or rename the currently-executing node
+   - `## Advance`: "Read this overview once, internalize it, then call `next_step()` immediately."
 
-   <!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->
+5. **Write session plan files** to `.opencode/session-plans/{bug-name}/`:
 
-   You are executing a debug session. Read this node once, internalize it, then call `next_step()` immediately.
+   **`plan.json`** — Use the schema from load-guidelines. Build the correct DAG for the chosen session shape (Step 3).
 
-   ## What This Session Is
+   **`prompts/session-overview.md`** — Generated in Step 4.
 
-   A debug session is a hypothesis-driven investigation loop. The goal is to confirm the root cause and apply a targeted fix.
+   **`prompts/diagnose.md`** — First line: `<!-- DO NOT COMPACT THIS NODE -->`. Bake in the approved hypothesis as the starting point. Instruct the agent to inspect the code path, write findings to `fix.md`, then advance or loop.
 
-   - **diagnose** — inspect the codebase against the top hypothesis; write findings to `fix.md`; loop back if refuted, advance if confirmed
-   - **fix** — apply the fix identified during diagnose; `fix.md` accumulates "tried X, result Y" history across iterations
-   - **verify** — run tests; if all pass call `close_session()`; if any fail loop back to diagnose
+   **`prompts/hypothesis-gate.md`** (only if confirm-mode: yes) — First line: `<!-- DO NOT COMPACT THIS NODE -->`. Present the current diagnosis from `diagnose.md`. Ask the user: "Proceed with this fix?" — Yes advances to `fix`, No loops back to `diagnose`.
 
-   ## Self-Editing Authority
+   **`prompts/fix.md`** — First line: `<!-- DO NOT COMPACT THIS NODE -->`. Starts as a placeholder: "No fix identified yet." The agent overwrites this file during iterations, accumulating "tried X, result Y" history.
 
-   The fix node (`fix.md`) is intentionally rewritten during the session. You have full authority to:
-   - Overwrite `fix.md` with new findings and attempted fixes
-   - Update `plan.json` if the investigation reveals the structure needs to change
-   - Add a new diagnose iteration by calling `next_step({ next: "diagnose" })` from verify if tests fail
+   **`prompts/verify.md`** — First line: `<!-- DO NOT COMPACT THIS NODE -->`. Run the full test suite. If all pass: call `close_session()`. If any fail: call `next_step()` to loop back to diagnose.
 
-   **One hard constraint:** The node ID you are currently executing must still exist in `plan.json` when you call `next_step()`.
-
-   ## Advance
-
-   Call `next_step()` to proceed to the diagnose node.
-   ````
-
-   ---
-
-   **`prompts/diagnose.md`** — First line must be `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->`. Bake in the approved hypothesis list. Instruct the agent to: try the top hypothesis (targeted code inspection or test run), write findings to `fix.md`, then route to `fix` if confirmed or back to `diagnose` if refuted. Close with `## Advance`: "Call `next_step({ next: 'fix' })` when hypothesis is confirmed, or `next_step({ next: 'diagnose' })` to loop back."
-
-   **`prompts/fix.md`** — First line must be `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->`. Start as a placeholder: "No fix identified yet." The agent will overwrite this file during diagnose iterations, accumulating "tried X, result Y" history. Close with `## Advance`: "Call `next_step()` when the fix is applied."
-
-    **`prompts/verify.md`** — First line must be `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->`. Instruct the agent to run the full test suite and any regression checks. Close with `## Advance`: "If all pass: call `close_session()`. If any fail: call `next_step({ next: 'diagnose' })`."
-
-4. **Commit**:
+6. **Commit**:
    ```
-    git add .opencode/session-plans/{bug-name}/
-    git commit -m "plan: add debug session {bug-name}"
-    ```
+   git add .opencode/session-plans/{bug-name}/
+   git commit -m "plan: add debug session {bug-name}"
+   ```
 
-5. **Present the plan** to the user:
-    - Bug statement and acceptance criteria
-    - Hypothesis list (ranked, as approved)
-    - Session plan structure (diagnose → fix → verify loop, with {remaining_visits} diagnose visits as confirmed with you)
-    - Next step: "Run '/activate-plan {bug-name}' when ready to begin."
+7. **Present the plan** to the user:
+   - Bug statement and acceptance criteria
+   - The hypothesis
+   - Session structure (chosen shape, diagnose visit count)
+   - Next step: "Run '/activate-plan {bug-name}' when ready to begin."
 
 ## Constraints
 
-- The `fix.md` file must start as a placeholder — it is intentionally empty at plan creation time.
+- `fix.md` must start as a placeholder — it is intentionally empty at plan creation time.
 - Do not call `next_step()` — this is a terminal node. Call `close_session()` after presenting the plan.

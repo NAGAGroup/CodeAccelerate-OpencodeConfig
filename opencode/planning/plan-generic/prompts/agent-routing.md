@@ -18,7 +18,7 @@ Your role in this node is to assign an agent and model to every subtask in the s
    - Model tier (haiku / sonnet)
    - One-sentence rationale
 
-4. **Call `next_step()`** to advance to the finalize node. The routing table in context will be used by finalize to populate each subtask's `## Delegation` section before writing files.
+4. **Call `next_step()`** to advance. The routing table in context will be used by review-gate and finalize.
 
 ## Constraints
 

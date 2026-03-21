@@ -15,10 +15,10 @@ You are beginning a debug planning session. Your role in this node is to capture
 
 ## Constraints
 
-- Do not attempt to diagnose the cause yet. That happens in `context-gather` and `hypothesis-form`.
+- Do not attempt to diagnose the cause yet.
 - Do not propose fixes.
 - Use the `question` tool for any clarifying question.
 
 ## Advance
 
-Call `next_step()` to proceed to the `context-gather` node.
+Call `next_step()`.

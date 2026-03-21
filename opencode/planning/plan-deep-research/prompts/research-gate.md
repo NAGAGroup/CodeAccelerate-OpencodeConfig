@@ -39,5 +39,4 @@ This is a gate node. Your role is to present a proposed **research session struc
 
 ## Advance
 
-- `next_step({ next: "load-schema" })` — user approves the research session structure
-- `next_step({ next: "clarify" })` — user wants to adjust before proceeding
+Call `next_step()` to proceed. The DAG plugin will present the available branch options — select finalize to proceed with the approved session, or select clarify to loop back and adjust.

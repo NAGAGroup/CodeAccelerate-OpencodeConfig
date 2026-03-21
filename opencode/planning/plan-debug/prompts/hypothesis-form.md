@@ -1,28 +1,23 @@
 # Node: hypothesis-form — /plan-debug
 
-Your role in this node is to produce a ranked list of hypotheses about the root cause of the bug.
+Your role in this node is to produce one best-guess hypothesis about the root cause of the bug.
 
 ## Steps
 
-1. Using the context gathered so far, generate 2–4 candidate hypotheses. For each hypothesis:
+1. Using the context gathered so far, identify the single most likely root cause. Format it as:
    - **Statement** — One sentence: what is the suspected root cause?
    - **Evidence** — What in the codebase or context supports this hypothesis?
-   - **Test** — What targeted check, log, or code inspection would confirm or refute it?
+   - **Proposed test/fix approach** — What targeted check or change would confirm or resolve it?
    - **Confidence** — High / Medium / Low
 
-2. Rank the hypotheses by confidence (highest first).
-
-3. Present the ranked list to the user.
-
-4. Ask: "Do any of these look right to you, or should I dig deeper on a specific area?"
+2. Present the hypothesis to the user.
 
 ## Constraints
 
+- One hypothesis only — the best-guess based on current evidence.
 - Hypotheses must be grounded in evidence from the codebase — no speculation without backing.
-- Maximum 4 hypotheses per iteration. If you have more, rank and cut to the top 4.
 - Do not propose fixes yet — only diagnoses.
 
 ## Advance
 
-- If the hypotheses need refinement or the user has new information: call `next_step({ next: "hypothesis-form" })` to loop (note: this node has a `remaining_visits` limit — do not loop unnecessarily).
-- If the user and you are aligned on the top hypothesis/hypotheses: call `next_step({ next: "hypothesis-gate" })`.
+Call `next_step()`.

@@ -1,50 +1,124 @@
 {
+  "schema_version": "1.0",
+  "id": "workflow-audit",
+  "session_type": "audit",
   "name": "workflow-audit",
+  "goal": "Node-by-node audit of all four planning workflows to produce a flat list of concrete improvement proposals.",
   "description": "Node-by-node audit of all four planning workflows to produce a flat list of concrete improvement proposals.",
+  "entry": "session-overview",
   "status": "pending",
-  "current_node": "session-overview",
   "nodes": {
     "session-overview": {
       "id": "session-overview",
       "type": "agent",
-      "prompt_file": "prompts/session-overview.md",
-      "next": ["explore-01"]
+      "prompt": ".opencode/session-plans/workflow-audit/prompts/session-overview.md",
+      "next": [
+        "explore-01"
+      ],
+      "status": "completed",
+      "completed_at": "2026-03-20T23:02:04.713Z"
     },
     "explore-01": {
       "id": "explore-01",
       "type": "agent",
-      "prompt_file": "prompts/explore-01.md",
-      "next": ["explore-01", "explore-02"]
+      "prompt": ".opencode/session-plans/workflow-audit/prompts/explore-01.md",
+      "remaining_visits": 2,
+      "next": [
+        "explore-01",
+        "explore-02"
+      ],
+      "status": "completed",
+      "completed_at": "2026-03-20T23:26:11.623Z"
     },
     "explore-02": {
       "id": "explore-02",
       "type": "agent",
-      "prompt_file": "prompts/explore-02.md",
-      "next": ["explore-02", "explore-03"]
+      "prompt": ".opencode/session-plans/workflow-audit/prompts/explore-02.md",
+      "remaining_visits": 2,
+      "next": [
+        "explore-02",
+        "explore-03"
+      ],
+      "status": "completed",
+      "completed_at": "2026-03-20T23:41:02.084Z"
     },
     "explore-03": {
       "id": "explore-03",
       "type": "agent",
-      "prompt_file": "prompts/explore-03.md",
-      "next": ["explore-03", "explore-04"]
+      "prompt": ".opencode/session-plans/workflow-audit/prompts/explore-03.md",
+      "remaining_visits": 2,
+      "next": [
+        "explore-03",
+        "explore-04"
+      ],
+      "status": "completed",
+      "completed_at": "2026-03-20T23:43:06.208Z"
     },
     "explore-04": {
       "id": "explore-04",
       "type": "agent",
-      "prompt_file": "prompts/explore-04.md",
-      "next": ["explore-04", "spec-gate"]
+      "prompt": ".opencode/session-plans/workflow-audit/prompts/explore-04.md",
+      "remaining_visits": 2,
+      "next": [
+        "explore-04",
+        "impl-shared"
+      ],
+      "status": "completed",
+      "completed_at": "2026-03-20T23:52:30.940Z"
     },
-    "spec-gate": {
-      "id": "spec-gate",
-      "type": "gate",
-      "prompt_file": "prompts/spec-gate.md",
-      "next": ["explore-04", "finalize-output"]
-    },
-    "finalize-output": {
-      "id": "finalize-output",
+    "impl-shared": {
+      "id": "impl-shared",
       "type": "agent",
-      "prompt_file": "prompts/finalize-output.md",
-      "next": []
+      "prompt": ".opencode/session-plans/workflow-audit/prompts/impl-shared.md",
+      "next": [
+        "impl-generic"
+      ],
+      "status": "completed",
+      "completed_at": "2026-03-20T23:58:19.342Z"
+    },
+    "impl-generic": {
+      "id": "impl-generic",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/workflow-audit/prompts/impl-generic.md",
+      "next": [
+        "impl-debug"
+      ],
+      "status": "completed",
+      "completed_at": "2026-03-21T00:02:55.983Z"
+    },
+    "impl-debug": {
+      "id": "impl-debug",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/workflow-audit/prompts/impl-debug.md",
+      "next": [
+        "impl-collaborative"
+      ],
+      "status": "completed",
+      "completed_at": "2026-03-21T00:05:41.032Z"
+    },
+    "impl-collaborative": {
+      "id": "impl-collaborative",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/workflow-audit/prompts/impl-collaborative.md",
+      "next": [
+        "impl-deep-research"
+      ],
+      "status": "completed",
+      "completed_at": "2026-03-21T00:16:39.088Z"
+    },
+    "impl-deep-research": {
+      "id": "impl-deep-research",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/workflow-audit/prompts/impl-deep-research.md",
+      "next": [],
+      "status": "completed",
+      "completed_at": "2026-03-21T00:16:44.158Z"
     }
+  },
+  "progress": {
+    "current_node": "impl-deep-research",
+    "started_at": "2026-03-20T23:02:02.096Z",
+    "updated_at": "2026-03-21T00:16:44.158Z",
+    "completed_at": "2026-03-21T00:16:44.158Z"
   }
 }

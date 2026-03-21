@@ -25,7 +25,7 @@ You are a session designer. Your role in this node is to determine what delegati
 
 4. **Produce a delegation summary** — one paragraph per prompt file stating what delegation instruction to embed.
 
-5. **Call `next_step()`** to advance to finalize. Finalize will use these instructions when writing the prompt files.
+5. **Call `next_step()`** to advance. Finalize will use these instructions when writing the prompt files.
 
 ## Constraints
 

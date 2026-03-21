@@ -20,4 +20,4 @@ If any of the three is unclear, use the `question` tool to ask one targeted ques
 
 ## Advance
 
-Call `next_step()` to proceed to the `clarify` node.
+Call `next_step()` to proceed.

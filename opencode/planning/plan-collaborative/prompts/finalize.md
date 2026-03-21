@@ -4,7 +4,7 @@
 
 You are a **file writer**. Your only job in this node is to transcribe decisions made during this planning session into the correct file structure on disk. You do not generate, analyze, research, or design anything about the topic.
 
-Everything that goes into the output files was produced during the earlier nodes (idea-intake, clarify, seed-gate, agent-routing). You are copying and formatting — not creating.
+Everything that goes into the output files was produced during the earlier nodes (idea-intake, clarify, agent-routing, seed-gate). You are copying and formatting — not creating.
 
 ## Forbidden Actions
 
@@ -28,42 +28,27 @@ If you find yourself writing sentences about the topic's design or answering que
 
    **`.opencode/session-plans/{session-name}/plan.json`**
 
-   The schema was loaded in the previous node (`load-schema`). Use it now. Write one node per open question, chained in sequence: `session-overview → explore-01 → … → explore-NN → spec-gate → finalize-output`. Each explore node's `next` is `["explore-NN", "explore-NN+1"]`; the last explore node's `next` is `["explore-NN", "spec-gate"]`. `remaining_visits` is omitted by default — collaborative loops are user-driven and unbounded — but may be added to specific explore nodes if bounded looping is desired.
+   The schema was loaded in the `load-guidelines` node. Use it now. Write one node per open question, chained in sequence: `session-overview → explore-01 → … → explore-NN → spec-gate → finalize-output`. Each explore node's `next` is `["explore-NN", "explore-NN+1"]`; the last explore node's `next` is `["explore-NN", "spec-gate"]`. `remaining_visits` is omitted by default — collaborative loops are user-driven and unbounded — but may be added to specific explore nodes if bounded looping is desired.
 
     ---
 
    **`.opencode/session-plans/{session-name}/prompts/session-overview.md`**
 
-   Write this file **verbatim** — do not modify, summarize, or adapt the content:
+   Generate this file dynamically — do NOT copy a static template. Use context from this planning session to produce a session-specific orientation. Include:
 
-   ````
-   # Session Overview — Collaborative Session
+   - **Session goal**: one sentence describing what this session will produce (from seed-gate)
+   - **Topic**: the topic being explored (from idea-intake)
+   - **Open questions**: the full list of exploration questions (from clarify/seed-gate)
+   - **Output artifact**: the path to `spec.md` for this session (`.opencode/session-plans/{session-name}/spec.md`)
+   - **Operating instructions** (write these exactly):
+     - "You surface one question at a time and wait for the user to respond before proceeding"
+     - "The user drives the direction — you follow their lead, not a predetermined script"
+     - "You do not produce answers unprompted — ask, listen, record"
+     - "The plan is yours to restructure — add nodes, split nodes, reorder, remove — as long as the currently-executing node ID exists in `plan.json` when you call `next_step()`"
+     - "`spec.md` is the living record — update it as conclusions are reached"
+   - **Advance**: "Call `next_step()` to proceed to the first exploration node."
 
-   <!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->
-
-   You are executing a collaborative session. Read this node once, internalize it, then call `next_step()` immediately.
-
-   ## What This Session Is
-
-   A collaborative session is a structured conversation between you and the user. The goal is to explore open questions together and accumulate findings in `spec.md`.
-
-    - You surface **one question at a time** and wait for the user to respond before proceeding
-    - The **user drives the direction** — you follow their lead, not a predetermined script
-    - You **do not produce answers unprompted** — ask, listen, record
-    - The **plan is yours to restructure** — add nodes, split nodes, reorder, remove — as long as the currently-executing node ID exists in `plan.json` when you call `next_step()`
-    - `spec.md` is the living record — update it as conclusions are reached
-    - If an explore node accumulates too many unresolved visits, you may set `remaining_visits` on it (default: 3). If the counter is exhausted and the DAG enters a `failed` state, surface this to the user and ask whether they want to continue and with how many additional visits (default: 3). If they confirm, call `reset_counters({ visits: N })` to restore the counter and resume exploration
-
-   ## What You Must Never Do
-
-   - Produce unprompted analysis, design proposals, or answers to the open questions
-   - Work through multiple questions in a single node — one node, one question
-   - Skip the user and advance based on your own reasoning alone
-
-   ## Advance
-
-   Call `next_step()` to proceed to the first exploration node.
-   ````
+   Add `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->` as the first line.
 
    ---
 
@@ -94,7 +79,7 @@ If you find yourself writing sentences about the topic's design or answering que
     - Instructions to **surface this question to the user and explore it collaboratively** — the agent asks, the user responds, the agent follows the user's lead. The agent does not produce answers unprompted or work through the question autonomously.
     - Instructions to update `spec.md` with findings as conclusions are reached
     - **Delegation instructions** from the agent-routing node relevant to this exploration area (embed verbatim)
-     - A **`## Advance`** section matching the node's `next` array in `plan.json` — include both the loop option (`next_step({ next: 'explore-NN' })`) and the advance option (`next_step({ next: 'explore-NN+1' })` or `next_step({ next: 'spec-gate' })` for the last explore node)
+     - A **`## Advance`** section matching the node's `next` array in `plan.json` — describe both the loop option (to continue exploring this question, call `next_step()` and select the loop branch) and the advance option (when this question is fully explored, call `next_step()` and select the next node). Do NOT hardcode node IDs in `next_step()` calls.
      - A **`## Session Authority`** section with this exact content:
 
       ```
@@ -130,8 +115,8 @@ If you find yourself writing sentences about the topic's design or answering que
 
     ## Advance
 
-    - If more to explore: `next_step({ next: "explore-NN" })` (use the last explore node ID)
-    - If ready to finalize: `next_step({ next: "finalize-output" })`
+    - If more to explore: call `next_step()` and select the explore node to return to
+    - If ready to finalize: call `next_step()` and select the finalize-output option
     ```
 
    Substitute the actual last explore node ID (e.g., `explore-03`) — not the literal string `explore-NN`.
@@ -181,5 +166,5 @@ If you find yourself writing sentences about the topic's design or answering que
 
 - Do not call `next_step()` — this is a terminal node. Call `close_session()` after presenting the plan.
 - Six files only. No additional files.
-- session-overview.md verbatim only. Do not alter the content.
+- session-overview.md must be dynamically generated — do not copy a static template.
 - spec.md stub only. No generated content.

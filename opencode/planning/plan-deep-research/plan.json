@@ -2,39 +2,45 @@
   "schema_version": "1.0",
   "id": "plan-deep-research",
   "session_type": "plan-deep-research",
-  "description": "Research-topic-to-report — planning produces research session plan only",
-  "entry": "research-intake",
+  "status": "ready",
+  "entry": "session-overview",
   "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/session-overview.md",
+      "next": ["load-guidelines"]
+    },
+    "load-guidelines": {
+      "id": "load-guidelines",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
+      "next": ["research-intake"]
+    },
     "research-intake": {
       "id": "research-intake",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/research-intake.md",
-      "next": "clarify"
+      "next": ["clarify"]
     },
     "clarify": {
       "id": "clarify",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/clarify.md",
-      "next": ["clarify", "research-gate"],
+      "next": ["clarify", "agent-routing"],
       "remaining_visits": 5
-    },
-    "research-gate": {
-      "id": "research-gate",
-      "type": "gate",
-      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/research-gate.md",
-      "next": ["load-schema", "clarify"]
-    },
-    "load-schema": {
-      "id": "load-schema",
-      "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-json-schema.md",
-      "next": "agent-routing"
     },
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/agent-routing.md",
-      "next": "finalize"
+      "next": ["research-gate"]
+    },
+    "research-gate": {
+      "id": "research-gate",
+      "type": "gate",
+      "prompt": "~/.config/opencode/planning/plan-deep-research/prompts/research-gate.md",
+      "next": ["finalize", "clarify"]
     },
     "finalize": {
       "id": "finalize",

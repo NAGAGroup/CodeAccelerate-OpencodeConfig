@@ -20,9 +20,9 @@ Your role in this node is to gather codebase context relevant to the bug before 
 
 ## Constraints
 
-- Do not form hypotheses yet. That is the `hypothesis-form` node's job.
+- Do not form hypotheses yet.
 - Do not write any files.
 
 ## Advance
 
-Call `next_step()` to proceed to the `hypothesis-form` node.
+Call `next_step()`.

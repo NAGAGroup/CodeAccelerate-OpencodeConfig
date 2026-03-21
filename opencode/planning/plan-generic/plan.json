@@ -2,44 +2,84 @@
   "schema_version": "1.0",
   "id": "plan-generic",
   "session_type": "plan-generic",
-  "description": "Standard planning session for well-understood tasks",
-  "entry": "task-intake",
+  "status": "ready",
+  "entry": "session-overview",
   "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-generic/prompts/session-overview.md",
+      "next": [
+        "load-guidelines"
+      ]
+    },
+    "load-guidelines": {
+      "id": "load-guidelines",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
+      "next": [
+        "task-intake"
+      ]
+    },
     "task-intake": {
       "id": "task-intake",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-generic/prompts/task-intake.md",
-      "next": "clarify"
+      "next": [
+        "clarify"
+      ]
     },
     "clarify": {
       "id": "clarify",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-generic/prompts/clarify.md",
-      "next": ["clarify", "decompose"]
+      "next": [
+        "clarify",
+        "scout"
+      ],
+      "remaining_visits": 2
+    },
+    "scout": {
+      "id": "scout",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-generic/prompts/scout.md",
+      "next": [
+        "synthesize"
+      ]
+    },
+    "synthesize": {
+      "id": "synthesize",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-generic/prompts/synthesize.md",
+      "next": [
+        "decompose"
+      ]
     },
     "decompose": {
       "id": "decompose",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-generic/prompts/decompose.md",
-      "next": "review-gate"
-    },
-    "review-gate": {
-      "id": "review-gate",
-      "type": "gate",
-      "prompt": "~/.config/opencode/planning/plan-generic/prompts/review-gate.md",
-      "next": ["agent-routing", "decompose", "clarify"]
-    },
-    "load-schema": {
-      "id": "load-schema",
-      "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-json-schema.md",
-      "next": "agent-routing"
+      "next": [
+        "agent-routing"
+      ]
     },
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-generic/prompts/agent-routing.md",
-      "next": "finalize"
+      "next": [
+        "review-gate"
+      ]
+    },
+    "review-gate": {
+      "id": "review-gate",
+      "type": "gate",
+      "prompt": "~/.config/opencode/planning/plan-generic/prompts/review-gate.md",
+      "next": [
+        "finalize",
+        "decompose",
+        "clarify"
+      ]
     },
     "finalize": {
       "id": "finalize",

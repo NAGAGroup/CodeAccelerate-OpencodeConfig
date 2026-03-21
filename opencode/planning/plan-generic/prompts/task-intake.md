@@ -11,7 +11,7 @@ You are beginning a structured planning session. Your role in this node is to es
 
 ## Constraints
 
-- Do not begin decomposing the work yet. That happens in the `decompose` node.
+- Do not begin decomposing the work yet.
 - Do not propose solutions or implementation approaches.
 - Use the `question` tool for any clarifying question.
 
@@ -21,4 +21,4 @@ You have a clear statement of: (1) what the user wants built or changed, (2) wha
 
 ## Advance
 
-Call `next_step()` to proceed to the `clarify` node.
+Call `next_step()`.

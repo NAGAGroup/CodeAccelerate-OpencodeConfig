@@ -1,14 +1,14 @@
 <!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->
 
-# Subtask 05 — Update Schema Documentation
+# Subtask 05 — Update Guidelines Documentation
 
 ## Objective
 
-Document the new `progress` block and per-node `status`/`completed_at` fields in the canonical plan.json schema reference. These are runtime-written fields — plan authors don't write them, but they appear in plan.json during and after session execution.
+Document the new `progress` block and per-node `status`/`completed_at` fields in the canonical plan design guidelines reference. These are runtime-written fields — plan authors don't write them, but they appear in plan.json during and after session execution.
 
 ## Scope
 
-- **Edit:** `opencode/planning/plan-json-schema.md`
+- **Edit:** `opencode/planning/plan-design-guidelines.md`
 - **Excluded:** All TypeScript files, all other markdown files
 
 ## Constraints
@@ -21,7 +21,7 @@ Document the new `progress` block and per-node `status`/`completed_at` fields in
 
 ## Todolist
 
-- [ ] Read `opencode/planning/plan-json-schema.md` fully to understand current structure
+- [ ] Read `opencode/planning/plan-design-guidelines.md` fully to understand current structure
 - [ ] Add a "Runtime Fields" subsection after the top-level field table documenting `progress`:
   - `progress.current_node` — string, currently executing node ID
   - `progress.started_at` — ISO timestamp, set when plan is activated
@@ -37,7 +37,7 @@ Document the new `progress` block and per-node `status`/`completed_at` fields in
 **Agent:** @QuickDoc
 **Model:** haiku-like
 **Prompt structure:**
-- Read: `opencode/planning/plan-json-schema.md`
+- Read: `opencode/planning/plan-design-guidelines.md`
 - Goal: Add "Runtime Fields" sections documenting `progress` (top-level) and `status`/`completed_at` (per-node) as plugin-written fields
 - Constraints: Runtime fields must be clearly labeled as such; do not modify existing field definitions; match existing doc style
 - Verify: New sections appear after their respective field tables; no existing content is removed or reworded

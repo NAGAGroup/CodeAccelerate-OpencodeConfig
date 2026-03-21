@@ -2,45 +2,50 @@
   "schema_version": "1.0",
   "id": "plan-debug",
   "session_type": "plan-debug",
-  "description": "Debug planning session — produces ranked hypotheses only",
-  "entry": "bug-intake",
+  "status": "ready",
+  "entry": "session-overview",
   "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-debug/prompts/session-overview.md",
+      "next": ["load-guidelines"]
+    },
+    "load-guidelines": {
+      "id": "load-guidelines",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
+      "next": ["bug-intake"]
+    },
     "bug-intake": {
       "id": "bug-intake",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/bug-intake.md",
-      "next": "context-gather"
+      "next": ["context-gather"]
     },
     "context-gather": {
       "id": "context-gather",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/context-gather.md",
-      "next": "hypothesis-form"
+      "next": ["hypothesis-form"]
     },
     "hypothesis-form": {
       "id": "hypothesis-form",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/hypothesis-form.md",
-      "next": ["hypothesis-form", "hypothesis-gate"],
-      "remaining_visits": 3
+      "next": ["confirm-mode"]
     },
-    "hypothesis-gate": {
-      "id": "hypothesis-gate",
-      "type": "gate",
-      "prompt": "~/.config/opencode/planning/plan-debug/prompts/hypothesis-gate.md",
-      "next": ["agent-routing", "hypothesis-form"]
-    },
-    "load-schema": {
-      "id": "load-schema",
+    "confirm-mode": {
+      "id": "confirm-mode",
       "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-json-schema.md",
-      "next": "agent-routing"
+      "prompt": "~/.config/opencode/planning/plan-debug/prompts/confirm-mode.md",
+      "next": ["agent-routing"]
     },
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-debug/prompts/agent-routing.md",
-      "next": "finalize"
+      "next": ["finalize"]
     },
     "finalize": {
       "id": "finalize",

@@ -33,7 +33,7 @@
     "allowSubAgents": true,
     // Enable user-editable prompt overrides under dcp-prompts directories
     // When false (default), prompt override files/directories are ignored
-    "customPrompts": true,
+    "customPrompts": false,
   },
   // Protect file read/write operations from pruning via glob patterns.
   // Patterns match tool parameters.filePath (e.g. read/write/edit).
@@ -49,13 +49,13 @@
     // Soft upper threshold: above this, DCP keeps injecting strong
     // compression nudges (based on nudgeFrequency), so compression is
     // much more likely. Accepts: number or "X%" of model context window.
-    "maxContextLimit": 45000,
+    "maxContextLimit": 80000,
     // Soft lower threshold for reminder nudges: below this, turn/iteration
     // reminders are off (compression less likely). At/above this, reminders
     // are on. Raised from 5% → 20% so nudges fire during calm stretches
     // rather than under emergency pressure, encouraging smaller compressions
     // before context becomes critical.
-    "minContextLimit": 8000,
+    "minContextLimit": 20000,
     // Optional per-model override for maxContextLimit by providerID/modelID.
     // If present, this wins over the global maxContextLimit.
     // Accepts: number or "X%".
@@ -86,7 +86,15 @@
     // Flat tool schema: improves tool call reliability but uglier in the TUI
     "flatSchema": true,
     // Tool names whose completed outputs are appended to the compression
-    "protectedTools": ["activate_plan", "close_session", "next_step", "plan_generic", "plan_debug", "plan_collaborative", "plan_deep_research"],
+    "protectedTools": [
+      "activate_plan",
+      "close_session",
+      "next_step",
+      "plan_generic",
+      "plan_debug",
+      "plan_collaborative",
+      "plan_deep_research"
+    ],
     // Preserve your messages during compression.
     // Warning: large copy-pasted prompts will never be compressed away
     "protectUserMessages": false,

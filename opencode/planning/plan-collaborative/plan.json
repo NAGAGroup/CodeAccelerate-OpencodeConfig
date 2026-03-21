@@ -3,8 +3,20 @@
   "id": "plan-collaborative",
   "session_type": "plan-collaborative",
   "description": "Rough-idea-to-detailed-spec — planning produces seed plan only",
-  "entry": "idea-intake",
+  "entry": "session-overview",
   "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/session-overview.md",
+      "next": "load-guidelines"
+    },
+    "load-guidelines": {
+      "id": "load-guidelines",
+      "type": "agent",
+      "prompt": "~/.config/opencode/planning/plan-design-guidelines.md",
+      "next": "idea-intake"
+    },
     "idea-intake": {
       "id": "idea-intake",
       "type": "agent",
@@ -15,25 +27,20 @@
       "id": "clarify",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/clarify.md",
-      "next": ["clarify", "seed-gate"]
-    },
-    "seed-gate": {
-      "id": "seed-gate",
-      "type": "gate",
-      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/seed-gate.md",
-      "next": ["agent-routing", "clarify"]
-    },
-    "load-schema": {
-      "id": "load-schema",
-      "type": "agent",
-      "prompt": "~/.config/opencode/planning/plan-json-schema.md",
-      "next": "finalize"
+      "next": ["clarify", "agent-routing"],
+      "remaining_visits": 3
     },
     "agent-routing": {
       "id": "agent-routing",
       "type": "agent",
       "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/agent-routing.md",
-      "next": "finalize"
+      "next": "seed-gate"
+    },
+    "seed-gate": {
+      "id": "seed-gate",
+      "type": "gate",
+      "prompt": "~/.config/opencode/planning/plan-collaborative/prompts/seed-gate.md",
+      "next": ["finalize", "clarify"]
     },
     "finalize": {
       "id": "finalize",

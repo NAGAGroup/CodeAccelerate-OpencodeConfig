@@ -49,48 +49,24 @@ Before writing files: confirm with the user how many research-execute iterations
 
    **`.opencode/session-plans/{session-name}/prompts/session-overview.md`**
 
-   Write this file **verbatim** — do not modify, summarize, or adapt the content:
+   Generate this file **dynamically** using the research topic, open questions, output format, audience/use, and iteration count confirmed during this planning session. Do not copy a static template.
 
-   ````
-   # Session Overview — Deep Research Session
-
-   <!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->
-
-   You are executing a deep research session. Read this node once, internalize it, then call `next_step()` immediately.
-
-   ## What This Session Is
-
-   A deep research session is a structured, human-in-the-loop research workflow. You dispatch @DeepResearcher at each iteration, surface findings, and wait for the user to steer direction. The session ends when the user signals they have enough, or the loop counter is exhausted — whichever comes first.
-
-   **Research topic:** {topic — copied verbatim from clarify/research-gate}
-
-   **Open questions to answer:**
-   {open questions — one per line, copied verbatim from clarify/research-gate}
-
-   **Output format:** {format — e.g., structured report, decision-support brief, executive summary — copied from clarify}
-
-   **Audience / use:** {who will read this and what decision or action it informs — copied from clarify}
-
-   **Research-execute iterations allowed:** {remaining_visits count confirmed above}
-
-   ## How This Session Works
-
-   - Each `research-execute` iteration: you dispatch @DeepResearcher for one focused question or area, surface the findings to the user in plain language, then **wait** for the user's direction before the next dispatch
-   - The user controls depth and direction — you follow their lead
-   - `research-brief.md` is the living record — update it after every iteration with a summary of findings
-   - When the loop counter is exhausted or the user signals "done," advance to `synthesis-gate`
-   - If the loop counter exhausts and the DAG enters a `failed` state, surface this and ask: "Resume with how many more iterations?" Call `reset_counters({ visits: N })` if they confirm
-
-   ## What You Must Never Do
-
-   - Dispatch @DeepResearcher and advance without surfacing findings to the user first
-   - Work through multiple research areas in a single `research-execute` iteration
-   - Produce research findings without a @DeepResearcher dispatch — do not rely on your own knowledge
-
-   ## Advance
-
-   Call `next_step()` to proceed to the first research-execute iteration.
-   ````
+   The file must include:
+   - `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->` as the first line
+   - A brief description of what this session is (a deep research session — automated, loop-based research using @DeepResearcher agents)
+   - **Research topic** (copied verbatim from research-intake/clarify)
+   - **Open questions to answer** (copied verbatim from clarify/research-gate, one per line)
+   - **Output format** (from clarify — e.g., structured report, decision-support brief, executive summary)
+   - **Audience / use** (from clarify — who will read this and what decision it informs)
+   - **Research-execute iterations allowed** (the confirmed remaining_visits count)
+   - **How This Session Works** — describe the UNSUPERVISED loop:
+     - Each `research-execute` iteration: dispatch multiple @DeepResearcher agents in parallel (one per open question or sub-area), accumulate all findings to `research-brief.md`, then loop automatically
+     - No user interaction mid-loop — the agent does not surface findings or wait between iterations
+     - When the loop counter is exhausted, the DAG advances to `synthesis-gate` automatically
+     - If the loop counter exhausts and the DAG enters a `failed` state, surface this and ask how many more iterations to allow; call `reset_counters({ visits: N })` if confirmed
+     - At `synthesis-gate`, HW presents all accumulated findings for user review and steering
+   - **What You Must Never Do** — surface findings mid-loop, wait for user input between iterations, conduct research from your own knowledge (always dispatch @DeepResearcher)
+   - **Advance** — call `next_step()` to proceed to the first research-execute iteration
 
    ---
 
@@ -125,13 +101,12 @@ Before writing files: confirm with the user how many research-execute iterations
 
    Write this prompt with:
    - `<!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->` as the first line
-   - The **current research focus** for this iteration — defaulting to the first unaddressed open question; the user may redirect to any other question at each iteration
-   - Instructions to dispatch **@DeepResearcher** for the current focus area (not to conduct research from HW's own knowledge)
-   - Instructions to surface findings to the user in plain language after @DeepResearcher returns
-   - Instructions to update `research-brief.md` with an iteration log entry (date/time, focus area, key findings, open threads)
-   - Instructions to ask the user: "What should we explore next?" (or: "Are we done with research?") — and **wait** for a response before calling `next_step()`
+   - Instructions to dispatch **multiple @DeepResearcher agents in parallel** — one per open question or research sub-area — each iteration
+   - Instructions to accumulate all findings to `research-brief.md` with an iteration log entry (date/time, focus areas, key findings, open threads)
+   - Instructions to loop automatically via `next_step()` without surfacing findings or waiting for user input — the loop is fully unsupervised
+   - Instructions: when the loop counter is exhausted, the DAG advances automatically to `synthesis-gate` — no action needed
    - **Delegation instructions** from the agent-routing node for research-execute (embed verbatim)
-   - A **`## Advance`** section: "If the user says done or loop counter is near exhausted: `next_step({ next: 'synthesis-gate' })`. If continuing: `next_step({ next: 'research-execute' })`."
+   - A **`## Advance`** section: "Call `next_step()` to loop for another research iteration, or advance to synthesis-gate when the loop counter is exhausted. The DAG plugin will present the available options — do not hardcode branch IDs."
 
    Do not write research content, topic analysis, or answers to the questions in this prompt.
 
@@ -149,10 +124,9 @@ Before writing files: confirm with the user how many research-execute iterations
 
    Ask the user: "Does this cover what you need? Approve to write the final report, or redirect back to research for more investigation."
 
-   ## Advance
+    ## Advance
 
-   - If more research is needed: `next_step({ next: "research-execute" })`
-   - If ready to write the report: `next_step({ next: "report-write" })`
+    Call `next_step()` to proceed. The DAG plugin will present the available options — select to loop back to research-execute or advance to report-write. Do not hardcode branch IDs.
    ```
 
    No delegation needed in this node — HeadWrench presents directly.
@@ -166,8 +140,7 @@ Before writing files: confirm with the user how many research-execute iterations
    - Instructions to write `research-report.md` at `.opencode/session-plans/{session-name}/research-report.md`
    - The **output format** specified during planning (copied verbatim from clarify/research-gate)
    - Source material: all findings in `research-brief.md` plus any additional findings surfaced during synthesis-gate
-   - **Delegation instructions** from the agent-routing node for report-write (embed verbatim)
-   - Constraint: this is HW-direct — do not delegate report writing; HW synthesizes and writes
+    - **Delegation instructions** from the agent-routing node for report-write (embed verbatim — follow agent-routing delegation instructions; do not override with hardcoded HW-direct constraint)
    - A **`## Advance`** section: "Call `next_step()` when `research-report.md` is written."
 
    ---
@@ -216,7 +189,7 @@ Before writing files: confirm with the user how many research-execute iterations
 
 - Do not call `next_step()` — this is a terminal node. Call `close_session()` after presenting the plan.
 - Seven files only: `plan.json`, `session-overview.md`, `research-brief.md`, `research-execute.md`, `synthesis-gate.md`, `report-write.md`, `finalize-output.md`. No additional files.
-- `session-overview.md` verbatim only. Do not alter the content.
+- `session-overview.md` must be dynamically generated — do not copy a static template.
 - `research-brief.md` stub only. No generated research content.
 - All open questions and format/audience details must be **copied verbatim** from earlier planning nodes — do not paraphrase.
 

@@ -27,5 +27,4 @@ You are **NOT** starting to research the topic, answer its questions, or engage 
 
 ## Advance
 
-- If more clarification is needed: call `next_step({ next: "clarify" })` to loop.
-- If there is enough to write a research plan: call `next_step({ next: "research-gate" })`.
+Call `next_step()` to loop for more clarification, or advance when there is enough to write a research plan. The DAG plugin will present the available options.

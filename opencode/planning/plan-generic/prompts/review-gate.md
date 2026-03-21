@@ -1,12 +1,13 @@
 # Node: review-gate — /plan-generic
 
-This is a gate node. Your role is to present the full plan to the user and collect an explicit approval or redirect decision.
+This is a gate node. Your role is to present the complete plan to the user and collect an explicit approval or redirect decision.
 
 ## Steps
 
 1. Present the complete plan for review:
    - **Goal** — one sentence
    - **Subtask list** — numbered, each with objective and scope
+   - **Agent routing** — the routing table from agent-routing: subtask, assigned agent, model tier, rationale
    - **Gate locations** — which subtasks contain `[🚫 GATE]` checkpoints and why
    - **Open questions** — any unresolved items the user should be aware of
 
@@ -16,8 +17,8 @@ This is a gate node. Your role is to present the full plan to the user and colle
 
 ## Advance
 
-Based on the user's response, call one of:
+Based on the user's response, call `next_step()` and select the appropriate branch:
 
-- `next_step({ next: "finalize" })` — user approves the plan as-is
-- `next_step({ next: "decompose" })` — user wants the decomposition revised (scope, subtask structure, ordering)
-- `next_step({ next: "clarify" })` — user has new requirements or constraints that require re-clarification
+- Approve → advance to finalize
+- Revise decomposition → go back to decompose
+- Revise requirements → go back to clarify

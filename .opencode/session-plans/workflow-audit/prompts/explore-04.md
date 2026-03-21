@@ -1,52 +1,47 @@
 <!-- DO NOT COMPACT THIS NODE — these instructions must remain in context for the entire session -->
 
-# Node: explore-04 — Deep Research Workflow Audit
+# Node: explore-04 — Deep Research Workflow Redesign
 
-**Open question this node covers:** What improvements and bugs exist in the Deep Research planning workflow?
+**Goal for this node:** Read the current Deep Research workflow files, work with the user to redesign the DAG and prompts collaboratively, then distill the redesign as concrete findings into `spec.md`.
 
 ## Your Role
 
-Surface this question to the user and explore it collaboratively. You ask; the user responds; you follow their lead.
+Read the current state, then drive a collaborative redesign conversation. One question or proposal at a time. The user leads — you follow, ask, and record.
 
-Do **not** produce answers, proposals, or analysis unprompted. Your job is to read the relevant files, surface specific findings as observations, and let the user confirm, redirect, or dig deeper.
+Do **not** produce a full redesign unprompted. Surface one element at a time, get user confirmation, then move to the next.
 
 ## Files to Read
 
-Before engaging the user, read these files to orient yourself:
+Before engaging the user, read these files to understand the current state:
 
-- `.opencode/commands/plan-deep-research.md`
-- `.opencode/planning/plan-deep-research/prompts/research-intake.md`
-- `.opencode/planning/plan-deep-research/prompts/clarify.md`
-- `.opencode/planning/plan-deep-research/prompts/research-gate.md`
-- `.opencode/planning/plan-deep-research/prompts/agent-routing.md`
-- `.opencode/planning/plan-deep-research/prompts/finalize.md`
+- `opencode/planning/plan-deep-research/plan.json`
+- `opencode/planning/plan-deep-research/prompts/research-intake.md`
+- `opencode/planning/plan-deep-research/prompts/clarify.md`
+- `opencode/planning/plan-deep-research/prompts/research-gate.md`
+- `opencode/planning/plan-deep-research/prompts/agent-routing.md`
+- `opencode/planning/plan-deep-research/prompts/finalize.md`
 
-Then surface one observation or potential issue at a time to the user. Let them respond before moving to the next.
+## Approach
+
+1. Summarize the current DAG in one line for the user
+2. Surface the proposed redesign (or one element of it at a time) for discussion
+3. Ask, listen, revise
+4. Once the user is satisfied with the redesign, distill it as findings into `spec.md`
 
 ## Recording Findings
 
-Update `spec.md` under **Findings** as conclusions are reached. Label each finding clearly (e.g., "Deep Research — research-gate.md: ...").
-
-## Delegation
-
-**Agent:** @ContextInsurgent (sonnet-like)
-**Reason:** Reading and reasoning across multiple prompt files with cross-node behavioral analysis requires deep multi-file judgment — beyond haiku capability.
-**Re-use:** Use the same session ID for any follow-up reads within this explore node.
+Update `spec.md` under **Deep Research Workflow** with:
+- Proposed DAG (before/after)
+- Each concrete change with rationale
+- Label findings clearly (e.g., "DeepRes-1 — move `load-guidelines` to second node")
 
 ## Advance
 
-- To continue exploring this question: `next_step({ next: "explore-04" })`
-- When the Deep Research workflow audit is sufficiently complete: `next_step({ next: "spec-gate" })`
+- To continue the Deep Research redesign: `next_step({ next: "explore-04" })`
+- When Deep Research redesign is done and findings are recorded: `next_step({ next: "spec-gate" })`
 
 ## Session Authority
 
-This is a collaborative session plan. You have full authority to restructure it as the session evolves:
-
-- **Add explore nodes** — if a new area of exploration emerges, add it to `plan.json` and write its prompt file
-- **Rename or split nodes** — if the current explore node scope is too broad, split it
-- **Update `spec.md`** — record findings, revise open questions, add new ones as they surface
-- **Restructure `plan.json`** — change node order, add branches, remove nodes that become irrelevant
+This is a collaborative session plan. You have full authority to restructure it as the session evolves.
 
 **One hard constraint:** The node ID you are currently executing must still exist in `plan.json` when you call `next_step()`. Do not delete or rename the current node mid-execution.
-
-When in doubt, bias toward restructuring — a plan that reflects the actual session is more useful than one that doesn't.

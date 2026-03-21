@@ -10,6 +10,8 @@ Your role in this node is to determine what delegation instructions should be em
 
 3. **Determine delegation instructions for each prompt file** finalize will write:
 
+   **`hypothesis-gate.md`** (only if confirm-mode: yes) — HW direct. No delegation needed. Note this explicitly.
+
    **`diagnose.md`** — The diagnosis agent needs to inspect code and trace execution paths. Determine:
    - Is the bug localized (one or two files)? → `@ContextScout` (haiku) for quick reads
    - Does it require tracing across multiple files or layers? → `@ContextInsurgent` (sonnet) for deep analysis
@@ -24,7 +26,7 @@ Your role in this node is to determine what delegation instructions should be em
 
 4. **Produce a delegation summary** — one paragraph per prompt file stating what delegation instruction to embed.
 
-5. **Call `next_step()`** to advance to finalize. Finalize will use these instructions when writing the prompt files.
+5. **Call `next_step()`** to advance. Finalize will use these instructions when writing the prompt files.
 
 ## Constraints
 
