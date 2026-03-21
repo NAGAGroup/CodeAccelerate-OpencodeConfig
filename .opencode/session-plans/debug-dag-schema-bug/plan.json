@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "id": "debug-dag-schema-bug",
+  "session_type": "debug",
+  "title": "Debug: Planning Agent DAG Schema Validation",
+  "description": "Investigation into invalid DAG generation where planning agents create 'next' objects with generic labels ('pass', 'fail') instead of actual node IDs",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/debug-dag-schema-bug/prompts/session-overview.md",
+      "next": "audit-planning-prompts"
+    },
+    "audit-planning-prompts": {
+      "id": "audit-planning-prompts",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/debug-dag-schema-bug/prompts/audit-planning-prompts.md",
+      "next": "check-gate-prompts"
+    },
+    "check-gate-prompts": {
+      "id": "check-gate-prompts",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/debug-dag-schema-bug/prompts/check-gate-prompts.md",
+      "next": "validate-next-step-logic"
+    },
+    "validate-next-step-logic": {
+      "id": "validate-next-step-logic",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/debug-dag-schema-bug/prompts/validate-next-step-logic.md",
+      "next": "search-historical-dags"
+    },
+    "search-historical-dags": {
+      "id": "search-historical-dags",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/debug-dag-schema-bug/prompts/search-historical-dags.md",
+      "next": "reproduce-issue"
+    },
+    "reproduce-issue": {
+      "id": "reproduce-issue",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/debug-dag-schema-bug/prompts/reproduce-issue.md",
+      "next": "evaluate-root-cause"
+    },
+    "evaluate-root-cause": {
+      "id": "evaluate-root-cause",
+      "type": "gate",
+      "prompt": ".opencode/session-plans/debug-dag-schema-bug/prompts/evaluate-root-cause.md",
+      "next": {
+        "fix-planning-prompts": {
+          "desc": "Invalid 'next' keys found in planning prompts; root cause is missing schema guidance",
+          "choose_when": "Evidence shows planning prompts use generic labels like 'pass'/'fail' as branching keys"
+        },
+        "escalate-to-code-audit": {
+          "desc": "Generated DAGs are valid; root cause may be in validation logic or agent code paths",
+          "choose_when": "Evidence shows generated DAGs have valid 'next' structure with proper node IDs"
+        }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T18:03:14.881Z"
+    },
+    "fix-planning-prompts": {
+      "id": "fix-planning-prompts",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/debug-dag-schema-bug/prompts/fix-planning-prompts.md",
+      "next": "verify-fix",
+      "status": "completed",
+      "completed_at": "2026-03-21T18:03:41.780Z"
+    },
+    "verify-fix": {
+      "id": "verify-fix",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/debug-dag-schema-bug/prompts/verify-fix.md",
+      "next": "finalize",
+      "status": "completed",
+      "completed_at": "2026-03-21T18:03:43.430Z"
+    },
+    "escalate-to-code-audit": {
+      "id": "escalate-to-code-audit",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/debug-dag-schema-bug/prompts/escalate-to-code-audit.md",
+      "next": "finalize"
+    },
+    "finalize": {
+      "id": "finalize",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/debug-dag-schema-bug/prompts/finalize.md",
+      "status": "in_progress"
+    }
+  }
+}

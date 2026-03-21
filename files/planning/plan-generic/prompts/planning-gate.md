@@ -1,6 +1,6 @@
 # Planning Gate: User Approval
 
-Present the full planning summary to the user and request approval.
+Present the full planning summary to the user and request approval before proceeding to DAG design.
 
 ## What to Show
 
@@ -15,14 +15,14 @@ Present all planning decisions:
 
 The user will choose one:
 
-1. **Approve & Finalize** — Planning decisions are solid; proceed to write project DAG
+1. **Approve & Design DAG** — Planning decisions are solid; proceed to design the project DAG structure
 2. **Clarify Task** — Need more understanding of task or context; loop back to clarify
 3. **Reconsider Shape** — Selected shape doesn't fit; loop back to propose-shape
 4. **Refine Decomposition** — Subtask breakdown needs adjustment; loop back to propose-decomposition
 
 ## Your Output
 
-If **approved:** Call `next_step({ next: "finalize" })`
+If **approved:** Call `next_step({ next: "design-plan" })`
 
 If **needs clarification:** Call `next_step({ next: "clarify" })`
 

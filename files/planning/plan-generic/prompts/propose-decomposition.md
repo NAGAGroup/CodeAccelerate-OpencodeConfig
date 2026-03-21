@@ -12,6 +12,10 @@ Decompose the task:
 
 Keep subtasks **scoped** — each should be assignable to one agent.
 
+## Complex Decomposition
+
+For complex decomposition with multiple interdependencies or uncertain boundaries, you may use the `sequential-thinking` tool to reason through subtask boundaries, ordering, and risk factors before finalizing your proposal.
+
 ## Output
 
 - Numbered list of subtasks

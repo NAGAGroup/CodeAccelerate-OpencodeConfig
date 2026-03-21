@@ -1,18 +1,27 @@
-# Clarification Question
+# Clarification Questions
 
-Your task is to **ask ONE critical clarifying question**.
+Your task is to **ask clarifying questions that provide necessary context** for task decomposition. These questions focus on scope, constraints, and codebase context.
 
-## What to Do
+## What to Ask
 
-Identify the single most important outstanding question about the task. This should be something that:
-- Would significantly affect the decomposition or approach
-- Can't be assumed or deferred to execution
-- The user is best positioned to answer
+Identify critical questions about:
+1. **Scope** — What is in scope vs. out of scope? Are there related areas the user wants to address together?
+2. **Constraints** — Are there timeline, resource, or technical constraints that affect the approach?
+3. **Context** — What background matters? Prior attempts? Related code patterns? Integration points?
+4. **Dependencies** — What systems or modules does this task depend on?
 
-Ask it clearly and concisely.
+Questions should:
+- Significantly affect the decomposition or approach
+- Not be deferrable to execution
+- Be best answered by the user before planning
+
+## Complex Reasoning
+
+For complex clarification scenarios with multiple interdependencies, you may use the `sequential-thinking` tool to reason through question prioritization and dependencies.
 
 ## Output
 
-- One question (clear and specific)
+- Ask 1-3 focused clarification questions (not more than needed)
+- Each question should be clear and specific
 
 Call `next_step()` after asking.

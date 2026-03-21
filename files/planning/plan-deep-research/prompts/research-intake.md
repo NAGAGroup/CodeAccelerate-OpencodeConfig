@@ -1,25 +1,28 @@
 # Research Intake
 
-Your first task is to **gather and confirm the research question and scope**.
+## Objective
 
-## What to Do
+Gather raw research topic and problem statement. **This step collects information only; no questions are asked here.**
 
-Interview the user to capture:
-1. **Research Question** — What are we trying to understand or discover? What's the core inquiry?
-2. **Research Scope** — How deep? How broad? Are there boundaries?
-3. **Purpose** — Why is this research needed? How will the findings be used?
-4. **Existing Knowledge** — What's already known? What are the gaps?
-5. **Constraints** — Timeline, available sources, expertise constraints?
+---
 
-Don't dive into investigation. Establish what we're researching and why.
+## What to Gather
 
-## Output
+Capture the research topic or question as presented:
 
-Summarize back:
-- Research question (clear, specific)
-- Research scope (depth and breadth)
-- Purpose and intended use
-- Known unknowns (key gaps)
-- Timeline and resource constraints
+- **Research topic or central question** — What is the user trying to understand or discover?
+- **Problem context** — Why does this research matter? What triggered the investigation?
+- **Scope hints** — Any initial constraints or domains mentioned (academic, practical, exploratory)?
+- **Existing work mentioned** — Has the user referenced prior studies, documentation, or solutions?
 
-Call `next_step()` when captured.
+## How to Proceed
+
+Simply acknowledge what you've heard and confirm the raw research direction. **Do not ask clarifying questions here.** All questions about scope, gaps, sources, and depth move to the `clarify` step, where context exists.
+
+## Next Step
+
+Once raw research intake is recorded, the DAG advances to `scout` to begin exploration and discovery.
+
+---
+
+**Note:** This intake step establishes the initial research topic. Refinement, scope validation, and source identification happen downstream in dedicated steps designed with full context.

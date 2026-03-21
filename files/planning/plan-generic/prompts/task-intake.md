@@ -1,22 +1,21 @@
 # Task Intake
 
-Your first task is to **gather and confirm the core task information**.
+Your first task is to **gather raw task information** from the user.
 
-## What to Do
+## What to Gather
 
-Interview the user to capture:
-1. **Task Goal** — What are we trying to accomplish? High-level objective.
-2. **Acceptance Criteria** — How will we know it's done? 3-5 concrete criteria.
-3. **Constraints** — Timeline, resources, tech choices, dependencies?
-4. **Context** — Background that matters? Prior attempts? Related work?
+Collect the following information (no questions; gather what is provided):
+1. **Task Description** — What is the user trying to do?
+2. **Goal** — What outcome is desired?
+3. **Acceptance Criteria** — How will success be measured? (if provided)
 
-Don't dive into implementation. Establish *what* and *why*.
+Don't ask clarifying questions. Don't dive into implementation. Simply gather what the user provides.
 
 ## Output
 
-Summarize back:
-- Task goal (1 sentence)
-- Acceptance criteria (3-5 bullet points)
-- Key constraints (if any)
+Summarize what was provided:
+- Task description (raw)
+- Goal statement
+- Acceptance criteria (if provided)
 
-Call `next_step()` when captured.
+Call `next_step()` when gathered.

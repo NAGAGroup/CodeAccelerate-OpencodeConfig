@@ -1,71 +1,44 @@
-# Finalize: Write the Project DAG
+# Finalize: Validate & Close Session
 
-Your task is to **write the review project DAG** that was just approved.
+Your task is to **validate the review project DAG artifacts and close the planning session**.
 
-## What You Have
+## What You Validate
 
-From planning:
-- Review target, purpose, and stakeholders
-- Review criteria and quality standards
-- In-scope/out-of-scope areas and coverage map
-- Chosen DAG shape (typically 1A-linear, or 1C if risk-based)
-- Assessment steps with coverage and success criteria
-- Agent routing: reviewer types and model tiers
-- Review output definition
-- User approval
+Check all artifacts created in write-prompts phase:
 
-## What You Write
+### plan.json Validation
+- **JSON Syntax:** Valid JSON (no parse errors)
+- **Node References:** All `next` fields reference nodes that exist in `nodes` section
+- **Entry Node:** `entry` field points to a valid node
+- **Terminal Node:** Finalize node has no `next` field; all paths eventually lead to finalize
+- **Prompt Paths:** All prompt files referenced actually exist
+- **Required Fields:** Each node has `id`, `type`, and `prompt` (if agent); gates have proper branching structure
 
-You will create:
-1. **plan.json** — The executable review DAG
-2. **session-overview.md** — Context for the reviewing agent
-3. **prompts/{assessment-step}.md** — One prompt per assessment step
-4. **prompts/finalize.md** — Prompt for the review's finalize node
+### Artifact Completeness
+- session-overview.md exists and references quality standards
+- Each assessment-step prompt file exists and referenced in plan.json
+- Finalize prompt exists and ready for review execution
+- All quality criteria referenced in planning are covered in assessment steps
 
-## How to Write plan.json
+### Quality Alignment
+- Confirm assessment steps align with quality standards identified in planning
+- Verify @ContextInsurgent routing is used for complex quality reasoning steps
+- Check that sequential-thinking is suggested for complex judgment calls
 
-- **Nodes:** Match your review shape (typically 1A-linear)
-- **Node names:** Use assessment step names from decomposition
-- **Node types:** "agent" for review steps, "gate" for risk-based decisions (if any)
-- **`next` field:** Single string for linear; object with branches if gates present
-- **`prompt`:** Worktree-relative path to prompt file (e.g., ".opencode/session-plans/{session-name}/prompts/assessment-step.md")
-- **Entry:** First node (usually "session-overview")
-- **Terminal:** Finalize node with no `next` field
+## Validation Errors & Recovery
 
-## Session-Overview Content
+If validation fails:
+- Report specific error (missing file, invalid JSON, broken reference)
+- If fixable: Note correction and proceed
+- If structural: Loop back to design-plan with guidance
 
-Write for the **reviewing agent**:
-- Review target and scope
-- Review purpose and stakeholder context
-- Quality criteria and standards
-- High-level review structure
-- Coverage map: which areas get deep review
-- Assessment step overview
-- Report expectations
-- Note: "Conduct systematic evaluation against defined criteria. Findings should be specific, actionable, and tied to quality standards."
-
-## Assessment Prompts
-
-For each review step:
-- Clear instruction on what to evaluate
-- Which criteria/areas this step covers
-- Quality standards to apply
-- What findings format is needed
-- How to present findings
-- How to advance to next node
+If all validations pass: Proceed to close.
 
 ## Output
 
-Write `.opencode/session-plans/{review-name}/`:
-```
-plan.json
-session-overview.md
-prompts/
-  session-overview.md
-  {assessment-step-1}.md
-  {assessment-step-2}.md
-  ...
-  finalize.md
-```
+Report:
+- Validation result: ✓ PASSED or ✗ FAILED
+- Any errors found and fixes applied
+- Summary: Review DAG is ready for execution
 
-Call `close_session()` when done.
+Call `close_session()` when validation complete and passing.

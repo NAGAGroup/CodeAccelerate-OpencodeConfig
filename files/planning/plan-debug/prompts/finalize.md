@@ -7,12 +7,12 @@ Your task is to **write the investigation project DAG** that was just approved.
 From planning:
 - Bug symptoms, reproduction path, and impact
 - Primary and alternative hypotheses
-- Chosen investigation shape (1A, 1B, 1D, 1E, or 1F)
+- Investigation shape decision (branch / loop / both)
 - Diagnosis steps with hypothesis testing details
 - Test strategy per step
 - Agent routing: assignments and model tiers
 - Loop/gate details (if applicable)
-- User approval
+- User approval from preview-gate
 
 ## What You Write
 
@@ -24,7 +24,7 @@ You will create:
 
 ## How to Write plan.json
 
-- **Nodes:** Match your investigation shape (1A, 1B, 1D, 1E, 1F)
+- **Nodes:** Match your investigation shape (3-7 diagnosis steps, gates/loops as needed)
 - **Node names:** Use diagnosis step names from decomposition
 - **Node types:** "agent" for investigation nodes, "gate" for hypothesis decisions
 - **`next` field:** Single string for linear; object with branches for loops/gates
@@ -33,13 +33,18 @@ You will create:
 - **Entry:** First node (usually "session-overview")
 - **Terminal:** Finalize node with no `next` field
 
+**Structure based on branch/loop decision:**
+- **Looping:** session-overview → diagnose-1 → evaluate → {loop-back to diagnose-1 with refined approach, or advance} → finalize
+- **Branching:** session-overview → test-hypothesis-A → {branch: confirm A → finalize, or test-hypothesis-B → finalize}
+- **Both:** Combination of loop and branch nodes
+
 ## Session-Overview Content
 
 Write for the **investigating agent**:
 - Bug symptoms and reproduction path
 - Impact and severity
 - Primary and alternative hypotheses
-- High-level investigation structure
+- High-level investigation structure (branch/loop/both)
 - Key diagnosis loops and decision points
 - Subtask overview
 - Note: "This investigation may reveal the root cause early or require hypothesis branching. Each step produces evidence that guides the next."
@@ -51,6 +56,7 @@ For each diagnosis step:
 - What evidence to gather and how
 - What results confirm or falsify the hypothesis
 - How to advance to next node
+- (For complex steps) Mention: "If this step requires deep reasoning about code interactions, consider using `sequential-thinking`"
 
 ## Output
 

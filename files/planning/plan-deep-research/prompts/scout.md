@@ -11,6 +11,16 @@ Survey knowledge using web search and documentation tools:
 4. **Key Sources** — Locate primary sources, authoritative documentation, expert resources
 5. **Related Research** — Uncover adjacent findings and emerging patterns
 
+### Parallel Scout Dispatch
+
+**When multiple research areas need exploration**, use **@ContextScout agents in parallel**. Each scout can independently explore one research domain, sub-topic, or knowledge area. Example:
+
+- If the research spans **theoretical foundations**, **empirical evidence**, and **implementation practices**, dispatch three @ContextScout agents in parallel.
+- Each scout gathers findings independently.
+- Consolidate findings for comprehensive knowledge mapping.
+
+This pattern reduces research time and ensures thorough coverage of the research landscape.
+
 ## External Research Tools
 
 **Dispatch research queries conditionally:** If the topic involves external APIs, libraries, frameworks, emerging research, or technical standards, use these tools:

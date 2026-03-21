@@ -1,24 +1,25 @@
 # Bug Intake
 
-Your first task is to **gather and confirm the bug details**.
+Your task is to **gather raw bug information only**. No questions.
 
-## What to Do
+## What to Gather
 
-Interview the user to capture:
-1. **Bug Symptoms** — What is the user observing? What went wrong? How is it manifesting?
-2. **Reproduction Steps** — Can the bug be reliably reproduced? What triggers it?
-3. **Impact** — How severe is it? Does it block users, cause data loss, or affect performance?
-4. **Environment** — What system/version/configuration? When was it first noticed?
-5. **Context** — Recent changes? Does it happen consistently or intermittently?
+Capture exactly what the user provides about:
+1. **Bug Symptoms** — Observable behavior, error messages, what went wrong
+2. **Reproduction Path** — Steps that trigger the bug (if available)
+3. **Affected Code Areas** — What code/modules the symptoms touch
+4. **Environment** — System, version, configuration, timing
+5. **Recent Context** — Recent changes, intermittent vs. consistent
 
-Don't solve yet. Establish clear symptoms and reproduction path.
+Focus on gathering **raw information only**. Do not ask clarifying questions; all questions move to the `clarify` step where context exists.
 
 ## Output
 
-Summarize back:
-- Bug symptoms (clear, observable behavior)
-- Reliable reproduction steps (if available)
-- Impact assessment (severity and scope)
-- Environment details (system, version, timing)
+Document exactly:
+- Reported symptoms and error messages
+- Reproduction steps (as provided)
+- Affected code areas (as user mentions them)
+- Environment details (as stated)
+- Timing and consistency
 
 Call `next_step()` when captured.

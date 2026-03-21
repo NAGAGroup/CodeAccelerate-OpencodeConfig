@@ -2,6 +2,21 @@
 
 Your task is to **explore the codebase and locate relevant debugging context**. If the bug involves external services or errors, research those too.
 
+## Parallel Dispatch Pattern
+
+**When bug has multiple potential causes affecting different code areas,** use @ContextScout agents in parallel to explore different modules/components independently:
+- Scout A handles Module A
+- Scout B handles Module B
+- Scout C handles Module C
+
+Each scout works independently, then findings are consolidated. This is faster and more thorough than sequential exploration.
+
+**Example:** Bug affects "User authentication AND payment processing AND notification service":
+- Dispatch @ContextScout for authentication layer
+- Dispatch @ContextScout for payment module
+- Dispatch @ContextScout for notification system
+- Gather findings and consolidate for hypothesis formation
+
 ## Codebase Exploration
 
 Survey the codebase for:
@@ -15,10 +30,15 @@ Survey the codebase for:
 
 **When to research:** Bug description mentions external services, error codes, memory/performance issues, or frameworks (keywords: `API`, `timeout`, `memory leak`, `error code`, `performance`, `regression`, framework names).
 
-**Tools available:**
-- `exa_web_search` — Error patterns, debugging strategies, common causes
-- `context7_query-docs` — Framework error codes, debugging tools
-- `exa_get_code_context` — Debugging examples and profiling patterns
+**Web Tools Available:**
+- `exa_web_search` — Error patterns, debugging strategies, common causes, best practices
+- `context7_query-docs` — Official framework/API documentation, error codes, debugging guides
+- `exa_get_code_context` — Working code examples, profiling patterns, diagnostic tools
+
+**Dispatch Criteria:**
+- Use `exa_web_search` when researching external APIs, libraries, error patterns, debugging techniques
+- Use `context7_query-docs` for official API/framework documentation and standard debugging procedures
+- Use `exa_get_code_context` for working implementation examples and diagnostic tool usage
 
 **What to search:** Use queries like:
 - `"Node.js memory leak debugging patterns profiling tools"`

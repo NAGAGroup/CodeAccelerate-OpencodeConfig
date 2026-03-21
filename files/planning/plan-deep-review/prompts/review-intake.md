@@ -1,25 +1,25 @@
 # Review Intake
 
-Your first task is to **gather and confirm the review scope and quality goals**.
+Your task is to **gather raw information about the review scope and quality concerns**.
 
 ## What to Do
 
-Interview the user to capture:
-1. **Review Target** — What is being reviewed? Code, design, document, system, feature?
-2. **Review Purpose** — Why are we reviewing? Quality check, compliance, pre-release, learning?
-3. **Quality Goals** — What does "good" look like? What standards apply?
-4. **Stakeholders** — Who cares about this review? Who uses the findings?
-5. **Constraints** — Timeline, expertise available, scope boundaries?
+Collect from the user:
+1. **Review Target** — What is being reviewed? (Code, design, document, system, feature)
+2. **Review Context** — Where does this fit? System, module, layer, or specific area
+3. **Initial Concerns** — What prompted this review? Any known quality issues or triggers
+4. **Rough Scope** — Approximate size and boundaries of what may be in scope
+5. **Available Context** — Links, documentation, or prior review history relevant to this target
 
-Don't evaluate yet. Establish what, why, and how we're reviewing.
+Gather raw information only. Do not ask clarifying questions about quality standards, evaluation criteria, or scope boundaries — those come later when context exists.
 
 ## Output
 
-Summarize back:
-- Review target (clear description)
-- Review purpose and stakeholders
-- Quality standards or criteria (initial)
-- Scope boundaries (in scope and out of scope)
-- Timeline and constraints
+Summarize what was provided:
+- Review target (raw description)
+- Review context and trigger
+- Initial concerns or quality worries
+- Rough scope description
+- Available documentation or context
 
-Call `next_step()` when captured.
+Call `next_step()` when gathered.

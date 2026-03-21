@@ -1,70 +1,103 @@
-# Finalize: Write the Project DAG
+# Collaborative Planning: Finalize (Terminal)
 
-Your task is to **write the collaboration project DAG** that was just approved.
+**Phase:** FINALIZE (Terminal)  
+**Purpose:** Validate plan.json syntax and structure; activate the DAG  
+**Duration:** 2-3 minutes  
+**Domain:** Collaborative design exploration
 
-## What You Have
+---
 
-From planning:
-- Design goal, success criteria, and constraints
-- Collaboration shape and approach
-- Chosen DAG shape (1A, 1B, 1D, 1E, or 1F)
-- Design steps with user input points and decision gates
-- Output artifact definition
-- Agent routing: assignments and model tiers
-- Loop/gate details (if applicable)
-- User approval
+## Task
 
-## What You Write
+Perform final validation on plan.json and all prompt files. Confirm the DAG is ready to execute; activate the planning session.
 
-You will create:
-1. **plan.json** — The executable collaboration DAG matching the chosen shape
-2. **session-overview.md** — Context for the collaborating agent
-3. **prompts/{design-step}.md** — One prompt per design step
-4. **prompts/finalize.md** — Prompt for the collaboration's finalize node
+## Validation Steps
 
-## How to Write plan.json
+**1. JSON Syntax Validation**
+- Check: Valid JSON structure in plan.json
+- Check: No trailing commas or syntax errors
+- Report: Success or detailed error message
 
-- **Nodes:** Match your collaboration shape (1A, 1B, 1D, 1E, 1F)
-- **Node names:** Use design step names from decomposition
-- **Node types:** "agent" for design nodes, "gate" for user decisions
-- **`next` field:** Single string for linear; object with branches for loops/gates
-- **`remaining_visits`:** Set on user gate nodes that gate feedback loops
-- **`prompt`:** Worktree-relative path to prompt file (e.g., ".opencode/session-plans/{session-name}/prompts/design-step.md")
-- **Entry:** First node (usually "session-overview")
-- **Terminal:** Finalize node with no `next` field
+**2. Node Reference Validation**
+- Verify: All `next` references point to existing node IDs
+- Verify: All `branches` in gates point to existing node IDs
+- Report: Missing nodes or broken references
 
-## Session-Overview Content
+**3. Prompt File Validation**
+- Verify: All `prompt` paths in nodes exist
+- Verify: All files are readable and contain content
+- Report: Missing or empty files
 
-Write for the **collaborating agent**:
-- Design goal and success criteria
-- Artifact to be produced
-- High-level collaboration structure
-- Key feedback loops and user decision points
-- Collaboration turn overview
-- Constraints and context
-- Note: "This design will evolve through collaborative feedback. User gates and refinement loops allow iterating toward success criteria."
+**4. Gate Validation**
+- Verify: Each gate has `next` field with 2+ branch options
+- Verify: Each branch points to a valid next node
+- Report: Gate structure warnings
 
-## Design Prompts
+**5. Entry Point Validation**
+- Verify: `entry` node exists in nodes list
+- Verify: Node is reachable from entry
 
-For each design step:
-- Clear instruction on what to design/explore
-- What inputs are expected
-- What deliverable to produce
-- How to present to user
-- How to advance to next node
+## Validation Report
 
-## Output
+Write:
 
-Write `.opencode/session-plans/{design-name}/`:
 ```
-plan.json
-session-overview.md
-prompts/
-  session-overview.md
-  {design-step-1}.md
-  {design-step-2}.md
-  ...
-  finalize.md
+## Finalization Report
+
+### JSON Syntax
+- Status: ✓ Valid / ✗ Invalid
+- Issues (if any): [Detailed error]
+
+### Node References
+- Status: ✓ All references valid / ✗ Broken references
+- Broken references (if any): [List]
+
+### Prompt Files
+- Status: ✓ All files exist / ✗ Missing files
+- File manifest: [Confirmed list of all prompt files]
+
+### Gates
+- Status: ✓ All gates valid / ✗ Invalid gate structure
+- Gate validation: [Summary of gates and branches]
+
+### Entry Point
+- Status: ✓ Valid / ✗ Invalid
+- Entry point: `[id]` ([title])
+
+### Overall Status
+- ✓ Ready to activate / ✗ Requires fixes
 ```
 
-Call `close_session()` when done.
+## If Validation Fails
+
+Stop and report specific error with suggested fix. **Do NOT activate.**
+
+## If Validation Succeeds
+
+```
+## DAG Activation ✓
+
+All validation checks passed.
+
+### Activated DAG
+- **Name:** [Design/feature name]
+- **Nodes:** [N task + M gate nodes]
+- **Entry point:** [node-id]
+- **Prompt location:** planning/plan-collaborative/prompts/
+
+### What Happens Next
+1. User begins execution at entry point
+2. DAG tasks guide step-by-step planning
+3. Gates allow branching and refinement
+4. Planning session completes when all nodes done
+
+---
+
+**Planning session finalized and ready for execution.**
+```
+
+---
+
+**See also:**
+- `planning-audit-spec.md` Improvement 9 (Validation before commit)
+- `planning-audit-spec.md` Improvement 4 (Finalize split)

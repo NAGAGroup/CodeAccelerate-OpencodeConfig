@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0",
+  "id": "planning-audit",
+  "session_type": "generic",
+  "description": "Audit all 5 planning DAGs (generic, debug, collaborative, deep-research, deep-review) against identified bad behaviors and implement systematic improvements for agent leverage, flow optimization, and tool integration.",
+  "goal": "Implement all 10 improvements from debug-review plus ContextInsurgent leverage, web tools integration, and sequential thinking across all 5 planning DAGs.",
+  "entry": "session-overview",
+  "nodes": {
+    "session-overview": {
+      "id": "session-overview",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/planning-audit/prompts/session-overview.md",
+      "next": "design-improvements-spec",
+      "status": "completed",
+      "completed_at": "2026-03-21T18:27:51.881Z"
+    },
+    "design-improvements-spec": {
+      "id": "design-improvements-spec",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/planning-audit/prompts/design-improvements-spec.md",
+      "next": "spec-approval-gate",
+      "status": "completed",
+      "completed_at": "2026-03-21T18:28:45.083Z"
+    },
+    "spec-approval-gate": {
+      "id": "spec-approval-gate",
+      "type": "gate",
+      "prompt": ".opencode/session-plans/planning-audit/prompts/spec-approval-gate.md",
+      "next": {
+        "update-plan-generic": {
+          "desc": "Spec is solid; proceed to update planning DAGs",
+          "choose_when": "Spec is complete, clear, and applies to all 5 DAGs uniformly"
+        },
+        "design-improvements-spec": {
+          "desc": "Spec needs refinement",
+          "choose_when": "Spec is incomplete or unclear on implementation details"
+        }
+      },
+      "status": "completed",
+      "completed_at": "2026-03-21T18:29:06.379Z"
+    },
+    "update-plan-generic": {
+      "id": "update-plan-generic",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/planning-audit/prompts/update-plan-generic.md",
+      "next": "update-plan-debug",
+      "status": "completed",
+      "completed_at": "2026-03-21T18:31:24.163Z"
+    },
+    "update-plan-debug": {
+      "id": "update-plan-debug",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/planning-audit/prompts/update-plan-debug.md",
+      "next": "update-plan-parallel",
+      "status": "completed",
+      "completed_at": "2026-03-21T18:33:57.732Z"
+    },
+    "update-plan-parallel": {
+      "id": "update-plan-parallel",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/planning-audit/prompts/update-plan-parallel.md",
+      "next": "cross-dag-validation",
+      "status": "completed",
+      "completed_at": "2026-03-21T18:42:13.179Z"
+    },
+    "cross-dag-validation": {
+      "id": "cross-dag-validation",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/planning-audit/prompts/cross-dag-validation.md",
+      "next": "build-verify",
+      "status": "completed",
+      "completed_at": "2026-03-21T18:43:27.808Z"
+    },
+    "build-verify": {
+      "id": "build-verify",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/planning-audit/prompts/build-verify.md",
+      "next": {
+        "finalize": {
+          "desc": "Build passed; proceed to finalize",
+          "choose_when": "Build succeeds and all dist/ output is valid"
+        },
+        "fix-rebuild": {
+          "desc": "Build failed; diagnose and fix",
+          "choose_when": "Build fails or dist/ output is invalid"
+        }
+      },
+      "remaining_visits": 2,
+      "status": "completed",
+      "completed_at": "2026-03-21T18:43:40.414Z"
+    },
+    "fix-rebuild": {
+      "id": "fix-rebuild",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/planning-audit/prompts/fix-rebuild.md",
+      "next": "build-verify"
+    },
+    "finalize": {
+      "id": "finalize",
+      "type": "agent",
+      "prompt": ".opencode/session-plans/planning-audit/prompts/finalize.md",
+      "status": "in_progress"
+    }
+  },
+  "progress": {
+    "current_node": "finalize",
+    "started_at": "2026-03-21T18:27:50.577Z",
+    "updated_at": "2026-03-21T18:43:40.414Z"
+  }
+}

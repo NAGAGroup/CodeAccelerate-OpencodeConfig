@@ -146,9 +146,9 @@
       "type": "gate",
       "prompt": "planning/plan-collaborative/prompts/planning-gate.md",
       "next": {
-        "finalize": {
-          "desc": "Collaboration plan is sound; proceed to write the project DAG",
-          "choose_when": "All collaboration decisions are solid and ready to commit"
+        "design-plan": {
+          "desc": "Collaboration plan is sound; proceed to draft DAG structure",
+          "choose_when": "All collaboration decisions are solid and ready to finalize"
         },
         "clarify": {
           "desc": "Need more understanding of topic or context",
@@ -163,6 +163,33 @@
           "choose_when": "Selected shape doesn't fit the collaboration"
         }
       }
+    },
+    "design-plan": {
+      "id": "design-plan",
+      "type": "agent",
+      "prompt": "planning/plan-collaborative/prompts/design-plan.md",
+      "next": "preview-gate"
+    },
+    "preview-gate": {
+      "id": "preview-gate",
+      "type": "gate",
+      "prompt": "planning/plan-collaborative/prompts/preview-gate.md",
+      "next": {
+        "write-prompts": {
+          "desc": "DAG structure approved; proceed to write all prompt files",
+          "choose_when": "DAG structure looks correct and user is ready to commit"
+        },
+        "design-plan": {
+          "desc": "Reconsider DAG structure; reshape the design",
+          "choose_when": "DAG structure needs refinement or redesign"
+        }
+      }
+    },
+    "write-prompts": {
+      "id": "write-prompts",
+      "type": "agent",
+      "prompt": "planning/plan-collaborative/prompts/write-prompts.md",
+      "next": "finalize"
     },
     "finalize": {
       "id": "finalize",
