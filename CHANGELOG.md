@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-03-28
+
+### Fixed
+
+- **`registry.jsonc` version** — bumped from `3.0.0` to `3.1.1`; was not updated during the v3.1.0 release
+- **Release workflow in `AGENTS.md`** — added `registry.jsonc` version bump as a required step; corrected commit command to include all three files (`CHANGELOG.md`, `registry.jsonc`, `AGENTS.md`)
+
 ## [3.1.0] - 2026-03-28
 
 ### Changed
@@ -161,6 +168,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - DCP override paths correctly resolved on Linux and macOS
 
+[3.1.1]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v2.0.0...v2.1.0
@@ -168,4 +176,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 [1.0.1]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/tree/v0.1.0
-[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.1.1...HEAD

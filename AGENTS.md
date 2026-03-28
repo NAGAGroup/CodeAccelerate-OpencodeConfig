@@ -21,7 +21,7 @@ bun run deploy   # Build + deploy to Cloudflare Workers
 
 **Runtime:** Bun v1.3.5+
 **Build tool:** OCX CLI (`bunx ocx build`)
-**Current version:** 3.1.0 (see `registry.jsonc`)
+**Current version:** 3.1.1 (see `registry.jsonc`)
 **Min compatibility:** OpenCode 1.27.0, OCX CLI 1.0.16
 
 ## Repository Structure
@@ -232,12 +232,13 @@ When the user says "creating a vX.Y.Z release" or similar, follow these steps in
    - Group entries under `### Added`, `### Changed`, `### Fixed`, `### Removed` as appropriate
    - Add the comparison link at the bottom: `[X.Y.Z]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v<prev>...vX.Y.Z`
    - Update the `[Unreleased]` link to compare from the new tag
-5. **Update `AGENTS.md`** — bump `Current version:` to the new version number
-6. **Commit** — `git add CHANGELOG.md AGENTS.md && git commit -m "chore: update CHANGELOG for vX.Y.Z"`
-7. **Tag** — `git tag -a vX.Y.Z -m "vX.Y.Z"`
-8. **Push** — `git push origin main && git push origin vX.Y.Z`
-9. **Create GitHub release** — `gh release create vX.Y.Z --title "vX.Y.Z" --notes "<changelog body>"`
-   - Release notes body = the new changelog section content (without the `## [X.Y.Z]` heading line)
+5. **Update `registry.jsonc`** — bump `"version"` field to the new version number
+6. **Update `AGENTS.md`** — bump `Current version:` to the new version number
+7. **Commit** — `git add CHANGELOG.md registry.jsonc AGENTS.md && git commit -m "chore: release vX.Y.Z"`
+8. **Tag** — `git tag -a vX.Y.Z -m "vX.Y.Z"`
+9. **Push** — `git push origin main && git push origin vX.Y.Z`
+10. **Create GitHub release** — `gh release create vX.Y.Z --title "vX.Y.Z" --notes "<changelog body>"`
+    - Release notes body = the new changelog section content (without the `## [X.Y.Z]` heading line)
 
 ## Deployment
 
