@@ -21,7 +21,7 @@ bun run deploy   # Build + deploy to Cloudflare Workers
 
 **Runtime:** Bun v1.3.5+
 **Build tool:** OCX CLI (`bunx ocx build`)
-**Current version:** 3.1.1 (see `registry.jsonc`)
+**Current version:** 3.1.2 (see `registry.jsonc`)
 **Min compatibility:** OpenCode 1.27.0, OCX CLI 1.0.16
 
 ## Repository Structure
@@ -222,7 +222,9 @@ Profiles configure these MCP servers:
 
 ## Changelog Policy
 
-Before creating any non-release commit, update the `## [Unreleased]` section of `CHANGELOG.md` to describe the changes being committed. Group entries under `### Added`, `### Changed`, `### Fixed`, or `### Removed` as appropriate. Include `CHANGELOG.md` in the same commit as the code changes — do not create a separate changelog commit.
+Before creating any non-release commit that touches shipped registry files (agents, prompts, plugins, planning files, profiles, skills), update the `## [Unreleased]` section of `CHANGELOG.md` to describe the changes. Group entries under `### Added`, `### Changed`, `### Fixed`, or `### Removed` as appropriate. Include `CHANGELOG.md` in the same commit as the code changes — do not create a separate changelog commit.
+
+**Do not add `AGENTS.md` changes to `CHANGELOG.md`.** `AGENTS.md` is a dev-only artifact and is not part of the shipped registry.
 
 ## Release Workflow
 

@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.1.2] - 2026-03-28
+
 ### Fixed
 
 - **`propose-structure.md` and `planning-gate.md` question tool instructions** — replaced "do not present as plain text" directive (which caused haiku-tier HW to stuff proposal content inside the `question` call) with explicit "present as prose first, then call question with a single sentence" instructions, aligned with headwrench.md's question tool rules. Planning-gate option label updated to "Approve — write the DAG" to prevent haiku from confusing DAG authoring with project execution.
@@ -180,4 +182,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 [1.0.1]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/tree/v0.1.0
-[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.1.1...HEAD
+[3.1.2]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.1.1...v3.1.2
+[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.1.2...HEAD
