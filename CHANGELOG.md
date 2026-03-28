@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-03-28
+
+### Changed
+
+- **Delegation skill removed** — `files/skills/delegation/SKILL.md` deleted; all routing rules and step budgets consolidated directly into `headwrench.md`'s agent roster table. The skill was de facto unused — no planning DAG node ever invoked it, and its content was already duplicated in the HW prompt.
+
+### Fixed
+
+- **`.opencode/` session directory exclusion** — ContextScout and ContextInsurgent delegation instructions now consistently exclude `.opencode/` session content from codebase reads. Stale completed sessions can contain conflicting info that poisons analysis; planning infra files (node-library, etc.) remain accessible when explicitly tasked.
+- **`research-gate` unconditional `question` tool** — removed self-assessment framing that allowed the planning agent to skip the `question` tool call with a plain-text conclusion; the gate now always requires the `question` tool. `research-brief` updated to establish Context7 as the primary lookup tool (Exa secondary) and explicitly defer deep research to generated project DAG nodes.
+
 ## [3.0.0] - 2026-03-27
 
 ### Added
@@ -150,10 +161,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - DCP override paths correctly resolved on Linux and macOS
 
+[3.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.1...v2.0.0
 [1.0.1]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/tree/v0.1.0
-[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.1.0...HEAD
