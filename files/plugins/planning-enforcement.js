@@ -12337,7 +12337,7 @@ tool.schema = exports_external;
 import * as fs from "fs";
 import * as path from "path";
 var CONFIG_ROOT = path.dirname(import.meta.dirname);
-var exemptTools = ["plan_generic", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag"];
+var exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag"];
 function dagStatePath(worktree, sessionId) {
   return path.join(worktree, ".opencode", "dag-state", `${sessionId}.json`);
 }
@@ -12543,16 +12543,16 @@ var PlanningEnforcementPlugin = async (_ctx) => {
   const blockedCalls = new Map;
   return {
     tool: {
-      plan_generic: tool({
-        description: "Start a /plan-generic planning session. Copies the global planning DAG locally and activates it.",
+      plan_session: tool({
+        description: "Start a /plan-session planning session. Copies the global planning DAG locally and activates it.",
         args: {},
         async execute(_args, context) {
           try {
-            const { localPlanPath, dag } = copyPlanningDag("plan-generic", context.sessionID, context.worktree);
+            const { localPlanPath, dag } = copyPlanningDag("plan-session", context.sessionID, context.worktree);
             return activateDag(dag, localPlanPath, context.sessionID, context.worktree);
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
-            return `Error activating plan-generic: ${msg}`;
+            return `Error activating plan-session: ${msg}`;
           }
         }
       }),
@@ -12583,7 +12583,7 @@ var PlanningEnforcementPlugin = async (_ctx) => {
           const statePath = dagStatePath(context.worktree, context.sessionID);
           const state = readState(statePath);
           if (!state) {
-            return "No active DAG session. Start one with plan_generic() or activate_plan().";
+            return "No active DAG session. Start one with plan_session() or activate_plan().";
           }
           if (state.status === "complete") {
             return "DAG session is already complete.";
@@ -12699,7 +12699,7 @@ ${choices}
           state.status = "abandoned";
           state.updated_at = now();
           writeState(statePath, state);
-          return `DAG session "${state.dag_id}" has been abandoned. ` + `State saved at ${statePath}. ` + `You can start a new session with plan_generic() or activate_plan().`;
+          return `DAG session "${state.dag_id}" has been abandoned. ` + `State saved at ${statePath}. ` + `You can start a new session with plan_session() or activate_plan().`;
         }
       }),
       validate_dag: tool({

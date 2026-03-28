@@ -30,9 +30,9 @@ bun run deploy   # Build + deploy to Cloudflare Workers
 ├── registry.jsonc          # Registry manifest — single source of truth for components
 ├── files/                  # Source files for all registry components
 │   ├── agents/             # 6 agent definitions (Markdown with YAML frontmatter)
-│   ├── commands/           # 2 slash commands (plan-generic, activate-plan)
+│   ├── commands/           # 2 slash commands (plan-session, activate-plan)
 │   ├── planning/           # DAG-driven planning scaffolds
-│   │   ├── plan-generic/   # The only shipped planning mode
+│   │   ├── plan-session/   # The only shipped planning mode
 │   │   │   ├── plan.json   # Executable DAG
 │   │   │   ├── prompts/    # One .md file per node (7 files)
 │   │   │   └── node-library/ # Reusable node type templates (12 node types)
@@ -87,9 +87,9 @@ planning.
 
 ## Planning System
 
-One DAG-driven planning mode ships: **plan-generic**, triggered by `/plan-generic`.
+One DAG-driven planning mode ships: **plan-session**, triggered by `/plan-session`.
 
-The `plan-generic` DAG lives in `files/planning/plan-generic/` and follows this flow:
+The `plan-session` DAG lives in `files/planning/plan-session/` and follows this flow:
 
 ```
 session-overview → scout → sequential-thinking → propose-structure
@@ -113,7 +113,7 @@ off-sequence tool calls at runtime.
 
 ### Node Library
 
-`files/planning/plan-generic/node-library/` contains reusable node type templates that planning
+`files/planning/plan-session/node-library/` contains reusable node type templates that planning
 agents select from when composing project DAGs. Each node type has three files:
 
 - `plan.json` — fixed id, prompt filename, todo array
@@ -151,8 +151,8 @@ ending the session prematurely. The plugin now throws a validation error on dupl
 | `files/agents/headwrench.md` | Primary orchestrator prompt |
 | `files/skills/delegation/SKILL.md` | Agent routing table, loaded during planning |
 | `files/plugins/planning-enforcement.ts` | Plugin source — auto-compiled to `.js` during `bun run build`, do not manually edit |
-| `files/planning/plan-generic/plan.json` | The executable planning DAG |
-| `files/planning/plan-generic/node-library/CATALOGUE.md` | Node type reference |
+| `files/planning/plan-session/plan.json` | The executable planning DAG |
+| `files/planning/plan-session/node-library/CATALOGUE.md` | Node type reference |
 | `files/planning/reference/dag-design-guide.md` | DAG schema spec and authoring rules |
 | `files/profiles/default/opencode.jsonc` | Reference profile: model assignments, MCP setup |
 
@@ -173,10 +173,10 @@ ending the session prematurely. The plugin now throws a validation error on dupl
 
 ### Modifying the planning DAG
 
-- **Node/edge structure** → edit `files/planning/plan-generic/plan.json`
-- **Prompt content** → edit files in `files/planning/plan-generic/prompts/`
+- **Node/edge structure** → edit `files/planning/plan-session/plan.json`
+- **Prompt content** → edit files in `files/planning/plan-session/prompts/`
 - **New prompt file added** → also add it to `registry.jsonc` under `ocx-tools`
-- **Node library** → edit files in `files/planning/plan-generic/node-library/`; new files
+- **Node library** → edit files in `files/planning/plan-session/node-library/`; new files
   go in `registry.jsonc` too
 
 ### Updating profiles
@@ -191,7 +191,7 @@ ending the session prematurely. The plugin now throws a validation error on dupl
 - Skills: `files/skills/{kebab-case-name}/SKILL.md`
 - Plugins: `files/plugins/{kebab-case-name}.ts`
 - Profiles: `files/profiles/{kebab-case-name}/opencode.jsonc` + `ocx.jsonc`
-- Node library nodes: `files/planning/plan-generic/node-library/{node-name}/`
+- Node library nodes: `files/planning/plan-session/node-library/{node-name}/`
 
 ## Code Conventions
 

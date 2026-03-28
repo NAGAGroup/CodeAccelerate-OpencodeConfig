@@ -4,12 +4,12 @@ CodeAccelerate uses a DAG-driven planning system to break down complex tasks int
 
 ---
 
-## Starting a Plan: `/plan-generic`
+## Starting a Plan: `/plan-session`
 
-Run `/plan-generic` followed by a brief description of your task:
+Run `/plan-session` followed by a brief description of your task:
 
 ```
-/plan-generic Implement user authentication with OAuth 2.0
+/plan-session Implement user authentication with OAuth 2.0
 ```
 
 The planner walks you through:

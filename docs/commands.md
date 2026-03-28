@@ -6,7 +6,7 @@ Commands are invoked inside an active OpenCode session by typing `/command-name`
 
 ## Reference
 
-### `/plan-generic [description]`
+### `/plan-session [description]`
 
 **What it does:**  
 Starts a structured planning session that analyzes your codebase, breaks down your task into actionable subtasks, and produces a step-by-step execution plan.
@@ -19,12 +19,12 @@ A saved execution plan file in `.opencode/session-plans/` that can be activated 
 
 **Example:**
 ```
-/plan-generic add pagination to the user listing API
+/plan-session add pagination to the user listing API
 ```
 
 Or without an argument to let the agent prompt you:
 ```
-/plan-generic
+/plan-session
 ```
 
 ---
@@ -35,7 +35,7 @@ Or without an argument to let the agent prompt you:
 Activates and executes a previously generated execution plan.
 
 **When to use it:**  
-After you've created a plan with `/plan-generic`, use this command to begin executing it. You can resume an existing plan at any time, picking up where you left off or restarting it from the beginning.
+After you've created a plan with `/plan-session`, use this command to begin executing it. You can resume an existing plan at any time, picking up where you left off or restarting it from the beginning.
 
 **What it produces:**  
 Begins execution of the named plan's DAG, progressing through tasks, decision gates, and verification steps according to the plan structure. The agent tracks progress, asks for approvals at gates, and reports results as tasks complete.

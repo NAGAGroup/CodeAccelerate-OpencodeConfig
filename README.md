@@ -13,14 +13,14 @@ $ ocx oc -p naga
 
 > I need to refactor the auth module to support OAuth2 in addition to API keys
 
-HeadWrench → activating generic planning...
+HeadWrench → activating session planning...
   → context-scout: scanning auth module structure, existing key-based flow
   → clarify: Do you need to support all OAuth2 grant types, or just authorization code?
 
 > Just authorization code for now, and we need to keep the API key path working
 
   → decompose: breaking into tasks...
-  → finalize: plan written to .opencode/plans/plan-generic-20260321.json
+  → finalize: plan written to .opencode/plans/plan-session-20260321.json
 
 Plan ready — 6 tasks across 3 agents. Run /activate-plan to start execution.
 ```
@@ -67,7 +67,7 @@ A **memory layer** runs alongside everything. Decisions, findings, and context f
 
 | Mode | Trigger | What it does |
 |---|---|---|
-| **Generic** | `/plan-generic` | Scopes a feature, refactor, or migration through guided questions → structured execution plan |
+| **Session** | `/plan-session` | Scopes a feature, refactor, or migration through guided questions → structured execution plan |
 | **Debug** | `/plan-debug` | Takes a bug report → hypothesis-driven investigation → diagnosis and fix plan |
 | **Collaborative** | `/plan-collaborative` | Open-ended exploration → the system asks questions, you shape an idea into something actionable together |
 | **Deep Research** | `/plan-deep-research` | Researches a topic across docs, code, and the web → synthesized findings |

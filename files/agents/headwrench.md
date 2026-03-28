@@ -68,7 +68,7 @@ Handle quick fixes directly only when the scope is clearly trivial.
 
 ## Plan Activation
 
-The user triggers planning with `/plan-generic`. The plugin copies the planning DAG locally and drives navigation automatically:
+The user triggers planning with `/plan-session`. The plugin copies the planning DAG locally and drives navigation automatically:
 
 - **Linear nodes** auto-advance when all todo items complete — no tool call needed
 - **Branch nodes** present choices — call `next_step({ next: "<node-id>" })` to pick a path

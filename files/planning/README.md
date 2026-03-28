@@ -8,7 +8,7 @@ Each planning scaffold is a DAG that guides a planning agent through understandi
 
 | Mode | Purpose | Nodes | Shapes |
 |------|---------|-------|--------|
-| **plan-generic** | Decompose work, route agents, select execution shape | 21 | 1A-1F |
+| **plan-session** | Decompose work, route agents, select execution shape | 21 | 1A-1F |
 | **plan-debug** | Understand bug, form hypothesis, select investigation structure | 20 | 2A-2D |
 | **plan-collaborative** | Understand collaboration, define success, select dialogue shape | 20 | 3A-3D |
 | **plan-deep-research** | Understand research question, identify angles/sources, select research shape | 22 | 4A-4D |
@@ -86,7 +86,7 @@ Terminal (close_session)
 
 ## Modes
 
-### plan-generic (21 nodes)
+### plan-session (21 nodes)
 **Task decomposition and execution planning**
 
 - Gathers task goal, acceptance criteria, constraints
@@ -151,7 +151,7 @@ The planning-enforcement plugin expects these DAGs at:
 
 ```
 {install-root}/planning/
-  plan-generic/plan.json
+  plan-session/plan.json
   plan-debug/plan.json
   plan-collaborative/plan.json
   plan-deep-research/plan.json
@@ -160,7 +160,7 @@ The planning-enforcement plugin expects these DAGs at:
 
 Tools provided by the plugin:
 
-- `plan_generic()` — Activate generic planning
+- `plan_session()` — Activate session planning
 - `plan_debug()` — Activate debug planning
 - `plan_collaborative()` — Activate collaborative planning
 - `plan_deep_research()` — Activate deep-research planning

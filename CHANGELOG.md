@@ -30,7 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [2.0.0] - 2026-03-20
 
 ### Added
-- DAG-driven planning system with three session types: `plan-generic`, `plan-debug`, and `plan-collaborative`, enforced via a `planning-enforcement.ts` plugin
+- DAG-driven planning system with three session types: `plan-session`, `plan-debug`, and `plan-collaborative`, enforced via a `planning-enforcement.ts` plugin
 - User-facing documentation: new `docs/` directory with `agents.md`, `commands.md`, `configuration.md`, `getting-started.md`, and `planning.md`; README.md rewritten
 - Session-overview node in all three planning session types
 - DAG-aware compression protection in DCP prompt overrides
@@ -59,12 +59,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [1.0.1] - 2026-03-15
 
 ### Fixed
-- `plan-generic` and `plan-debug` commands now pass `$ARGUMENTS` correctly to planning enforcement
+- `plan-session` and `plan-debug` commands now pass `$ARGUMENTS` correctly to planning enforcement
 
 ## [1.0.0] - 2026-03-15
 
 ### Added
-- Initial structured planning system with `plan-generic` and `plan-debug` session types
+- Initial structured planning system with `plan-session` and `plan-debug` session types
 - `planning-enforcement.ts` plugin for DAG state management
 - `context-insurgent` agent for deep multi-file codebase reasoning
 - `headwrench.md` orchestrator agent definition

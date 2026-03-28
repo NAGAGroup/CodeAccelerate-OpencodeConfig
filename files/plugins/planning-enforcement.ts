@@ -14,7 +14,7 @@ const CONFIG_ROOT = path.dirname(import.meta.dirname);
 const PRIMARY_AGENT = "headwrench";
 
 // Tools that bypass DAG blocking, regardless of current node's todos
-const exemptTools = ["plan_generic", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag"];
+const exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag"];
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -342,21 +342,21 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
     // ── Tools ──────────────────────────────────────────────────────────────
 
     tool: {
-      plan_generic: tool({
+      plan_session: tool({
         description:
-          "Start a /plan-generic planning session. Copies the global planning DAG locally and activates it.",
+          "Start a /plan-session planning session. Copies the global planning DAG locally and activates it.",
         args: {},
         async execute(_args, context) {
           try {
             const { localPlanPath, dag } = copyPlanningDag(
-              "plan-generic",
+              "plan-session",
               context.sessionID,
               context.worktree,
             );
             return activateDag(dag, localPlanPath, context.sessionID, context.worktree);
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
-            return `Error activating plan-generic: ${msg}`;
+            return `Error activating plan-session: ${msg}`;
           }
         },
       }),
@@ -405,7 +405,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const state = readState(statePath);
 
           if (!state) {
-            return "No active DAG session. Start one with plan_generic() or activate_plan().";
+            return "No active DAG session. Start one with plan_session() or activate_plan().";
           }
           if (state.status === "complete") {
             return "DAG session is already complete.";
@@ -526,9 +526,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
            state.updated_at = now();
            writeState(statePath, state);
 
-           return `DAG session "${state.dag_id}" has been abandoned. ` +
-             `State saved at ${statePath}. ` +
-             `You can start a new session with plan_generic() or activate_plan().`;
+            return `DAG session "${state.dag_id}" has been abandoned. ` +
+              `State saved at ${statePath}. ` +
+              `You can start a new session with plan_session() or activate_plan().`;
          },
        }),
 
