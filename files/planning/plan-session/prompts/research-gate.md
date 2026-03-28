@@ -1,11 +1,11 @@
 # Research Gate
 
-Before proposing DAG structure, decide whether a brief web research pass would help ground the plan in current documentation, APIs, or external constraints.
+Before proposing DAG structure, ask the user whether a brief documentation or API lookup would help ground the plan.
 
-You have already synthesized the scout findings. Based on the task, assess whether online documentation, library APIs, or external references would meaningfully improve the plan quality.
+You have already synthesized the scout findings. Your task is to call the **`question`** tool to let the user decide.
 
-Use the **`question`** tool to ask the user.
+**You MUST call the `question` tool — do not make this decision yourself or present a conclusion as plain text.**
 
 ## Todo
 
-1. `question` — Use the question tool to ask: "Should I dispatch a brief web research task to gather relevant online documentation before proposing structure?" Present options: "Yes, research first" (you will dispatch one DeepResearcher to gather targeted docs) and "No, proceed with structure" (skip research and go straight to proposing the DAG structure).
+1. `question` — Ask the user: "Before proposing DAG structure, should I do a quick documentation or API lookup to ground the plan?" Present options: "Yes — do a quick lookup" (I will dispatch DeepResearcher for targeted docs) and "No — proceed to structure" (skip lookup and go straight to proposing the DAG structure).

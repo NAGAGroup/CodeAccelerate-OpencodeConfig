@@ -1,17 +1,18 @@
 # Brief Web Research
 
-Gather targeted online documentation before proposing the DAG structure. This is a single, brief research pass — not a deep investigation. If the topic requires more thorough research, that should be incorporated into the generated project DAG as a dedicated research node.
+Gather targeted documentation before proposing the DAG structure. This is a **quick and cursory research pass** — NOT a deep or comprehensive investigation. Deep research belongs in dedicated research nodes within the generated project DAG, not here. Your role is to gather quick reference material to inform structure planning.
 
-Based on your scout findings and the task description, you should have a good sense of where to look. Propose specific URLs or documentation sites as options.
+Based on your scout findings and the task description, you should have a good sense of where to look. Propose specific documentation sources as options.
 
 ## Todo
 
-1. `question` — Use the **`question`** tool to ask the user where to focus the research. Based on your understanding of the task, propose specific documentation sites, library docs, or URLs as options (e.g. the official library docs page, a relevant GitHub repo, a specific API reference). Allow the user to type their own answer if none of the options fit.
+1. `question` — Use the **`question` tool** to ask the user which documentation to research. Based on your understanding of the task, propose specific documentation sources as options (e.g., official library/framework docs, API reference pages, GitHub repositories). Allow the user to type their own answer if none of the options fit.
 
-2. `task` — Dispatch one **@DeepResearcher** with the research target from the user's answer. Tell the researcher: what the overall planning task is, exactly where to look (the URL or docs site the user specified), and that the output should be a brief structured summary (key findings, relevant APIs or patterns, caveats). Instruct the researcher that this is a one-shot pass — no follow-up dispatches.
+2. `task` — Dispatch one **@DeepResearcher** with research instructions. Tell the researcher: the overall planning task, exactly where to look, and what output format you need. Instruct them to follow this tool priority: **(1) Context7 first** — use `context7_resolve-library-id` to identify libraries and `context7_query-docs` to retrieve documentation; **(2) Exa second** — only search the web for content not covered by Context7. The output should be a brief structured summary (key findings, relevant APIs or patterns, caveats). Emphasize that this is a one-shot, quick pass — no follow-ups or deep dives.
 
 ## Important
 
-- Research is brief and targeted. Do not dispatch multiple researchers or iterate.
-- If the findings suggest deeper research is needed, note this in the `propose-structure` node — it can be incorporated into the generated project DAG as a proper research node.
+- Research is quick and targeted. Do not dispatch multiple researchers or iterate.
+- Deep or comprehensive research does NOT belong in this node — that belongs in dedicated research nodes you include in the generated project DAG.
+- If the brief findings suggest deeper investigation is needed, note this in the `propose-structure` node so it can be properly scoped as a research component.
 - The researcher's output feeds directly into your `propose-structure` reasoning alongside the scout findings.
