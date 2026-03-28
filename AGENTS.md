@@ -14,7 +14,7 @@ deployed to Cloudflare Workers, Vercel, or Netlify.
 ## Quick Commands
 
 ```bash
-bun run build    # Build registry to dist/ (bunx ocx build . --out dist)
+bun run build    # Build registry to dist/ (includes plugin compilation; bunx ocx build . --out dist)
 bun run dev      # Build + local Cloudflare Workers dev server
 bun run deploy   # Build + deploy to Cloudflare Workers
 ```
@@ -150,7 +150,7 @@ ending the session prematurely. The plugin now throws a validation error on dupl
 | `registry.jsonc` | Component definitions — edit when adding/removing/modifying components |
 | `files/agents/headwrench.md` | Primary orchestrator prompt |
 | `files/skills/delegation/SKILL.md` | Agent routing table, loaded during planning |
-| `files/plugins/planning-enforcement.ts` | Plugin source (`.js` bundle is what's distributed) |
+| `files/plugins/planning-enforcement.ts` | Plugin source — auto-compiled to `.js` during `bun run build`, do not manually edit |
 | `files/planning/plan-generic/plan.json` | The executable planning DAG |
 | `files/planning/plan-generic/node-library/CATALOGUE.md` | Node type reference |
 | `files/planning/reference/dag-design-guide.md` | DAG schema spec and authoring rules |
