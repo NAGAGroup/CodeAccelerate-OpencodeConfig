@@ -80,8 +80,7 @@ One orchestrator routes to five specialists:
 | **deep-researcher** | haiku | Web/docs research via MCP (step budget: 15) | Yes |
 | **quick-doc** | haiku | Single-file document writes (step budget: 8) | Yes |
 
-Users interact only with HeadWrench. It reads intent, delegates to specialists, and tracks
-context across sessions via a memory MCP server. The delegation skill
+Users interact only with HeadWrench. It reads intent and delegates to specialists. The delegation skill
 (`files/skills/delegation/SKILL.md`) contains the full routing table HeadWrench loads during
 planning.
 
@@ -223,7 +222,6 @@ Profiles configure these MCP servers:
 | `context7` | Documentation lookup | None |
 | `sequential-thinking` | Step-by-step reasoning | None |
 | `exa` | Web search | `EXA_API_KEY` env var |
-| `memory` | Persistent knowledge graph | None |
 
 ## Deployment
 

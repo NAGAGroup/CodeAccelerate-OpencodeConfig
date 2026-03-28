@@ -61,8 +61,6 @@ HeadWrench is the primary orchestrator. Every message goes through it first. Bas
 
 You don't pick agents. HeadWrench does, based on what the current task needs.
 
-A **memory layer** runs alongside everything. Decisions, findings, and context from past sessions carry forward automatically — start a new session tomorrow and the system already knows what you decided yesterday.
-
 ## Planning modes
 
 | Mode | Trigger | What it does |

@@ -57,7 +57,6 @@ Four MCP servers are configured by default. Each has an `enabled` flag you can t
 | `context7` | local (npx) | Documentation lookup for libraries and frameworks |
 | `sequential-thinking` | local (npx) | Step-by-step structured reasoning |
 | `exa` | remote | Web search — requires `EXA_API_KEY` |
-| `memory` | local (npx) | Cross-session knowledge graph |
 
 ### Enabling and disabling
 

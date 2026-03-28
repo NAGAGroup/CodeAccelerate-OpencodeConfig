@@ -55,11 +55,6 @@
       "type": "remote",
       "url": "https://mcp.exa.ai/mcp?exaApiKey=${EXA_API_KEY}",
       "enabled": true
-    },
-    "memory": {
-      "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
-      "enabled": true
     }
   }
 }
