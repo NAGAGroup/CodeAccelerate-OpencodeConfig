@@ -225,4 +225,4 @@ If a node's todo includes `question`, the prompt MUST explicitly instruct HeadWr
 
 ### Node library
 
-For reusable node templates with ready-made prompts and schemas, see `node-library/CATALOGUE.md` in the same planning directory.
+For reusable node templates with ready-made prompts and schemas, see `{{SESSION_PATH}}/node-library/CATALOGUE.md`.

@@ -4,7 +4,7 @@ Break the approved structure into a concrete node-by-node decomposition. Use the
 
 ## Todo
 
-1. `task` — Dispatch @ContextScout to read `node-library/CATALOGUE.md` and any node README files relevant to your proposed structure. Use what it returns to finalize your node-type selections and agent assignments.
+1. `task` — Dispatch @ContextScout to read `{{SESSION_PATH}}/node-library/CATALOGUE.md` and any node README files relevant to your proposed structure. Use what it returns to finalize your node-type selections and agent assignments.
 
 ## What to produce
 

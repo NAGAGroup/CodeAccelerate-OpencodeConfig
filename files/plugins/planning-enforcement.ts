@@ -171,24 +171,50 @@ function copyPlanningDag(
 
   fs.mkdirSync(destPromptsDir, { recursive: true });
 
-  // Copy all prompt files
-  if (fs.existsSync(srcPromptsDir)) {
-    for (const file of fs.readdirSync(srcPromptsDir)) {
-      fs.copyFileSync(
-        path.join(srcPromptsDir, file),
-        path.join(destPromptsDir, file),
-      );
+  // Resolved session path used for placeholder substitution in prompt files
+  const sessionPath = `.opencode/session-plans/${destDirName}`;
+
+  // Helper: copy a directory recursively
+  function copyDirRecursive(src: string, dest: string): void {
+    fs.mkdirSync(dest, { recursive: true });
+    for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+      const srcEntry = path.join(src, entry.name);
+      const destEntry = path.join(dest, entry.name);
+      if (entry.isDirectory()) {
+        copyDirRecursive(srcEntry, destEntry);
+      } else {
+        fs.copyFileSync(srcEntry, destEntry);
+      }
     }
   }
 
-  // Copy reference docs if present
+  // Helper: copy a prompt file with {{SESSION_PATH}} substitution
+  function copyPromptFile(src: string, dest: string): void {
+    const content = fs.readFileSync(src, "utf-8");
+    fs.writeFileSync(dest, content.replaceAll("{{SESSION_PATH}}", sessionPath), "utf-8");
+  }
+
+  // Copy all prompt files (with substitution)
+  if (fs.existsSync(srcPromptsDir)) {
+    for (const file of fs.readdirSync(srcPromptsDir)) {
+      copyPromptFile(path.join(srcPromptsDir, file), path.join(destPromptsDir, file));
+    }
+  }
+
+  // Copy reference docs if present (with substitution)
   const refDir = path.join(configRoot, "planning", "reference");
   if (fs.existsSync(refDir)) {
     const destRefDir = path.join(destDir, "reference");
     fs.mkdirSync(destRefDir, { recursive: true });
     for (const file of fs.readdirSync(refDir)) {
-      fs.copyFileSync(path.join(refDir, file), path.join(destRefDir, file));
+      copyPromptFile(path.join(refDir, file), path.join(destRefDir, file));
     }
+  }
+
+  // Copy node-library if present (plain copy, no substitution needed)
+  const srcNodeLibDir = path.join(srcDir, "node-library");
+  if (fs.existsSync(srcNodeLibDir)) {
+    copyDirRecursive(srcNodeLibDir, path.join(destDir, "node-library"));
   }
 
   // Read and rewrite DAG prompt paths

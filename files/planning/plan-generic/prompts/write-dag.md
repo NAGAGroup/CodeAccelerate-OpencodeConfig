@@ -66,8 +66,8 @@ Keep prompts focused on delegation. HeadWrench dispatches agents — it doesn't 
 
 ## Reference
 
-- `node-library/CATALOGUE.md` — node types, structural primitives, and composition patterns
-- `reference/dag-design-guide.md` — schema spec, validity rules, and prompt writing guidance
+- `{{SESSION_PATH}}/node-library/CATALOGUE.md` — node types, structural primitives, and composition patterns
+- `{{SESSION_PATH}}/reference/dag-design-guide.md` — schema spec, validity rules, and prompt writing guidance
 
 ## After this node completes
 

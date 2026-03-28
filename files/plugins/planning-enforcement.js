@@ -12408,9 +12408,26 @@ function copyPlanningDag(planType, sessionId, worktree, configRoot = CONFIG_ROOT
   const srcPromptsDir = path.join(srcDir, "prompts");
   const destPromptsDir = path.join(destDir, "prompts");
   fs.mkdirSync(destPromptsDir, { recursive: true });
+  const sessionPath = `.opencode/session-plans/${destDirName}`;
+  function copyDirRecursive(src, dest) {
+    fs.mkdirSync(dest, { recursive: true });
+    for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+      const srcEntry = path.join(src, entry.name);
+      const destEntry = path.join(dest, entry.name);
+      if (entry.isDirectory()) {
+        copyDirRecursive(srcEntry, destEntry);
+      } else {
+        fs.copyFileSync(srcEntry, destEntry);
+      }
+    }
+  }
+  function copyPromptFile(src, dest) {
+    const content = fs.readFileSync(src, "utf-8");
+    fs.writeFileSync(dest, content.replaceAll("{{SESSION_PATH}}", sessionPath), "utf-8");
+  }
   if (fs.existsSync(srcPromptsDir)) {
     for (const file2 of fs.readdirSync(srcPromptsDir)) {
-      fs.copyFileSync(path.join(srcPromptsDir, file2), path.join(destPromptsDir, file2));
+      copyPromptFile(path.join(srcPromptsDir, file2), path.join(destPromptsDir, file2));
     }
   }
   const refDir = path.join(configRoot, "planning", "reference");
@@ -12418,8 +12435,12 @@ function copyPlanningDag(planType, sessionId, worktree, configRoot = CONFIG_ROOT
     const destRefDir = path.join(destDir, "reference");
     fs.mkdirSync(destRefDir, { recursive: true });
     for (const file2 of fs.readdirSync(refDir)) {
-      fs.copyFileSync(path.join(refDir, file2), path.join(destRefDir, file2));
+      copyPromptFile(path.join(refDir, file2), path.join(destRefDir, file2));
     }
+  }
+  const srcNodeLibDir = path.join(srcDir, "node-library");
+  if (fs.existsSync(srcNodeLibDir)) {
+    copyDirRecursive(srcNodeLibDir, path.join(destDir, "node-library"));
   }
   const srcPlanPath = path.join(srcDir, "plan.json");
   const dag = JSON.parse(fs.readFileSync(srcPlanPath, "utf-8"));
