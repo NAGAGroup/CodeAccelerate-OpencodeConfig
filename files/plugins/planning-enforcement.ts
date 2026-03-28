@@ -334,9 +334,32 @@ function autoAdvance(
 
 // ─── Plugin ──────────────────────────────────────────────────────────────────
 
+function ensureOpenCodeIgnore(worktree: string): void {
+  try {
+    const ignorePath = path.join(worktree, ".opencodeignore");
+    const pattern = "!.opencode/";
+    if (fs.existsSync(ignorePath)) {
+      const content = fs.readFileSync(ignorePath, "utf-8");
+      if (!content.includes(pattern)) {
+        fs.appendFileSync(ignorePath, `\n${pattern}\n`);
+      }
+    } else {
+      fs.writeFileSync(ignorePath, `${pattern}\n`);
+    }
+  } catch {
+    // Non-fatal: silently continue if .opencodeignore cannot be written
+  }
+}
+
 export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
   // Track blocked calls so the after hook can override their output.
   const blockedCalls = new Map<string, { expected: string; actual: string }>();
+
+  // Helper to resolve worktree with fallback to cwd
+  const resolveWorktree = (ctx: { worktree?: string }) => ctx.worktree || process.cwd();
+
+  // Ensure .opencodeignore exists and includes !.opencode/ pattern
+  ensureOpenCodeIgnore(resolveWorktree(_ctx));
 
   return {
     // ── Tools ──────────────────────────────────────────────────────────────
@@ -351,9 +374,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             const { localPlanPath, dag } = copyPlanningDag(
               "plan-session",
               context.sessionID,
-              context.worktree,
+              resolveWorktree(context),
             );
-            return activateDag(dag, localPlanPath, context.sessionID, context.worktree);
+            return activateDag(dag, localPlanPath, context.sessionID, resolveWorktree(context));
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error activating plan-session: ${msg}`;
@@ -373,7 +396,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
         async execute({ plan_name }, context) {
           const planPath = path.join(
-            context.worktree,
+            resolveWorktree(context),
             ".opencode",
             "session-plans",
             plan_name,
@@ -384,7 +407,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             // Rewrite bare prompt filenames to worktree-relative paths
             const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
             rewritePromptPaths(dag.entry, promptsPrefix);
-            return activateDag(dag, planPath, context.sessionID, context.worktree);
+            return activateDag(dag, planPath, context.sessionID, resolveWorktree(context));
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error activating plan "${plan_name}": ${msg}`;
@@ -401,7 +424,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             .describe("The node ID of the branch to take."),
         },
         async execute({ next }, context) {
-          const statePath = dagStatePath(context.worktree, context.sessionID);
+          const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
           const state = readState(statePath);
 
           if (!state) {
@@ -443,12 +466,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           state.updated_at = now();
           writeState(statePath, state);
 
-          const promptText = readPrompt(nextNode.prompt, context.worktree);
-          let result = `Branch taken: "${next}". Advancing.\n\n---\n\n${promptText}`;
+           const promptText = readPrompt(nextNode.prompt, resolveWorktree(context));
+           let result = `Branch taken: "${next}". Advancing.\n\n---\n\n${promptText}`;
 
-          // If the branch node has empty todo, auto-advance
-          if (nextNode.todo.length === 0) {
-            const advanceResult = autoAdvance(state, statePath, context.worktree);
+           // If the branch node has empty todo, auto-advance
+           if (nextNode.todo.length === 0) {
+             const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
             if (advanceResult) {
               result += `\n\n---\n\n${advanceResult}`;
             }
@@ -463,14 +486,14 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           "Recover DAG session context after autocompaction or context loss. Returns current node, completed work, and decisions made.",
         args: {},
         async execute(_args, context) {
-          const statePath = dagStatePath(context.worktree, context.sessionID);
+          const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
           const state = readState(statePath);
 
           if (!state) return "No active DAG session found.";
 
           const currentNode = state.node_map[state.current_node];
           const promptText = currentNode
-            ? readPrompt(currentNode.prompt, context.worktree)
+            ? readPrompt(currentNode.prompt, resolveWorktree(context))
             : "(prompt not found)";
 
           const todoProgress = currentNode
@@ -510,9 +533,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
          description:
            "Abandon the current DAG session. Sets status to 'abandoned' and saves state. Use when a session needs to be exited due to a bug, user cancellation, or scope change.",
          args: {},
-         async execute(_args, context) {
-           const statePath = dagStatePath(context.worktree, context.sessionID);
-           const state = readState(statePath);
+          async execute(_args, context) {
+            const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
+            const state = readState(statePath);
 
            if (!state) return "No active DAG session found. Nothing to exit.";
            if (state.status === "complete") {
@@ -542,15 +565,15 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                'Name of the session plan to validate (matches directory under .opencode/session-plans/).',
              ),
          },
-         async execute({ plan_name }, context) {
-           try {
-             const planPath = path.join(
-               context.worktree,
-               ".opencode",
-               "session-plans",
-               plan_name,
-               "plan.json",
-             );
+          async execute({ plan_name }, context) {
+            try {
+              const planPath = path.join(
+                resolveWorktree(context),
+                ".opencode",
+                "session-plans",
+                plan_name,
+                "plan.json",
+              );
 
              // Helper: collect all nodes in the tree recursively
              function collectNodes(node: DagNode, collected: DagNode[] = []): DagNode[] {
@@ -614,13 +637,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
              }
              nodeCheckCount++;
 
-             const promptsDir = path.join(
-               context.worktree,
-               ".opencode",
-               "session-plans",
-               plan_name,
-               "prompts",
-             );
+              const promptsDir = path.join(
+                resolveWorktree(context),
+                ".opencode",
+                "session-plans",
+                plan_name,
+                "prompts",
+              );
 
              // Check 3, 4, 5, 6: For each node, validate prompt file
              for (const node of nodeCollected) {
@@ -629,9 +652,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                const resolvedPrompt = node.prompt.includes("/")
                  ? expandPath(node.prompt)
                  : path.join(promptsDir, node.prompt);
-               const fullPromptPath = path.isAbsolute(resolvedPrompt)
-                 ? resolvedPrompt
-                 : path.join(context.worktree, resolvedPrompt);
+                const fullPromptPath = path.isAbsolute(resolvedPrompt)
+                  ? resolvedPrompt
+                  : path.join(resolveWorktree(context), resolvedPrompt);
 
                // Check 3: Prompt file exists
                if (!fs.existsSync(fullPromptPath)) {
@@ -713,7 +736,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       if (exemptTools.includes(input.tool)) return;
 
-      const worktree = _ctx.worktree;
+      const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
 
@@ -747,9 +770,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       }
 
       // Exempt tools bypass blocking but still participate in todo tracking when
-      // they appear as the currently expected todo item (e.g. "question" in todo[]).
-      const worktree = _ctx.worktree;
-      const statePath = dagStatePath(worktree, input.sessionID);
+       // they appear as the currently expected todo item (e.g. "question" in todo[]).
+       const worktree = resolveWorktree(_ctx);
+       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
 
       if (!state || state.status !== "running") return;
@@ -792,7 +815,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
     // Inject DAG state into compaction context for recovery.
     "experimental.session.compacting": async (input, output) => {
-      const worktree = _ctx.worktree;
+      const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
 

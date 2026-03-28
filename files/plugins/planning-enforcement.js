@@ -12539,8 +12539,27 @@ Call \`next_step({ next: "<node-id>" })\` to continue.`;
 
 ` + `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` + `Present a summary of what was produced to the user. ` + `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`. ` + `Do NOT call activate_plan yourself or dispatch any more agents.`;
 }
+function ensureOpenCodeIgnore(worktree) {
+  try {
+    const ignorePath = path.join(worktree, ".opencodeignore");
+    const pattern = "!.opencode/";
+    if (fs.existsSync(ignorePath)) {
+      const content = fs.readFileSync(ignorePath, "utf-8");
+      if (!content.includes(pattern)) {
+        fs.appendFileSync(ignorePath, `
+${pattern}
+`);
+      }
+    } else {
+      fs.writeFileSync(ignorePath, `${pattern}
+`);
+    }
+  } catch {}
+}
 var PlanningEnforcementPlugin = async (_ctx) => {
   const blockedCalls = new Map;
+  const resolveWorktree = (ctx) => ctx.worktree || process.cwd();
+  ensureOpenCodeIgnore(resolveWorktree(_ctx));
   return {
     tool: {
       plan_session: tool({
@@ -12548,8 +12567,8 @@ var PlanningEnforcementPlugin = async (_ctx) => {
         args: {},
         async execute(_args, context) {
           try {
-            const { localPlanPath, dag } = copyPlanningDag("plan-session", context.sessionID, context.worktree);
-            return activateDag(dag, localPlanPath, context.sessionID, context.worktree);
+            const { localPlanPath, dag } = copyPlanningDag("plan-session", context.sessionID, resolveWorktree(context));
+            return activateDag(dag, localPlanPath, context.sessionID, resolveWorktree(context));
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error activating plan-session: ${msg}`;
@@ -12562,12 +12581,12 @@ var PlanningEnforcementPlugin = async (_ctx) => {
           plan_name: tool.schema.string().describe("Name of the session plan to activate (matches directory under .opencode/session-plans/).")
         },
         async execute({ plan_name }, context) {
-          const planPath = path.join(context.worktree, ".opencode", "session-plans", plan_name, "plan.json");
+          const planPath = path.join(resolveWorktree(context), ".opencode", "session-plans", plan_name, "plan.json");
           try {
             const dag = JSON.parse(fs.readFileSync(planPath, "utf-8"));
             const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
             rewritePromptPaths(dag.entry, promptsPrefix);
-            return activateDag(dag, planPath, context.sessionID, context.worktree);
+            return activateDag(dag, planPath, context.sessionID, resolveWorktree(context));
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error activating plan "${plan_name}": ${msg}`;
@@ -12580,7 +12599,7 @@ var PlanningEnforcementPlugin = async (_ctx) => {
           next: tool.schema.string().describe("The node ID of the branch to take.")
         },
         async execute({ next }, context) {
-          const statePath = dagStatePath(context.worktree, context.sessionID);
+          const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
           const state = readState(statePath);
           if (!state) {
             return "No active DAG session. Start one with plan_session() or activate_plan().";
@@ -12614,14 +12633,14 @@ var PlanningEnforcementPlugin = async (_ctx) => {
           state.status = "running";
           state.updated_at = now();
           writeState(statePath, state);
-          const promptText = readPrompt(nextNode.prompt, context.worktree);
+          const promptText = readPrompt(nextNode.prompt, resolveWorktree(context));
           let result = `Branch taken: "${next}". Advancing.
 
 ---
 
 ${promptText}`;
           if (nextNode.todo.length === 0) {
-            const advanceResult = autoAdvance(state, statePath, context.worktree);
+            const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
             if (advanceResult) {
               result += `
 
@@ -12637,12 +12656,12 @@ ${advanceResult}`;
         description: "Recover DAG session context after autocompaction or context loss. Returns current node, completed work, and decisions made.",
         args: {},
         async execute(_args, context) {
-          const statePath = dagStatePath(context.worktree, context.sessionID);
+          const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
           const state = readState(statePath);
           if (!state)
             return "No active DAG session found.";
           const currentNode = state.node_map[state.current_node];
-          const promptText = currentNode ? readPrompt(currentNode.prompt, context.worktree) : "(prompt not found)";
+          const promptText = currentNode ? readPrompt(currentNode.prompt, resolveWorktree(context)) : "(prompt not found)";
           const todoProgress = currentNode ? currentNode.todo.map((t, i) => `  ${i < state.todo_index ? "[x]" : "[ ]"} ${t}`).join(`
 `) : "  (no todos)";
           const decisionsLog = state.decisions.length > 0 ? state.decisions.map((d) => `- [${d.node_id}] ${d.summary}`).join(`
@@ -12686,7 +12705,7 @@ ${choices}
         description: "Abandon the current DAG session. Sets status to 'abandoned' and saves state. Use when a session needs to be exited due to a bug, user cancellation, or scope change.",
         args: {},
         async execute(_args, context) {
-          const statePath = dagStatePath(context.worktree, context.sessionID);
+          const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
           const state = readState(statePath);
           if (!state)
             return "No active DAG session found. Nothing to exit.";
@@ -12720,7 +12739,7 @@ ${choices}
               }
               return collected;
             };
-            const planPath = path.join(context.worktree, ".opencode", "session-plans", plan_name, "plan.json");
+            const planPath = path.join(resolveWorktree(context), ".opencode", "session-plans", plan_name, "plan.json");
             if (!fs.existsSync(planPath)) {
               return `## validate_dag Report: ${plan_name}
 
@@ -12765,10 +12784,10 @@ ${choices}
               checksPassedCount++;
             }
             nodeCheckCount++;
-            const promptsDir = path.join(context.worktree, ".opencode", "session-plans", plan_name, "prompts");
+            const promptsDir = path.join(resolveWorktree(context), ".opencode", "session-plans", plan_name, "prompts");
             for (const node of nodeCollected) {
               const resolvedPrompt = node.prompt.includes("/") ? expandPath(node.prompt) : path.join(promptsDir, node.prompt);
-              const fullPromptPath = path.isAbsolute(resolvedPrompt) ? resolvedPrompt : path.join(context.worktree, resolvedPrompt);
+              const fullPromptPath = path.isAbsolute(resolvedPrompt) ? resolvedPrompt : path.join(resolveWorktree(context), resolvedPrompt);
               if (!fs.existsSync(fullPromptPath)) {
                 issues.push(`- [${node.id}] check-prompt-exists: prompt file not found at ${node.prompt}`);
               } else {
@@ -12843,7 +12862,7 @@ ${issues.join(`
         return;
       if (exemptTools.includes(input.tool))
         return;
-      const worktree = _ctx.worktree;
+      const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
       if (!state || state.status !== "running")
@@ -12870,7 +12889,7 @@ ${issues.join(`
 ` + `Current node: "${input.tool}" | Todo progress can be checked with recover_context().`;
         return;
       }
-      const worktree = _ctx.worktree;
+      const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
       if (!state || state.status !== "running")
@@ -12908,7 +12927,7 @@ ${advanceResult}`;
       }
     },
     "experimental.session.compacting": async (input, output) => {
-      const worktree = _ctx.worktree;
+      const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
       if (!state)
