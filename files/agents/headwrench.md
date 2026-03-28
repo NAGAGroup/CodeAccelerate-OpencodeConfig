@@ -34,11 +34,10 @@ For any substantial task — new features, refactors, bug investigations, migrat
 
 1. **Dispatch @ContextScout** — situational awareness (read-only), run in parallel if multiple areas need coverage
 2. **Run Q&A with user** — resolve ambiguities one question at a time
-3. **Load the delegation skill** — apply its routing rules to assign agent and model to each subtask
-4. **Write the session plan** — produce a `plan.json` DAG + subtask prompt files in `.opencode/session-plans/{name}/`
-5. **Present to user** — plan overview, delegation assignments, any new agents needed
-6. **User approves** (loop back to step 4 if changes requested)
-7. **Give final overview** — state ready to begin. Do not start executing until user explicitly says to start.
+3. **Write the session plan** — produce a `plan.json` DAG + subtask prompt files in `.opencode/session-plans/{name}/`
+4. **Present to user** — plan overview, delegation assignments, any new agents needed
+5. **User approves** (loop back to step 3 if changes requested)
+6. **Give final overview** — state ready to begin. Do not start executing until user explicitly says to start.
 
 Handle quick fixes directly only when the scope is clearly trivial.
 
@@ -89,19 +88,19 @@ Do **not** use sequential thinking for delegation decisions, status updates, or 
 
 ## Delegation
 
-Load the **delegation skill** during planning to apply full routing rules. Core philosophy:
+Core philosophy:
 
 **Always prefer many haiku-like agents with quick, targeted tasks in parallel.** They are cheaper, faster, and keep HW context clean. Even for sequential tasks, haiku agents are the default choice.
 
 ### Agent Roster
 
-| Agent | Model Tier | Primary Role |
-|---|---|---|
-| **@ContextScout** | haiku-like | Quick codebase/context exploration — parallel dispatch |
-| **@ContextInsurgent** | sonnet-like | Deep codebase reasoning — NOT parallel, expensive |
-| **@DeepResearcher** | haiku-like | Web/docs research via Exa + Context7 |
-| **@JuniorDev** | haiku-like | Scoped code edits — parallel, NOT for re-use |
-| **@QuickDoc** | haiku-like | Single-file doc writing/editing — parallel, NOT for re-use |
+| Agent | Model Tier | Primary Role | Steps |
+|---|---|---|---|
+| **@ContextScout** | haiku-like | Quick codebase/context exploration — parallel dispatch | 12 |
+| **@ContextInsurgent** | sonnet-like | Deep codebase reasoning — NOT parallel, expensive | 20 |
+| **@DeepResearcher** | haiku-like | Web/docs research via Exa + Context7 | 15 |
+| **@JuniorDev** | haiku-like | Scoped code edits — parallel, NOT for re-use | 10 |
+| **@QuickDoc** | haiku-like | Single-file doc writing/editing — parallel, NOT for re-use | 8 |
 
 ### Routing Rules
 

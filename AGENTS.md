@@ -39,7 +39,7 @@ bun run deploy   # Build + deploy to Cloudflare Workers
 │   │   └── reference/      # dag-design-guide.md — schema spec and authoring guide
 │   ├── plugins/            # planning-enforcement.ts (+ compiled .js bundle)
 │   ├── profiles/           # 5 profile configs (opencode.jsonc + ocx.jsonc each)
-│   └── skills/             # 2 skills (delegation, hello-world)
+│   └── skills/             # 1 skill (hello-world)
 ├── docs/                   # User-facing documentation
 ├── scripts/                # update-profiles.sh
 ├── dist/                   # Build output (gitignored)
@@ -80,9 +80,7 @@ One orchestrator routes to five specialists:
 | **deep-researcher** | haiku | Web/docs research via MCP (step budget: 15) | Yes |
 | **quick-doc** | haiku | Single-file document writes (step budget: 8) | Yes |
 
-Users interact only with HeadWrench. It reads intent and delegates to specialists. The delegation skill
-(`files/skills/delegation/SKILL.md`) contains the full routing table HeadWrench loads during
-planning.
+Users interact only with HeadWrench. It reads intent and delegates to specialists.
 
 ## Planning System
 
@@ -148,7 +146,6 @@ ending the session prematurely. The plugin now throws a validation error on dupl
 |------|---------|
 | `registry.jsonc` | Component definitions — edit when adding/removing/modifying components |
 | `files/agents/headwrench.md` | Primary orchestrator prompt |
-| `files/skills/delegation/SKILL.md` | Agent routing table, loaded during planning |
 | `files/plugins/planning-enforcement.ts` | Plugin source — auto-compiled to `.js` during `bun run build`, do not manually edit |
 | `files/planning/plan-session/plan.json` | The executable planning DAG |
 | `files/planning/plan-session/node-library/CATALOGUE.md` | Node type reference |

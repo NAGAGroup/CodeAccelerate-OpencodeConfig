@@ -92,7 +92,6 @@
         "agents/quick-doc.md",
         "commands/activate-plan.md",
         "commands/plan-session.md",
-        "skills/delegation/SKILL.md",
         "skills/hello-world/SKILL.md"
       ],
       "dependencies": [
