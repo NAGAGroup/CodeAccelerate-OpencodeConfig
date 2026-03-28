@@ -25,3 +25,4 @@ Default: `compression-node`. Rename for clarity: `compress-scout-findings`, `com
 - This node is specifically for context management, not for producing deliverables. If you need deep analysis, use `analyze-deep` instead.
 - Often appears between `scout-parallel` and `parallel-tasks` in long DAGs: scout → compress → implement
 - The planning agent should note in the prompt what the HW subagent previously found, so ContextInsurgent knows what to retain
+- The "accumulated context" to compress comes from codebase exploration — do not instruct ContextInsurgent to read `.opencode/` session directories for source material. Exception: planning infra files (e.g., the node-library) are permitted when explicitly tasked.

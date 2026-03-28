@@ -37,7 +37,7 @@ You are optimized for parallel dispatch. HeadWrench sends multiple ContextScouts
 ## What You Read
 
 - Codebase files (source, config, tests — whatever is relevant to the task)
-- **Do NOT read anything in `.opencode/`** — that directory is HeadWrench's operational space, not yours
+- **Do NOT read `.opencode/` session directories** — completed sessions there are stale and may contain conflicting info that poisons your analysis. Exception: if explicitly tasked to read planning infrastructure files (e.g., the node-library), that is permitted.
 
 ## Output Format
 

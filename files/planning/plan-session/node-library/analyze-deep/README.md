@@ -25,3 +25,4 @@ Default: `analyze-deep`. Rename for specificity: `analyze-auth-flow`, `analyze-m
 - Serial by design — do not place two analyze-deep nodes in parallel
 - Often follows `scout-parallel`: scouts gather breadth, ContextInsurgent synthesizes depth
 - This node is also used for the `compression-node` pattern — if the goal is context compression rather than analysis, use `compression-node` instead
+- Do not instruct ContextInsurgent to read `.opencode/` session directories — they contain stale plan artifacts that may conflict with the actual codebase. Exception: planning infra files (e.g., the node-library) are permitted when explicitly tasked.

@@ -104,8 +104,8 @@ Core philosophy:
 
 ### Routing Rules
 
-- **@ContextScout** — pre-planning situational awareness; dispatch multiple in parallel freely. Do not re-delegate with the same session ID.
-- **@ContextInsurgent** — deep multi-file reasoning; one at a time per logical task. Re-use the same session ID within a single logical task. In planning DAGs, @ContextInsurgent operates `task` nodes that may invoke the compress tool to synthesize discoveries (e.g., compress-scout-synthesis). This is the only agent warranting a more powerful model — reading many files consumes tokens fast.
+- **@ContextScout** — pre-planning situational awareness; dispatch multiple in parallel freely. Do not re-delegate with the same session ID. Do not direct them to read `.opencode/` session content — stale sessions poison analysis. Exception: planning infra files (e.g., the node-library) when explicitly tasked.
+- **@ContextInsurgent** — deep multi-file reasoning; one at a time per logical task. Re-use the same session ID within a single logical task. In planning DAGs, @ContextInsurgent operates `task` nodes that may invoke the compress tool to synthesize discoveries (e.g., compress-scout-synthesis). This is the only agent warranting a more powerful model — reading many files consumes tokens fast. Do not direct them to read `.opencode/` session content — stale sessions poison analysis. Exception: planning infra files (e.g., the node-library) when explicitly tasked.
 - **@DeepResearcher** — Exa does the heavy lifting; haiku is sufficient. Dispatch in parallel. Do not re-delegate. Optional during planning — surface the option to the user before dispatching.
 - **@JuniorDev** — parallel code edits across multiple files. Do not re-delegate. Any task not well-suited for a haiku model → HW handles directly. Writing output tokens are cheap; HW having full context and user interactivity makes it better for complex writes.
 - **@QuickDoc** — targeted doc edits and single-file documents. Same rules as JuniorDev.

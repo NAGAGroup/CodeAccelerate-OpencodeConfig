@@ -68,3 +68,4 @@ Your report should cover:
 - **NEVER** modify any file — you are strictly read-only
 - **NEVER** delegate sub-tasks to other agents — you do the exploration yourself
 - **NEVER** return an empty or absent report — if nothing was found, say so explicitly with the searches you ran
+- **NEVER** read `.opencode/` session directories — completed sessions are stale and may poison your analysis. Exception: planning infrastructure files (e.g., the node-library) are permitted when explicitly tasked.

@@ -71,10 +71,10 @@ DAGs are composed from three primitives:
 Entry node. No todo — auto-advances immediately. The prompt orients HeadWrench on the session goal, what will happen, and what success looks like. Always the first node in every project DAG.
 
 ### `scout-parallel`
-Dispatches three `@ContextScout` agents in parallel via three sequential `task` calls (plugin enforces sequential calls; scouts run concurrently inside OpenCode). Each scout covers a different area: affected files, architecture/patterns, and dependencies/boundaries. Planning agent specifies each scout's target in the prompt.
+Dispatches three `@ContextScout` agents in parallel via three sequential `task` calls (plugin enforces sequential calls; scouts run concurrently inside OpenCode). Each scout covers a different area: affected files, architecture/patterns, and dependencies/boundaries. Planning agent specifies each scout's target in the prompt. Do not send scouts into .opencode/ session directories — completed sessions are stale and may conflict with the actual codebase.
 
 ### `analyze-deep`
-Dispatches one `@ContextInsurgent` to perform deep multi-file reasoning. Use after `scout-parallel` when scout output needs synthesis, or when a task requires understanding complex cross-file logic. One `task` call — expensive, serial.
+Dispatches one `@ContextInsurgent` to perform deep multi-file reasoning. Use after `scout-parallel` when scout output needs synthesis, or when a task requires understanding complex cross-file logic. One `task` call — expensive, serial. Do not instruct ContextInsurgent to read .opencode/ session directories — completed sessions are stale.
 
 ### `sequential-thinking`
 HeadWrench calls the `sequential-thinking` MCP tool directly to reason through a non-obvious decision. Use before branching decisions, architectural choices, or debug hypotheses. The prompt frames the decision and expected output. No agent dispatch.
@@ -92,7 +92,7 @@ Dispatches HW as a subagent to run build/test commands and verify results. The p
 No todo — auto-advances to the plugin's branch prompt. The prompt describes the condition and what each branch means. HW evaluates the condition from prior context and calls `next_step` with the correct branch. Use when the decision is machine-readable and requires no new tool calls.
 
 ### `compression-node`
-Dispatches `@ContextInsurgent` to synthesize and compress accumulated context. Use when scout output or multi-step agent work has filled the context window and key findings need crystallization before proceeding. One `task` call — the agent calls the `compress` tool internally.
+Dispatches `@ContextInsurgent` to synthesize and compress accumulated context. Use when scout output or multi-step agent work has filled the context window and key findings need crystallization before proceeding. One `task` call — the agent calls the `compress` tool internally. Source material for compression should come from codebase exploration, not .opencode/ session directories.
 
 ### `output-success`
 Terminal node. No todo. The prompt tells HW what to communicate to the user on success: summary, artifacts produced, next steps.

@@ -27,3 +27,4 @@ Default: `scout-parallel`. If you need additional scouting phases, suffix: `scou
 - Scouts are haiku-tier — fast and cheap. Prefer them over deep analysis for initial exploration.
 - Give each scout a focused question and specific paths — vague prompts produce vague output.
 - Step budget for `@ContextScout` is 12. Keep scout tasks within that budget.
+- Do not include `.opencode/` session directories in scout paths — they contain stale plan artifacts that may conflict with the actual codebase. Exception: planning infra files (e.g., the node-library) are permitted.

@@ -20,6 +20,10 @@ Paths to explore: {{SCOUT_2_PATHS}}
 
 Paths to explore: {{SCOUT_3_PATHS}}
 
+## Scope restriction
+
+**Do NOT** send scouts into `.opencode/` session directories — completed sessions contain stale content. Exception: planning infrastructure files (e.g., the node-library) are permitted when explicitly specified.
+
 ## Todo
 
 1. `task` — Dispatch @ContextScout to explore affected code: {{SCOUT_1_GOAL}}
