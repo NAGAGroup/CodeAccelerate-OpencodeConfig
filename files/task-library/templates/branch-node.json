@@ -1,9 +1,0 @@
-{
-  "id": "TEMPLATE_BRANCH_ID",
-  "prompt": "TEMPLATE_BRANCH_ID.md",
-  "todo": ["question"],
-  "next": [
-    { "when": "Option A", "node": {} },
-    { "when": "Option B", "node": {} }
-  ]
-}
