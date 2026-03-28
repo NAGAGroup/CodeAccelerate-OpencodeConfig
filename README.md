@@ -4,7 +4,7 @@ A multi-agent development system for [OpenCode](https://opencode.ai/) that plans
 
 You talk to one agent, **HeadWrench**. It reads your intent, delegates to the right specialist, and tracks everything across sessions so you never re-explain your codebase. Planning sessions produce structured execution plans. Debug sessions run hypothesis-driven investigations. Research sessions explore documentation and codebases in depth. All of it persists.
 
-Ships as three profiles: Anthropic (paid API), GitHub Copilot, and OpenCode Zen (free).
+Ships as five profiles: Anthropic API (default), Anthropic API with all-haiku models, GitHub Copilot, GitHub Copilot with all-haiku models, and OpenCode Zen (free).
 
 ## What it looks like
 
@@ -29,9 +29,11 @@ ocx registry add https://ocx-registry.nagagroup.workers.dev --name naga-group --
 Pick a profile:
 
 ```sh
-ocx profile add naga --global --source naga-group/ocx-default         # Anthropic (paid API)
-ocx profile add naga-copilot --global --source naga-group/ocx-copilot # GitHub Copilot
-ocx profile add naga-free --global --source naga-group/ocx-free       # OpenCode Zen free-tier
+ocx profile add naga --global --source naga-group/ocx-default              # Anthropic API (default)
+ocx profile add naga-haiku --global --source naga-group/ocx-haiku          # Anthropic API (all-haiku)
+ocx profile add naga-copilot --global --source naga-group/ocx-copilot      # GitHub Copilot
+ocx profile add naga-copilot-haiku --global --source naga-group/ocx-haiku-copilot  # GitHub Copilot (all-haiku)
+ocx profile add naga-free --global --source naga-group/ocx-free            # OpenCode Zen free-tier
 ```
 
 Launch:
@@ -54,15 +56,11 @@ You don't pick agents. HeadWrench does, based on what the current task needs.
 
 ## Planning modes
 
-| Mode | Trigger | What it does |
-|---|---|---|
-| **Session** | `/plan-session` | Scopes a feature, refactor, or migration through guided questions → structured execution plan |
-| **Debug** | `/plan-debug` | Takes a bug report → hypothesis-driven investigation → diagnosis and fix plan |
-| **Collaborative** | `/plan-collaborative` | Open-ended exploration → the system asks questions, you shape an idea into something actionable together |
-| **Deep Research** | `/plan-deep-research` | Researches a topic across docs, code, and the web → synthesized findings |
-| **Deep Review** | `/plan-deep-review` | Reviews code or architecture in depth → structured critique and recommendations |
+CodeAccelerate ships with one DAG-driven planning mode:
 
-Once a plan exists, `/activate-plan` picks it up and executes it step by step. Plans persist across sessions — come back later and continue where you left off.
+- **Session** (`/plan-session`) — Scopes a feature, refactor, or migration through guided questions, then produces a structured execution plan
+
+Planning sessions are DAG-based: each plan is a directed acyclic graph of tasks, questions, and verification gates. Once a plan exists, `/activate-plan` picks it up and executes it step by step. Plans persist across sessions — come back later and continue where you left off.
 
 ## Configuration
 
