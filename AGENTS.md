@@ -220,6 +220,10 @@ Profiles configure these MCP servers:
 | `sequential-thinking` | Step-by-step reasoning | None |
 | `exa` | Web search | `EXA_API_KEY` env var |
 
+## Changelog Policy
+
+Before creating any non-release commit, update the `## [Unreleased]` section of `CHANGELOG.md` to describe the changes being committed. Group entries under `### Added`, `### Changed`, `### Fixed`, or `### Removed` as appropriate. Include `CHANGELOG.md` in the same commit as the code changes — do not create a separate changelog commit.
+
 ## Release Workflow
 
 When the user says "creating a vX.Y.Z release" or similar, follow these steps in order:
