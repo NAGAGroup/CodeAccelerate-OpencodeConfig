@@ -624,10 +624,14 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
              // Check 3, 4, 5, 6: For each node, validate prompt file
              for (const node of nodeCollected) {
-               const promptPath = expandPath(node.prompt);
-               const fullPromptPath = path.isAbsolute(promptPath)
-                 ? promptPath
-                 : path.join(context.worktree, promptPath);
+               // Bare filenames (no "/") resolve to the plan's prompts/ subdirectory,
+               // matching the same rewrite logic used by activate_plan.
+               const resolvedPrompt = node.prompt.includes("/")
+                 ? expandPath(node.prompt)
+                 : path.join(promptsDir, node.prompt);
+               const fullPromptPath = path.isAbsolute(resolvedPrompt)
+                 ? resolvedPrompt
+                 : path.join(context.worktree, resolvedPrompt);
 
                // Check 3: Prompt file exists
                if (!fs.existsSync(fullPromptPath)) {

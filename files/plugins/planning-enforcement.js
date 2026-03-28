@@ -12767,8 +12767,8 @@ ${choices}
             nodeCheckCount++;
             const promptsDir = path.join(context.worktree, ".opencode", "session-plans", plan_name, "prompts");
             for (const node of nodeCollected) {
-              const promptPath = expandPath(node.prompt);
-              const fullPromptPath = path.isAbsolute(promptPath) ? promptPath : path.join(context.worktree, promptPath);
+              const resolvedPrompt = node.prompt.includes("/") ? expandPath(node.prompt) : path.join(promptsDir, node.prompt);
+              const fullPromptPath = path.isAbsolute(resolvedPrompt) ? resolvedPrompt : path.join(context.worktree, resolvedPrompt);
               if (!fs.existsSync(fullPromptPath)) {
                 issues.push(`- [${node.id}] check-prompt-exists: prompt file not found at ${node.prompt}`);
               } else {
