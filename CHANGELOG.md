@@ -6,6 +6,62 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-03-27
+
+### Added
+
+- **Node library** — 12 reusable DAG node types (`session-overview`, `scout-parallel`, `analyze-deep`, `sequential-thinking`, `decision-gate`, `parallel-tasks`, `verification-check`, `conditional-branch`, `compression-node`, `output-success`, `output-failure`, `generic`), each with a `plan.json`, `README.md`, and `prompt-template.md`; ships as `files/planning/plan-session/node-library/`
+- **DAG design guide** — `files/planning/reference/dag-design-guide.md`: authoritative schema spec and authoring rules for project DAGs
+- **`validate_dag` tool** — plugin-provided tool that performs 6 checks on a project `plan.json`: schema validity, duplicate node IDs, prompt file existence, todo sections, question-tool phrases, and template patterns; returns a formatted report
+- **`recover_context` tool** — restores full DAG session state (current node, todo progress, decisions) after context loss or autocompaction
+- **`exit_plan` tool** — abandons the current DAG session cleanly; sets status to `abandoned` and saves state
+- **Auto-advance** — linear DAG nodes advance automatically when all todo items are satisfied; no manual `next_step` call required for linear progression
+- **Duplicate node ID validation** — plugin throws a hard error at activation time if any two nodes share an ID, preventing silent node-map corruption
+- **Prompt path auto-rewriting** — bare prompt filenames (no `/`) are automatically expanded to the `prompts/` subdirectory at activation time
+- **`{{SESSION_PATH}}` substitution** — node-library and plan files are copied into the local `.opencode/session-plans/` directory with paths resolved at copy time
+- **`question` tool exemption** — `question` is permanently exempt from DAG todo blocking, allowing HW to ask clarifying questions at any point without disrupting node sequencing
+- **HeadWrench subagent mode** — HW can now operate as a `task` node worker with full shell access for check-fix cycles, build verification, and integration checks
+- **`ocx-haiku` profile** — new Anthropic profile using all-haiku models (`claude-haiku-4-5` for both primary and small)
+- **`ocx-haiku-copilot` profile** — new GitHub Copilot profile using all-haiku models
+- **Optional web research step** — `plan-session` DAG now includes an optional research branch (`research-gate` → `research-brief`) between the scout and sequential-thinking nodes
+- **`planning/README.md`** — planning system overview document shipped with the registry
+- **`.opencodeignore` auto-creation** — plugin creates `.opencodeignore` on activation to ensure `.opencode/` is visible to OpenCode in non-git contexts
+- **Plugin compilation integrated into build** — `bun run build` now compiles `planning-enforcement.ts` to `.js` automatically; no separate compilation step needed
+- **`context-insurgent` compress permission** — ContextInsurgent can now use the `compress` tool to synthesize discoveries before returning results
+- **ContextInsurgent tool guidance** — explicit guidance added for 2000-line output truncation behavior and preferred tool usage
+
+### Changed
+
+- **Planning system unified to a single mode** — four specialized planning DAGs (`plan-generic`, `plan-debug`, `plan-collaborative`, `plan-deep-research`, `plan-deep-review`) replaced by a single universal `plan-session` DAG; `/plan-session` is now the only planning entry point
+- **`plan-generic` renamed to `plan-session`** — `/plan-generic` command removed; `/plan-session` replaces it
+- **DAG schema upgraded to v2.0** — tree-structured `entry` node replaces flat `nodes` record; `next` is now a child `DagNode` (linear) or `BranchOption[]` (branching) instead of a map of IDs; `session_type` and `entry` string pointer removed; `schema_version: "2.0"` required
+- **HeadWrench operating context** — HW prompt restructured: memory protocol section removed, replaced with orchestrator/subagent dual-mode description and detailed question-tool usage rules
+- **HeadWrench `mode: primary` frontmatter removed** — no longer set in agent YAML frontmatter
+- **Plugin enforcement scope** — todo blocking is now scoped to the `headwrench` agent only (via `PRIMARY_AGENT` constant); other agents' tool calls are not tracked
+- **`ocx-tools` component description updated** — from "NAGAGroup's plugins" to "NAGAGroup's plugins and planning scaffolds"
+- **`ocx-bundle` command list reduced** — five planning commands (`plan-collaborative`, `plan-debug`, `plan-deep-research`, `plan-deep-review`, `plan-generic`) replaced by single `plan-session` command
+- **AGENTS.md rewritten** — condensed from ~880 lines to ~240 lines; converted from verbose guidelines to a quick-reference format covering project identity, commands, repo structure, component architecture, agent system, planning system, and key files
+- **`activate-plan` command updated** — plan.json parsing updated for schema v2.0 fields
+- **DAG session status values** — `waiting_gate` → `waiting_branch`; `failed` → `abandoned`; `close_session` tool removed (sessions now terminate automatically at terminal nodes)
+- **Delegation skill updated** — routing rules and agent descriptions updated to reflect HW subagent mode and ContextInsurgent compress capability
+
+### Removed
+
+- **Planning modes `plan-collaborative`, `plan-debug`, `plan-deep-research`, `plan-deep-review`, `plan-generic`** — all five modes and their full prompt suites deleted; replaced by the unified `plan-session`
+- **`plan-design-guidelines.md`** — replaced by `files/planning/reference/dag-design-guide.md`
+- **`close_session` tool** — sessions now auto-terminate at terminal nodes; explicit close call no longer needed
+- **Memory MCP server** — `@modelcontextprotocol/server-memory` removed from all profiles (`ocx-default`, `ocx-copilot`, `ocx-free`) and all agent documentation
+- **HeadWrench memory protocol** — `read_graph()` / `add_observations()` / `create_entities()` memory workflow removed from HW prompt
+- **`task-library/` directory** — stale task library removed
+- **`.opencode/archived-plans/`** — all archived planning session artifacts removed from the repository
+
+### Fixed
+
+- Plugin now works correctly outside git repositories (graceful fallback for `git rev-parse` failures)
+- `validate_dag` resolves bare prompt filenames to the `prompts/` subdirectory before checking file existence
+- Planning prompt paths use worktree-relative resolution; legacy config-root-relative `planning/...` prefix handling removed from `readPrompt`
+- Duplicate node IDs in a project DAG now throw a hard validation error at activation instead of silently corrupting the node map
+
 ## [2.1.0] - 2026-03-21
 
 ### Added
@@ -94,9 +150,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - DCP override paths correctly resolved on Linux and macOS
 
+[3.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.1...v2.0.0
 [1.0.1]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/tree/v0.1.0
-[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.0.0...HEAD
