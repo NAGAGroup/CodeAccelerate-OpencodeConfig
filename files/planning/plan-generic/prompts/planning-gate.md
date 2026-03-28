@@ -1,31 +1,22 @@
-# Planning Gate: User Approval
+# Planning Gate
 
-Present the full planning summary to the user and request approval before proceeding to DAG design.
+Present a clear summary of the proposed plan to the user for approval using the **`question`** tool.
 
-## What to Show
+## Todo
 
-Present all planning decisions:
-- Task goal, acceptance criteria, constraints
-- Chosen DAG shape (1A-1F) with justification
-- Decomposition: subtasks, boundaries, dependencies
-- Agent routing: assignments and model tiers
-- Key design details: loops, gates, decision points
+1. `question` — Present the full plan summary (task, DAG structure, subtasks with agents, branch points, iteration depth, estimated dispatches) and ask the user to approve or request rethinking.
 
-## User Options
+## Summary format
 
-The user will choose one:
+Include in your question:
 
-1. **Approve & Design DAG** — Planning decisions are solid; proceed to design the project DAG structure
-2. **Clarify Task** — Need more understanding of task or context; loop back to clarify
-3. **Reconsider Shape** — Selected shape doesn't fit; loop back to propose-shape
-4. **Refine Decomposition** — Subtask breakdown needs adjustment; loop back to propose-decomposition
+1. **Task** — One-sentence goal
+2. **DAG structure** — Which primitives are composed (sequence, branch, iteration) and why
+3. **Subtasks** — Numbered list with agent assignments
+4. **Branch points** — What decisions exist and who makes them
+5. **Iteration depth** — How many cycles are budgeted (if any)
+6. **Estimated dispatches** — Total number of agent dispatches
 
-## Your Output
+Offer options like "Approach is sound — proceed" and "Need to rethink".
 
-If **approved:** Call `next_step({ next: "design-plan" })`
-
-If **needs clarification:** Call `next_step({ next: "clarify" })`
-
-If **reconsider shape:** Call `next_step({ next: "propose-shape" })`
-
-If **refine decomposition:** Call `next_step({ next: "propose-decomposition" })`
+You MUST call the `question` tool — do not present the summary as plain text.

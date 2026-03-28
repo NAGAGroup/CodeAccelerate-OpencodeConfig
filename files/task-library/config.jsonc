@@ -1,0 +1,14 @@
+// Task Library Configuration
+// Defines metadata and paths for the modular node library
+
+{
+  "schema_version": "1.0",
+  "library_name": "modular-node-library",
+  "base_path": ".opencode/task-library/",
+  "node_types_dir": "nodes/",
+  "templates_dir": "templates/",
+  "schemas_dir": "schemas/",
+  "supported_dag_version": "2.0",
+  "description": "Modular node library for CodeAccelerate DAG-driven planning system",
+  "created": "2026-03-27"
+}

@@ -65,3 +65,7 @@ One-paragraph synthesis HeadWrench can use directly.
 - **No bash beyond read-only commands** — no git, no npm, no builds
 - **No asking questions** — produce the best report you can with what's available
 - **Stop at 12 steps** — scope your exploration to fit the budget
+
+## Tool Guidance
+
+The system auto-truncates output longer than 2000 lines or 51200 bytes. Avoid `head`/`tail`/`sed` for limiting output; they are not necessary. Prefer the dedicated tools (Glob, Grep, Read with offset/limit).

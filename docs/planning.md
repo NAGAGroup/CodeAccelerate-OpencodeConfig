@@ -1,41 +1,127 @@
 # Planning
 
-CodeAccelerate provides three planning modes, each backed by a DAG-driven execution engine. Every planning session produces a `plan.json` and a set of prompt files written to `.opencode/session-plans/{name}/`. Once created, a plan is persistent — you resume it with `/activate-plan` and the system picks up exactly where it left off.
+CodeAccelerate uses a DAG-driven planning system to break down complex tasks into structured, executable work. When you start a planning session, the system guides you through a series of approvals, then writes a persistent **project plan** to `.opencode/session-plans/{name}/`. Once created, you can resume and advance the plan anytime with `/activate-plan`.
 
 ---
 
-## Generic Planning
+## Starting a Plan: `/plan-generic`
 
-Use this for features, refactors, and migrations. Run `/plan-generic <description>` with a brief description of your task. The system walks you through a guided Q&A to gather scope and constraints, then decomposes the work into numbered subtasks and assigns each to the appropriate agent. You get a structured execution plan with clearly defined deliverables and a task dependency chain ready to execute.
+Run `/plan-generic` followed by a brief description of your task:
 
-**Output:** `plan.json` + one `subtask-NN-{name}.md` prompt file per subtask.
+```
+/plan-generic Implement user authentication with OAuth 2.0
+```
 
----
+The planner walks you through:
 
-## Debug Planning
+1. **Scope gathering** — Questions to clarify what you're building, what success looks like, and key constraints
+2. **Proposed structure** — The planner suggests how to break down the work and asks for your approval
+3. **Decomposition** — The planner selects from a library of 12 reusable node types and builds your project DAG, asking for approval before writing anything to disk
+4. **Approval gate** — You review the full plan and either approve it or send it back for rethinking
 
-Use this for bug investigations. Run `/plan-debug <description>` with a description of the bug. The system gathers context, then forms a ranked hypothesis list and presents it to you for approval before writing anything to disk. Only after you confirm the hypotheses does it produce a session plan — a `diagnose → fix → verify` loop with your approved hypotheses baked into the diagnose node.
-
-The debug session is self-modifying by design: `fix.md` accumulates attempted fixes across iterations, and the agent can re-enter `diagnose` as many times as needed until the bug is confirmed and the fix verifies.
-
-**Output:** `plan.json` + `prompts/diagnose.md`, `fix.md`, `verify.md`.
-
----
-
-## Collaborative Planning
-
-Use this for open-ended exploration — early-stage ideas, design decisions, or anything where the shape of the work isn't clear yet. Run `/plan-collaborative <rough idea>`. The system asks clarifying questions to sharpen the idea into a well-scoped goal, surfaces the open questions that need to be worked through, and gets your sign-off on the session seed before producing any files.
-
-The resulting plan is intentionally flexible: one exploration node per open question, with the agent authorized to restructure the plan, add nodes, and update `spec.md` as the session evolves.
-
-**Output:** `plan.json` + `spec.md` (living spec) + one `prompts/explore-NN.md` per open question.
+Once approved, the plan is written to disk and ready to execute.
 
 ---
 
-## Activating a Plan
+## Understanding Your Project Plan
 
-Run `/activate-plan <name>` to resume any saved plan. If you omit the name, the system lists all plans in `.opencode/session-plans/` with their goal and status so you can pick one.
+A project plan is a persistent DAG (directed acyclic graph) stored in two parts:
 
-The activation tool initializes DAG state and injects the first (or next pending) node's prompt. You don't need to track progress manually — the system knows which nodes have completed and resumes from the correct point.
+### `plan.json`
 
-To see all available plans at any time, just run `/activate-plan` with no arguments.
+The DAG structure: node IDs, types, dependencies, and todo items that track progress. This is what the system reads to know which node is next, which has completed, and what to do when you run `/activate-plan`.
+
+### `prompts/` directory
+
+One Markdown file per node, containing the instructions for that node's work. When a node is active, its prompt is injected into the agent's context.
+
+For example:
+
+```
+.opencode/session-plans/auth-oauth/
+├── plan.json
+└── prompts/
+    ├── scout-parallel-1.md
+    ├── analyze-deep-2.md
+    ├── parallel-tasks-3.md
+    └── write-dag.md
+```
+
+---
+
+## The DAG Flow
+
+Every plan follows this flow:
+
+```
+session-overview
+    ↓
+scout (3 scouts in parallel)
+    ↓
+sequential-thinking (planner synthesizes findings)
+    ↓
+propose-structure (you approve the high-level decomposition)
+    ↓
+propose-decomposition (planner builds the DAG from node library)
+    ↓
+planning-gate (you approve the full DAG)
+    ├─→ [approved] write-dag (writes plan.json and prompts/)
+    └─→ [rethink] propose-structure-2 → propose-decomposition-2 → write-dag-2
+```
+
+If you ask for changes at the planning gate, the system loops back to restructure before writing.
+
+---
+
+## The Node Library: 12 Reusable Node Types
+
+When the planner decomposes your task, it selects from these 12 node types:
+
+| Node Type | Purpose | What it does |
+|-----------|---------|-------------|
+| `session-overview` | Entry point | Auto-advances; no user input needed |
+| `scout-parallel` | Initial scouting | Runs 3 scouts in parallel to read code, docs, or other context |
+| `analyze-deep` | Deep reasoning | One sonnet agent analyzes a specific complex problem |
+| `sequential-thinking` | Synthesis | The planner reasons step-by-step through findings |
+| `decision-gate` | User approval | Blocks until you answer a question; branches based on your choice |
+| `parallel-tasks` | Parallel work | Runs 3 haiku agents on independent tasks simultaneously |
+| `verification-check` | Quality gate | Runs a check (often with shell access) to verify work |
+| `conditional-branch` | Logic | Routes to the next node based on prior context (no user input) |
+| `compression-node` | Summarization | Condenses long context into a summary for the next phase |
+| `output-success` | Success terminal | Marks the plan as complete (happy path) |
+| `output-failure` | Failure terminal | Marks the plan as failed or blocked |
+| `generic` | Custom work | Escape hatch for work that doesn't fit other types |
+
+The planner selects which nodes you need, connects them in the right order, and handles the todo items and dependencies.
+
+---
+
+## Activating a Plan: `/activate-plan`
+
+Resume an existing plan with:
+
+```
+/activate-plan auth-oauth
+```
+
+The system:
+
+1. Loads your `plan.json` and checks which nodes have completed
+2. Finds the next pending node
+3. Injects its prompt into the current session
+4. Advances the node as work completes
+
+**Tip:** Run `/activate-plan` with no arguments to see a list of all saved plans and their status.
+
+---
+
+## Plan Persistence
+
+Once a plan is created, it's permanent in `.opencode/session-plans/`. You can:
+
+- Resume it anytime with `/activate-plan`
+- Let it accumulate context and state across multiple sessions
+- Reference it for future work or documentation
+- Review it to understand the exact steps your system took
+
+The DAG state is managed by the planning enforcement plugin — it ensures nodes execute in the correct order and prevents tools from being called out of sequence.

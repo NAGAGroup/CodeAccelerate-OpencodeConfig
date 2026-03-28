@@ -2,6 +2,19 @@
 
 CodeAccelerate ships a team of specialized agents. You talk to one — **HeadWrench** — and it handles the rest automatically.
 
+## Agent Overview
+
+| Agent | Model Tier | Role | Step Budget | Parallel |
+|-------|-----------|------|-------------|----------|
+| **HeadWrench** | sonnet | Primary orchestrator, planning, delegation | N/A | No |
+| **ContextScout** | haiku | Quick codebase exploration | 12 | Yes |
+| **ContextInsurgent** | sonnet | Deep multi-file reasoning | 20 | No |
+| **JuniorDev** | haiku | Targeted code edits | 10 | Yes |
+| **DeepResearcher** | haiku | Web/docs research via MCP | 15 | Yes |
+| **QuickDoc** | haiku | Single-file document writes | 8 | Yes |
+
+---
+
 ## HeadWrench
 
 The primary orchestrator. This is the agent OpenCode puts you in conversation with directly.
@@ -59,6 +72,26 @@ Model: haiku (lighter, cheap to run in parallel).
 Single-file document writes and edits. When the session produces something that needs to be written up — a doc page, a config file, a prompt — HeadWrench dispatches QuickDoc to handle it. Like JuniorDev, multiple QuickDocs can run in parallel on different files.
 
 Model: haiku (lighter, suitable for focused writing tasks).
+
+---
+
+## Node Library
+
+During planning sessions, the system uses a **node library** of 12 reusable node types to compose project DAGs (directed acyclic graphs). Each node type has a fixed `todo` array that determines what tools or sub-agents it dispatches:
+
+- **scout-parallel** — Dispatches 3 ContextScout instances in parallel for broad exploration
+- **analyze-deep** — Dispatches ContextInsurgent for sequential deep analysis
+- **verification-check** — Runs build/test via HeadWrench subagent with shell access
+- **parallel-tasks** — Dispatches 3 parallel haiku agents for independent tasks
+- **decision-gate** — Pauses for user input before advancing
+- **sequential-thinking** — HeadWrench reasons directly (no external dispatch)
+- **compression-node** — ContextInsurgent compresses prior context
+- **session-overview** — Entry node, auto-advances
+- **conditional-branch** — HeadWrench calls next_step based on prior context
+- **output-success** / **output-failure** — Terminal nodes
+- **generic** — Flexible escape hatch for custom todos
+
+During planning, agents select the right node type for each step and resolve dependencies before writing the DAG. This ensures each planning session is tailored to the actual work required.
 
 ---
 

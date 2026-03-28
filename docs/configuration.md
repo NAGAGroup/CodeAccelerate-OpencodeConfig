@@ -1,6 +1,6 @@
 # Configuration
 
-All configuration lives in `opencode.jsonc`. After installing a profile, this file is at `~/.config/opencode/profiles/<name>/opencode.jsonc` — where `<name>` is the profile you installed (`naga`, `naga-copilot`, or `naga-free`).
+All configuration lives in `opencode.jsonc`. After installing a profile, this file is at `~/.config/opencode/profiles/<name>/opencode.jsonc` — where `<name>` is the profile you installed (`naga`, `naga-haiku`, `naga-copilot`, `naga-haiku-copilot`, or `naga-free`).
 
 Edit this file directly to customize models, MCP servers, and agent behavior.
 
@@ -28,9 +28,11 @@ To switch a model, replace the value with any provider string OpenCode recognize
 | Tier | Agents |
 |---|---|
 | Sonnet-tier | `headwrench`, `context-insurgent` |
-| Haiku-tier | `context-scout`, `quick-doc`, `junior-dev`, `deep-researcher`, `compaction` |
+| Haiku-tier | `context-scout`, `quick-doc`, `junior-dev`, `deep-researcher` |
 
 Sonnet-tier agents handle orchestration and deep reasoning. Haiku-tier agents handle fast, scoped tasks. If you're on a tighter budget or prefer a different provider, reassign freely — the tier split is a suggestion, not a constraint.
+
+> **Note:** `compaction` is an OpenCode-internal agent, not part of the CodeAccelerate roster. Profiles configure its model assignment as a system requirement.
 
 ---
 

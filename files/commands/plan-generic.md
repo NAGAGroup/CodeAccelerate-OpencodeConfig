@@ -1,5 +1,5 @@
 ---
-description: "Start a generic planning session — context analysis, Q&A, subtask decomposition, finalization"
+description: "Start a generic planning session — explore, design, decompose, and write a project DAG"
 ---
 
 You are starting a generic planning session. The user's topic or description is: `$ARGUMENTS`

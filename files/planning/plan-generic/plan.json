@@ -1,206 +1,62 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "id": "plan-generic",
-  "session_type": "generic",
-  "description": "Planning scaffold for generating generic project DAGs. Decomposes work into subtasks, routes agents, selects DAG shape (1A-1F), gathers design input, and writes the project DAG.",
-  "goal": "Enable planning agents to generate valid generic project DAGs by understanding task requirements, decomposing into subtasks, routing agents, and selecting the right execution shape.",
-  "entry": "session-overview",
-  "nodes": {
-    "session-overview": {
-      "id": "session-overview",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/session-overview.md",
-      "next": "task-intake"
-    },
-    "task-intake": {
-      "id": "task-intake",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/task-intake.md",
-      "next": "scout"
-    },
-    "scout": {
+  "entry": {
+    "id": "session-overview",
+    "prompt": "session-overview.md",
+    "todo": [],
+    "next": {
       "id": "scout",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/scout.md",
-      "next": "clarify"
-    },
-    "clarify": {
-      "id": "clarify",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/clarify.md",
-      "next": "evaluate-understanding"
-    },
-    "evaluate-understanding": {
-      "id": "evaluate-understanding",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/evaluate-understanding.md",
+      "prompt": "scout.md",
+      "todo": ["task", "task", "task"],
       "next": {
-        "scout": {
-          "desc": "Need more context to understand task and codebase",
-          "choose_when": "Understanding of task, constraints, or codebase is insufficient"
-        },
-        "propose-shape": {
-          "desc": "Sufficient context gathered; ready to select DAG shape",
-          "choose_when": "Enough context to understand task decomposition"
+        "id": "sequential-thinking",
+        "prompt": "sequential-thinking.md",
+        "todo": ["sequential-thinking_sequentialthinking"],
+        "next": {
+          "id": "propose-structure",
+          "prompt": "propose-structure.md",
+          "todo": ["question"],
+          "next": {
+            "id": "propose-decomposition",
+            "prompt": "propose-decomposition.md",
+            "todo": ["task"],
+            "next": {
+              "id": "planning-gate",
+              "prompt": "planning-gate.md",
+              "todo": ["question"],
+              "next": [
+                {
+                  "when": "Approach is sound — proceed to write project DAG",
+                  "node": {
+                    "id": "write-dag",
+                    "prompt": "write-dag.md",
+                    "todo": ["task", "validate_dag", "task"]
+                  }
+                },
+                {
+                  "when": "Need to rethink — structure or decomposition is wrong",
+                  "node": {
+                    "id": "propose-structure-2",
+                    "prompt": "propose-structure.md",
+                    "todo": ["question"],
+                    "next": {
+                      "id": "propose-decomposition-2",
+                      "prompt": "propose-decomposition.md",
+                      "todo": ["task"],
+                      "next": {
+                        "id": "write-dag-2",
+                        "prompt": "write-dag.md",
+                        "todo": ["task", "validate_dag", "task"]
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
         }
       }
-    },
-    "propose-shape": {
-      "id": "propose-shape",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/propose-shape.md",
-      "next": "evaluate-shape"
-    },
-    "evaluate-shape": {
-      "id": "evaluate-shape",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/evaluate-shape.md",
-      "next": {
-        "propose-shape": {
-          "desc": "Shape doesn't fit task; reconceptualize",
-          "choose_when": "Proposed shape doesn't address the task's complexity or unknowns"
-        },
-        "propose-decomposition": {
-          "desc": "Shape is appropriate; proceed to break task into subtasks",
-          "choose_when": "Selected shape fits the task well"
-        }
-      }
-    },
-    "propose-decomposition": {
-      "id": "propose-decomposition",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/propose-decomposition.md",
-      "next": "evaluate-decomposition"
-    },
-    "evaluate-decomposition": {
-      "id": "evaluate-decomposition",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/evaluate-decomposition.md",
-      "next": {
-        "refine-decomposition": {
-          "desc": "Decomposition needs adjustment; refine boundaries or granularity",
-          "choose_when": "Subtasks are too broad, too fine, or have unclear dependencies"
-        },
-        "agent-routing": {
-          "desc": "Decomposition is solid; proceed to assign agents to subtasks",
-          "choose_when": "Subtasks are well-scoped, boundaries clear, dependencies explicit"
-        }
-      }
-    },
-    "refine-decomposition": {
-      "id": "refine-decomposition",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/refine-decomposition.md",
-      "next": "evaluate-decomposition"
-    },
-    "agent-routing": {
-      "id": "agent-routing",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/agent-routing.md",
-      "next": "info-prime"
-    },
-    "info-prime": {
-      "id": "info-prime",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/info-prime.md",
-      "next": "info-loop-analysis"
-    },
-    "info-loop-analysis": {
-      "id": "info-loop-analysis",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/info-loop-analysis.md",
-      "next": "info-visit-counter"
-    },
-    "info-visit-counter": {
-      "id": "info-visit-counter",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/info-visit-counter.md",
-      "next": "info-gate-analysis"
-    },
-    "info-gate-analysis": {
-      "id": "info-gate-analysis",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/info-gate-analysis.md",
-      "next": "info-shape-ref"
-    },
-    "info-shape-ref": {
-      "id": "info-shape-ref",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/info-shape-ref.md",
-      "next": "info-validity-checks"
-    },
-    "info-validity-checks": {
-      "id": "info-validity-checks",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/info-validity-checks.md",
-      "next": "info-flow-specific"
-    },
-    "info-flow-specific": {
-      "id": "info-flow-specific",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/info-flow-specific.md",
-      "next": "info-summarize-consumption"
-    },
-    "info-summarize-consumption": {
-      "id": "info-summarize-consumption",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/info-summarize-consumption.md",
-      "next": "planning-gate"
-    },
-    "planning-gate": {
-      "id": "planning-gate",
-      "type": "gate",
-      "prompt": "planning/plan-generic/prompts/planning-gate.md",
-      "next": {
-        "design-plan": {
-          "desc": "Approach is sound; proceed to design the project DAG",
-          "choose_when": "All planning decisions are solid and ready to commit"
-        },
-        "clarify": {
-          "desc": "Need more understanding of task or context",
-          "choose_when": "Task understanding is insufficient"
-        },
-        "propose-shape": {
-          "desc": "Reconsider which DAG shape is right",
-          "choose_when": "Selected shape doesn't fit the task"
-        },
-        "propose-decomposition": {
-          "desc": "Refine the task decomposition",
-          "choose_when": "Subtask breakdown needs adjustment"
-        }
-      }
-    },
-    "design-plan": {
-      "id": "design-plan",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/design-plan.md",
-      "next": "preview-gate"
-    },
-    "preview-gate": {
-      "id": "preview-gate",
-      "type": "gate",
-      "prompt": "planning/plan-generic/prompts/preview-gate.md",
-      "next": {
-        "write-prompts": {
-          "desc": "DAG structure is solid; proceed to write prompts",
-          "choose_when": "User approves the DAG structure"
-        },
-        "design-plan": {
-          "desc": "DAG structure needs adjustment; return to design phase",
-          "choose_when": "User wants to reconsider the DAG structure"
-        }
-      }
-    },
-    "write-prompts": {
-      "id": "write-prompts",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/write-prompts.md",
-      "next": "finalize"
-    },
-    "finalize": {
-      "id": "finalize",
-      "type": "agent",
-      "prompt": "planning/plan-generic/prompts/finalize-terminal.md"
     }
   }
 }

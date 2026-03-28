@@ -1,0 +1,31 @@
+{
+  "id": "verification-check",
+  "prompt": "verification-check.md",
+  "todo": ["bash"],
+  "next": [
+    {
+      "when": "Exit code 0 - All checks passed",
+      "node": {
+        "id": "verification-success",
+        "prompt": "output-success.md",
+        "todo": []
+      }
+    },
+    {
+      "when": "Exit code 1 - Tests failed",
+      "node": {
+        "id": "fix-tests",
+        "prompt": "loop-until-success.md",
+        "todo": ["task"]
+      }
+    },
+    {
+      "when": "Exit code 2 - Build failed",
+      "node": {
+        "id": "fix-build",
+        "prompt": "loop-until-success.md",
+        "todo": ["task"]
+      }
+    }
+  ]
+}

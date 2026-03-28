@@ -19,7 +19,8 @@ Apply this skill during planning to assign the correct agent and model tier to e
 | @DeepResearcher | haiku-like | 15 | Web/docs research — parallel |
 | @JuniorDev | haiku-like | 10 | Scoped code edits — parallel, no re-use |
 | @QuickDoc | haiku-like | 8 | Single-file doc writes/edits — parallel, no re-use |
-| HW (direct) | sonnet | — | Shell, builds, tests, complex writes |
+| @HeadWrench | sonnet | — | Full tool access — test-fix cycles, builds, integration checks |
+| HW (direct) | sonnet | — | Shell, builds, tests, complex writes (orchestrator handles inline) |
 
 ---
 
@@ -58,7 +59,7 @@ Apply this skill during planning to assign the correct agent and model tier to e
 - Do **not** re-delegate
 - Does not compile, test, or verify its own output — HW handles that
 - **If the task requires complex reasoning or judgment** → HW handles directly. Output tokens are cheap; HW having full context is worth more than the token savings.
-- **One node per parallel batch:** When routing multiple independent tasks as parallel (e.g., `@JuniorDev (parallel × 3)`), they must be grouped into a **single subtask node** in the generated `plan.json`. That node's prompt dispatches all agents simultaneously in one response, waits for all to return, then calls `next_step()`. Do NOT produce one subtask node per parallel agent — the DAG plugin executes nodes sequentially and has no mechanism for parallel node execution.
+- **One node per parallel batch:** When routing multiple independent tasks as parallel (e.g., `@JuniorDev (parallel × 3)`), they must be grouped into a **single subtask node** in the generated `plan.json`. That node's prompt dispatches all agents simultaneously in one response, waits for all to return, then the plugin auto-advances. Do NOT produce one subtask node per parallel agent — the DAG executes nodes sequentially.
 
 ### @QuickDoc
 **Use when:** writing a single document, updating documentation, making targeted edits to existing docs.
@@ -67,8 +68,17 @@ Apply this skill during planning to assign the correct agent and model tier to e
 - Do **not** re-delegate
 - Same model ceiling rule as JuniorDev — complex or judgment-heavy doc work goes to HW directly
 
+### @HeadWrench (subagent)
+**Use when:** the node requires full tool access and reasoning — test-fix cycles, build verification, integration checks, or any work needing shell + read + edit in one step.
+
+- Dispatched via `task` like any other agent
+- Has access to all tools (`bash`, `read`, `write`, `edit`, etc.)
+- Does the work directly — does **not** delegate further
+- Use for "check/fix" nodes where the agent must run tests, read output, and fix code in one pass
+- Most powerful model — use when the task complexity warrants it
+
 ### HW (direct)
-**Use when:**
+**Use when:** the orchestrator should handle inline (not dispatched):
 - Shell commands: git, builds, tests, installs, deploys
 - Any task that requires analyzing command output and making decisions
 - Code or doc writes that require complex reasoning a haiku model can't handle
@@ -107,6 +117,7 @@ For HW-direct subtasks:
 
 1. **Default to haiku agents in parallel** — always start here
 2. **Escalate to ContextInsurgent only** when the task genuinely requires reading many files with complex cross-file reasoning
-3. **Escalate to HW only** when shell access is needed OR when the task is too complex for a haiku model's output quality
-4. **Never escalate DeepResearcher** — Exa does the work; if research is too complex for haiku, the research question is probably too broad; break it down
-5. **Parallel > sequential** — if tasks are independent, run them simultaneously regardless of agent type
+3. **Escalate to @HeadWrench subagent** for check/fix nodes — test-fix cycles, build verification, or any node needing shell + edit in one pass
+4. **Escalate to HW direct** when the orchestrator itself should handle inline (e.g., the task needs user interactivity mid-step)
+5. **Never escalate DeepResearcher** — Exa does the work; if research is too complex for haiku, the research question is probably too broad; break it down
+6. **Parallel > sequential** — if tasks are independent, run them simultaneously regardless of agent type

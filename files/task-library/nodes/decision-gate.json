@@ -1,0 +1,31 @@
+{
+  "id": "decision-gate",
+  "prompt": "decision-gate.md",
+  "todo": ["question"],
+  "next": [
+    {
+      "when": "Proceed with approach A",
+      "node": {
+        "id": "implement-a",
+        "prompt": "implement-a.md",
+        "todo": ["task"]
+      }
+    },
+    {
+      "when": "Proceed with approach B",
+      "node": {
+        "id": "implement-b",
+        "prompt": "implement-b.md",
+        "todo": ["task"]
+      }
+    },
+    {
+      "when": "Need more exploration",
+      "node": {
+        "id": "scout-more",
+        "prompt": "scout-parallel.md",
+        "todo": ["task", "task", "task"]
+      }
+    }
+  ]
+}

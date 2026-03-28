@@ -1,0 +1,5 @@
+{
+  "id": "decision-gate",
+  "prompt": "decision-gate.md",
+  "todo": ["question"]
+}

@@ -10,7 +10,7 @@ If `$ARGUMENTS` is provided, use it directly as the plan name.
 
 If no arguments were provided:
 1. Scan `.opencode/session-plans/` for all directories
-2. For each directory found, read its `plan.json` and extract `id`, `goal`, `status`, and `session_type`
+2. For each directory found, read its `plan.json` and extract `id` and `schema_version`
 3. Present the list to the user and ask which plan to activate
 
 ## Step 2 — Activate the Plan

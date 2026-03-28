@@ -1,0 +1,9 @@
+{
+  "id": "parallel-tasks",
+  "prompt": "parallel-tasks.md",
+  "todo": [
+    "task",
+    "task",
+    "task"
+  ]
+}

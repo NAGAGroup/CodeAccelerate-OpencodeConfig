@@ -1,26 +1,14 @@
 # Generic Planning Session
 
-You are beginning a **generic planning session**. Your role is to understand a task, decompose it into subtasks, route agents to those subtasks, and select the right execution DAG shape.
+You are running a planning session. Your job is to understand a task, explore the codebase, design a project DAG, and write it out for execution.
 
-## What Will Happen
+This session will produce a **project DAG** — a nested tree of nodes that HeadWrench will execute by dispatching specialist agents. You are not solving the problem. You are structuring how it gets solved.
 
-This planning session will walk you through:
-1. **Task Understanding** — Gather goal, acceptance criteria, constraints, and context
-2. **Codebase Exploration** — Scout relevant code areas and patterns
-3. **Shape Selection** — Decide which DAG shape (1A-1F) fits the task
-4. **Decomposition** — Break the task into 3-9 well-scoped subtasks
-5. **Agent Routing** — Assign agents and model tiers to each subtask
-6. **Learning** — Learn how to design proper generic DAGs with gates and loops
-7. **Validation** — Get user approval of the overall approach
-8. **Finalization** — Write the project DAG
+## What you will do
 
-## Your Job
-
-Plan a valid execution DAG by:
-- Understanding what needs to be done and why
-- Identifying where decisions/iteration/branching will be needed during execution
-- Choosing a shape that handles those unknowns
-- Decomposing work into subtasks ready for agents to execute
-- Routing agents appropriately
-
-Advance with `next_step()` when ready.
+1. Gather the task goal, constraints, and acceptance criteria from the user
+2. Dispatch scouts to explore the relevant codebase
+3. Compose a DAG structure from primitives (sequence, branch, iteration)
+4. Decompose the task into subtasks with agent assignments
+5. Present the plan for user approval
+6. Write the project DAG files
