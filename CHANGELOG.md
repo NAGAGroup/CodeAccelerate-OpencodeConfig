@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`propose-structure.md` and `planning-gate.md` question tool instructions** — replaced "do not present as plain text" directive (which caused haiku-tier HW to stuff proposal content inside the `question` call) with explicit "present as prose first, then call question with a single sentence" instructions, aligned with headwrench.md's question tool rules. Planning-gate option label updated to "Approve — write the DAG" to prevent haiku from confusing DAG authoring with project execution.
+
 ## [3.1.1] - 2026-03-28
 
 ### Fixed

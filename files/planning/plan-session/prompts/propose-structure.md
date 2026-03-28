@@ -33,6 +33,5 @@ Remember: you are structuring how the problem gets solved, not solving it. Every
 
 ## Todo
 
-1. `question` — Present your proposed DAG structure (with ASCII diagram, primitives used, branch/iteration details, and node count) and ask the user to approve or request changes.
-
-You MUST call the `question` tool — do not present the structure as plain text.
+1. Write your proposed DAG structure as prose in your response text — include the ASCII diagram, primitives used, branch/iteration rationale, and total node count. Do NOT embed any of this inside the `question` call.
+2. `question` — Call the `question` tool with a single-sentence question: "Does this structure look right?" Use option label `"Approve"` (description: "Proceed to task decomposition") and `"Rethink"` (description: "Adjust scope or structure before continuing").
