@@ -8,22 +8,13 @@ Ships as three profiles: Anthropic (paid API), GitHub Copilot, and OpenCode Zen 
 
 ## What it looks like
 
-```
-$ ocx oc -p naga
 
-> I need to refactor the auth module to support OAuth2 in addition to API keys
+https://github.com/user-attachments/assets/8fd9f4fe-efd7-45e7-b593-3300db004c4d
 
-HeadWrench → activating session planning...
-  → context-scout: scanning auth module structure, existing key-based flow
-  → clarify: Do you need to support all OAuth2 grant types, or just authorization code?
 
-> Just authorization code for now, and we need to keep the API key path working
+### Result (Rotated)
 
-  → decompose: breaking into tasks...
-  → finalize: plan written to .opencode/plans/plan-session-20260321.json
-
-Plan ready — 6 tasks across 3 agents. Run /activate-plan to start execution.
-```
+<img width="1280" height="720" alt="output" src="https://github.com/user-attachments/assets/48d70f34-73a8-4f71-b3a7-fe3fd3a98c70" />
 
 ## Quick Start
 
