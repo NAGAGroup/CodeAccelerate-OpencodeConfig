@@ -22,5 +22,5 @@ Default: `decision-gate`. Rename for clarity: `approve-plan`, `choose-strategy`,
 
 - One `question` call only — do not add more tool calls to this node
 - The `when` conditions in plan.json must exactly match (or clearly map to) the options presented in the question
-- HW calls `next_step` after the user responds — the planning agent doesn't need to model this
+- This is a branch point — after the user responds, branching instructions will follow automatically
 - If the decision can be made by a machine (exit code, file existence), use `conditional-branch` instead

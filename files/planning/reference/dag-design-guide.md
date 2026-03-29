@@ -23,8 +23,8 @@ Reference for composing project DAGs. Project DAGs are nested trees of nodes tha
 |-------|------|----------|-------------|
 | `id` | string | yes | Unique within the tree. Use suffixes for duplicates: `test-<N>`, `fix-<N>` |
 | `prompt` | string | yes | Filename of the prompt file (e.g. `"implement-auth.md"`) |
-| `todo` | string[] | yes | Strict sequence of OpenCode tool names. Empty `[]` means auto-advance |
-| `next` | node, branch[], or omitted | no | What comes after this node |
+| `todo` | string[] | yes | Strict sequence of OpenCode tool names |
+| `next` | node, branch[], or omitted | no | What comes after this node (optional: omit for terminal nodes) |
 
 ### Todo items
 
@@ -39,11 +39,19 @@ Todo lists use OpenCode built-in tool names. The most common:
 
 HeadWrench delegates — it does not call `read`, `write`, `edit` directly. Those are for subagents.
 
+### Execution & Advancement
+
+Every non-terminal node requires an explicit `next_step()` call after all todos complete:
+
+- **Linear nodes:** `next_step()` with no argument — advances to the single child
+- **Branch nodes:** `next_step({ next: "<node-id>" })` — specify which branch to follow
+- **Terminal nodes:** auto-complete — the plugin detects no `next` field and closes the session automatically
+
 ### Next field
 
-- **Linear:** `"next": { "id": "step-2", ... }` — single child, auto-advances
-- **Branch:** `"next": [{ "when": "...", "node": { ... } }, ...]` — agent picks a path
-- **Terminal:** omit `next` — session ends automatically
+- **Linear:** `"next": { "id": "step-2", ... }` — single child
+- **Branch:** `"next": [{ "when": "...", "node": { ... } }, ...]` — multiple paths, `next_step()` specifies which
+- **Terminal:** omit `next` — session auto-completes, no `next_step()` needed
 
 ---
 
@@ -98,7 +106,7 @@ investigate → [decision]
 }
 ```
 
-**Condition-decided branch** — use a `conditional-branch` node (todo: `[]`). HW evaluates the condition from prior context and calls `next_step`:
+**Condition-decided branch** — use a `conditional-branch` node (todo: `[]`). HW evaluates the condition from prior context and calls `next_step({ next: "<node-id>" })` to choose the path:
 
 ```json
 {

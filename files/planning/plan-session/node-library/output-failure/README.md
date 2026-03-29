@@ -18,6 +18,8 @@ Auto-advances immediately (empty todo). The prompt instructs HW what to communic
 
 Always `output-failure`. If a DAG has multiple failure paths, each branch gets its own `output-failure` instance — nodes cannot be shared or referenced by ID across branches.
 
+> **Anti-pattern:** Do NOT reuse the `output-failure` ID across branches. Every terminal node must have a unique ID — e.g., `output-failure`, `output-failure-2`. Reusing an ID silently corrupts the node map and the session will terminate prematurely on whichever branch resolves it first.
+
 ## Notes
 
 - Empty todo — no tool calls required

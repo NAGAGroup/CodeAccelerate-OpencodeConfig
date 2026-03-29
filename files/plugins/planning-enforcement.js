@@ -12476,13 +12476,24 @@ function activateDag(dag, planPath, sessionId, worktree) {
 
 ${promptText}`;
   if (entryNode.todo.length === 0) {
-    const advanceResult = autoAdvance(state, statePath, worktree);
-    if (advanceResult) {
+    const hasNext = entryNode.nextLinear || entryNode.branches && entryNode.branches.length > 0;
+    if (hasNext) {
+      state.status = "waiting_step";
+      writeState(statePath, state);
       result += `
 
 ---
 
+No todos for this node. Call \`next_step()\` to advance.`;
+    } else {
+      const advanceResult = autoAdvance(state, statePath, worktree);
+      if (advanceResult) {
+        result += `
+
+---
+
 ${advanceResult}`;
+      }
     }
   }
   return result;
@@ -12492,39 +12503,18 @@ function autoAdvance(state, statePath, worktree) {
   if (!node)
     return null;
   if (node.nextLinear) {
-    const nextNode = state.node_map[node.nextLinear];
-    if (!nextNode)
-      return `Error: next node "${node.nextLinear}" not found in DAG.`;
-    state.current_node = nextNode.id;
-    state.todo_index = 0;
-    state.status = "running";
+    state.status = "waiting_step";
     state.updated_at = now();
     writeState(statePath, state);
-    const promptText = readPrompt(nextNode.prompt, worktree);
-    let result = `Node "${node.id}" complete. Advancing to "${nextNode.id}".
-
----
-
-${promptText}`;
-    if (nextNode.todo.length === 0) {
-      const chainResult = autoAdvance(state, statePath, worktree);
-      if (chainResult) {
-        result += `
-
----
-
-${chainResult}`;
-      }
-    }
-    return result;
+    return `All todos complete. Call \`next_step()\` to advance to the next node.`;
   }
   if (node.branches && node.branches.length > 0) {
-    state.status = "waiting_branch";
+    state.status = "waiting_step";
     state.updated_at = now();
     writeState(statePath, state);
     const choices = node.branches.map((b, i) => `${i + 1}. **${b.nodeId}** — ${b.when}`).join(`
 `);
-    return `Node "${node.id}" complete. Choose next path:
+    return `All todos complete. Choose next path:
 
 ${choices}
 
@@ -12594,9 +12584,9 @@ var PlanningEnforcementPlugin = async (_ctx) => {
         }
       }),
       next_step: tool({
-        description: "Choose which branch to take when the current node has multiple next options. Only needed for branching nodes.",
+        description: "Call this after completing a node's todos to advance to the next node. Required on every node. Pass { next } to choose a branch; omit for linear advance or session completion.",
         args: {
-          next: tool.schema.string().describe("The node ID of the branch to take.")
+          next: tool.schema.string().optional().describe("The node ID of the branch to take (required for branching nodes, omit for linear advance).")
         },
         async execute({ next }, context) {
           const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
@@ -12607,49 +12597,112 @@ var PlanningEnforcementPlugin = async (_ctx) => {
           if (state.status === "complete") {
             return "DAG session is already complete.";
           }
-          if (state.status !== "waiting_branch") {
-            return `Cannot call next_step — current status is "${state.status}", not "waiting_branch".`;
+          if (state.status !== "waiting_step") {
+            return `Cannot call next_step — current status is "${state.status}", not "waiting_step".`;
           }
           const node = state.node_map[state.current_node];
-          if (!node || !node.branches) {
-            return `Current node "${state.current_node}" has no branches.`;
+          if (!node) {
+            return `Current node "${state.current_node}" not found in DAG.`;
           }
-          const branch = node.branches.find((b) => b.nodeId === next);
-          if (!branch) {
-            const valid = node.branches.map((b) => b.nodeId).join(", ");
-            return `Invalid branch "${next}". Valid options: [${valid}]`;
-          }
-          state.decisions.push({
-            node_id: state.current_node,
-            timestamp: now(),
-            summary: `Chose branch "${next}": ${branch.when}`
-          });
-          const nextNode = state.node_map[next];
-          if (!nextNode) {
-            return `Branch node "${next}" not found in DAG.`;
-          }
-          state.current_node = next;
-          state.todo_index = 0;
-          state.status = "running";
-          state.updated_at = now();
-          writeState(statePath, state);
-          const promptText = readPrompt(nextNode.prompt, resolveWorktree(context));
-          let result = `Branch taken: "${next}". Advancing.
+          if (node.nextLinear) {
+            const nextNode = state.node_map[node.nextLinear];
+            if (!nextNode)
+              return `Error: next node "${node.nextLinear}" not found in DAG.`;
+            state.current_node = nextNode.id;
+            state.todo_index = 0;
+            state.status = "running";
+            state.updated_at = now();
+            writeState(statePath, state);
+            const promptText = readPrompt(nextNode.prompt, resolveWorktree(context));
+            let result = `Node "${node.id}" complete. Advancing to "${nextNode.id}".
 
 ---
 
 ${promptText}`;
-          if (nextNode.todo.length === 0) {
-            const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
-            if (advanceResult) {
-              result += `
+            if (nextNode.todo.length === 0) {
+              const hasNext = nextNode.nextLinear || nextNode.branches && nextNode.branches.length > 0;
+              if (hasNext) {
+                state.status = "waiting_step";
+                writeState(statePath, state);
+                result += `
+
+---
+
+No todos for this node. Call \`next_step()\` to advance.`;
+              } else {
+                const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
+                if (advanceResult) {
+                  result += `
 
 ---
 
 ${advanceResult}`;
+                }
+              }
             }
+            return result;
           }
-          return result;
+          if (node.branches && node.branches.length > 0) {
+            if (!next) {
+              const options = node.branches.map((b) => b.nodeId).join(", ");
+              return `Branch choice required. Valid options: [${options}]. Call \`next_step({ next: "<node-id>" })\` to choose.`;
+            }
+            const branch = node.branches.find((b) => b.nodeId === next);
+            if (!branch) {
+              const valid = node.branches.map((b) => b.nodeId).join(", ");
+              return `Invalid branch "${next}". Valid options: [${valid}]`;
+            }
+            state.decisions.push({
+              node_id: state.current_node,
+              timestamp: now(),
+              summary: `Chose branch "${next}": ${branch.when}`
+            });
+            const nextNode = state.node_map[next];
+            if (!nextNode) {
+              return `Branch node "${next}" not found in DAG.`;
+            }
+            state.current_node = next;
+            state.todo_index = 0;
+            state.status = "running";
+            state.updated_at = now();
+            writeState(statePath, state);
+            const promptText = readPrompt(nextNode.prompt, resolveWorktree(context));
+            let result = `Branch taken: "${next}". Advancing.
+
+---
+
+${promptText}`;
+            if (nextNode.todo.length === 0) {
+              const hasNext = nextNode.nextLinear || nextNode.branches && nextNode.branches.length > 0;
+              if (hasNext) {
+                state.status = "waiting_step";
+                writeState(statePath, state);
+                result += `
+
+---
+
+No todos for this node. Call \`next_step()\` to advance.`;
+              } else {
+                const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
+                if (advanceResult) {
+                  result += `
+
+---
+
+${advanceResult}`;
+                }
+              }
+            }
+            return result;
+          }
+          state.status = "complete";
+          state.updated_at = now();
+          writeState(statePath, state);
+          return `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.
+
+` + `---
+
+` + `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` + `Present a summary of what was produced to the user. ` + `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`. ` + `Do NOT call activate_plan yourself or dispatch any more agents.`;
         }
       }),
       recover_context: tool({
@@ -12697,6 +12750,19 @@ ${promptText}
 ## Pending Branch Choice
 ${choices}
 `;
+            result += `
+All todos complete. Call \`next_step({ next: "<node-id>" })\` to choose a branch.
+`;
+          } else if (state.status === "waiting_step") {
+            if (currentNode?.nextLinear) {
+              result += `
+All todos complete. Call \`next_step()\` to advance to the next node.
+`;
+            } else {
+              result += `
+No todos for this node. Call \`next_step()\` to advance.
+`;
+            }
           }
           return result;
         }

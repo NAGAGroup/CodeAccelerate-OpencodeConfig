@@ -89,7 +89,7 @@ Dispatches multiple `@JuniorDev` (or other haiku) agents in parallel for indepen
 Dispatches HW as a subagent to run build/test commands and verify results. The planning agent fills in the exact commands and acceptance criteria during DAG authoring. One `task` call. Typically followed by a branch (`decision-gate` or `conditional-branch`) on pass/fail.
 
 ### `conditional-branch`
-No todo — auto-advances to the plugin's branch prompt. The prompt describes the condition and what each branch means. HW evaluates the condition from prior context and calls `next_step` with the correct branch. Use when the decision is machine-readable and requires no new tool calls.
+No todo — branching instructions are presented automatically on node entry. The prompt describes the condition and what each branch means. HW evaluates the condition from prior context and follows the branching instructions to choose the correct path. Use when the decision is machine-readable and requires no new tool calls.
 
 ### `compression-node`
 Dispatches `@ContextInsurgent` to synthesize and compress accumulated context. Use when scout output or multi-step agent work has filled the context window and key findings need crystallization before proceeding. One `task` call — the agent calls the `compress` tool internally. Source material for compression should come from codebase exploration, not .opencode/ session directories.

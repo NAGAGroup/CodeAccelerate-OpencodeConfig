@@ -19,3 +19,5 @@ Include in your summary:
 6. **Estimated dispatches** — Total number of agent dispatches
 
 > **Note:** The `when` conditions in plan.json for this branch node are matched against the user's selected option label. The labels `"Approve — write the DAG"` and `"Rethink"` are intentionally chosen to match the plan.json branch conditions — do not change them.
+
+After the user responds, branching instructions will follow — proceed to DAG writing or restart decomposition as directed.

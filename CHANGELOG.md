@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- Planning enforcement plugin now requires explicit `next_step()` call on every node after todos complete, eliminating all auto-advance behavior. Previously, linear (single-path) nodes auto-advanced silently; now every node waits for `next_step()` before proceeding.
+- Terminal nodes now also require `next_step()` to complete; the plugin detects no `next` field and closes the session gracefully.
+- `next_step` tool `next` parameter is now optional; omit for linear advance or session completion, required when choosing a branch.
+- Internal plugin status `"waiting_branch"` renamed to `"waiting_step"` to reflect universal applicability.
+- `dag-design-guide.md` Execution & Advancement section updated to reflect universal `next_step()` requirement; auto-advance language removed.
+- `headwrench.md` Plan Activation section updated: every node now requires `next_step()`, session closing requires `next_step()` on terminal nodes, stale "linear nodes auto-advance" language removed.
+- `research-gate.md` option labels corrected to exactly match plan.json `when` conditions (`"User wants web research"` / `"User skips web research"`); mismatched labels would have caused branch matching to fall through.
+- Branch node prompts (`research-gate.md`, `propose-structure.md`, `planning-gate.md`) updated with natural language indicating branching instructions will follow after todos complete.
+- Node library `decision-gate` and `conditional-branch` READMEs updated to remove implementation-specific "plugin" references; replaced with neutral language indicating branching instructions follow automatically.
+- Node library `decision-gate` prompt-template updated to document the connection between question option labels and plan.json `when` conditions, with a concrete JSON example.
+- Node library `output-success` and `output-failure` READMEs updated with prominent anti-pattern warning against reusing terminal node IDs across branches.
+- Node library `generic` README updated with an Anti-patterns section covering: no branching logic in generic nodes, no vague todo items, no long todo sequences, always rename the node ID.
+
 ## [3.2.0] - 2026-03-28
 
 ### Changed

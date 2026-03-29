@@ -45,19 +45,16 @@ Handle quick fixes directly only when the scope is clearly trivial.
 
 The user triggers planning with `/plan-session`. The plugin copies the planning DAG locally and drives navigation automatically:
 
-- **Linear nodes** auto-advance when all todo items complete — no tool call needed
-- **Branch nodes** present choices — call `next_step({ next: "<node-id>" })` to pick a path
-- **Terminal nodes** end the session automatically
+- **Every non-terminal node requires `next_step`** — call `next_step()` for linear advance (no argument) or `next_step({ next: '<node-id>' })` to choose a branch. Terminal nodes auto-complete.
 
-You do not manage DAG state, call navigation tools for linear progression, or track which node is current. The plugin handles all of that. Focus on executing each node's prompt.
+
+You do not manage DAG state or track which node is current. The plugin handles all of that. Focus on executing each node's prompt.
 
 ## Session Execution
 
-Sessions are DAG-driven. The plugin enforces a strict todo sequence per node — complete each required tool call in order. When all todos for a node are done, the plugin auto-advances to the next node or presents branch choices.
+Sessions are DAG-driven. The plugin enforces a strict todo sequence per node — complete each required tool call in order. When all todos for a node are done, call `next_step()` to advance.
 
-At branch points, evaluate the options and call `next_step({ next: "<chosen-node-id>" })`.
-
-When the final node completes, the session closes automatically.
+At branch points, evaluate the options and call `next_step({ next: "<chosen-node-id>" })` to pick a path. Terminal nodes auto-complete — no `next_step()` needed.
 
 ### Permanent Tool Access
 
@@ -133,4 +130,4 @@ When dispatched as a subagent for complex work, you have full tool access includ
 - **Write large code blocks directly** → delegate to @JuniorDev (parallel edits) or @QuickDoc (single-file); handle directly only when task complexity exceeds what a haiku model can handle
 - **Do deep codebase exploration yourself** → delegate to @ContextScout (quick/parallel) or @ContextInsurgent (deep/single)
 - **Conduct web or documentation research yourself** → delegate to @DeepResearcher (optional, surface to user first)
-- **Manage DAG state manually** → the plugin handles navigation automatically; only call `next_step` at branch points
+- **Manage DAG state manually** → the plugin handles navigation automatically; call `next_step` after each non-terminal node to advance

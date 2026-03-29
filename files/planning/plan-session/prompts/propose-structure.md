@@ -27,9 +27,11 @@ Use the **`question`** tool to present your proposed structure and get feedback.
 - Where iterations appear and how deep they go (ask the user about iteration depth if uncertain)
 - How many total nodes the DAG will have
 
-Offer options like "Structure looks good — proceed to decomposition" and "Need changes".
+Offer options like "Approve" and "Rethink".
 
 Remember: you are structuring how the problem gets solved, not solving it. Every node will be executed by a dispatched agent.
+
+After the user responds, branching instructions will follow — proceed to decomposition or restart the structure proposal as directed.
 
 ## Todo
 

@@ -18,6 +18,8 @@ Auto-advances immediately (empty todo). The prompt instructs HW what to communic
 
 Always `output-success`. If a DAG has multiple success paths, each branch gets its own `output-success` instance — nodes cannot be shared or referenced by ID across branches.
 
+> **Anti-pattern:** Do NOT reuse the `output-success` ID across branches. Every terminal node must have a unique ID — e.g., `output-success`, `output-success-2`. Reusing an ID silently corrupts the node map and the session will terminate prematurely on whichever branch resolves it first.
+
 ## Notes
 
 - Empty todo — no tool calls required, no user interaction
