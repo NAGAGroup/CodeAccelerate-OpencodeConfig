@@ -6,11 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-03-29
+
 ### Added
 
 - README and `docs/getting-started.md`: Git Setup section recommending users gitignore `.opencode/**` in project repos while keeping `opencode.jsonc` tracked
 
 ### Changed
+
 - Planning enforcement plugin now requires explicit `next_step()` call on every node after todos complete, eliminating all auto-advance behavior. Previously, linear (single-path) nodes auto-advanced silently; now every node waits for `next_step()` before proceeding.
 - Terminal nodes now also require `next_step()` to complete; the plugin detects no `next` field and closes the session gracefully.
 - `next_step` tool `next` parameter is now optional; omit for linear advance or session completion, required when choosing a branch.
@@ -219,7 +222,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 [1.0.1]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/tree/v0.1.0
-[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.1.2...v3.2.0
 [3.1.2]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.1.1...v3.1.2
-[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.1.2...HEAD

@@ -21,7 +21,7 @@ bun run deploy   # Build + deploy to Cloudflare Workers
 
 **Runtime:** Bun v1.3.5+
 **Build tool:** OCX CLI (`bunx ocx build`)
-**Current version:** 3.2.0 (see `registry.jsonc`)
+**Current version:** 3.3.0 (see `registry.jsonc`)
 **Min compatibility:** OpenCode 1.27.0, OCX CLI 1.0.16
 
 ## Repository Structure
