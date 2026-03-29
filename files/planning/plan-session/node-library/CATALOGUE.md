@@ -46,7 +46,7 @@ DAGs are composed from three primitives:
 | Node | Todo | Use when |
 |---|---|---|
 | [`decision-gate`](#decision-gate) | `["question"]` | User must choose a path at runtime. |
-| [`sequential-thinking`](#sequential-thinking) | `["sequential-thinking_sequentialthinking"]` | HW needs to reason through a non-obvious decision before acting. |
+| [`sequential-thinking`](#sequential-thinking) | `["sequential-thinking_sequentialthinking"]` | HW needs to reason before a significant action or branch point. Use liberally — complex DAGs often have 2–4 of these. |
 
 ### Execution
 
@@ -77,7 +77,15 @@ Dispatches three `@ContextScout` agents in parallel via three sequential `task` 
 Dispatches one `@ContextInsurgent` to perform deep multi-file reasoning. Use after `scout-parallel` when scout output needs synthesis, or when a task requires understanding complex cross-file logic. One `task` call — expensive, serial. Do not instruct ContextInsurgent to read .opencode/ session directories — completed sessions are stale.
 
 ### `sequential-thinking`
-HeadWrench calls the `sequential-thinking` MCP tool directly to reason through a non-obvious decision. Use before branching decisions, architectural choices, or debug hypotheses. The prompt frames the decision and expected output. No agent dispatch.
+HeadWrench calls the `sequential-thinking` MCP tool directly to reason through a meaningful decision point. No agent dispatch — HW executes this tool itself. The prompt frames the decision and expected output.
+
+Use liberally in complex project DAGs — a multi-phase task often warrants 2–4 sequential-thinking nodes. Reach for this node:
+- After `scout-parallel` or `analyze-deep` to synthesize findings before deciding how to proceed
+- Before `decision-gate` to reason through branch options
+- Before `parallel-tasks` or `write-dag` when the scope or approach isn't fully settled
+- Whenever multiple approaches are plausible and trade-offs need to be reasoned through
+
+Do not limit to one per DAG. Each major decision point is a candidate.
 
 ### `decision-gate`
 Presents a choice to the user and branches based on their answer. The prompt must instruct HW to use the `question` tool with options that map to branch `when` conditions. One `question` call; `next` is an array of branches.

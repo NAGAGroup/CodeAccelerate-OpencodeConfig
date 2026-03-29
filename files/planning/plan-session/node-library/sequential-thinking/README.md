@@ -2,7 +2,15 @@
 
 ## When to use
 
-When HeadWrench needs to reason through a non-obvious decision before acting — architectural choices, debug hypotheses, scope trade-offs, or complex decompositions. Use before a branch node or before a high-stakes action.
+Add a sequential-thinking node whenever HW needs to reason through a decision before dispatching agents or making structural choices:
+
+- **After data collection** — After `scout-parallel` or `analyze-deep` nodes when findings need synthesis before deciding how to proceed
+- **Before gates** — Before any `decision-gate` node where the right branch option isn't immediately clear
+- **Before major actions** — Before `parallel-tasks` or `write-dag` nodes when the approach or scope is still being worked out
+- **At decision points** — Whenever a task has multiple plausible approaches and HW needs to reason through trade-offs
+- **Phase orientation** — At the start of a complex phase to orient HW's thinking before dispatching agents
+
+**Key insight:** Complex project DAGs should have **multiple** sequential-thinking nodes — one per major decision point is a good default.
 
 ## What it does
 
@@ -22,6 +30,6 @@ Default: `sequential-thinking`. If used multiple times in a DAG, suffix: `sequen
 ## Notes
 
 - No agent dispatch — HW executes this tool directly
-- Use sparingly: only when the decision is genuinely non-obvious and stakes are high
+- Use liberally in complex project DAGs — a multi-phase task often warrants 2–4 sequential-thinking nodes, one at each key decision point
 - Particularly useful before `decision-gate` (to prepare HW's recommendation) or before `write-dag` nodes (to finalize structure)
 - The `sequential-thinking_sequentialthinking` tool name is the MCP server tool — use this exact name in the todo array

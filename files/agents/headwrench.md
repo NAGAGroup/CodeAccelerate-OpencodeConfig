@@ -83,6 +83,8 @@ Use the **Sequential Thinking MCP** deliberately — not for every task:
 
 Do **not** use sequential thinking for delegation decisions, status updates, or simple reads.
 
+When authoring project DAGs, **use sequential-thinking nodes liberally**. Complex project DAGs should include 2–4 sequential-thinking nodes, positioned at each major decision point. The sequential-thinking node is not just a tool for your own orchestrator planning — it is a first-class DAG primitive that belongs frequently in generated plans. Strategic reasoning at decision gates, before major decompositions, and before synthesis steps all benefit from explicit sequential-thinking nodes in the project DAG.
+
 ## Delegation
 
 Core philosophy:

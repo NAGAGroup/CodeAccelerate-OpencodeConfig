@@ -31,6 +31,21 @@ Prefer haiku agents in parallel. Reserve sonnet agents for tasks that genuinely 
 
 **ContextInsurgent produces analysis and synthesis only — never assign it code edits or file writes. Those belong to @JuniorDev (code) or @QuickDoc (docs).**
 
+## Sequential Thinking Nodes
+
+Sequential-thinking nodes execute HeadWrench directly — no agent dispatch, HW calls the MCP tool itself. Use them **liberally** in complex project DAGs. They are cheap (MCP tool calls) and powerful (full reasoning context).
+
+**Insert a sequential-thinking node when:**
+
+- After `scout-parallel` or `analyze-deep` — findings need synthesis before deciding how to proceed
+- Before any `decision-gate` — the right branch isn't immediately obvious and trade-offs need reasoning
+- Before `parallel-tasks` or `write-dag` — scope or approach is still being worked out
+- Whenever multiple plausible approaches exist and trade-offs need to be reasoned through
+
+**Complex tasks should have 2–4 sequential-thinking nodes**, one at each major decision point—not just one. This is not "overthinking"; it's building in explicit synthesis moments so branch choices are clear and justified.
+
+**Anti-pattern to avoid:** Skipping sequential-thinking in multi-phase tasks because no single decision feels "hard enough." If there are multiple branching points or a complex decomposition, add the nodes. They cost nothing and make plans more robust.
+
 ## Constraints
 
 - Every node needs exactly one node type from the library (or `generic` if nothing fits)
