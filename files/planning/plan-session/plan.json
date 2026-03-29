@@ -21,50 +21,40 @@
               "prompt": "research-brief.md",
               "todo": ["question", "task"],
               "next": {
-                "id": "sequential-thinking",
-                "prompt": "sequential-thinking.md",
-                "todo": ["sequential-thinking_sequentialthinking"],
+                "id": "scout-node-library",
+                "prompt": "scout-node-library.md",
+                "todo": ["task"],
                 "next": {
-                  "id": "propose-structure",
-                  "prompt": "propose-structure.md",
-                  "todo": ["question"],
+                  "id": "sequential-thinking",
+                  "prompt": "sequential-thinking.md",
+                  "todo": ["sequential-thinking_sequentialthinking"],
                   "next": {
-                    "id": "propose-decomposition",
-                    "prompt": "propose-decomposition.md",
-                    "todo": ["task"],
-                    "next": {
-                      "id": "planning-gate",
-                      "prompt": "planning-gate.md",
-                      "todo": ["question"],
-                      "next": [
-                        {
-                          "when": "Approach is sound — proceed to write project DAG",
-                          "node": {
-                            "id": "write-dag",
+                    "id": "propose-plan",
+                    "prompt": "propose-plan.md",
+                    "todo": ["question"],
+                    "next": [
+                      {
+                        "when": "Approve — write the DAG",
+                        "node": {
+                          "id": "write-dag",
+                          "prompt": "write-dag.md",
+                          "todo": ["task", "validate_dag", "task"]
+                        }
+                      },
+                      {
+                        "when": "Rethink",
+                        "node": {
+                          "id": "propose-plan-2",
+                          "prompt": "propose-plan.md",
+                          "todo": ["question"],
+                          "next": {
+                            "id": "write-dag-2",
                             "prompt": "write-dag.md",
                             "todo": ["task", "validate_dag", "task"]
                           }
-                        },
-                        {
-                          "when": "Need to rethink — structure or decomposition is wrong",
-                          "node": {
-                            "id": "propose-structure-2",
-                            "prompt": "propose-structure.md",
-                            "todo": ["question"],
-                            "next": {
-                              "id": "propose-decomposition-2",
-                              "prompt": "propose-decomposition.md",
-                              "todo": ["task"],
-                              "next": {
-                                "id": "write-dag-2",
-                                "prompt": "write-dag.md",
-                                "todo": ["task", "validate_dag", "task"]
-                              }
-                            }
-                          }
                         }
-                      ]
-                    }
+                      }
+                    ]
                   }
                 }
               }
@@ -73,50 +63,40 @@
           {
             "when": "User skips web research",
             "node": {
-              "id": "sequential-thinking-2",
-              "prompt": "sequential-thinking.md",
-              "todo": ["sequential-thinking_sequentialthinking"],
+              "id": "scout-node-library-2",
+              "prompt": "scout-node-library.md",
+              "todo": ["task"],
               "next": {
-                "id": "propose-structure-3",
-                "prompt": "propose-structure.md",
-                "todo": ["question"],
+                "id": "sequential-thinking-2",
+                "prompt": "sequential-thinking.md",
+                "todo": ["sequential-thinking_sequentialthinking"],
                 "next": {
-                  "id": "propose-decomposition-3",
-                  "prompt": "propose-decomposition.md",
-                  "todo": ["task"],
-                  "next": {
-                    "id": "planning-gate-2",
-                    "prompt": "planning-gate.md",
-                    "todo": ["question"],
-                    "next": [
-                      {
-                        "when": "Approach is sound — proceed to write project DAG",
-                        "node": {
-                          "id": "write-dag-3",
+                  "id": "propose-plan-3",
+                  "prompt": "propose-plan.md",
+                  "todo": ["question"],
+                  "next": [
+                    {
+                      "when": "Approve — write the DAG",
+                      "node": {
+                        "id": "write-dag-3",
+                        "prompt": "write-dag.md",
+                        "todo": ["task", "validate_dag", "task"]
+                      }
+                    },
+                    {
+                      "when": "Rethink",
+                      "node": {
+                        "id": "propose-plan-4",
+                        "prompt": "propose-plan.md",
+                        "todo": ["question"],
+                        "next": {
+                          "id": "write-dag-4",
                           "prompt": "write-dag.md",
                           "todo": ["task", "validate_dag", "task"]
                         }
-                      },
-                      {
-                        "when": "Need to rethink — structure or decomposition is wrong",
-                        "node": {
-                          "id": "propose-structure-4",
-                          "prompt": "propose-structure.md",
-                          "todo": ["question"],
-                          "next": {
-                            "id": "propose-decomposition-4",
-                            "prompt": "propose-decomposition.md",
-                            "todo": ["task"],
-                            "next": {
-                              "id": "write-dag-4",
-                              "prompt": "write-dag.md",
-                              "todo": ["task", "validate_dag", "task"]
-                            }
-                          }
-                        }
                       }
-                    ]
-                  }
+                    }
+                  ]
                 }
               }
             }

@@ -90,26 +90,25 @@ The `plan-session` DAG lives in `files/planning/plan-session/` and follows this 
 
 ```
 session-overview → scout → research-gate
-  → [research-brief → sequential-thinking → propose-structure → propose-decomposition → planning-gate
-        → [write-dag]                                            (approved path)
-        → [propose-structure-2 → propose-decomposition-2 → write-dag-2]]  (rethink path)
-  → [sequential-thinking-2 → propose-structure-3 → propose-decomposition-3 → planning-gate-2
-        → [write-dag-3]                            (approved path)
-        → [propose-structure-4 → propose-decomposition-4 → write-dag-4]]  (rethink path)
+  → [research-brief → scout-node-library → sequential-thinking → propose-plan
+        → [write-dag]              (approved path)
+        → [propose-plan-2 → write-dag-2]]  (rethink path)
+  → [scout-node-library-2 → sequential-thinking-2 → propose-plan-3
+        → [write-dag-3]            (approved path)
+        → [propose-plan-4 → write-dag-4]]  (rethink path)
 ```
 
 | Node | Todo | Purpose |
 |------|------|---------|
 | `session-overview` | `[]` | Entry, auto-advance |
 | `scout` | `["task","task","task"]` | 3x @ContextScout in parallel |
-| `sequential-thinking` | `["sequential-thinking_sequentialthinking"]` | HW synthesizes scout + research findings (Branch A: with research) |
-| `sequential-thinking-2` | `["sequential-thinking_sequentialthinking"]` | HW synthesizes scout findings (Branch B: no research) |
-| `research-gate` | `["question"]` | User decides if cursory external research is needed before synthesis |
+| `research-gate` | `["question"]` | User decides if cursory external research is needed |
 | `research-brief` | `["question", "task"]` | User picks research topic; DeepResearcher does a cursory lookup |
-| `propose-structure` | `["question"]` | HW proposes structure, user approves |
-| `propose-decomposition` | `["task"]` | @ContextScout reads node library, HW decomposes |
-| `planning-gate` | `["question"]` | User approves or sends back |
-| `write-dag` | `["task","task"]` | Write plan files, verify |
+| `scout-node-library` | `["task"]` | @ContextScout reads node library (pure info-gathering) |
+| `sequential-thinking` | `["sequential-thinking_sequentialthinking"]` | HW designs complete plan with full context (Branch A: with research) |
+| `sequential-thinking-2` | `["sequential-thinking_sequentialthinking"]` | HW designs complete plan with full context (Branch B: no research) |
+| `propose-plan` | `["question"]` | HW presents complete plan (structure + decomposition), user approves |
+| `write-dag` | `["task","validate_dag","task"]` | Write plan files, validate, verify |
 
 The `planning-enforcement` plugin manages DAG state, enforces todo ordering, and blocks
 off-sequence tool calls at runtime.

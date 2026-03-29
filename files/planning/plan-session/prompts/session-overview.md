@@ -6,9 +6,9 @@ This session will produce a **project DAG** — a nested tree of nodes that Head
 
 ## What you will do
 
-1. Gather the task goal, constraints, and acceptance criteria from the user
-2. Dispatch scouts to explore the relevant codebase
-3. Compose a DAG structure from primitives (sequence, branch, iteration)
-4. Decompose the task into subtasks with agent assignments
-5. Present the plan for user approval
+1. Dispatch scouts to explore the relevant codebase
+2. Optionally run cursory web research (user decides)
+3. Read the node library to understand what building blocks are available
+4. Use sequential thinking to design the complete plan — structure and node-by-node decomposition — with full context from steps 1–3
+5. Present the complete plan for user approval (single gate)
 6. Write the project DAG files

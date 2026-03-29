@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Clarified that ContextInsurgent is for reasoning and synthesis only — never for code edits; added explicit prohibition to `headwrench.md` routing rules, `propose-decomposition.md` agent routing guidance, and `analyze-deep/README.md` notes
 - planning-enforcement plugin: `ensureOpenCodeIgnore()` now checks and writes both `!.opencode/` and `!.opencode/**` as distinct line-level patterns; fresh `.opencodeignore` creation includes both patterns
 - Expanded sequential-thinking node guidance to encourage liberal use in complex project DAGs; updated `sequential-thinking/README.md`, `CATALOGUE.md`, `propose-decomposition.md`, and `headwrench.md` to replace "use sparingly" framing with active encouragement, concrete trigger conditions, and explicit multi-node examples.
+- Restructured `plan-session` DAG to move node library discovery (`scout-node-library`) before sequential thinking, collapsing two user gates (`propose-structure` + `planning-gate`) into a single informed gate (`propose-plan`); updated `sequential-thinking.md` to produce a complete plan (structure + decomposition), added `scout-node-library.md` and `propose-plan.md`, removed `propose-structure.md`, `propose-decomposition.md`, and `planning-gate.md`
 
 ## [3.2.0] - 2026-03-28
 
