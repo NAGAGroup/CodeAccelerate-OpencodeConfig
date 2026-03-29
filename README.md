@@ -66,6 +66,21 @@ Planning sessions are DAG-based: each plan is a directed acyclic graph of tasks,
 
 Models, MCP servers, and agent behavior are controlled through the profile's `opencode.jsonc`. The defaults reflect each profile's provider. You can swap models, enable or disable the Exa web-search integration, and adjust per-agent settings without touching any prompts.
 
+## Git Setup
+
+If you use OpenCode across multiple projects, add the following to each project's `.gitignore` to keep planning artifacts out of version control:
+
+```gitignore
+# Ignore OpenCode session plans and DAG state
+.opencode/**
+
+# Keep project-specific OpenCode config (if you have one)
+!.opencode/opencode.jsonc
+!.opencode/opencode.json
+```
+
+Planning session files, DAG state, and agent logs are stored under `.opencode/` and are ephemeral — they don't belong in git history.
+
 ## Documentation
 
 - [Getting Started](docs/getting-started.md) — Installation, prerequisites, first-time setup

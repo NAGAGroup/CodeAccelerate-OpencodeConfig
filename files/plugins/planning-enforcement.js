@@ -12532,16 +12532,20 @@ Call \`next_step({ next: "<node-id>" })\` to continue.`;
 function ensureOpenCodeIgnore(worktree) {
   try {
     const ignorePath = path.join(worktree, ".opencodeignore");
-    const pattern = "!.opencode/";
+    const patterns = ["!.opencode/", "!.opencode/**"];
     if (fs.existsSync(ignorePath)) {
       const content = fs.readFileSync(ignorePath, "utf-8");
-      if (!content.includes(pattern)) {
-        fs.appendFileSync(ignorePath, `
-${pattern}
+      const lines = content.split(`
+`).map((l) => l.trim());
+      for (const pattern of patterns) {
+        if (!lines.includes(pattern)) {
+          fs.appendFileSync(ignorePath, `${pattern}
 `);
+        }
       }
     } else {
-      fs.writeFileSync(ignorePath, `${pattern}
+      fs.writeFileSync(ignorePath, `${patterns.join(`
+`)}
 `);
     }
   } catch {}

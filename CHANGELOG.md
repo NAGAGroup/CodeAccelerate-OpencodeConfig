@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- README and `docs/getting-started.md`: Git Setup section recommending users gitignore `.opencode/**` in project repos while keeping `opencode.jsonc` tracked
+
 ### Changed
 - Planning enforcement plugin now requires explicit `next_step()` call on every node after todos complete, eliminating all auto-advance behavior. Previously, linear (single-path) nodes auto-advanced silently; now every node waits for `next_step()` before proceeding.
 - Terminal nodes now also require `next_step()` to complete; the plugin detects no `next` field and closes the session gracefully.
@@ -20,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Node library `output-success` and `output-failure` READMEs updated with prominent anti-pattern warning against reusing terminal node IDs across branches.
 - Node library `generic` README updated with an Anti-patterns section covering: no branching logic in generic nodes, no vague todo items, no long todo sequences, always rename the node ID.
 - Clarified that ContextInsurgent is for reasoning and synthesis only — never for code edits; added explicit prohibition to `headwrench.md` routing rules, `propose-decomposition.md` agent routing guidance, and `analyze-deep/README.md` notes
+- planning-enforcement plugin: `ensureOpenCodeIgnore()` now checks and writes both `!.opencode/` and `!.opencode/**` as distinct line-level patterns; fresh `.opencodeignore` creation includes both patterns
 
 ## [3.2.0] - 2026-03-28
 

@@ -44,3 +44,18 @@ ocx oc -p naga
 ```
 
 Run this from any project directory — the profile is picked up automatically.
+
+## Git Setup
+
+Add the following to your project's `.gitignore` to keep OpenCode planning artifacts out of version control:
+
+```gitignore
+# Ignore OpenCode session plans and DAG state
+.opencode/**
+
+# Keep project-specific OpenCode config (if you have one)
+!.opencode/opencode.jsonc
+!.opencode/opencode.json
+```
+
+Session plans, DAG state, and agent logs live under `.opencode/` and are ephemeral — they shouldn't be committed.

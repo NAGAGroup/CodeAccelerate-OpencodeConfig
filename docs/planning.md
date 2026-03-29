@@ -125,3 +125,5 @@ Once a plan is created, it's permanent in `.opencode/session-plans/`. You can:
 - Review it to understand the exact steps your system took
 
 The DAG state is managed by the planning enforcement plugin — it ensures nodes execute in the correct order and prevents tools from being called out of sequence.
+
+See [getting-started.md](getting-started.md) for recommended `.gitignore` setup.
