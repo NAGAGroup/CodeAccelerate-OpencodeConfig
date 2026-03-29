@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Moved `research-gate` to immediately follow `scout` in the plan-session DAG, placing the research decision within the context-gathering phase. `sequential-thinking` now runs after all context (repo + optional web research) has been gathered, in both branches.
+
+### Fixed
+
+- Rewrote `research-gate.md` prompt to strictly enforce `question` tool call, preventing the planning agent from silently skipping the external research check
+- Updated `research-brief.md` dispatch instructions to communicate cursory-pass scope without enumerating DeepResearcher's tools
+
 ## [3.1.2] - 2026-03-28
 
 ### Fixed

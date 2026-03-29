@@ -1,6 +1,6 @@
 # Sequential Thinking — Synthesize Scout Findings
 
-The scouts have reported. Before proposing structure to the user, use sequential thinking to consolidate what you learned and reason through the planning implications.
+The scouts have reported. If web research was also conducted in this session, incorporate those findings as well. Before proposing structure to the user, use sequential thinking to consolidate what you learned and reason through the planning implications.
 
 ## Todo
 

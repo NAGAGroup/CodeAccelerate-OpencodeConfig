@@ -1,11 +1,13 @@
 # Research Gate
 
-Before proposing DAG structure, ask the user whether a brief documentation or API lookup would help ground the plan.
+**You MUST call the question tool — do not skip this step, do not proceed without calling it.**
 
-You have already synthesized the scout findings. Your task is to call the **`question`** tool to let the user decide.
-
-**You MUST call the `question` tool — do not make this decision yourself or present a conclusion as plain text.**
+The scouts have just completed their codebase exploration. Before synthesizing findings, determine if there is also external knowledge (documentation, APIs, frameworks, recent changes) that would be needed to design a robust plan.
 
 ## Todo
 
-1. `question` — Ask the user: "Before proposing DAG structure, should I do a quick documentation or API lookup to ground the plan?" Present options: "Yes — do a quick lookup" (I will dispatch DeepResearcher for targeted docs) and "No — proceed to structure" (skip lookup and go straight to proposing the DAG structure).
+1. `question` — Ask the user whether cursory external research is needed to have the full context required to design a robust plan.
+
+**Option A:** "Yes — do a quick lookup" (description: "Dispatch DeepResearcher for a targeted cursory pass")
+
+**Option B:** "No — I have enough context" (description: "Proceed directly to structure proposal")

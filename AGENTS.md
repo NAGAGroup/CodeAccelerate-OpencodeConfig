@@ -34,7 +34,7 @@ bun run deploy   # Build + deploy to Cloudflare Workers
 │   ├── planning/           # DAG-driven planning scaffolds
 │   │   ├── plan-session/   # The only shipped planning mode
 │   │   │   ├── plan.json   # Executable DAG
-│   │   │   ├── prompts/    # One .md file per node (7 files)
+│   │   │   ├── prompts/    # One .md file per node (9 files)
 │   │   │   └── node-library/ # Reusable node type templates (12 node types)
 │   │   └── reference/      # dag-design-guide.md — schema spec and authoring guide
 │   ├── plugins/            # planning-enforcement.ts (+ compiled .js bundle)
@@ -89,17 +89,23 @@ One DAG-driven planning mode ships: **plan-session**, triggered by `/plan-sessio
 The `plan-session` DAG lives in `files/planning/plan-session/` and follows this flow:
 
 ```
-session-overview → scout → sequential-thinking → propose-structure
-  → propose-decomposition → planning-gate
-      → [write-dag]                          (approved path)
-      → [propose-structure-2 → propose-decomposition-2 → write-dag-2]  (rethink path)
+session-overview → scout → research-gate
+  → [research-brief → sequential-thinking → propose-structure → propose-decomposition → planning-gate
+        → [write-dag]                                            (approved path)
+        → [propose-structure-2 → propose-decomposition-2 → write-dag-2]]  (rethink path)
+  → [sequential-thinking-2 → propose-structure-3 → propose-decomposition-3 → planning-gate-2
+        → [write-dag-3]                            (approved path)
+        → [propose-structure-4 → propose-decomposition-4 → write-dag-4]]  (rethink path)
 ```
 
 | Node | Todo | Purpose |
 |------|------|---------|
 | `session-overview` | `[]` | Entry, auto-advance |
 | `scout` | `["task","task","task"]` | 3x @ContextScout in parallel |
-| `sequential-thinking` | `["sequential-thinking_sequentialthinking"]` | HW synthesizes findings |
+| `sequential-thinking` | `["sequential-thinking_sequentialthinking"]` | HW synthesizes scout + research findings (Branch A: with research) |
+| `sequential-thinking-2` | `["sequential-thinking_sequentialthinking"]` | HW synthesizes scout findings (Branch B: no research) |
+| `research-gate` | `["question"]` | User decides if cursory external research is needed before synthesis |
+| `research-brief` | `["question", "task"]` | User picks research topic; DeepResearcher does a cursory lookup |
 | `propose-structure` | `["question"]` | HW proposes structure, user approves |
 | `propose-decomposition` | `["task"]` | @ContextScout reads node library, HW decomposes |
 | `planning-gate` | `["question"]` | User approves or sends back |
