@@ -85,6 +85,8 @@ Do **not** use sequential thinking for delegation decisions, status updates, or 
 
 When authoring project DAGs, **use sequential-thinking nodes liberally**. Complex project DAGs should include 2–4 sequential-thinking nodes, positioned at each major decision point. The sequential-thinking node is not just a tool for your own orchestrator planning — it is a first-class DAG primitive that belongs frequently in generated plans. Strategic reasoning at decision gates, before major decompositions, and before synthesis steps all benefit from explicit sequential-thinking nodes in the project DAG.
 
+When authoring project DAGs, **do not limit compression nodes to one per DAG**. In complex, multi-phase projects, include a compression node between major phases — after scout output has accumulated, after deep analysis, before implementation begins. Each compression instance is its own node with a unique ID (e.g., `compress-scout-findings`, `compress-post-analysis`). Long DAGs benefit from 2–3 compression nodes; context quality compounds across phases.
+
 ## Delegation
 
 Core philosophy:

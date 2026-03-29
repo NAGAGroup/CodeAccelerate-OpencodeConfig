@@ -12337,7 +12337,7 @@ tool.schema = exports_external;
 import * as fs from "fs";
 import * as path from "path";
 var CONFIG_ROOT = path.dirname(import.meta.dirname);
-var exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag"];
+var exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "compress"];
 function dagStatePath(worktree, sessionId) {
   return path.join(worktree, ".opencode", "dag-state", `${sessionId}.json`);
 }

@@ -27,6 +27,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - planning-enforcement plugin: `ensureOpenCodeIgnore()` now checks and writes both `!.opencode/` and `!.opencode/**` as distinct line-level patterns; fresh `.opencodeignore` creation includes both patterns
 - Expanded sequential-thinking node guidance to encourage liberal use in complex project DAGs; updated `sequential-thinking/README.md`, `CATALOGUE.md`, `propose-decomposition.md`, and `headwrench.md` to replace "use sparingly" framing with active encouragement, concrete trigger conditions, and explicit multi-node examples.
 - Restructured `plan-session` DAG to move node library discovery (`scout-node-library`) before sequential thinking, collapsing two user gates (`propose-structure` + `planning-gate`) into a single informed gate (`propose-plan`); updated `sequential-thinking.md` to produce a complete plan (structure + decomposition), added `scout-node-library.md` and `propose-plan.md`, removed `propose-structure.md`, `propose-decomposition.md`, and `planning-gate.md`
+- Planning enforcement plugin: added `compress` to exempt tools list, resolving the contradiction where the compress MCP nudges the agent to compress but the plugin blocked the call outside of explicit todo sequences
+- `headwrench.md`: added guidance to use compression nodes liberally in multi-phase project DAGs, including multiple per DAG between major phases — mirroring the existing sequential-thinking encouragement
+- Node library: updated `compression-node` catalogue entry and README to encourage multiple uses per DAG in long/complex sessions
+- Planning prompts: updated `sequential-thinking.md` to include a callout for compression nodes in long multi-phase DAGs
 
 ## [3.2.0] - 2026-03-28
 

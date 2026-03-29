@@ -22,6 +22,8 @@ Work through these questions in order. Each builds on the previous:
 
 6. **What node types fit best?** Using the node library context from `scout-node-library`, select the right node type for each step. Assign agents (haiku in parallel, sonnet for deep reasoning). Draft the decomposition: Node ID | Node type | Agent | What it does | Branch conditions.
 
+   **Compression nodes for long DAGs:** For long, multi-phase DAGs — especially those with extensive scout or analysis phases — include compression nodes between major phases. Multiple compression nodes in a single DAG is appropriate and encouraged; don't limit to one. Place them after phases where context has accumulated (e.g., after 3 scouts, after a deep analysis) and before phases that need a clean context window.
+
 7. **What am I confident about vs. still unsure of?** Be explicit. If something is genuinely unclear, note it — you'll surface it to the user at `propose-plan`.
 
 ## Output

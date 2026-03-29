@@ -102,6 +102,8 @@ No todo — branching instructions are presented automatically on node entry. Th
 ### `compression-node`
 Dispatches `@ContextInsurgent` to synthesize and compress accumulated context. Use when scout output or multi-step agent work has filled the context window and key findings need crystallization before proceeding. One `task` call — the agent calls the `compress` tool internally. Source material for compression should come from codebase exploration, not .opencode/ session directories.
 
+Don't limit to one per DAG — a multi-phase project often benefits from compression at multiple junctures: after the scout phase, after deep analysis, before implementation. Use a unique node ID for each instance (e.g., `compress-scout-findings`, `compress-post-analysis`). Between any two major phases where raw context has accumulated, a compression node is appropriate.
+
 ### `output-success`
 Terminal node. No todo. The prompt tells HW what to communicate to the user on success: summary, artifacts produced, next steps.
 

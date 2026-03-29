@@ -14,7 +14,7 @@ const CONFIG_ROOT = path.dirname(import.meta.dirname);
 const PRIMARY_AGENT = "headwrench";
 
 // Tools that bypass DAG blocking, regardless of current node's todos
-const exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag"];
+const exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "compress"];
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
