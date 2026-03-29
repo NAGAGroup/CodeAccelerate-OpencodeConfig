@@ -29,6 +29,8 @@ After the scout returns, synthesize a decomposition with this format for each no
 
 Prefer haiku agents in parallel. Reserve sonnet agents for tasks that genuinely require deep reasoning across many files.
 
+**ContextInsurgent produces analysis and synthesis only — never assign it code edits or file writes. Those belong to @JuniorDev (code) or @QuickDoc (docs).**
+
 ## Constraints
 
 - Every node needs exactly one node type from the library (or `generic` if nothing fits)
