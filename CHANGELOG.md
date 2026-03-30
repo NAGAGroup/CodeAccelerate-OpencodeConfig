@@ -8,10 +8,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `context-scout.md` agent: added root-directory glob fallback instruction — if dispatched with no specific file paths, scout must use a broad glob pattern to orient itself rather than returning empty
+- `headwrench.md` agent: added `multiple` parameter guidance to Question Tool Usage section (rule 6) — `multiple: true` for multi-select scenarios, `multiple: false`/omit for binary/exclusive choices
+- `planning-enforcement.ts` plugin: improved `next_step` error message to show remaining todo count and next expected tool name when called prematurely
+- `sequential-thinking.md` planning prompt: raised minimum thought count from 6 to 10; added todo-array validation step with explicit list of invalid todo values
+- `scout-node-library.md` planning prompt: added CRITICAL verbatim-return requirement — scout must return CATALOGUE.md in full without summarizing or paraphrasing
+- `research-brief.md` planning prompt: added instruction to dispatch researcher immediately after question resolves, in the same response without pausing
+- `scout.md` planning prompt: added mandatory requirement block — HeadWrench must provide specific file paths or glob patterns to each scout alongside thematic goals
 - `write-dag.md` prompt: added node type → todo quick reference table; added user-task context warning; strengthened `next` field rule for non-terminal nodes
 - `sequential-thinking.md` prompt: fixed sequential-thinking stall (explicit "keep calling in same turn" instruction); added `todo` column to required node decomposition output table
 - `propose-plan.md` prompt: added `Todo` column to node decomposition table requirement with explanation that values are written verbatim into `plan.json`
 - `headwrench.md` agent: Planning Step 3 now instructs HW to pass explicit `todo` arrays in the write-dag dispatch prompt
+- `ocx-ollama` profile now uses a fixed `opencode-model` alias instead of the `OLLAMA_MODEL` environment variable; users must run `ollama cp <model> opencode-model` to register their chosen model. Documentation updated with `ollama cp` setup and systemctl parallelism configuration instructions.
+- Improved tool-call blocking in planning-enforcement plugin: `bash` now runs `/bin/true` as a no-op when blocked instead of executing with garbage args; best-effort short-circuit via `output.output` pre-set added to `tool.execute.before`
 
 ### Fixed
 

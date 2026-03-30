@@ -69,3 +69,5 @@ One-paragraph synthesis HeadWrench can use directly.
 ## Tool Guidance
 
 The system auto-truncates output longer than 2000 lines or 51200 bytes. Avoid `head`/`tail`/`sed` for limiting output; they are not necessary. Prefer the dedicated tools (Glob, Grep, Read with offset/limit).
+
+**Path fallback:** If dispatched with no specific file paths or glob patterns, do NOT return empty or give up. Start by exploring the root with Glob using a broad pattern (e.g., `**/*.{md,ts,json,toml,jsonc}`) to orient yourself, then read the most relevant files found.

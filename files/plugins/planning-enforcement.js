@@ -12602,7 +12602,10 @@ var PlanningEnforcementPlugin = async (_ctx) => {
             return "DAG session is already complete.";
           }
           if (state.status !== "waiting_step") {
-            return `Cannot call next_step — current status is "${state.status}", not "waiting_step".`;
+            const currentNode = state.node_map[state.current_node];
+            const remaining = currentNode ? currentNode.todo.length - state.todo_index : 0;
+            const nextExpected = currentNode ? currentNode.todo[state.todo_index] ?? "none" : "unknown";
+            return `Cannot call next_step — node "${state.current_node}" still has ${remaining} todo(s) pending. ` + `Next expected tool: "${nextExpected}". Call "${nextExpected}" to continue, ` + `then call next_step when all todos are complete.`;
           }
           const node = state.node_map[state.current_node];
           if (!node) {
@@ -12944,8 +12947,16 @@ ${issues.join(`
       if (!expectedTool)
         return;
       if (input.tool !== expectedTool) {
+        const blockedMsg = `[DAG BLOCKED] Tool "${input.tool}" is not allowed at this step. ` + `Expected: "${expectedTool}". Call "${expectedTool}" to continue.
+
+` + `Current node: "${state.current_node}" | Todo progress can be checked with recover_context().`;
         blockedCalls.set(input.callID, { expected: expectedTool, actual: input.tool });
-        output.args = { __dag_blocked: true };
+        output.output = blockedMsg;
+        if (input.tool === "bash") {
+          output.args = { command: "true" };
+        } else {
+          output.args = { __dag_blocked: true };
+        }
       }
     },
     "tool.execute.after": async (input, output) => {

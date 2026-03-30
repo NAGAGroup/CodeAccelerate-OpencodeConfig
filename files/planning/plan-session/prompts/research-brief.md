@@ -8,6 +8,8 @@ Based on your scout findings and the task description, you should have a good se
 
 1. `question` — Use the **`question` tool** to ask the user which documentation to research. Based on your understanding of the task, propose specific documentation sources as options (e.g., official library/framework docs, API reference pages, GitHub repositories). Allow the user to type their own answer if none of the options fit.
 
+**After the user answers:** immediately proceed to dispatch the researcher in the **same response** — do NOT pause or wait for a new user message before calling the `task` tool below.
+
 2. `task` — Dispatch one **@DeepResearcher** with research instructions. Tell the researcher: the overall planning task, exactly where to look, and what output format you need. Instruct them to follow this tool priority: **(1) Context7 first** — use `context7_resolve-library-id` to identify libraries and `context7_query-docs` to retrieve documentation; **(2) Exa second** — only search the web for content not covered by Context7. The output should be a brief structured summary (key findings, relevant APIs or patterns, caveats). Emphasize that this is a one-shot, quick pass — no follow-ups or deep dives.
 
 ## Important

@@ -69,6 +69,7 @@ The `question` tool collects a decision — it does not present information. Har
 3. **`options[].label`: 1–5 words** — "Approve", "Modify", "Start over" — never more
 4. **`options[].description`: one sentence max** — a brief clarifier, nothing more
 5. **No proposals inside `question`** — zero bullet points, zero code blocks, zero multi-sentence rationale inside any `question` field
+6. **`multiple` flag** — use `multiple: true` when the user could reasonably select more than one option (e.g., choosing research topics, selecting multiple features). Use `multiple: false` (or omit) for binary/exclusive choices (yes/no, approve/reject, branch paths). When in doubt, `multiple: true` gives more flexibility.
 
 If the question tool is called with a multi-paragraph `question` field or option descriptions longer than one sentence, it is wrong — rewrite it.
 

@@ -10,6 +10,8 @@ Provide each scout with specific file paths or search patterns. Let them report 
 
 ## Todo
 
+> **Mandatory:** Provide each scout with specific file paths or glob patterns — not just a thematic description. Scouts dispatched without concrete paths will fail to orient on less-capable models. If the project structure is unknown, include broad glob patterns (e.g., `**/*`, `src/**/*.ts`) alongside the thematic goal.
+
 1. `task` — Dispatch @ContextScout to explore the affected code (files, modules, components the task touches directly)
 2. `task` — Dispatch @ContextScout to explore patterns and architecture (codebase organization, conventions to follow)
 3. `task` — Dispatch @ContextScout to explore dependencies and boundaries (other systems, integration points)

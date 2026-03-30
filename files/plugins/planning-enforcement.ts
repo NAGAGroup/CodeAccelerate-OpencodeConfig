@@ -429,7 +429,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             return "DAG session is already complete.";
           }
           if (state.status !== "waiting_step") {
-            return `Cannot call next_step — current status is "${state.status}", not "waiting_step".`;
+            const currentNode = state.node_map[state.current_node];
+            const remaining = currentNode ? currentNode.todo.length - state.todo_index : 0;
+            const nextExpected = currentNode ? currentNode.todo[state.todo_index] ?? "none" : "unknown";
+            return `Cannot call next_step — node "${state.current_node}" still has ${remaining} todo(s) pending. ` +
+              `Next expected tool: "${nextExpected}". Call "${nextExpected}" to continue, ` +
+              `then call next_step when all todos are complete.`;
           }
 
           const node = state.node_map[state.current_node];
@@ -811,10 +816,21 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       if (!expectedTool) return;
 
       if (input.tool !== expectedTool) {
-        // Corrupt args so the tool fails — then override output in after hook.
-        blockedCalls.set(input.callID, { expected: expectedTool, actual: input.tool });
-        output.args = { __dag_blocked: true };
-      }
+         const blockedMsg =
+           `[DAG BLOCKED] Tool "${input.tool}" is not allowed at this step. ` +
+           `Expected: "${expectedTool}". Call "${expectedTool}" to continue.\n\n` +
+           `Current node: "${state.current_node}" | Todo progress can be checked with recover_context().`;
+         blockedCalls.set(input.callID, { expected: expectedTool, actual: input.tool });
+         // Best-effort short-circuit: if OpenCode checks output.output before invoking the tool,
+         // this prevents execution. No harm if ignored — the after-hook suppresses it either way.
+         (output as any).output = blockedMsg;
+         // Per-tool harmless args: minimize side effects when the tool does execute
+         if (input.tool === "bash") {
+           output.args = { command: "true" };
+         } else {
+           output.args = { __dag_blocked: true };
+         }
+       }
     },
 
     // Track tool calls and auto-advance when todos are exhausted.
