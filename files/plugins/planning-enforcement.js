@@ -12947,11 +12947,7 @@ ${issues.join(`
       if (!expectedTool)
         return;
       if (input.tool !== expectedTool) {
-        const blockedMsg = `[DAG BLOCKED] Tool "${input.tool}" is not allowed at this step. ` + `Expected: "${expectedTool}". Call "${expectedTool}" to continue.
-
-` + `Current node: "${state.current_node}" | Todo progress can be checked with recover_context().`;
-        blockedCalls.set(input.callID, { expected: expectedTool, actual: input.tool });
-        output.output = blockedMsg;
+        blockedCalls.set(input.callID, { expected: expectedTool, actual: input.tool, nodeId: state.current_node });
         if (input.tool === "bash") {
           output.args = { command: "true" };
         } else {
@@ -12967,7 +12963,7 @@ ${issues.join(`
         blockedCalls.delete(input.callID);
         output.output = `[DAG BLOCKED] Tool "${blocked.actual}" is not allowed at this step. ` + `Expected: "${blocked.expected}". Call "${blocked.expected}" to continue.
 
-` + `Current node: "${input.tool}" | Todo progress can be checked with recover_context().`;
+` + `Current node: "${blocked.nodeId}" | Todo progress can be checked with recover_context().`;
         return;
       }
       const worktree = resolveWorktree(_ctx);

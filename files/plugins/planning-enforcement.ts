@@ -816,14 +816,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       if (!expectedTool) return;
 
       if (input.tool !== expectedTool) {
-         const blockedMsg =
-           `[DAG BLOCKED] Tool "${input.tool}" is not allowed at this step. ` +
-           `Expected: "${expectedTool}". Call "${expectedTool}" to continue.\n\n` +
-           `Current node: "${state.current_node}" | Todo progress can be checked with recover_context().`;
-         blockedCalls.set(input.callID, { expected: expectedTool, actual: input.tool });
-         // Best-effort short-circuit: if OpenCode checks output.output before invoking the tool,
-         // this prevents execution. No harm if ignored — the after-hook suppresses it either way.
-         (output as any).output = blockedMsg;
+         blockedCalls.set(input.callID, { expected: expectedTool, actual: input.tool, nodeId: state.current_node });
          // Per-tool harmless args: minimize side effects when the tool does execute
          if (input.tool === "bash") {
            output.args = { command: "true" };
@@ -837,15 +830,15 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
     "tool.execute.after": async (input, output) => {
       if (!input.tool || !input.sessionID) return;
 
-      // Check if this call was blocked by the before hook
-      const blocked = blockedCalls.get(input.callID);
-      if (blocked) {
-        blockedCalls.delete(input.callID);
-        output.output = `[DAG BLOCKED] Tool "${blocked.actual}" is not allowed at this step. ` +
-          `Expected: "${blocked.expected}". Call "${blocked.expected}" to continue.\n\n` +
-          `Current node: "${input.tool}" | Todo progress can be checked with recover_context().`;
-        return;
-      }
+       // Check if this call was blocked by the before hook
+       const blocked = blockedCalls.get(input.callID);
+       if (blocked) {
+         blockedCalls.delete(input.callID);
+         output.output = `[DAG BLOCKED] Tool "${blocked.actual}" is not allowed at this step. ` +
+           `Expected: "${blocked.expected}". Call "${blocked.expected}" to continue.\n\n` +
+           `Current node: "${blocked.nodeId}" | Todo progress can be checked with recover_context().`;
+         return;
+       }
 
       // Exempt tools bypass blocking but still participate in todo tracking when
        // they appear as the currently expected todo item (e.g. "question" in todo[]).

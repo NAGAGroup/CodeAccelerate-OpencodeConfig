@@ -26,6 +26,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - Fixed `activate-now` nodes in the `plan-session` DAG: changed `todo` from `[]` to `["activate_plan"]` so HeadWrench can call `activate_plan` before the terminal completion message fires; removed contradictory "Do NOT call activate_plan yourself" instruction from the plugin's terminal completion message; updated `activate-now.md` with a clarifying note.
+- Fixed `compression-node` node library definition — node now correctly instructs HeadWrench to call the `compress` tool directly via the DCP plugin, rather than incorrectly dispatching ContextInsurgent as an agent. Updated `plan.json`, `README.md`, `prompt-template.md`, `CATALOGUE.md`, and `AGENTS.md`.
+- Restored tool blocking in planning-enforcement plugin: removed erroneous `output.output` assignment from `tool.execute.before` hook that caused OpenCode to skip the after hook, bypassing all tool blocking
+- Fixed block message display: "Current node" now correctly shows the DAG node ID instead of the blocked tool name
 
 ## [3.4.0] - 2026-03-29
 
