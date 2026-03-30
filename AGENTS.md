@@ -301,7 +301,7 @@ Profiles configure these MCP servers:
 
 Before creating any non-release commit that touches shipped registry files (agents, prompts, plugins, planning files, profiles, skills), update the `## [Unreleased]` section of `CHANGELOG.md` to describe the changes. Group entries under `### Added`, `### Changed`, `### Fixed`, or `### Removed` as appropriate. Include `CHANGELOG.md` in the same commit as the code changes — do not create a separate changelog commit.
 
-**Do not add `AGENTS.md` changes to `CHANGELOG.md`.** `AGENTS.md` is a dev-only artifact and is not part of the shipped registry.
+**Do not add `AGENTS.md` changes to `CHANGELOG.md`.** `AGENTS.md` is a dev-only artifact — it is tracked in git and committed normally, but its changes are not part of the shipped registry and do not belong in the changelog. Only changes to shipped registry files (agents, prompts, plugins, planning files, profiles, skills, user docs) go in `CHANGELOG.md`.
 
 ## Release Workflow
 
