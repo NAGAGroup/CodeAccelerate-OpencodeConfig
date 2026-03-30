@@ -181,6 +181,16 @@ ending the session prematurely. The plugin now throws a validation error on dupl
 - **Node library** → edit files in `files/planning/plan-session/node-library/`; new files
   go in `registry.jsonc` too
 
+> **`validate_dag` scope:** The `validate_dag` tool validates project DAGs written to
+> `.opencode/session-plans/{name}/` — it does **not** validate the source planning DAG files
+> in `files/planning/plan-session/`. If you modify `plan.json` or prompt files here, validate
+> your changes manually by reading the file and checking the structure. Do not attempt to call
+> `validate_dag plan-session` against the source files; any apparent success is an artifact of
+> a stale local session copy, not a real validation of your edits.
+>
+> Note: `validate_dag` is legitimately called during planning sessions when agents are writing
+> a *project* DAG — that is its intended use and is correct behavior.
+
 ### Updating profiles
 
 1. Edit `opencode.jsonc` and/or `ocx.jsonc` in `files/profiles/{name}/`

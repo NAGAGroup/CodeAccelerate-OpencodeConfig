@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Activation gate at end of plan-session DAG: after the project DAG is written and validated, HeadWrench asks if the user wants to activate and execute immediately, eliminating the need to manually type `/activate-plan`
 - Added `ocx-ollama` profile for local Ollama inference with model specified via `OLLAMA_MODEL` environment variable
 
 ### Changed

@@ -71,8 +71,8 @@ Keep prompts focused on delegation. HeadWrench dispatches agents — it doesn't 
 
 ## After this node completes
 
-This is the **terminal node** of the planning session. Once both tasks complete:
+Once both tasks complete:
 
 1. **Present a summary** to the user: what was written, where the files are, and the DAG structure
-2. **Tell the user** they can activate the plan with `/activate-plan {task-name}`
-3. **STOP** — do NOT activate the plan yourself, do NOT dispatch more agents, do NOT start executing the project DAG. The planning session is over.
+2. **STOP dispatching agents** — the write phase is complete
+3. **Call `next_step()`** to advance to the activation gate, which will ask the user if they want to activate and execute immediately
