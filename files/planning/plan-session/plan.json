@@ -8,7 +8,7 @@
     "next": {
       "id": "scout",
       "prompt": "scout.md",
-      "todo": ["task", "task", "task"],
+       "todo": ["task", "task", "task", "task"],
       "next": {
         "id": "research-gate",
         "prompt": "research-gate.md",

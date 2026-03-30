@@ -102,7 +102,7 @@ session-overview → scout → research-gate
 | Node | Todo | Purpose |
 |------|------|---------|
 | `session-overview` | `[]` | Entry, auto-advance |
-| `scout` | `["task","task","task"]` | 3x @ContextScout in parallel |
+| `scout` | `["task","task","task","task"]` | 3x @ContextScout in parallel, plus 4th task dispatches HeadWrench as subagent for git context |
 | `research-gate` | `["question"]` | User decides if cursory external research is needed |
 | `research-brief` | `["question", "task"]` | User picks research topic; ExternalScout does a cursory lookup |
 | `scout-node-library` | `["task"]` | @ContextScout reads node library (pure info-gathering) |

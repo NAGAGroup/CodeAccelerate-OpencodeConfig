@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Extended `scout` node in the plan-session DAG with a 4th parallel task that dispatches HeadWrench as a subagent to run git commands (`git status`, `git log`, `git diff`) when in a git repo, providing planning context about recent commits and in-progress changes
+
 ### Fixed
 
 - planning prompt `scout-node-library.md`: fixed node library README path examples to include `{{SESSION_PATH}}/node-library/` prefix — bare relative paths caused agents in other projects to fail when reading node type README files
