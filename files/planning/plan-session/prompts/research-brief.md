@@ -8,7 +8,11 @@ Gather targeted documentation before proposing the DAG structure. This is a **qu
 
 Based on your scout findings and the task description, you should have a good sense of where to look. Propose specific documentation sources as options.
 
+> **Writing the ExternalScout's prompt:** The scout's prompt must specify: (1) which tools to use and in what order (Context7 first for official documentation, then Exa for broader search); (2) the exact question or topic to research; (3) a return format request: cite specific versions where relevant, include code examples when they exist, synthesize findings into a direct answer rather than a list of links.
+
 ## Todo
+
+> **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
 
 1. `question` — Use the **`question` tool** to ask the user which documentation to research. Based on your understanding of the task, propose specific documentation sources as options (e.g., official library/framework docs, API reference pages, GitHub repositories). Allow the user to type their own answer if none of the options fit.
 

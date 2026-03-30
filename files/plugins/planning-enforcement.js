@@ -12337,7 +12337,7 @@ tool.schema = exports_external;
 import * as fs from "fs";
 import * as path from "path";
 var CONFIG_ROOT = path.dirname(import.meta.dirname);
-var exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "todowrite"];
+var exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "todowrite", "sequential-thinking_sequentialthinking"];
 function dagStatePath(worktree, sessionId) {
   return path.join(worktree, ".opencode", "dag-state", `${sessionId}.json`);
 }
@@ -12945,12 +12945,16 @@ ${issues.join(`
       if (!node || node.todo.length === 0)
         return;
       if (state.status === "waiting_step") {
+        if (exemptTools.includes(input.tool))
+          return;
         throw new Error(`[DAG BLOCKED] All todos for node "${state.current_node}" are complete. ` + `Call \`next_step()\` to advance to the next node before calling any other tools.`);
       }
       const expectedTool = node.todo[state.todo_index];
       if (!expectedTool)
         return;
       if (input.tool !== expectedTool) {
+        if (exemptTools.includes(input.tool))
+          return;
         throw new Error(`[DAG BLOCKED] Tool "${input.tool}" is not allowed at this step. ` + `Expected: "${expectedTool}". Call "${expectedTool}" to continue.
 
 ` + `Current node: "${state.current_node}" | Todo progress can be checked with recover_context().`);

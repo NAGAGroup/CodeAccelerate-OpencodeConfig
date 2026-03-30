@@ -10,9 +10,11 @@ Provide each scout with specific file paths or search patterns. Let them report 
 
 **Call the `task` tool four times in sequence** — one per todo item below. Do not combine or skip.
 
+> **Writing scout prompts:** When writing each scout's task prompt, include: (1) specific file paths or glob patterns to read — not just thematic descriptions; (2) a clear statement of what the scout should return; (3) an explicit instruction that the scout must report findings as specific facts, not as generic "Codebase Overview" or "Key Decisions" sections. Scouts dispatched without concrete paths will fail to orient on less-capable models.
+
 ## Todo
 
-> **Mandatory:** Provide each scout with specific file paths or glob patterns — not just a thematic description. Scouts dispatched without concrete paths will fail to orient on less-capable models. If the project structure is unknown, include broad glob patterns (e.g., `**/*`, `src/**/*.ts`) alongside the thematic goal.
+> **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
 
 1. `task` — Dispatch @ContextScout to explore the affected code (files, modules, components the task touches directly)
 2. `task` — Dispatch @ContextScout to explore patterns and architecture (codebase organization, conventions to follow)

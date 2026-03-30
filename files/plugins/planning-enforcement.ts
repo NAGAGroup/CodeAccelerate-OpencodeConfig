@@ -14,7 +14,7 @@ const CONFIG_ROOT = path.dirname(import.meta.dirname);
 const PRIMARY_AGENT = "headwrench";
 
 // Tools that bypass DAG blocking, regardless of current node's todos
-const exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "todowrite"];
+const exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "todowrite", "sequential-thinking_sequentialthinking"];
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -811,6 +811,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
        if (!node || node.todo.length === 0) return;
 
        if (state.status === "waiting_step") {
+         if (exemptTools.includes(input.tool)) return;
          throw new Error(
            `[DAG BLOCKED] All todos for node "${state.current_node}" are complete. ` +
            `Call \`next_step()\` to advance to the next node before calling any other tools.`
@@ -822,6 +823,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
        if (!expectedTool) return;
 
         if (input.tool !== expectedTool) {
+          if (exemptTools.includes(input.tool)) return;
           throw new Error(
             `[DAG BLOCKED] Tool "${input.tool}" is not allowed at this step. ` +
             `Expected: "${expectedTool}". Call "${expectedTool}" to continue.\n\n` +

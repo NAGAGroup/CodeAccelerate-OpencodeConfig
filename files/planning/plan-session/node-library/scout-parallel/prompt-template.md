@@ -38,6 +38,10 @@ Paths to explore: {{SCOUT_3_PATHS}}
 
 ## Todo
 
+> **Writing scout prompts:** For each scout's task prompt, include: (1) the specific file paths or glob patterns specified for that scout; (2) a clear goal statement; (3) this instruction verbatim: "Report findings as specific facts and file locations — not as generic 'Codebase Overview', 'Key Decisions', or 'Patterns' sections. List what you found with exact references."
+
+> **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
+
 1. `task` — Dispatch @ContextScout to explore affected code: {{SCOUT_1_GOAL}}
 2. `task` — Dispatch @ContextScout to explore patterns and architecture: {{SCOUT_2_GOAL}}
 3. `task` — Dispatch @ContextScout to explore dependencies and boundaries: {{SCOUT_3_GOAL}}

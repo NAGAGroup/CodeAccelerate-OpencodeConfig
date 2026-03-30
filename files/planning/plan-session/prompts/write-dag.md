@@ -2,7 +2,11 @@
 
 Dispatch agents to write the project DAG files to `.opencode/session-plans/{task-name}/`.
 
+> **Writing subagent prompts:** Embed the complete `plan.json` as a JSON code block in the subagent task — not just a table or ASCII diagram. The subagent has no DAG schema knowledge; give them JSON and they write JSON. Include the exact todo arrays for every node. Prompts must address the actual user task — not describe planning infrastructure.
+
 ## Todo
+
+> **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
 
 1. `task` — Dispatch @QuickDoc or @JuniorDev to create `plan.json` and all prompt files under `prompts/`. Provide the full DAG structure, node-by-node content, and directory layout. Use @JuniorDev for DAGs with more than 5 prompt files (larger step budget, 10 steps); use @QuickDoc for small DAGs with 3 or fewer prompts (step budget 8).
 

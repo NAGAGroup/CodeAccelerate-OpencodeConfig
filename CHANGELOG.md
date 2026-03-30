@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Fixed bug in `planning-enforcement.ts` where exempt tools were blocked during `waiting_step` and `running` states if they weren't the expected todo item; the `tool.execute.before` hook now correctly bypasses blocking for all exempt tools regardless of DAG status; also added `sequential-thinking_sequentialthinking` to the exempt tools list
 - Improved all 6 agent prompt files (`headwrench.md`, `context-scout.md`, `context-insurgent.md`, `junior-dev.md`, `external-scout.md`, `quick-doc.md`): added scope overload escalation paths, step budget awareness, output format specifications, jurisdiction clarity between agents, and consistent anti-filler guidance
 - Fixed critical bug in `files/planning/plan-session/prompts/write-dag.md`: `compress` was missing from the valid todo enumeration, causing planning agents to omit compression nodes from generated DAGs
 - Fixed critical bug in `files/planning/plan-session/prompts/research-gate.md`: Q1 option labels did not match `plan.json` branch `when` conditions, causing DAG branch routing to fail on every planning session run
@@ -16,6 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Improved all 12 node library READMEs: added "when NOT to use" guidance to every node type, clarified `-<N>` suffix convention (no `-1`), added concrete decision criteria and cross-references
 - Updated `CATALOGUE.md`: added research node disambiguation callout distinguishing planning-phase (`research-gate`/`research-brief`) from DAG-phase (`research-basic`/`research-deep`) research nodes; fixed stale phase name references; improved `conditional-branch` routing description
 - Updated `files/planning/reference/dag-design-guide.md`: added prominent callouts for node ID uniqueness (breaking constraint), `next` must be full object (not string), and `when` string routing mechanic; updated duplicate ID description to reflect validation error behavior
+
+### Fixed
+
+- Added task tool usage instructions (required params, `task_id` format) and dispatch prompt quality guidance to all task-using plan-session prompts and node library prompt templates, addressing invalid tool calls and weak subagent prompts on less-capable models.
 
 ## [3.6.0] - 2026-03-29
 
