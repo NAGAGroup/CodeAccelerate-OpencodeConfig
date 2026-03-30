@@ -218,7 +218,7 @@ ending the session prematurely. The plugin now throws a validation error on dupl
 ### Configuration format
 
 All config files use JSONC (JSON with comments). Environment variables are referenced as
-`${VAR_NAME}` in config values.
+`{env:VAR_NAME}` in config values.
 
 ### Instruction file priority
 
