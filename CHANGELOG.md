@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Corrected parallel dispatch description in `files/planning/plan-session/prompts/scout.md`: replaced technically inaccurate "emitting before any return / OpenCode runs concurrently" framing with accurate description — parallel dispatch means the LLM emits multiple tool calls in one response turn; the plugin always processes them sequentially
 - Fixed `scout-node-library` planning node (`files/planning/plan-session/prompts/scout-node-library.md`): added clarification that ContextScout IS permitted to read from the current session's node-library directory (it is live planning infrastructure, not a stale prior session artifact); changed todo from `["task"]` to `["read","task"]` so HeadWrench reads CATALOGUE.md directly via the read tool before dispatching the scout for README files only
 - Updated `files/planning/plan-session/plan.json`: `scout-node-library` node todo changed from `["task"]` to `["read","task"]`
 - Corrected environment variable interpolation syntax for Exa MCP in all 6 profile configs (`default`, `copilot`, `haiku`, `haiku-copilot`, `free`, `ollama`): changed `${EXA_API_KEY}` (shell syntax, not interpolated by OpenCode) to `{env:EXA_API_KEY}` (correct OpenCode syntax); also corrected the documented syntax in `AGENTS.md`
