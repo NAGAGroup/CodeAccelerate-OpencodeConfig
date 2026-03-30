@@ -64,6 +64,7 @@ The registry ships **7 components** defined in `registry.jsonc`:
 | `ocx-haiku` | profile | All-haiku Anthropic profile |
 | `ocx-haiku-copilot` | profile | All-haiku GitHub Copilot profile |
 | `ocx-free` | profile | OpenCode Zen free-tier profile |
+| `ocx-ollama` | profile | Local Ollama profile (model via `OLLAMA_MODEL` env var) |
 
 All profiles depend on `ocx-bundle`, which depends on `ocx-tools`.
 

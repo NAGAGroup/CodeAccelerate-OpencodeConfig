@@ -1,0 +1,69 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "small_model": "{env:OLLAMA_MODEL}",
+  "plugin": ["@tarquinen/opencode-dcp@latest"],
+  "default_agent": "headwrench",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": {
+        "baseURL": "http://localhost:11434/v1"
+      }
+    }
+  },
+  "agent": {
+    "plan": {
+      "disable": true
+    },
+    "general": {
+      "disable": true
+    },
+    "explore": {
+      "disable": true
+    },
+    "headwrench": {
+      "model": "{env:OLLAMA_MODEL}"
+    },
+    "context-scout": {
+      "model": "{env:OLLAMA_MODEL}"
+    },
+    "quick-doc": {
+      "model": "{env:OLLAMA_MODEL}"
+    },
+    "junior-dev": {
+      "model": "{env:OLLAMA_MODEL}"
+    },
+    "context-insurgent": {
+      "model": "{env:OLLAMA_MODEL}"
+    },
+    "deep-researcher": {
+      "model": "{env:OLLAMA_MODEL}"
+    },
+    "compaction": {
+      "model": "{env:OLLAMA_MODEL}"
+    }
+  },
+  "mcp": {
+    "context7": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "enabled": true
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp?exaApiKey=${EXA_API_KEY}",
+      "enabled": true
+    }
+  }
+}

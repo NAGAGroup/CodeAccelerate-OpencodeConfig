@@ -1,6 +1,6 @@
 # Configuration
 
-All configuration lives in `opencode.jsonc`. After installing a profile, this file is at `~/.config/opencode/profiles/<name>/opencode.jsonc` — where `<name>` is the profile you installed (`naga`, `naga-haiku`, `naga-copilot`, `naga-haiku-copilot`, or `naga-free`).
+All configuration lives in `opencode.jsonc`. After installing a profile, this file is at `~/.config/opencode/profiles/<name>/opencode.jsonc` — where `<name>` is the profile you installed (`naga`, `naga-haiku`, `naga-copilot`, `naga-haiku-copilot`, `naga-free`, or `naga-ollama`).
 
 Edit this file directly to customize models, MCP servers, and agent behavior.
 
@@ -22,6 +22,8 @@ Each agent has a model assigned under the `agent.<name>.model` field. The defaul
 ```
 
 To switch a model, replace the value with any provider string OpenCode recognizes (e.g. `openai/gpt-4o`, `google/gemini-2.5-pro`).
+
+> **Ollama profile:** The `naga-ollama` profile uses `{env:OLLAMA_MODEL}` for all agent model fields — OpenCode's native env var substitution syntax. Set `OLLAMA_MODEL` to your pulled model before launching (e.g. `export OLLAMA_MODEL=ollama/llama3.2`). Ollama must be running locally at `http://localhost:11434`.
 
 ### Default assignments (for reference)
 

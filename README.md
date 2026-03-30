@@ -4,7 +4,7 @@ A multi-agent development system for [OpenCode](https://opencode.ai/) that plans
 
 You talk to one agent, **HeadWrench**. It reads your intent, delegates to the right specialist, and tracks everything across sessions so you never re-explain your codebase. Planning sessions produce structured execution plans. Debug sessions run hypothesis-driven investigations. Research sessions explore documentation and codebases in depth. All of it persists.
 
-Ships as five profiles: Anthropic API (default), Anthropic API with all-haiku models, GitHub Copilot, GitHub Copilot with all-haiku models, and OpenCode Zen (free).
+Ships as six profiles: Anthropic API (default), Anthropic API with all-haiku models, GitHub Copilot, GitHub Copilot with all-haiku models, OpenCode Zen (free), and local Ollama.
 
 ## What it looks like
 
@@ -34,6 +34,7 @@ ocx profile add naga-haiku --global --source naga-group/ocx-haiku          # Ant
 ocx profile add naga-copilot --global --source naga-group/ocx-copilot      # GitHub Copilot
 ocx profile add naga-copilot-haiku --global --source naga-group/ocx-haiku-copilot  # GitHub Copilot (all-haiku)
 ocx profile add naga-free --global --source naga-group/ocx-free            # OpenCode Zen free-tier
+ocx profile add naga-ollama --global --source naga-group/ocx-ollama        # Local Ollama (set OLLAMA_MODEL)
 ```
 
 Launch:

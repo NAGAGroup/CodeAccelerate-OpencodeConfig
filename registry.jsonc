@@ -186,6 +186,16 @@
       "dependencies": [
         "ocx-bundle"
       ]
+    },
+    {
+      "name": "ocx-ollama",
+      "type": "profile",
+      "description": "NAGAGroup's Ollama local profile — model configured via OLLAMA_MODEL env var",
+      "files": [
+        { "path": "profiles/ollama/opencode.jsonc", "target": "opencode.jsonc" },
+        { "path": "profiles/ollama/ocx.jsonc", "target": "ocx.jsonc" }
+      ],
+      "dependencies": ["ocx-bundle"]
     }
   ]
 }
