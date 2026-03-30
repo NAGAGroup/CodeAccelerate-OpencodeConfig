@@ -1,42 +1,62 @@
 # Codebase Exploration
 
-Dispatch three context-scouts AND one HeadWrench subagent to gather planning context — **call the task tool four times in sequence, one per todo item**. Each scout targets a different codebase area; the subagent gathers git history. 
+Gather planning context in two phases. **Do not batch all four task calls upfront — read the sequencing rules below.**
 
-1. **Affected code** — Files, modules, and components the task touches directly
-2. **Patterns and architecture** — How the codebase is organized, conventions to follow
-3. **Dependencies and boundaries** — What other systems or modules are involved, integration points
+## Core rule: subagent context isolation
 
-Provide each scout with specific file paths or search patterns. Let them report back before moving on.
+**Subagents see nothing except what you write in their task prompt.** They cannot see your conversation, the user's request, or any prior context. A prompt that says "find Windows platform code" fails on a scout that has never seen this codebase — it has no idea where to look. Every scout prompt must provide all context necessary to locate the target files, with no assumptions of prior understanding.
 
-**Call the `task` tool four times in sequence** — one per todo item below. Do not combine or skip.
+**This means: file paths and glob patterns are not optional.** Thematic descriptions ("find auth-related files", "look at the build system") are instructions for a human who knows the codebase — they are useless to a subagent starting from zero.
 
-> **Writing scout prompts:** When writing each scout's task prompt, include: (1) specific file paths or glob patterns to read — not just thematic descriptions; (2) a clear statement of what the scout should return, including what to do when nothing is found: state 'No relevant files found for [area]' explicitly — do not substitute a generic description or omit the section; (3) an explicit instruction that the scout must report findings as specific facts, not as generic "Codebase Overview" or "Key Decisions" sections; (4) agent-specific constraints: @ContextScout must not perform web searches or external lookups — if a thematic area has no discoverable files, report 'nothing found for [area]' rather than producing generic descriptions. Scouts dispatched without concrete paths will fail to orient on less-capable models.
+## Phase 1 — Generic codebase orientation (Scout 1, run FIRST)
 
-> **New feature / cross-cutting task — breadth-first orientation:** If the task is a new feature or cross-cutting change with no obvious target files, orient the **first scout** with a broad glob (e.g., `**/*.{md,ts,json,jsonc,toml}`) to map the project structure first, then narrow the second and third scouts based on what's found. Do NOT write all three scout prompts targeting task-specific patterns that don't exist yet — on less-capable models, scouts dispatched to find nonexistent files return empty results and provide no planning value.
+**Call `task` once and wait for the result before proceeding.**
 
-> **@HeadWrench subagent (git task) — Do NOT:** Read source files or explore the codebase — run only the four listed git commands. Do NOT fabricate git output if the working tree is clean or the command produces empty output — report the raw output even if empty.
+Scout 1 is a generic, task-agnostic orientation scan. Its job is to give you the project structure, file layout, and conventions — so you can write informed, path-specific prompts for scouts 2 and 3.
 
-## Todo
+> **Writing Scout 1's prompt:** This scout receives NO task-specific information — its scope is always the same generic orientation:
+> (1) Read the root directory listing and any top-level config files (e.g., `package.json`, `bun.lockb`, `registry.jsonc`, `tsconfig.json`, `*.toml`, `*.jsonc`)
+> (2) Run a broad glob: `**/*.{md,ts,js,json,jsonc,toml}` — list the top-level paths returned (do not read every file, just the listing)
+> (3) Read the README or primary documentation file if one exists
+> (4) Return format: "Report the directory structure, key config files found, and any README content. List file paths — do not produce a thematic summary."
+> (5) Termination: "Return when you have the structure. Do not dig into source files."
 
-> **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
+**After Scout 1 returns:** Read its findings. Use the file paths and structure it reports to write targeted prompts for scouts 2 and 3. You now have the codebase map — you no longer need to guess.
 
-1. `task` — Dispatch @ContextScout to explore the affected code (files, modules, components the task touches directly)
+✓ **Correct Scout 1 prompt:** "Read the root directory and list all top-level files. Run glob `**/*.{md,ts,json,jsonc,toml}` and return the paths found. Read `package.json` and `README.md` if they exist. Report the directory structure and key files. Do not produce a Codebase Overview — list paths."
 
-   > **Writing scout #1 prompt ("Affected code"):** Include: (1) specific file paths or glob patterns targeting the files the task touches — if these cannot be predicted, use `**/*.{md,ts,json,jsonc,toml}` as a breadth-first orientation glob; (2) instruction: "Return findings as a bulleted list of specific file paths and what each contains — do NOT produce a 'Codebase Overview' section"; (3) termination: "If no relevant files found, state 'No relevant files found for affected code' explicitly."
+✗ **Incorrect Scout 1 prompt:** "Find files that are relevant to adding Windows platform support. Look for build configurations and platform-specific code." — The scout has no codebase context and cannot evaluate relevance. It will either return empty or hallucinate.
 
-2. `task` — Dispatch @ContextScout to explore patterns and architecture (codebase organization, conventions to follow)
+## Phase 2 — Targeted scouts + git context (Scouts 2, 3, and git, run AFTER Scout 1)
 
-   > **Writing scout #2 prompt ("Patterns and architecture"):** Include: (1) glob patterns or paths covering config files, top-level source directories, and any convention-bearing files (e.g., `**/*.{jsonc,toml}`, `src/**/*.ts`); (2) instruction: "Report specific file paths, naming patterns, and code conventions found — not a thematic summary"; (3) termination: "If nothing found for an area, state 'Nothing found for [area]' explicitly."
+**Call `task` three more times in sequence** — scouts 2 and 3 targeting areas informed by Scout 1's output, plus the git subagent.
 
-3. `task` — Dispatch @ContextScout to explore dependencies and boundaries (other systems, integration points)
+Use Scout 1's findings to write specific, path-anchored prompts. If Scout 1 found that the project is a TypeScript monorepo with source under `src/` and config under `config/`, your Scout 2 prompt should reference `src/` and `config/` — not generic patterns.
 
-   > **Writing scout #3 prompt ("Dependencies and boundaries"):** Include: (1) paths to package manifests, lock files, integration modules, and boundary files (e.g., `package.json`, `bun.lockb`, `registry.jsonc`, import graphs); (2) instruction: "Report specific dependency names, versions, and integration points — not thematic descriptions"; (3) termination: "If no integration boundaries are found, state 'No dependency boundaries found' explicitly."
+> **Writing Scout 2's prompt ("Patterns and architecture"):** Use file paths from Scout 1. Include: (1) specific paths to config files, top-level source directories, and convention-bearing files Scout 1 found; (2) instruction: "Report specific file paths, naming patterns, and code conventions found — not a thematic summary"; (3) termination: "State 'Nothing found for [area]' explicitly if an area has no files."
 
-4. `task` — Dispatch @HeadWrench (subagent) to run cursory git commands for planning context.
+> **Writing Scout 3's prompt ("Affected code"):** Use file paths from Scout 1. Include: (1) paths to the files and modules most likely touched by the task — derived from Scout 1's structure report; (2) instruction: "Return findings as a bulleted list of specific file paths and what each contains — do NOT produce a 'Codebase Overview' section"; (3) termination: "State 'No relevant files found for affected code' explicitly if nothing is found."
+
+✓ **Correct Scout 3 prompt (after Scout 1 found `src/`, `files/`, `registry.jsonc`):** "Read `registry.jsonc`, `files/agents/`, and `files/planning/`. Return the exact contents of `registry.jsonc` and list all files in `files/agents/`. Report file paths and what each contains."
+
+✗ **Incorrect Scout 3 prompt:** "Find files related to agent configuration and planning." — The scout cannot evaluate 'related to' without knowing the codebase. Paths from Scout 1 must be used.
+
 > **Writing the HeadWrench git subagent's prompt:** Include:
 > (1) tool-use sequence: first call bash with `git rev-parse --git-dir 2>/dev/null` — if exit code non-zero, stop and report "Not a git repo"; then run in order: `git branch --show-current`, `git status --short`, `git log --oneline -10`, `git diff --stat HEAD`;
 > (2) input spec: none required — all commands are fully specified;
 > (3) return format: report each command's output under labeled headings: Branch, Working Tree Status, Recent Commits (last 10), Diff Stat vs HEAD; if a command produces no output, say "[empty]" under that heading;
 > (4) constraints: run only the listed commands; do not read source files; do not summarize or interpret output — return verbatim.
+
+## Todo
+
+> **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
+
+1. `task` — Dispatch @ContextScout for generic codebase orientation (Scout 1). **Wait for this result before calling task again.**
+
+2. `task` — Dispatch @ContextScout for patterns and architecture (Scout 2, using Scout 1's findings).
+
+3. `task` — Dispatch @ContextScout for affected code (Scout 3, using Scout 1's findings).
+
+4. `task` — Dispatch @HeadWrench (subagent) to run cursory git commands for planning context.
 
 After all four tasks return results, call `next_step()` to advance.
