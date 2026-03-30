@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Extended `scout` node in the plan-session DAG with a 4th parallel task that dispatches HeadWrench as a subagent to run git commands (`git status`, `git log`, `git diff`) when in a git repo, providing planning context about recent commits and in-progress changes
+- `planning-enforcement.ts` plugin: added `todowrite` to the exempt tools list so task-list management calls are never blocked by DAG todo enforcement
 
 ### Fixed
 
