@@ -12551,7 +12551,6 @@ function ensureOpenCodeIgnore(worktree) {
   } catch {}
 }
 var PlanningEnforcementPlugin = async (_ctx) => {
-  const blockedCalls = new Map;
   const resolveWorktree = (_ctx2) => process.cwd();
   ensureOpenCodeIgnore(resolveWorktree(_ctx));
   return {
@@ -12947,25 +12946,14 @@ ${issues.join(`
       if (!expectedTool)
         return;
       if (input.tool !== expectedTool) {
-        blockedCalls.set(input.callID, { expected: expectedTool, actual: input.tool, nodeId: state.current_node });
-        if (input.tool === "bash") {
-          output.args = { command: "true" };
-        } else {
-          output.args = { __dag_blocked: true };
-        }
+        throw new Error(`[DAG BLOCKED] Tool "${input.tool}" is not allowed at this step. ` + `Expected: "${expectedTool}". Call "${expectedTool}" to continue.
+
+` + `Current node: "${state.current_node}" | Todo progress can be checked with recover_context().`);
       }
     },
     "tool.execute.after": async (input, output) => {
       if (!input.tool || !input.sessionID)
         return;
-      const blocked = blockedCalls.get(input.callID);
-      if (blocked) {
-        blockedCalls.delete(input.callID);
-        output.output = `[DAG BLOCKED] Tool "${blocked.actual}" is not allowed at this step. ` + `Expected: "${blocked.expected}". Call "${blocked.expected}" to continue.
-
-` + `Current node: "${blocked.nodeId}" | Todo progress can be checked with recover_context().`;
-        return;
-      }
       const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);

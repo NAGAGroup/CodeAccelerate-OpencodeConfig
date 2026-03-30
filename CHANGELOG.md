@@ -30,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Restored tool blocking in planning-enforcement plugin: removed erroneous `output.output` assignment from `tool.execute.before` hook that caused OpenCode to skip the after hook, bypassing all tool blocking
 - Fixed block message display: "Current node" now correctly shows the DAG node ID instead of the blocked tool name
 - `planning-enforcement.ts` plugin: always resolve working directory from `process.cwd()` instead of `context.worktree` — fixes planning sessions broken in projects where the CWD is a symlinked subdirectory of a git repository (the git worktree root was used instead of the actual CWD, causing session files and the node-library copy to land in the wrong location)
+- Planning-enforcement plugin now throws from `tool.execute.before` to prevent blocked tool calls from executing. Previously, blocked calls were neutered with harmless args but still executed; throwing from the before hook prevents execution entirely, matching the official OpenCode plugin pattern.
 
 ## [3.4.0] - 2026-03-29
 
