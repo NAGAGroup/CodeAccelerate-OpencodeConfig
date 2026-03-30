@@ -4,7 +4,9 @@ The scouts have reported on the codebase, the node library is now available, and
 
 ## Todo
 
-1. `sequential-thinking_sequentialthinking` — Reason through the full plan design. **Keep calling this tool repeatedly in the same turn — do NOT wait for user input between thoughts.** Each call builds on the previous. Continue until you have worked through all the questions below and produced a complete plan. Continue for at least 10 thought steps. For complex multi-phase tasks, use 15–20 steps. Stop when you have a complete, specific plan — not when you reach the minimum count. Do not force additional thought steps if you are repeating reasoning.
+0. Before calling the tool, state aloud how many thoughts you expect to need for this task, based on its complexity. A focused single-concern decision may need 5–8 thoughts; a broad multi-phase plan design typically needs 12–18. Name your estimate explicitly — this is your target, not a hard cap.
+
+1. `sequential-thinking_sequentialthinking` — Reason through the full plan design. **Keep calling this tool repeatedly in the same turn — do NOT wait for user input between thoughts.** Each call builds on the previous. Continue until you have worked through all the questions below and produced a complete plan. Stop when the reasoning is complete and the output is ready — not when a count is reached. If you are repeating or circling already-established points, stop immediately.
 
 ## What to reason through
 

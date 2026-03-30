@@ -22,7 +22,9 @@ This conclusion feeds directly into {{NEXT_PHASE_OR_DECISION}} — complete the 
 
 ## Todo
 
-1. `sequential-thinking_sequentialthinking` — Reason through: {{DECISION_QUESTION}}. Use the context above. Produce: {{EXPECTED_OUTPUT}}.
+0. Before calling the tool, state aloud how many thoughts you expect to need for this decision, based on its complexity. A tightly scoped decision may need 4–7 thoughts; a broad or multi-faceted one may need 10–15. Name your estimate explicitly — this is your target, not a hard cap.
+
+1. `sequential-thinking_sequentialthinking` — Reason through: {{DECISION_QUESTION}}. Use the context above. Produce: {{EXPECTED_OUTPUT}}. **Keep calling this tool repeatedly in the same turn — do NOT wait for user input between thoughts.** Each call builds on the previous. Stop when the reasoning is complete and the conclusion is clear — not when a count is reached. If you are repeating already-settled points, stop immediately.
 
 ## Before advancing
 

@@ -8,10 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Fixed `scout-node-library` planning node (`files/planning/plan-session/prompts/scout-node-library.md`): added clarification that ContextScout IS permitted to read from the current session's node-library directory (it is live planning infrastructure, not a stale prior session artifact); changed todo from `["task"]` to `["read","task"]` so HeadWrench reads CATALOGUE.md directly via the read tool before dispatching the scout for README files only
+- Updated `files/planning/plan-session/plan.json`: `scout-node-library` node todo changed from `["task"]` to `["read","task"]`
 - Corrected environment variable interpolation syntax for Exa MCP in all 6 profile configs (`default`, `copilot`, `haiku`, `haiku-copilot`, `free`, `ollama`): changed `${EXA_API_KEY}` (shell syntax, not interpolated by OpenCode) to `{env:EXA_API_KEY}` (correct OpenCode syntax); also corrected the documented syntax in `AGENTS.md`
 
 ### Changed
 
+- Sequential thinking prompts (`sequential-thinking.md`, node-library `prompt-template.md`): agents now estimate and verbalize expected thought count before starting, and stop as soon as they have a complete result rather than continuing to a minimum count; the "keep calling continuously" instruction is preserved
+- Improved subagent delegation prompts in `files/agents/headwrench.md`: added per-agent prompt requirements subsection (concrete guidance for ContextScout, ContextInsurgent, ExternalScout, JuniorDev, and QuickDoc), verbatim-return guidance, explicit ExternalScout tool priority (Context7 first, Exa second), and ES=external-only corollary to CS=internal-only boundary rule
+- Fixed ExternalScout description ordering in `files/agents/headwrench.md`: tools now listed as "Context7 + Exa" (was "Exa + Context7") in both Agent Roster and Routing Rules
+- Updated `files/agents/context-scout.md`: Output Format section now has a default/exception rule so task-specific return instructions override the 5-section template; Hard Constraints section has new "No generic section inflation" rule
 - Fixed bug in `planning-enforcement.ts` where exempt tools were blocked during `waiting_step` and `running` states if they weren't the expected todo item; the `tool.execute.before` hook now correctly bypasses blocking for all exempt tools regardless of DAG status; also added `sequential-thinking_sequentialthinking` to the exempt tools list
 - Improved all 6 agent prompt files (`headwrench.md`, `context-scout.md`, `context-insurgent.md`, `junior-dev.md`, `external-scout.md`, `quick-doc.md`): added scope overload escalation paths, step budget awareness, output format specifications, jurisdiction clarity between agents, and consistent anti-filler guidance
 - Fixed critical bug in `files/planning/plan-session/prompts/write-dag.md`: `compress` was missing from the valid todo enumeration, causing planning agents to omit compression nodes from generated DAGs

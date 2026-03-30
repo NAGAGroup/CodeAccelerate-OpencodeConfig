@@ -108,7 +108,7 @@ When a subagent returns an incomplete or negative result, diagnose before re-dis
 |---|---|---|---|
 | **@ContextScout** | haiku-like | Quick codebase/context exploration — parallel dispatch | 12 |
 | **@ContextInsurgent** | sonnet-like | Deep codebase reasoning — NOT parallel, expensive | 20 |
-| **@ExternalScout** | haiku-like | Web and documentation research via Exa + Context7. Handles any level of external lookup. | 15 |
+| **@ExternalScout** | haiku-like | Web and documentation research via Context7 + Exa. Context7 first for library/framework docs; Exa second for current events, blog posts, recency-sensitive content. Handles any level of external lookup, not just planning sessions. | 15 |
 | **@JuniorDev** | haiku-like | Scoped code edits — parallel, NOT for re-use | 10 |
 | **@QuickDoc** | haiku-like | Single-file doc writing/editing — parallel, NOT for re-use | 8 |
 
@@ -116,7 +116,7 @@ When a subagent returns an incomplete or negative result, diagnose before re-dis
 
 - **@ContextScout** — pre-planning situational awareness; dispatch multiple in parallel freely. Do not re-delegate with the same session ID. Do not direct them to read `.opencode/` session content — stale sessions poison analysis. Exception: planning infrastructure files (e.g., the node-library) are permitted when explicitly tasked.
 - **@ContextInsurgent** — deep multi-file reasoning; one at a time per logical task. CI is for reasoning and synthesis only—never for code edits; all code changes belong exclusively to @JuniorDev. Re-use the same session ID within a single logical task. This is the only agent warranting a more powerful model — reading many files consumes tokens fast. Do not direct them to read `.opencode/` session content — stale sessions poison analysis. Exception: planning infra files (e.g., the node-library) when explicitly tasked.
-- **@ExternalScout** — Web and documentation research via Exa + Context7. Handles any external research need, not just planning sessions. Dispatch in parallel. Do not re-delegate. Optional during planning — surface the option to the user before dispatching. ContextScout is for internal codebase exploration only — never dispatch @ContextScout for external research.
+- **@ExternalScout** — Web and documentation research via Context7 + Exa (Context7 first for library/framework documentation; Exa for recency-sensitive content). Handles any external research need, not just planning sessions. Dispatch in parallel. Do not re-delegate. Optional during planning — surface the option to the user before dispatching. ContextScout is for internal codebase exploration only — never dispatch @ContextScout for external research. ExternalScout is the designated agent for ALL external research — from a quick API lookup to a deep multi-source investigation. There is no external research need that warrants dispatching @ContextScout or conducting the lookup yourself.
 - **@JuniorDev** — parallel code edits across multiple files. Do not re-delegate. Any task not well-suited for a haiku model → HW handles directly. A task is not haiku-suitable when it requires reasoning across more than ~3 files simultaneously, maintaining state across many interdependent edits, or producing output that must be critically correct and nuanced. Writing output tokens are cheap; HW having full context and user interactivity makes it better for complex writes.
 - **@QuickDoc** — targeted doc edits and single-file documents. Same rules as JuniorDev.
 
@@ -129,6 +129,34 @@ HW is the only agent with shell access. HW runs all builds, tests, git operation
 Provide: what to read (specific file paths) + goal in 1-2 sentences + hard constraints + verification criterion. Let the subagent reason through execution.
 
 Do **not** provide step-by-step micro-instructions, line-by-line implementation guidance, or prescriptive sequencing. HW provides the **what**, not the **how**.
+
+#### Per-Agent Prompt Requirements
+
+**@ContextScout prompts must include:**
+1. Specific file paths or glob patterns — not thematic descriptions ("look at the auth system"). Scouts dispatched without concrete paths will fail to orient on less-capable models.
+2. A clear statement of what to return (e.g., "return the exact function signatures from X", not "summarize the module").
+3. An explicit instruction to report findings as specific facts — not generic section headers. Include this line verbatim: *"Do not produce generic 'Codebase Overview' or 'Key Decisions' sections — report specific file paths, line numbers, and exact strings."*
+
+**@ContextInsurgent prompts must include:**
+1. A single, specific analysis question (the "Answer / Conclusion" CI should produce).
+2. An explicit list of files to read — CI needs the full reading list, not just a topic.
+3. The expected output format (e.g., "return a file-by-file change list" or "return a dependency map").
+
+**@ExternalScout prompts must include:**
+1. Tool priority order: *"Use Context7 first (context7_resolve-library-id, then context7_query-docs). Use Exa second for anything not covered by Context7."*
+2. The exact question or topic — not just a subject area.
+3. Return format spec: cite specific versions where relevant, include code examples when they exist, synthesize into a direct answer rather than a list of links.
+
+**@JuniorDev prompts must include:**
+1. Specific target files (absolute or repo-relative paths).
+2. Success criterion: what the edit achieves, stated as an observable outcome.
+3. Scope note: any adjacent files JD must NOT touch.
+
+**@QuickDoc prompts must include:**
+1. Target file path (absolute or repo-relative).
+2. What to write: the content, format, and template to follow.
+3. Conventions reference: point to an existing file to match if one exists (e.g., "match the format of `files/agents/junior-dev.md`").
+
 
 ## Subagent Mode (Check-Fix Cycles)
 

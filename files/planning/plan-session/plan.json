@@ -12,7 +12,7 @@
       "next": {
         "id": "scout-node-library",
         "prompt": "scout-node-library.md",
-        "todo": ["task"],
+        "todo": ["read", "task"],
         "next": {
           "id": "research-gate",
           "prompt": "research-gate.md",
