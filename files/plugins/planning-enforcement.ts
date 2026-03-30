@@ -804,21 +804,30 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
 
-      if (!state || state.status !== "running") return;
+      if (!state) return;
+      if (state.status === "complete" || state.status === "abandoned") return;
 
-      const node = state.node_map[state.current_node];
-      if (!node || node.todo.length === 0) return;
+       const node = state.node_map[state.current_node];
+       if (!node || node.todo.length === 0) return;
 
-      const expectedTool = node.todo[state.todo_index];
-      if (!expectedTool) return;
-
-       if (input.tool !== expectedTool) {
+       if (state.status === "waiting_step") {
          throw new Error(
-           `[DAG BLOCKED] Tool "${input.tool}" is not allowed at this step. ` +
-           `Expected: "${expectedTool}". Call "${expectedTool}" to continue.\n\n` +
-           `Current node: "${state.current_node}" | Todo progress can be checked with recover_context().`
+           `[DAG BLOCKED] All todos for node "${state.current_node}" are complete. ` +
+           `Call \`next_step()\` to advance to the next node before calling any other tools.`
          );
        }
+
+       // status === "running" from here
+       const expectedTool = node.todo[state.todo_index];
+       if (!expectedTool) return;
+
+        if (input.tool !== expectedTool) {
+          throw new Error(
+            `[DAG BLOCKED] Tool "${input.tool}" is not allowed at this step. ` +
+            `Expected: "${expectedTool}". Call "${expectedTool}" to continue.\n\n` +
+            `Current node: "${state.current_node}" | Todo progress can be checked with recover_context().`
+          );
+        }
     },
 
      // Track tool calls and auto-advance when todos are exhausted.
@@ -829,9 +838,10 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
        // they appear as the currently expected todo item (e.g. "question" in todo[]).
        const worktree = resolveWorktree(_ctx);
        const statePath = dagStatePath(worktree, input.sessionID);
-      const state = readState(statePath);
+       const state = readState(statePath);
 
-      if (!state || state.status !== "running") return;
+       if (!state) return;
+       if (state.status === "complete" || state.status === "abandoned") return;
 
       const node = state.node_map[state.current_node];
       if (!node || node.todo.length === 0) return;

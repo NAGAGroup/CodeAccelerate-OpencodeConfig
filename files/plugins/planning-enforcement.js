@@ -12937,11 +12937,16 @@ ${issues.join(`
       const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
-      if (!state || state.status !== "running")
+      if (!state)
+        return;
+      if (state.status === "complete" || state.status === "abandoned")
         return;
       const node = state.node_map[state.current_node];
       if (!node || node.todo.length === 0)
         return;
+      if (state.status === "waiting_step") {
+        throw new Error(`[DAG BLOCKED] All todos for node "${state.current_node}" are complete. ` + `Call \`next_step()\` to advance to the next node before calling any other tools.`);
+      }
       const expectedTool = node.todo[state.todo_index];
       if (!expectedTool)
         return;
@@ -12957,7 +12962,9 @@ ${issues.join(`
       const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
-      if (!state || state.status !== "running")
+      if (!state)
+        return;
+      if (state.status === "complete" || state.status === "abandoned")
         return;
       const node = state.node_map[state.current_node];
       if (!node || node.todo.length === 0)
