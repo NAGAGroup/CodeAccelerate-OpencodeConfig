@@ -4,6 +4,8 @@ Present the complete plan to the user for approval. By this point, sequential th
 
 **You MUST call the question tool — do not skip this step.**
 
+**IMPORTANT:** The option labels `'Approve — write the DAG'` and `'Rethink'` must be used exactly as written — the DAG branches on these exact strings.
+
 ## What to present
 
 Write the full plan as prose in your response text (do NOT embed this inside the `question` call):
@@ -13,12 +15,12 @@ Write the full plan as prose in your response text (do NOT embed this inside the
 3. **Node decomposition** — Table with columns: Node ID | Node type | Agent | Todo | What it does | Branch conditions (if any)
 
    The `Todo` column must contain the exact todo array for each node (e.g., `["task","task","task"]` for parallel scouts, `["question"]` for a decision gate). These exact values will be written into `plan.json`.
-4. **Estimated dispatches** — Total agent dispatches across all nodes
+4. **Estimated dispatches** — Estimated dispatches — count the number of `task` todo items across all nodes in the DAG (each `task` entry in a node's todo array = one agent dispatch).
 
 ## Todo
 
 1. `question` — Call the `question` tool with a single-sentence question: "Does this plan look right?" Use option label `"Approve — write the DAG"` (description: "Write plan.json and prompt files; activate separately with /activate-plan") and `"Rethink"` (description: "Adjust the plan before writing").
 
-> **Note:** The `when` conditions in plan.json for this branch node are matched against the user's selected option label. The labels `"Approve — write the DAG"` and `"Rethink"` are intentionally chosen to match the plan.json branch conditions — do not change them.
+   If the user selects 'Rethink,' call `next_step()` — the session will advance to a revision cycle. In the revision node, the user will be asked what to change before the plan is re-presented. Do not repeat the same plan unchanged.
 
-After the user responds, branching instructions will follow — proceed to DAG writing or refine the plan as directed.
+After the user selects an option, call `next_step()` to advance to the appropriate branch.

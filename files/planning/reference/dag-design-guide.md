@@ -26,6 +26,8 @@ Reference for composing project DAGs. Project DAGs are nested trees of nodes tha
 | `todo` | string[] | yes | Strict sequence of OpenCode tool names |
 | `next` | node, branch[], or omitted | no | What comes after this node (optional: omit for terminal nodes) |
 
+> ⚠️ **Node ID uniqueness is a breaking constraint.** Every `id` in the entire DAG tree must be unique. The plugin throws a validation error on duplicate IDs. Use `-<N>` suffixes for all repeated nodes (e.g., `test`, `test-2`, `test-3`). Never use `-1` as a first suffix.
+
 ### Todo items
 
 Todo lists use OpenCode built-in tool names. The most common:
@@ -48,6 +50,8 @@ Every non-terminal node requires an explicit `next_step()` call after all todos 
 - **Terminal nodes:** auto-complete — the plugin detects no `next` field and closes the session automatically
 
 ### Next field
+
+> ⚠️ **`next` must always be a full node object, never a string.** Writing `"next": "analyze"` is wrong. Always write `"next": { "id": "analyze", "prompt": "...", "todo": [...], ... }`. See Anti-patterns section.
 
 - **Linear:** `"next": { "id": "step-2", ... }` — single child
 - **Branch:** `"next": [{ "when": "...", "node": { ... } }, ...]` — multiple paths, `next_step()` specifies which
@@ -106,6 +110,8 @@ investigate → [decision]
 }
 ```
 
+Each `when` string must be specific enough that HW can unambiguously map the runtime condition to exactly one branch. Ambiguous pairs like `'good'` and `'not good'` will cause misrouting — prefer `'Tests pass'` and `'Tests fail'` or `'User approved'` and `'User rejected'`.
+
 **Condition-decided branch** — use a `conditional-branch` node (todo: `[]`). HW evaluates the condition from prior context and calls `next_step({ next: "<node-id>" })` to choose the path:
 
 ```json
@@ -120,6 +126,8 @@ investigate → [decision]
 }
 ```
 
+For branch nodes, HW calls `next_step({ next: "<child-node-id>" })` to advance — this argument is the **node ID**, not the `when` string. The `when` string describes the condition in natural language to help HW interpret which branch to pick. The `when` strings must be unambiguous enough for HW to map them to node IDs reliably.
+
 ### 3. Iteration (Unrolled)
 
 A pattern repeated N times with an exit branch after each repetition. No loop-backs — each iteration is an explicit duplicate of the nodes.
@@ -133,6 +141,8 @@ implement → test → [pass?]
 ```
 
 The unroll depth IS the iteration cap. Ask the user how many iterations to budget during planning.
+
+In a real DAG, always terminate all paths (including forced exits from iteration loops) with `output-success` or `output-failure` to give the user feedback.
 
 ```json
 {
@@ -287,7 +297,7 @@ Branch `node` values must be full objects, not strings.
 
 ### ❌ Duplicate node IDs
 
-Every `id` in the entire tree must be unique. Reusing an ID (e.g., using `output-success` on both the pass and fail branches) silently overwrites the node map entry and causes unpredictable terminal behavior. Use `-<N>` suffixes: `output-success`, `output-success-2`.
+Every `id` in the entire tree must be unique. Reusing an ID (e.g., using `output-success` on both the pass and fail branches) causes the plugin to throw a validation error at write time. Use `-<N>` suffixes: `output-success`, `output-success-2`.
 
 ### ❌ Path in `prompt` field
 
@@ -312,3 +322,5 @@ Before writing `plan.json`, verify:
 - [ ] Every non-terminal node has a `next` field
 - [ ] Terminal nodes (`output-success`, `output-failure`) have no `next`
 - [ ] The `todo` array for each node matches the standard reference table
+- [ ] Each branch `when` string is distinct and unambiguous within its branch array
+- [ ] Every node with a non-empty todo array has a ## Todo section in its prompt file that mirrors the JSON todo list in order and length

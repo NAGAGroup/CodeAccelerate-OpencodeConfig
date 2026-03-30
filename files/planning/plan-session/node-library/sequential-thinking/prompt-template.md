@@ -6,6 +6,8 @@ Use the `sequential-thinking` MCP tool to reason through the following decision 
 
 {{DECISION_QUESTION}}
 
+> **Note:** The decision question should be specific and bounded — it should produce a clear conclusion. Good: "Should we refactor the token module before adding refresh logic, or add refresh logic first?" Bad: "How should we approach auth?"
+
 ## Relevant context
 
 {{RELEVANT_CONTEXT}}
@@ -14,7 +16,9 @@ Use the `sequential-thinking` MCP tool to reason through the following decision 
 
 {{EXPECTED_OUTPUT}}
 
-This conclusion feeds directly into {{NEXT_NODE}} — complete the reasoning before proceeding.
+This conclusion feeds directly into {{NEXT_PHASE_OR_DECISION}} — complete the reasoning before proceeding.
+
+> **Note on `{{NEXT_PHASE_OR_DECISION}}`:** Describe what the reasoning output enables — e.g., "the implementation strategy for parallel-tasks" or "the branch choice at decision-gate". Use a phase description if the exact next node isn't known.
 
 ## Todo
 

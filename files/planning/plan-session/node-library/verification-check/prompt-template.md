@@ -1,6 +1,8 @@
 # Verification Check
 
-Dispatch HeadWrench as a subagent to run the following commands and verify the results.
+**Important:** All command placeholders must be filled with exact shell commands at DAG-authoring time. Do not ship this node with unfilled command placeholders.
+
+Dispatch HeadWrench as a subagent via `task` — HeadWrench is the only agent with shell access. Do NOT substitute another agent here.
 
 ## Commands
 
@@ -15,6 +17,8 @@ Dispatch HeadWrench as a subagent to run the following commands and verify the r
 ## On failure
 
 {{FAILURE_HANDLING}}
+
+Reference the node ID that follows on failure. Standard patterns: route to a `parallel-tasks` fix node, route to `output-failure`, or use a `conditional-branch` after this node. E.g., 'On failure, the conditional-branch node `check-build-result` routes to the fix phase.'
 
 ## Todo
 

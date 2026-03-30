@@ -2,26 +2,43 @@
 
 Dispatch the following agents in parallel. Call all `task` tools sequentially — OpenCode runs them concurrently.
 
+> **Critical:** Tasks must be fully independent — no task should depend on another's output. If tasks have dependencies, use a sequential chain of nodes instead.
+
 ## Task 1
 
 **Agent:** {{TASK_1_AGENT}}
+
+> **Agent selection:** Haiku-tier agents only: `@JuniorDev` (code edits), `@QuickDoc` (doc writes), `@ContextScout` (reads). Do NOT dispatch `@ContextInsurgent` or `@HeadWrench` here.
+
 **Target:** {{TASK_1_TARGET}}
 **Goal:** {{TASK_1_GOAL}}
-**Constraints:** {{TASK_1_CONSTRAINTS}}
+**Scope & Constraints:** {{TASK_1_SCOPE_AND_CONSTRAINTS}}
+
+> **Field:** What this agent must NOT touch, must stay within, or special rules. E.g., "Edit only src/auth/; do not touch tests/". Leave blank if none.
 
 ## Task 2
 
 **Agent:** {{TASK_2_AGENT}}
+
+> **Agent selection:** Haiku-tier agents only: `@JuniorDev` (code edits), `@QuickDoc` (doc writes), `@ContextScout` (reads). Do NOT dispatch `@ContextInsurgent` or `@HeadWrench` here.
+
 **Target:** {{TASK_2_TARGET}}
 **Goal:** {{TASK_2_GOAL}}
-**Constraints:** {{TASK_2_CONSTRAINTS}}
+**Scope & Constraints:** {{TASK_2_SCOPE_AND_CONSTRAINTS}}
+
+> **Field:** What this agent must NOT touch, must stay within, or special rules. E.g., "Edit only src/auth/; do not touch tests/". Leave blank if none.
 
 ## Task 3
 
 **Agent:** {{TASK_3_AGENT}}
+
+> **Agent selection:** Haiku-tier agents only: `@JuniorDev` (code edits), `@QuickDoc` (doc writes), `@ContextScout` (reads). Do NOT dispatch `@ContextInsurgent` or `@HeadWrench` here.
+
 **Target:** {{TASK_3_TARGET}}
 **Goal:** {{TASK_3_GOAL}}
-**Constraints:** {{TASK_3_CONSTRAINTS}}
+**Scope & Constraints:** {{TASK_3_SCOPE_AND_CONSTRAINTS}}
+
+> **Field:** What this agent must NOT touch, must stay within, or special rules. E.g., "Edit only src/auth/; do not touch tests/". Leave blank if none.
 
 ## Todo
 

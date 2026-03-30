@@ -12,7 +12,7 @@ Based on your scout findings and the task description, you should have a good se
 
 1. `question` — Use the **`question` tool** to ask the user which documentation to research. Based on your understanding of the task, propose specific documentation sources as options (e.g., official library/framework docs, API reference pages, GitHub repositories). Allow the user to type their own answer if none of the options fit.
 
-**After the user answers:** immediately proceed to dispatch the researcher in the **same response** — do NOT pause or wait for a new user message before calling the `task` tool below.
+**After the user answers:** immediately call the `task` tool in the same turn — do not emit a response and wait for a new user message before calling the `task` tool below.
 
 2. `task` — Dispatch one **@ExternalScout** with research instructions. Tell the researcher: the overall planning task, exactly where to look, and what output format you need. Instruct them to follow this tool priority: **(1) Context7 first** — use `context7_resolve-library-id` to identify libraries and `context7_query-docs` to retrieve documentation; **(2) Exa second** — only search the web for content not covered by Context7. The output should be a brief structured summary (key findings, relevant APIs or patterns, caveats). Emphasize that this is a one-shot, quick pass — no follow-ups or deep dives.
 
@@ -20,5 +20,8 @@ Based on your scout findings and the task description, you should have a good se
 
 - Research is quick and targeted. Do not dispatch multiple researchers or iterate.
 - Deep or comprehensive research does NOT belong in this node — that belongs in dedicated research nodes you include in the generated project DAG.
-- If the brief findings suggest deeper investigation is needed, note this in the `propose-structure` node so it can be properly scoped as a research component.
-- The researcher's output feeds directly into your `propose-structure` reasoning alongside the scout findings.
+- If the brief findings suggest deeper investigation is needed, note this in the `propose-plan` node so it can be properly scoped as a research component.
+- If ExternalScout returns no useful findings, note this and proceed — the research gap itself is useful context.
+- The researcher's output feeds directly into your `propose-plan` reasoning alongside the scout findings.
+
+After the researcher reports back, call `next_step()` to advance to sequential thinking.

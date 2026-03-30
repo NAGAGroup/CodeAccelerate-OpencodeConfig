@@ -1,6 +1,6 @@
 # Node Library Catalogue
 
-This catalogue documents all reusable node templates for project DAGs. Each node is a building block the planning agent composes into a DAG during the `propose-structure` and `propose-decomposition` phases.
+This catalogue documents all reusable node templates for project DAGs. Each node is a building block the planning agent composes into a DAG during the `propose-plan` and `write-dag` phases.
 
 ## How to use this catalogue
 
@@ -9,6 +9,8 @@ During planning, HeadWrench reads this file to understand what nodes exist and w
 - `plan.json` — the node schema (id, prompt, todo; `next` is omitted and set dynamically)
 - `README.md` — when to use this node, decisions the planning agent must resolve
 - `prompt-template.md` — scaffold the planning agent fills in when writing the node's prompt
+
+For full authoring details on each node type, read the `README.md` in each node's subdirectory.
 
 ---
 
@@ -35,6 +37,8 @@ DAGs are composed from three primitives:
 | [`output-failure`](#output-failure) | `[]` | Terminal: plan failed after exhausting retries or hitting a hard stop. |
 
 ### Exploration
+
+> ⚠️ **Research node disambiguation:** `research-basic` and `research-deep` go INSIDE generated project DAGs (they call ExternalScout during plan execution). `research-gate` and `research-brief` are plan-session nodes used during the planning process itself — they are NOT part of this node library and should never appear in a generated project DAG.
 
 | Node | Todo | Use when |
 |---|---|---|
@@ -105,7 +109,7 @@ Dispatches multiple `@JuniorDev` (or other haiku) agents in parallel for indepen
 Dispatches HW as a subagent to run build/test commands and verify results. The planning agent fills in the exact commands and acceptance criteria during DAG authoring. One `task` call. Typically followed by a branch (`decision-gate` or `conditional-branch`) on pass/fail.
 
 ### `conditional-branch`
-No todo — branching instructions are presented automatically on node entry. The prompt describes the condition and what each branch means. HW evaluates the condition from prior context and follows the branching instructions to choose the correct path. Use when the decision is machine-readable and requires no new tool calls.
+No todo — branching instructions are presented automatically on node entry. The prompt describes the condition and what each branch means. HW evaluates the condition from prior context and calls `next_step({ next: "<node-id>" })` to select the correct branch. Use when the decision is machine-readable and requires no new tool calls.
 
 ### `compression-node`
 HeadWrench calls the `compress` tool directly (via the DCP plugin) to synthesize and compress accumulated context. Use when scout output or multi-step agent work has filled the context window and key findings need crystallization before proceeding. One `compress` call — HW writes a dense technical summary that replaces the stale content. No agent is dispatched.
@@ -119,7 +123,7 @@ Terminal node. No todo. The prompt tells HW what to communicate to the user on s
 Terminal node. No todo. The prompt tells HW what to communicate on failure: what was attempted, what failed, and recovery options.
 
 ### `generic`
-Escape hatch. No fixed todo — the planning agent defines the todo array and prompt freely. Use when no template fits. Document the rationale in the prompt.
+Escape hatch. No fixed todo — the planning agent defines the todo array and prompt freely. Use when no template fits. Document the rationale in the prompt. **Always rename** — never use `generic` as the node ID in a project DAG.
 
 ---
 
@@ -144,7 +148,7 @@ The planning agent decides the maximum cycle depth during `propose-structure`. A
 ## Node ID Conventions
 
 - Use kebab-case: `implement-auth`, `run-tests`
-- Repeated nodes get a numeric suffix: `verify-<N>`, `fix-<N>`
+- Repeated nodes get a numeric suffix: `verify-<N>`, `fix-<N>`. First instance uses the bare name (`verify`). Second uses `-2` (`verify-2`). **Never** use `-1` as a suffix.
 - Terminal nodes (`output-success`, `output-failure`) follow the same rule — each branch needs its own instance: `output-success`, `output-success-2`, `output-failure`, etc.
 - Entry node is always `session-overview`
 - The DAG is a tree — nodes cannot be shared across branches. Every path must have its own complete subtree.

@@ -19,3 +19,7 @@ The `when` conditions in plan.json exactly match these option labels — do not 
 1. `question` — Ask: "Do you want to activate and begin executing this plan now?" with options "Yes, activate now" and "No, I'll activate later".
 
 You MUST call the `question` tool. Do not present the choice as plain text.
+
+**Before advancing:** Confirm you know the plan name (the directory name under `.opencode/session-plans/`) — the next node needs it immediately.
+
+**After the user answers**, call `next_step()` to advance to the selected branch.

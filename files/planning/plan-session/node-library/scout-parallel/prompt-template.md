@@ -2,11 +2,19 @@
 
 Dispatch three `@ContextScout` agents to explore different areas of the codebase. Call all three `task` tools sequentially — OpenCode runs them concurrently.
 
+## Guidance
+
+Each scout goal should be a specific question or targeted area — not just "explore X". Good: "Identify all files that import AuthService and trace the token-refresh flow." Bad: "Look at the auth code."
+
+If only two areas need coverage, drop one scout section and adjust the todo array to `["task","task"]` in plan.json.
+
 ## Scout 1 — Affected code
 
 {{SCOUT_1_GOAL}}
 
 Paths to explore: {{SCOUT_1_PATHS}}
+
+*List as comma-separated paths or globs: e.g., `src/auth/`, `lib/utils/**`*
 
 ## Scout 2 — Patterns and architecture
 
@@ -14,11 +22,15 @@ Paths to explore: {{SCOUT_1_PATHS}}
 
 Paths to explore: {{SCOUT_2_PATHS}}
 
+*List as comma-separated paths or globs: e.g., `src/auth/`, `lib/utils/**`*
+
 ## Scout 3 — Dependencies and boundaries
 
 {{SCOUT_3_GOAL}}
 
 Paths to explore: {{SCOUT_3_PATHS}}
+
+*List as comma-separated paths or globs: e.g., `src/auth/`, `lib/utils/**`*
 
 ## Scope restriction
 

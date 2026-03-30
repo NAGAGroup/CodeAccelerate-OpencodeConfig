@@ -12,6 +12,8 @@ Add a sequential-thinking node whenever HW needs to reason through a decision be
 
 **Key insight:** Complex project DAGs should have **multiple** sequential-thinking nodes — one per major decision point is a good default.
 
+**When NOT to use:** **Do not** use before simple, unambiguous implementation steps where HW already has all context needed. Prefer it at genuine decision forks with 2 or more plausible approaches, not as a rote step between every node.
+
 ## What it does
 
 HW calls the `sequential-thinking` MCP tool directly (no agent dispatch). The tool steps through a structured reasoning process. Output is HW's conclusion, which feeds the next node.
@@ -21,15 +23,15 @@ HW calls the `sequential-thinking` MCP tool directly (no agent dispatch). The to
 - **The decision** — What specific question or trade-off HW should reason through
 - **Context to provide** — What information HW already has that's relevant to the decision
 - **Expected output** — What conclusion or decision the reasoning should produce
-- **What comes next** — Which node uses this conclusion and how
+- **What comes next** — Which node uses this conclusion and how. The output of the sequential-thinking call stays in HW's active context — subsequent nodes reference conclusions directly. No explicit capture step is needed unless the context window is large.
 
 ## Node ID
 
-Default: `sequential-thinking`. If used multiple times in a DAG, suffix: `sequential-thinking-<N>`.
+Default: `sequential-thinking`. If used multiple times in a DAG, suffix: `sequential-thinking-<N>`. First instance: `sequential-thinking`. Second instance: `sequential-thinking-2`. Never use `-1` as a suffix.
 
 ## Notes
 
 - No agent dispatch — HW executes this tool directly
 - Use liberally in complex project DAGs — a multi-phase task often warrants 2–4 sequential-thinking nodes, one at each key decision point
 - Particularly useful before `decision-gate` (to prepare HW's recommendation) or before `write-dag` nodes (to finalize structure)
-- The `sequential-thinking_sequentialthinking` tool name is the MCP server tool — use this exact name in the todo array
+- The `sequential-thinking_sequentialthinking` tool name is the MCP server tool — use this exact name in the todo array. A typo silently breaks the todo sequence.

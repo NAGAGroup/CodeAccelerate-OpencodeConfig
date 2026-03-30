@@ -2,7 +2,7 @@
 
 ## When to use
 
-When no other node template fits. Use as an escape hatch for unusual node patterns — custom tool sequences, one-off combinations, or experimental flows. Document the rationale clearly in the node prompt.
+When no other node template fits. Use as an escape hatch for unusual node patterns — custom tool sequences, one-off combinations, or experimental flows. Document the rationale clearly in the node prompt. Examples: A single `bash` check to verify a file exists before branching. A node that calls `question` then `bash` in sequence for an interactive confirm-and-run pattern. A node calling a custom MCP tool not covered by other templates.
 
 ## What it does
 
@@ -21,13 +21,13 @@ Always rename — `generic` is not a meaningful node name. Use a descriptive ID:
 
 ## Notes
 
-- The `generic/plan.json` ships with `"todo": []` — the planning agent fills this in when writing the actual node
+- The `generic/plan.json` ships with `"todo": []` — the planning agent fills this in when writing the actual node. When writing a `generic` node into a project DAG, **replace** the empty todo with the actual sequence needed. Do not ship a node with `"todo": []` unless it genuinely needs no tool calls (like `conditional-branch`).
 - If you find yourself using this node frequently for a particular pattern, consider proposing it as a new named template
-- Valid todo items: any OpenCode tool name (`task`, `bash`, `question`), or MCP tool names like `sequential-thinking_sequentialthinking`
+- Valid todo items: any OpenCode tool name (`task`, `bash`, `question`, `compress`), or MCP tool names like `sequential-thinking_sequentialthinking`
 
 ## Anti-patterns to avoid
 
-> **Do NOT use `generic` to create branching logic.** If you need the user to choose a path, use `decision-gate`. If the branch is machine-readable, use `conditional-branch`. Adding a `next` array without the correct node type creates undefined behavior.
+> **Do NOT use `generic` to substitute for `decision-gate` or `conditional-branch`.** If your `next` field is a branch array, the todo must include either `question` (user-decided) or be empty (condition-decided). Arbitrary todos with branch `next` create ambiguous semantics.
 
 > **Do NOT leave todo items undefined.** Every item in the todo array must have a clear, specific instruction in the prompt. Vague todos like `"task"` with no guidance will fail — the executing agent needs to know exactly what to dispatch and to whom.
 

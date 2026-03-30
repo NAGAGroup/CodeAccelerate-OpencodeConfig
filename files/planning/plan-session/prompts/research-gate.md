@@ -18,11 +18,13 @@ Form a recommendation for each question before calling the question tool.
 
 1. `question` — Ask whether cursory planning-time research is needed. Mark your recommendation in the option label.
 
-   **Option A:** "Do planning research" or "Do planning research (HW recommends)" — description: "Dispatch ExternalScout for a targeted cursory pass before designing the plan"
+   **Option A:** "User wants web research" or "User wants web research (HW recommends)" — description: "Dispatch ExternalScout for a targeted cursory pass before designing the plan"
 
-   **Option B:** "Skip planning research" or "Skip planning research (HW recommends)" — description: "Proceed directly to sequential thinking"
+   **Option B:** "User skips web research" or "User skips web research (HW recommends)" — description: "Proceed directly to sequential thinking"
 
    Append "(HW recommends)" to whichever option you recommend based on your assessment.
+
+   **CRITICAL:** These labels must start with `'User wants web research'` or `'User skips web research'` — the DAG branches on these exact strings. Do not change them.
 
 2. `question` — Ask whether the generated project DAG should include execution-time research nodes. Mark your recommendation.
 
@@ -33,7 +35,9 @@ Form a recommendation for each question before calling the question tool.
    Append "(HW recommends)" to whichever option you recommend.
 
 After both questions are answered, branching instructions will follow:
-- If Q1 = "Do planning research" → proceed to `research-brief`
-- If Q1 = "Skip planning research" → proceed to `sequential-thinking-2`
+- If Q1 = "User wants web research" → proceed to `research-brief`
+- If Q1 = "User skips web research" → proceed to `sequential-thinking-2`
 
 Carry the Q2 answer in context — sequential-thinking will use it when deciding whether to include research nodes in the generated plan.
+
+**After both questions are answered**, briefly summarize your two decisions in a sentence (e.g., "Decisions: Q1=Skip research, Q2=Include research nodes in DAG") then call `next_step()` to advance.

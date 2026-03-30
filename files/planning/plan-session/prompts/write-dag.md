@@ -4,7 +4,7 @@ Dispatch agents to write the project DAG files to `.opencode/session-plans/{task
 
 ## Todo
 
-1. `task` — Dispatch @QuickDoc or @JuniorDev to create `plan.json` and all prompt files under `prompts/`. Provide the full DAG structure, node-by-node content, and directory layout.
+1. `task` — Dispatch @QuickDoc or @JuniorDev to create `plan.json` and all prompt files under `prompts/`. Provide the full DAG structure, node-by-node content, and directory layout. Use @JuniorDev for DAGs with more than 5 prompt files (larger step budget, 10 steps); use @QuickDoc for small DAGs with 3 or fewer prompts (step budget 8).
 
 **CRITICAL: Embed the complete `plan.json` as a JSON code block in the subagent task.** Do not describe the structure in prose or pass only a table. The subagent (@JuniorDev or @QuickDoc) has no DAG schema knowledge — they will write what you show them. If you give them JSON, they write JSON. If you give them a table, they may invent their own format.
 
@@ -13,7 +13,7 @@ The JSON you embed must follow the nested tree schema exactly:
 - Branch `next` is an array of `{ "when": "label", "node": { ... } }` — the `node` field is a full object, not a string
 - Terminal nodes omit `next` entirely
 2. `validate_dag` — Call the `validate_dag` tool with the plan name to check structural correctness and prompt quality. Review the findings report — it may identify issues for the next step to fix.
-3. `task` — Dispatch @HeadWrench (subagent) to verify the written files: read `plan.json`, check that all prompt filenames exist in `prompts/`, validate the DAG structure, and fix any issues reported by `validate_dag`.
+3. `task` — Dispatch @HeadWrench (subagent) to verify the written files: read `plan.json`, check that all prompt filenames exist in `prompts/`, validate the DAG structure, and fix any issues reported by `validate_dag`. Even if `validate_dag` reports no structural issues, the subagent should confirm all prompt filenames listed in `plan.json` exist in the `prompts/` directory.
 
 ## Directory structure
 
@@ -50,6 +50,7 @@ The JSON you embed must follow the nested tree schema exactly:
   - `question` for user decisions — prompts MUST instruct HW to use the `question` tool
   - `bash` for running commands
   - `sequential-thinking_sequentialthinking` for HW reasoning steps
+  - `compress` — HeadWrench calls the compress tool directly; valid **only** in `compression-node` types. Do not use in other node types.
 - `next` — single node (linear), array of `{ when, node }` (branch), or omitted (terminal). **Every non-terminal node must have a `next` field** — omit only for true terminal nodes (`output-success`, `output-failure`).
 
 ### Node type → todo quick reference
@@ -72,6 +73,8 @@ Use these standard `todo` arrays when writing `plan.json`. Do not invent todo va
 | `output-failure` | `[]` |
 
 Adjust `parallel-tasks` todo length to match the actual number of parallel agent dispatches. All other types use the arrays above exactly.
+
+`activate_plan` is also a valid todo value in terminal nodes that immediately activate a plan (used in `activate-now` style nodes).
 
 ## ❌ Wrong — do not produce this
 

@@ -9,6 +9,11 @@ This session will produce a **project DAG** — a nested tree of nodes that Head
 1. Dispatch scouts to explore the relevant codebase
 2. Optionally run cursory web research (user decides)
 3. Read the node library to understand what building blocks are available
-4. Use sequential thinking to design the complete plan — structure and node-by-node decomposition — with full context from steps 1–3
-5. Present the complete plan for user approval (single gate)
-6. Write the project DAG files
+4. Pass through the research gate — you will decide if planning-time research is needed and if the DAG should include execution-time research nodes
+5. Use sequential thinking to design the complete plan — structure and node-by-node decomposition — with full context from steps 1–4
+6. Present the complete plan for user approval (single gate)
+7. Write the project DAG files
+
+---
+
+**Note:** This node has no todos and auto-advances immediately to scout dispatch.

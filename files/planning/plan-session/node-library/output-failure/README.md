@@ -2,7 +2,9 @@
 
 ## When to use
 
-As the terminal node for the failure path — when retries are exhausted, a hard stop is hit, or the user chooses to abort. Every DAG with a failure branch must terminate with this node (or `output-success`).
+As the terminal node for the failure path — when retries are exhausted, a hard stop is hit, or the user chooses to abort. Every failure path in the DAG must terminate with `output-failure`. Do not reuse `output-success` on failure paths, even if the failure is soft.
+
+**Do not** use as the immediate failure target when a retry is feasible. Route recoverable failures through a fix node first. Reserve `output-failure` for when retries are exhausted or the failure is unrecoverable.
 
 ## What it does
 
@@ -12,13 +14,13 @@ Auto-advances immediately (empty todo). The prompt instructs HW what to communic
 
 - **What failed** — Brief description of what the DAG attempted and where it stopped
 - **Failure cause** — What the anticipated failure scenario is (e.g., "tests failed after two fix attempts", "build error not resolved")
-- **Recovery options** — What the user can try manually or with a fresh session
+- **Recovery options** — What the user can try manually or with a fresh session. Good: 'Run `npm install` manually to resolve dependency conflicts, then re-run the plan.' Bad: 'Try again.'
 
 ## Node ID
 
 Always `output-failure`. If a DAG has multiple failure paths, each branch gets its own `output-failure` instance — nodes cannot be shared or referenced by ID across branches.
 
-> **Anti-pattern:** Do NOT reuse the `output-failure` ID across branches. Every terminal node must have a unique ID — e.g., `output-failure`, `output-failure-2`. Reusing an ID silently corrupts the node map and the session will terminate prematurely on whichever branch resolves it first.
+> **Anti-pattern:** Do NOT reuse the `output-failure` ID across branches. Every terminal node must have a unique ID — e.g., `output-failure`, `output-failure-2`. Reusing an ID causes a **validation error** at DAG-authoring time.
 
 ## Notes
 

@@ -4,9 +4,13 @@
 
 When the path forward is determined by a condition that can be evaluated without user input — exit code of a prior bash command, presence of a file, a value from a prior agent's output, etc. This is a branch point: once the node is entered, branching instructions will follow automatically with the available paths to choose from.
 
+**Prerequisite:** Ensure the condition result is in HW's near-term context. If the relevant result came from many nodes ago, use a `compression-node` to surface key results before this branch.
+
+**Do not** use after a `question`-based node when the user's answer has already determined the path. Use `decision-gate` for decisions requiring human input; use `conditional-branch` only when no new user input is needed.
+
 ## What it does
 
-No todo — this is a branch point. The prompt describes the condition and what each branch means. HW reads it and evaluates the condition based on prior context, then branching instructions follow automatically.
+No todo — the plugin presents available branch targets on node entry. HW evaluates the condition from prior context and calls `next_step({ next: "<node-id>" })` to select the path.
 
 ## What the planning agent must resolve
 
