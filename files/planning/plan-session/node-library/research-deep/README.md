@@ -15,6 +15,7 @@ Dispatches one `@ExternalScout` agent via a single `task` call with an expanded 
 - **Exploration mandate** — Which directions should ExternalScout actively pursue? (e.g., "explore academic papers, production case studies, and library comparisons")
 - **Synthesis requirement** — What should the final output synthesize? (e.g., "recommend an approach with rationale", "compare three alternatives with trade-offs")
 - **Downstream decision** — How will findings inform subsequent decisions? Will results gate a `decision-gate` or feed directly into `sequential-thinking`?
+- **Answer format** — The dispatched ES prompt must instruct ExternalScout to synthesize a direct answer (not a source list), explicitly stating what was found and what was not found. Include confidence levels for major findings: "High" (3+ sources aligned), "Medium" (2 sources), "Low" (1 source or conflicting).
 
 ## Node ID
 
@@ -27,3 +28,4 @@ Default: `research-deep`. Rename for specificity: `research-streaming-architectu
 - For multi-topic deep research, use multiple `research-deep` nodes sequentially rather than trying to cover everything in one pass
 - ExternalScout is for EXTERNAL research only — if you need codebase exploration, use `scout-parallel` or `analyze-deep`
 - Use `research-basic` for implementation-time lookups; use `research-deep` for pre-implementation discovery
+- When writing the ES prompt, instruct ExternalScout to use Context7 first: call `context7_resolve-library-id` then `context7_query-docs`. Use Exa web search and crawling only after Context7.

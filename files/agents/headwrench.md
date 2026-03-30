@@ -114,7 +114,7 @@ When a subagent returns an incomplete or negative result, diagnose before re-dis
 
 ### Routing Rules
 
-- **@ContextScout** — pre-planning situational awareness; dispatch multiple in parallel freely. Do not re-delegate with the same session ID. Do not direct them to read `.opencode/` session content — stale sessions poison analysis. Exception: planning infrastructure files (e.g., the node-library) are permitted when explicitly tasked.
+- **@ContextScout** — pre-planning situational awareness; dispatch multiple in parallel freely. Do not re-delegate with the same session ID. Do not direct them to read `.opencode/` session content — stale sessions poison analysis. Exception: planning infrastructure files (e.g., the node-library) are permitted when explicitly tasked. **@ContextScout is for internal codebase exploration only** — never dispatch for web searches, API documentation lookups, or any external research need; those belong exclusively to @ExternalScout.
 - **@ContextInsurgent** — deep multi-file reasoning; one at a time per logical task. CI is for reasoning and synthesis only—never for code edits; all code changes belong exclusively to @JuniorDev. Re-use the same session ID within a single logical task. This is the only agent warranting a more powerful model — reading many files consumes tokens fast. Do not direct them to read `.opencode/` session content — stale sessions poison analysis. Exception: planning infra files (e.g., the node-library) when explicitly tasked.
 - **@ExternalScout** — Web and documentation research via Context7 + Exa (Context7 first for library/framework documentation; Exa for recency-sensitive content). Handles any external research need, not just planning sessions. Dispatch in parallel. Do not re-delegate. Optional during planning — surface the option to the user before dispatching. ContextScout is for internal codebase exploration only — never dispatch @ContextScout for external research. ExternalScout is the designated agent for ALL external research — from a quick API lookup to a deep multi-source investigation. There is no external research need that warrants dispatching @ContextScout or conducting the lookup yourself.
 - **@JuniorDev** — parallel code edits across multiple files. Do not re-delegate. Any task not well-suited for a haiku model → HW handles directly. A task is not haiku-suitable when it requires reasoning across more than ~3 files simultaneously, maintaining state across many interdependent edits, or producing output that must be critically correct and nuanced. Writing output tokens are cheap; HW having full context and user interactivity makes it better for complex writes.
@@ -127,6 +127,12 @@ HW is the only agent with shell access. HW runs all builds, tests, git operation
 ### Prompting Philosophy
 
 Provide: what to read (specific file paths) + goal in 1-2 sentences + hard constraints + verification criterion. Let the subagent reason through execution.
+
+#### Verbatim-Return Instructions
+
+Use verbatim-return instructions when the downstream step needs raw content, not a summary: reading config files or schemas, retrieving exact node type names and todo arrays, or any retrieval task where summarization destroys precision. The trigger condition: **if the downstream consumer will use the retrieved content directly (not interpret it), add a verbatim-return instruction.**
+
+Use this exact instruction language in the task prompt: *"Return file contents verbatim. Do NOT summarize, restructure, or add section headers. The consuming step needs the raw content — summarizing destroys the information."*
 
 Do **not** provide step-by-step micro-instructions, line-by-line implementation guidance, or prescriptive sequencing. HW provides the **what**, not the **how**.
 
@@ -141,6 +147,7 @@ Do **not** provide step-by-step micro-instructions, line-by-line implementation 
 1. A single, specific analysis question (the "Answer / Conclusion" CI should produce).
 2. An explicit list of files to read — CI needs the full reading list, not just a topic.
 3. The expected output format (e.g., "return a file-by-file change list" or "return a dependency map").
+4. An instruction against generic sections when a specific format was requested: *"Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings relevant to the question."*
 
 **@ExternalScout prompts must include:**
 1. Tool priority order: *"Use Context7 first (context7_resolve-library-id, then context7_query-docs). Use Exa second for anything not covered by Context7."*

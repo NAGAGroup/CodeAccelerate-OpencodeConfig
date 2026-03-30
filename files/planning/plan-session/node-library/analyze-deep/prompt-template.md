@@ -12,11 +12,15 @@ Dispatch `@ContextInsurgent` to perform deep multi-file reasoning on the followi
 
 {{CONTEXT_TO_PROVIDE}}
 
-*Prior scout findings, relevant file paths, or background context to pass to ContextInsurgent. Be explicit — e.g., "Scout found TokenService in src/auth/token.ts with three helper dependencies."*
+*The file list CI must read (e.g., `src/auth/token.ts`, `src/auth/helpers/*.ts`) and any prior scout findings to build on. Always include an explicit list of files — do not substitute contextual prose for file paths.*
 
 ## Expected output
 
 {{EXPECTED_OUTPUT}}
+
+## Output format requirements
+
+Answer the question directly with specific evidence from the code. Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings.
 
 ## Scope restriction
 

@@ -18,6 +18,9 @@ For each of the three scouts, specify:
 2. **Scout 2 — Patterns and architecture**: Where to look for conventions, existing patterns, and structural rules the task must follow.
 3. **Scout 3 — Dependencies and boundaries**: Which other systems, modules, or integration points are involved. What external contracts must be respected.
 
+**For each scout's task prompt, include this instruction verbatim:**
+> "Report findings as specific facts and file locations — not as generic 'Codebase Overview', 'Key Decisions', or 'Patterns' sections. List what you found with exact references."
+
 If three scouts are too many (simple task with one area), use fewer `task` calls and adjust the todo array accordingly. Three is the default maximum. Reduce both the prompt instructions AND the `todo` array length — e.g., `"todo": ["task","task"]` for two scouts. The prompt and todo array must stay in sync.
 
 ## Node ID

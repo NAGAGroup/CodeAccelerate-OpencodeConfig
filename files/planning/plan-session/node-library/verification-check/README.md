@@ -17,6 +17,7 @@ Dispatches HW as a subagent via a single `task` call. HW subagent has full shell
 - **Acceptance criteria** — What constitutes a passing result (exit code 0, specific output, no error lines)
 - **Failure handling** — What happens on failure? (Go to a fix node, go to `output-failure`, retry?)
 - **Working directory** — If the command must run from a specific directory. If the command uses relative paths, always specify the working directory — omitting it defaults to the project root, which may not be correct.
+- **Outcome format** — The dispatched HW subagent prompt must instruct HeadWrench to end its response with: `**Outcome:** [PASS | FAIL | PARTIAL]` followed by a one-sentence summary. This makes results machine-parseable for downstream `conditional-branch` nodes.
 
 ## Node ID
 

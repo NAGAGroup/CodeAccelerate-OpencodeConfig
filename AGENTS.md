@@ -257,6 +257,21 @@ Use verbatim-return instructions when the downstream step needs raw content, not
 - **CS for external research** — ContextScout cannot browse the web. Routing external lookups to CS produces nothing useful.
 - **ES tool order reversed** — Exa before Context7 wastes Exa queries on library docs that Context7 covers better. Always Context7 first.
 
+### Prompting-Mechanism DAG Rule
+
+When generating a project DAG that touches any prompting mechanism — agent files, node library templates, headwrench.md delegation sections, or planning prompts — always structure the DAG using the **insurgent → research-deep → improve** workflow:
+
+1. **Analyze phase** — One or more `analyze-deep` nodes (ContextInsurgent) to audit each category of prompting files against gold-standard criteria. Produce a per-file change list.
+2. **Compress** — A `compression-node` after the analysis phase to crystallize findings.
+3. **Research phase** — One `research-deep` node per distinct audit category (agent self-regulation patterns, template design, agent-specific delegation patterns, etc.). Run them sequentially.
+4. **Compress** — A second `compression-node` after the research phase.
+5. **Implement phase** — `parallel-tasks` nodes to apply changes (separate nodes for agent files vs. node library files).
+6. **Review** — An `analyze-deep` node (ContextInsurgent) to verify all changes against gold-standard criteria.
+7. **Approval gate** — A `decision-gate` for user approval before finalizing.
+8. **Finalize** — `parallel-tasks` to update CHANGELOG.md and AGENTS.md.
+
+**Trigger:** Any DAG whose implementation phase will modify or create files in `files/agents/`, `files/planning/plan-session/node-library/`, or `files/planning/plan-session/prompts/`.
+
 ## File Naming Conventions
 
 - Agents: `files/agents/{kebab-case-name}.md`

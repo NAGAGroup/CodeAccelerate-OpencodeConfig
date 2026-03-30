@@ -22,6 +22,8 @@ For each task, specify:
 Also determine:
 - **Task count** — How many independent tasks? Adjust the todo array from the default `["task","task","task"]` to match. The number of `task` entries in the `todo` array must match the number of distinct task instructions in the prompt — they are enforced in order by the plugin. Adjust both together.
 - **Independence check** — Are the tasks truly independent? If one depends on another's output, use sequential nodes instead.
+- **Success criterion** — What observable outcome confirms the task was completed? (E.g., "The function compiles without TypeScript errors and is exported from the module index.")
+- **Conventions reference** — If the edit must match existing style, name the reference file (e.g., "Match the pattern in `src/auth/session.ts`").
 
 ## Node ID
 
@@ -34,3 +36,4 @@ Default: `parallel-tasks`. Rename for clarity: `implement-handlers`, `update-sch
 - `@QuickDoc` step budget is 8 — ensure documentation tasks are scoped accordingly.
 - If tasks need to share context, use sequential nodes or route through HW instead.
 - Fewer than three tasks is fine — remove entries from the todo array.
+- For `@QuickDoc` tasks: the prompt must also include the format/template to follow and a reference file to match style. These are required for QuickDoc to produce consistent output.

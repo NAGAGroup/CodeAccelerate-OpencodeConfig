@@ -23,13 +23,13 @@ Do not stop at the first source. Follow threads across multiple sources and synt
 
 [Describe the synthesis required: a recommendation, a comparison table, a ranked list of approaches with trade-offs, etc.]
 
-> **Writing the ExternalScout's prompt:** The prompt must specify: (1) the exact research question and scope; (2) authorize all tools: Context7 for official docs, Exa search for discovery, Exa crawling for in-depth reading; (3) return format: synthesize findings into a direct answer with supporting evidence — not a list of sources. Instruct the agent to explicitly state what it found and what it did not find.
+> **Writing the ExternalScout's prompt:** The prompt must specify: (1) the exact research question and scope; (2) authorize all tools: use Context7 first — call `context7_resolve-library-id` to identify the library, then `context7_query-docs` to retrieve documentation — then Exa web search for broad discovery and Exa crawling for in-depth source reading; (3) depth authorization: "You are authorized to perform multiple iterative searches. Use sequential thinking for complex trade-offs. Pursue contradictions to resolution or flag as unresolved."; (4) return format: synthesize findings into a direct answer with supporting evidence and code examples where they illustrate the approach — not a list of sources. Include confidence levels: High (3+ sources), Medium (2 sources), Low (1 source or conflicting). Explicitly state what was found and what was not found.
 
 ## Todo
 
 > **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
 
-1. `task` — Dispatch @ExternalScout with the full research mandate above. Authorize ExternalScout to use all available tools: Context7 for official documentation, Exa web search for broad discovery, and Exa crawling for in-depth source reading. Ask ExternalScout to explicitly synthesize findings rather than just listing sources — the output should answer the research question directly with supporting evidence.
+1. `task` — Dispatch @ExternalScout with the full research mandate above. Instruct ExternalScout to: use Context7 first (call `context7_resolve-library-id`, then `context7_query-docs`); then use Exa web search for broad discovery and Exa crawling for in-depth reading of key sources. Authorize multiple iterative searches and sequential thinking for trade-off analysis. Include code examples where they illustrate the approach. Synthesize findings into a direct answer with confidence levels (High/Medium/Low). Explicitly state what was found and what was not found.
 
 ## Before advancing
 

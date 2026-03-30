@@ -27,6 +27,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Improved all 12 node library READMEs: added "when NOT to use" guidance to every node type, clarified `-<N>` suffix convention (no `-1`), added concrete decision criteria and cross-references
 - Updated `CATALOGUE.md`: added research node disambiguation callout distinguishing planning-phase (`research-gate`/`research-brief`) from DAG-phase (`research-basic`/`research-deep`) research nodes; fixed stale phase name references; improved `conditional-branch` routing description
 - Updated `files/planning/reference/dag-design-guide.md`: added prominent callouts for node ID uniqueness (breaking constraint), `next` must be full object (not string), and `when` string routing mechanic; updated duplicate ID description to reflect validation error behavior
+- Expanded delegation prompt guidance in `files/agents/headwrench.md`: added Verbatim-Return Instructions subsection (when/how to use verbatim-return), strengthened @ContextScout routing rule with explicit internal-only boundary, and added anti-generic-sections requirement (item 4) to @ContextInsurgent prompt requirements
+- Added self-regulation patterns to specialist agent files: `context-scout.md` (internal-codebase-only boundary statement, specificity reminder in Output Format, interpretation-logging rule in Hard Constraints), `context-insurgent.md` (format-override exception clause, path-fallback rule, anti-generic anti-pattern), `junior-dev.md` (path-discovery fallback in No Questions rule), `external-scout.md` (Context7 two-step invocation, vague-topic interpretation rule)
+- Improved `parallel-tasks` node library templates: added Success criterion field to all 3 task sections in prompt-template.md, added conventions reference to Scope & Constraints hint, added QuickDoc-specific delegation guidance; added Success criterion and Conventions reference bullets to README.md
+- Improved `scout-parallel` node library README with verbatim anti-generic-sections instruction for scout dispatch prompts
+- Improved `analyze-deep` node library templates: added Output constraint bullet to README.md resolve list; updated file-list placeholder hint to require explicit paths; added Output format requirements section to prompt-template.md
+- Improved `verification-check` node library templates: added Outcome format bullet to README.md resolve list; added Response format section to prompt-template.md as first-class body content
+
+### Added
+
+- Added `research-basic` node library: README.md (cursory ExternalScout research with Context7-first tool priority, scope guard against multiple iterations), prompt-template.md (delegation guidance with exact Context7 function names and stop-after-first-search constraint), plan.json
+- Added `research-deep` node library: README.md (comprehensive ExternalScout investigation with iterative search authorization, confidence levels, what-was-not-found requirement), prompt-template.md (delegation guidance with Context7 two-step invocation, deep-research authorization language), plan.json
 
 ### Fixed
 

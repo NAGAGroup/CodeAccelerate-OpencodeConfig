@@ -9,36 +9,51 @@ Dispatch the following agents in parallel. Call all `task` tools sequentially �
 **Agent:** {{TASK_1_AGENT}}
 
 > **Agent selection:** Haiku-tier agents only: `@JuniorDev` (code edits), `@QuickDoc` (doc writes), `@ContextScout` (reads). Do NOT dispatch `@ContextInsurgent` or `@HeadWrench` here.
+> For `@QuickDoc`: include the target file path, the format/template to follow, and point to a reference file to match style (e.g., "Match the style of `docs/existing-guide.md`").
 
 **Target:** {{TASK_1_TARGET}}
 **Goal:** {{TASK_1_GOAL}}
 **Scope & Constraints:** {{TASK_1_SCOPE_AND_CONSTRAINTS}}
 
-> **Field:** What this agent must NOT touch, must stay within, or special rules. E.g., "Edit only src/auth/; do not touch tests/". Leave blank if none.
+> **Field:** What this agent must NOT touch, must stay within, or special rules. E.g., "Edit only src/auth/; do not touch tests/". Include a conventions reference if the edit must match a specific file's style — e.g., "Match the pattern in `src/auth/session.ts`."
+
+**Success criterion:** {{TASK_1_SUCCESS_CRITERION}}
+
+> **Field:** Observable outcome — how the agent verifies the edit was applied. E.g., "File exports a new `refreshToken` function that TypeScript compiles without errors."
 
 ## Task 2
 
 **Agent:** {{TASK_2_AGENT}}
 
 > **Agent selection:** Haiku-tier agents only: `@JuniorDev` (code edits), `@QuickDoc` (doc writes), `@ContextScout` (reads). Do NOT dispatch `@ContextInsurgent` or `@HeadWrench` here.
+> For `@QuickDoc`: include the target file path, the format/template to follow, and point to a reference file to match style (e.g., "Match the style of `docs/existing-guide.md`").
 
 **Target:** {{TASK_2_TARGET}}
 **Goal:** {{TASK_2_GOAL}}
 **Scope & Constraints:** {{TASK_2_SCOPE_AND_CONSTRAINTS}}
 
-> **Field:** What this agent must NOT touch, must stay within, or special rules. E.g., "Edit only src/auth/; do not touch tests/". Leave blank if none.
+> **Field:** What this agent must NOT touch, must stay within, or special rules. E.g., "Edit only src/auth/; do not touch tests/". Include a conventions reference if the edit must match a specific file's style — e.g., "Match the pattern in `src/auth/session.ts`."
+
+**Success criterion:** {{TASK_2_SUCCESS_CRITERION}}
+
+> **Field:** Observable outcome — how the agent verifies the edit was applied. E.g., "File exports a new `refreshToken` function that TypeScript compiles without errors."
 
 ## Task 3
 
 **Agent:** {{TASK_3_AGENT}}
 
 > **Agent selection:** Haiku-tier agents only: `@JuniorDev` (code edits), `@QuickDoc` (doc writes), `@ContextScout` (reads). Do NOT dispatch `@ContextInsurgent` or `@HeadWrench` here.
+> For `@QuickDoc`: include the target file path, the format/template to follow, and point to a reference file to match style (e.g., "Match the style of `docs/existing-guide.md`").
 
 **Target:** {{TASK_3_TARGET}}
 **Goal:** {{TASK_3_GOAL}}
 **Scope & Constraints:** {{TASK_3_SCOPE_AND_CONSTRAINTS}}
 
-> **Field:** What this agent must NOT touch, must stay within, or special rules. E.g., "Edit only src/auth/; do not touch tests/". Leave blank if none.
+> **Field:** What this agent must NOT touch, must stay within, or special rules. E.g., "Edit only src/auth/; do not touch tests/". Include a conventions reference if the edit must match a specific file's style — e.g., "Match the pattern in `src/auth/session.ts`."
+
+**Success criterion:** {{TASK_3_SUCCESS_CRITERION}}
+
+> **Field:** Observable outcome — how the agent verifies the edit was applied. E.g., "File exports a new `refreshToken` function that TypeScript compiles without errors."
 
 ## Todo
 

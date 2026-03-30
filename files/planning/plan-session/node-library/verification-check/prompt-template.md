@@ -20,6 +20,12 @@ Dispatch HeadWrench as a subagent via `task` — HeadWrench is the only agent wi
 
 Reference the node ID that follows on failure. Standard patterns: route to a `parallel-tasks` fix node, route to `output-failure`, or use a `conditional-branch` after this node. E.g., 'On failure, the conditional-branch node `check-build-result` routes to the fix phase.'
 
+## Response format
+
+End your response with:
+**Outcome:** [PASS | FAIL | PARTIAL]
+Followed by a one-sentence summary of the result.
+
 ## Todo
 
 > **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.

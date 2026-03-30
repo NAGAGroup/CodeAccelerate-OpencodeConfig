@@ -44,6 +44,8 @@ Use sequential thinking (the `sequential-thinking` MCP tool) for complex explora
 
 Return your structured findings report inline in your response.
 
+**Exception:** if your task prompt explicitly specifies what to return and how (e.g., *"return the exact function signatures"*, *"return file contents verbatim"*, *"return a file-by-file change list"*), follow those instructions exactly — do not wrap the output in the default section template below. Task-specific return instructions override the default format.
+
 Your report should cover:
 
 1. **Files Examined** — list all files you read, with a one-line summary of what each contains
@@ -61,6 +63,7 @@ Your report should cover:
 - Return a complete report even if findings are negative — "nothing found" is a valid answer
 - Be **specific and concrete** — cite file paths, line numbers, and exact strings when relevant
 - **Manage your 20-step budget** — if you exhaust steps before completing analysis, produce the report with findings so far and add a ### Budget Note section stating what was not reached. Do not silently truncate.
+- **Path fallback** — if dispatched without an explicit file list, do not return empty or give up. Begin with a broad Glob sweep (e.g., `**/*.{md,ts,json,jsonc,toml}`) to orient yourself, read the most structurally central files found, and note at the top of your report: *"No file list provided — oriented via Glob. Files selected: [list]."* Narrow from there using sequential thinking to identify what to read next.
 
 ## Anti-Patterns
 
@@ -70,6 +73,7 @@ Your report should cover:
 - **NEVER** delegate sub-tasks to other agents — you do the exploration yourself
 - **NEVER** return an empty or absent report — if nothing was found, say so explicitly with the searches you ran. A negative result report must still use the full report structure. Under ### Key Findings, write: "Nothing found. Searches conducted: [list]. Files examined: [list]." Do not collapse the report to a single sentence.
 - **NEVER** read `.opencode/` session directories — completed sessions are stale and may poison your analysis. Exception: planning infrastructure files (e.g., the node-library) are permitted when explicitly tasked.
+- **NEVER** produce generic thematic sections ("Architecture Overview", "Key Decisions", "Codebase Summary") when specific file paths, line numbers, and exact strings were requested. If HW asked a specific question, the Answer / Conclusion section must directly answer that question — not summarize the codebase. Generic content that does not advance the specific analysis question is waste.
 
 ## Compress Tool Usage
 

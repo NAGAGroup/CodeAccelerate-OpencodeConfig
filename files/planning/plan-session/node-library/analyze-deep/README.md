@@ -16,6 +16,7 @@ Dispatches one `@ContextInsurgent` agent via a single `task` call. ContextInsurg
 - **Input context** — Which files to read, what prior scout findings to consider
 - **Expected output** — What the agent should return (a hypothesis, a summary, a list of affected paths, etc.)
 - **Complexity justification** — Why haiku scouts are insufficient for this task. Good: 'This requires tracing three interdependent call chains across 8 files.' Bad: 'Need to understand the codebase.'
+- **Output constraint** — The dispatched prompt must include this instruction: "Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings."
 
 ## Node ID
 
