@@ -60,7 +60,7 @@ Use these standard `todo` arrays when writing `plan.json`. Do not invent todo va
 | `parallel-tasks` (4 agents) | `["task", "task", "task", "task"]` |
 | `verification-check` | `["task"]` |
 | `conditional-branch` | `[]` |
-| `compression-node` | `["task"]` |
+| `compression-node` | `["compress"]` |
 | `output-success` | `[]` |
 | `output-failure` | `[]` |
 
