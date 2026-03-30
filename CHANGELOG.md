@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Extended `scout` node in the plan-session DAG with a 4th parallel task that dispatches HeadWrench as a subagent to run git commands (`git status`, `git log`, `git diff`) when in a git repo, providing planning context about recent commits and in-progress changes
 - `planning-enforcement.ts` plugin: added `todowrite` to the exempt tools list so task-list management calls are never blocked by DAG todo enforcement
+- Remove `compress` from exempt tools in planning-enforcement plugin — compress is now blocked unless explicitly listed as a todo item in a DAG node, preventing uncontrolled calls during planning sessions
+- `headwrench.md`: removed incorrect claim that `@ContextInsurgent` may invoke the `compress` tool to synthesize discoveries — CI is for reasoning only and has no compress role; compression is HW's responsibility via dedicated `compression-node` entries in project DAGs
 
 ### Fixed
 
