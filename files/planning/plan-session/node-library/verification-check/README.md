@@ -12,9 +12,9 @@ Dispatches HW as a subagent via a single `task` call. HW subagent has full shell
 
 ## What the planning agent must resolve
 
-- **Build command** — Exact shell command to run (e.g., `bun run build`, `npm test`, `make lint`)
+- **Build command** — Exact shell command to run (e.g., `bun run build`, `npm test`, `make lint`). Good: "'bun run build 2>&1'" Bad: "the build command" (HW cannot infer the exact invocation from a description)
 - **Test command** — If separate from build (e.g., `bun test`, `pytest tests/`)
-- **Acceptance criteria** — What constitutes a passing result (exit code 0, specific output, no error lines)
+- **Acceptance criteria** — What constitutes a passing result (exit code 0, specific output, no error lines). Good: "Exit code 0 and no lines matching /^error:/i in stdout." Bad: "It should pass."
 - **Failure handling** — What happens on failure? (Go to a fix node, go to `output-failure`, retry?)
 - **Working directory** — If the command must run from a specific directory. If the command uses relative paths, always specify the working directory — omitting it defaults to the project root, which may not be correct.
 - **Outcome format** — The dispatched HW subagent prompt must instruct HeadWrench to end its response with: `**Outcome:** [PASS | FAIL | PARTIAL]` followed by a one-sentence summary. This makes results machine-parseable for downstream `conditional-branch` nodes.
@@ -29,3 +29,5 @@ Default: `verification-check`. Rename for specificity: `verify-build`, `run-test
 - The prompt must include the exact commands — do not leave them as placeholders
 - Often part of an iteration pattern: `parallel-tasks → verification-check → decision-gate → [fix → verification-check-2 → ...]`
 - If the branch decision is fully machine-readable (exit code), use `conditional-branch` instead to skip the user interaction
+- **Failure mode:** Omitting the `**Outcome:** [PASS | FAIL | PARTIAL]` response format instruction from the dispatched HW subagent prompt. Without it, the downstream conditional-branch node cannot machine-parse the result. Always include this instruction verbatim.
+- **Failure mode:** Not specifying the working directory when commands use relative paths. HW subagent defaults to project root — a command expecting `./dist` at a subdirectory path will fail with "directory not found" in a misleading way.

@@ -14,9 +14,10 @@ No todo — the plugin presents available branch targets on node entry. HW evalu
 
 ## What the planning agent must resolve
 
-- **The condition** — What is being evaluated? (e.g., "Did the build succeed?", "Does the output file exist?")
-- **How HW knows** — What prior context tells HW which branch to take (e.g., exit code from a preceding bash node, agent output, file check result)
+- **The condition** — What is being evaluated? (e.g., "Did the build succeed?", "Does the output file exist?") Good: "Did 'bun run build' exit 0?" (machine-readable, prior node ran the command). Bad: "Did it work?" (ambiguous — what is 'it'?)
+- **How HW knows** — What prior context tells HW which branch to take (e.g., exit code from a preceding bash node, agent output, file check result) Good: "Exit code from the bash tool output in the run-build node immediately before this one." Bad: "HW will figure it out from context." (if not in near-term context, HW guesses.)
 - **Branch meanings** — What each `when` condition represents and where it leads
+- **Routing constraint** — The filled prompt must state: "Call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the id field of the branch node in plan.json — NOT the when string. Branch routing uses node ID matching."
 
 ## Node ID
 
@@ -28,3 +29,5 @@ Default: `conditional-branch`. Rename for clarity: `check-build-result`, `file-e
 - The branch decision must be inferable from prior context without any additional tool calls
 - If the decision requires a new shell command, put the `bash` call in a preceding `generic` node and use `conditional-branch` after it
 - If the decision requires human judgment, use `decision-gate` instead
+- **Failure mode:** If the branch condition result is buried many turns back in the context, HW will guess the branch from stale output. This produces silent wrong-path routing. Always place a compression-node before conditional-branch if the condition result came from more than 2 nodes ago.
+- **Failure mode:** Using `when` string values as `next_step` arguments instead of node IDs. The plugin matches on nodeId — a misroute advances to the wrong subtree silently.

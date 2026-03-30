@@ -8,27 +8,20 @@ Tell the user the following:
 
 {{ACCOMPLISHMENTS}}
 
+*Bulleted list of what the session achieved — specific file paths and function names, not themes. E.g., "Implemented token refresh logic in src/auth/token.ts; added test coverage in tests/auth.test.ts."*
+
 ## Artifacts produced
 
 {{ARTIFACTS}}
+
+*List all files written or modified with repo-relative paths. E.g., "src/auth/token.ts, tests/auth.test.ts, CHANGELOG.md."*
 
 ## Next steps
 
 {{NEXT_STEPS}}
 
-## Guidance
+*1–3 actionable steps with specific commands or paths. E.g., "Run `bun run build` to verify output." Bad: "Review the changes."*
 
-### `{{ACCOMPLISHMENTS}}`
-Bulleted list of what the session achieved. Be specific — e.g.:
-- Implemented token refresh logic in src/auth/token.ts
-- Updated tests with 100% coverage
+## Execution note (fixed)
 
-### `{{ARTIFACTS}}`
-List all files written/modified with their paths.
-
-### `{{NEXT_STEPS}}`
-1–3 actionable steps the user might want to take next.
-
-## Note
-
-`todo: []` — Terminal node. HW reads this prompt and communicates the summary to the user directly. No tools to call; the session ends after this node.
+`todo: []` — Terminal node. HW communicates the success summary to the user as plain language. Do NOT include HW-internal references, DAG node IDs, or planning mechanics in the user-facing message. The session ends immediately after this node — no `next_step()` call is needed or valid.

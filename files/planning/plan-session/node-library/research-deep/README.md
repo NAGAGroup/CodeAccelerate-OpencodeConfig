@@ -10,7 +10,7 @@ Dispatches one `@ExternalScout` agent via a single `task` call with an expanded 
 
 ## What the planning agent must resolve
 
-- **Research question** — What is the fundamental question to answer? Frame as a question, not a topic: "What are the current best practices for streaming LLM responses in production systems?" not "LLM streaming"
+- **Research question** — What is the fundamental question to answer? Good: "What are the current best practices for streaming LLM responses in production systems with sub-500ms TTFBT?" (specific, answerable). Bad: "LLM streaming" (topic, not a question — ES has no way to know what level of answer is needed).
 - **Domain context** — What is the technical domain? What existing knowledge can ExternalScout build on?
 - **Exploration mandate** — Which directions should ExternalScout actively pursue? (e.g., "explore academic papers, production case studies, and library comparisons")
 - **Synthesis requirement** — What should the final output synthesize? (e.g., "recommend an approach with rationale", "compare three alternatives with trade-offs")
@@ -29,3 +29,5 @@ Default: `research-deep`. Rename for specificity: `research-streaming-architectu
 - ExternalScout is for EXTERNAL research only — if you need codebase exploration, use `scout-parallel` or `analyze-deep`
 - Use `research-basic` for implementation-time lookups; use `research-deep` for pre-implementation discovery
 - When writing the ES prompt, instruct ExternalScout to use Context7 first: call `context7_resolve-library-id` then `context7_query-docs`. Use Exa web search and crawling only after Context7.
+- **Failure mode:** Using research-deep when research-basic suffices. Deep research authorizes multiple search threads — if the question is a simple API lookup ("how do I use X"), use research-basic instead. The extra latitude wastes the 15-step budget on exploration that isn't needed.
+- **Failure mode:** Omitting the synthesis requirement from the dispatched prompt. Without explicit synthesis instructions, ExternalScout returns a list of sources rather than actionable findings. Always specify what to synthesize: a recommendation, a comparison table, or a ranked list of approaches.

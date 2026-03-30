@@ -4,15 +4,28 @@ Dispatch @ExternalScout to research [specific topic]. The findings will be used 
 
 ## Research target
 
-[Describe exactly what ExternalScout should find. Be specific: library name, version, API surface, configuration options, known patterns, etc.]
+{{RESEARCH_TARGET}}
+*Describe exactly what ExternalScout should find: library name, version, API surface, configuration options. Good: "React Query v5 — the `invalidateQueries` API and cache invalidation patterns." Bad: "React Query stuff."*
 
 ## Scope
 
-[What threads should ExternalScout follow if the primary source is insufficient? What related topics are in scope?]
+{{SCOPE}}
+*What secondary threads ExternalScout may follow if the primary source is insufficient. Omit if no secondary threads are relevant.*
 
 ## Expected output
 
-[What format should ExternalScout return findings in? Examples: "a summary of configuration options with code examples", "a comparison of approach A vs approach B", "the canonical way to implement X in library Y"]
+{{EXPECTED_OUTPUT}}
+*Return format with specific format and version requirement. E.g., "A summary of configuration options with code examples, citing library version X." Bad: "Whatever is useful."*
+
+## Output requirements (fixed)
+
+The research findings must include:
+- A direct answer to the research question (not a list of links)
+- Specific library version(s) cited
+- At least one code example if the question concerns an API or configuration
+- An explicit statement of what was NOT found if the search was partially successful
+
+If ExternalScout returns only links or a broad survey with no specific answer, flag the gap before advancing — do not silently pass incomplete findings to the next node.
 
 > **Writing the ExternalScout's prompt:** The prompt must specify: (1) the exact research question; (2) tool order: use Context7 first — call `context7_resolve-library-id` to find the library, then `context7_query-docs` to retrieve documentation — then Exa for broader web search if Context7 is insufficient; (3) scope guard: "This is a cursory pass — stop after first successful search. Do NOT pursue multiple threads, cross-reference sources, or use sequential thinking."; (4) return format: cite specific versions, include code examples when relevant, synthesize into a direct answer rather than a link list.
 

@@ -2,7 +2,18 @@
 
 Dispatch agents to write the project DAG files to `.opencode/session-plans/{task-name}/`.
 
-> **Writing subagent prompts:** Dispatch @HeadWrench subagent for the write task. In your dispatch prompt, provide: (1) the plan name; (2) the complete node decomposition table (Node ID | node type | agent | todo | what it does | branch conditions); (3) the ASCII diagram; (4) the list of node types used in this plan. Instruct the subagent to read the schema docs before writing — it will construct the JSON and prompts itself. Prompts must address the actual user task — not describe planning infrastructure.
+> **Writing the @HeadWrench subagent's write prompt:** In your dispatch prompt, provide:
+> (1) tool-use sequence: instruct the subagent to read CATALOGUE.md first, then dag-design-guide.md, then relevant node READMEs; then write plan.json; then write all prompt files in prompts/;
+> (2) input spec: the plan name, the complete node decomposition table (Node ID | node type | agent | todo | what it does | branch conditions), the ASCII diagram, and the list of node types used in this plan;
+> (3) return format: after writing all files, report: the plan name, list of all files written with their paths, any schema issues encountered, and confirmation that all prompt filenames in plan.json exist in prompts/;
+> (4) see the Do NOT block below for agent-specific constraints.
+
+> **@HeadWrench subagent — Do NOT:**
+> - Write prompts that describe or reference the planning system/DAG infrastructure (prompts address the user's actual task only)
+> - Use string IDs for `next` field values — `next` must always be a full embedded node object
+> - Reuse node IDs across branches — every node ID must be globally unique in the DAG tree
+> - Include file paths in `prompt` field values — use bare filenames only (e.g., `"prompt": "scout.md"` not `"prompt": "prompts/scout.md"`)
+> - Invent todo values — use only valid OpenCode tool names from the todo reference table
 
 ## Todo
 
@@ -21,15 +32,19 @@ Dispatch agents to write the project DAG files to `.opencode/session-plans/{task
    4. Write `plan.json` using the nested tree schema (see schema rules and examples below)
    5. Write all prompt files in `prompts/` — one per node, based on the decomposition table and node README guidance
 
-   The subagent has full tool access (read, write, edit). It constructs the JSON from the schema docs — you do NOT need to embed a pre-serialized JSON blob.
+    The subagent has full tool access (read, write, edit). It constructs the JSON from the schema docs — you do NOT need to embed a pre-serialized JSON blob.
 
-   Key schema reminders to include in the dispatch prompt:
+    Report back: plan name, complete list of files written with their paths, any schema errors or warnings encountered, and confirmation that all prompt filenames exist in prompts/.
+
+    Key schema reminders to include in the dispatch prompt:
    - `next` is ALWAYS a full node object — NEVER a string ID like `"next": "node-id"`
    - Branch `next` is an array of `{ "when": "label", "node": { ... } }` — the `node` field is a full object
    - Terminal nodes omit `next` entirely
    - `prompt` is filename only (e.g. `"implement-auth.md"`) — do NOT include paths
 2. `validate_dag` — Call the `validate_dag` tool with the plan name to check structural correctness and prompt quality. Review the findings report — it may identify issues for the next step to fix.
 3. `task` — Dispatch @HeadWrench (subagent) to verify the written files: read `plan.json`, check that all prompt filenames exist in `prompts/`, validate the DAG structure, and fix any issues reported by `validate_dag`. Even if `validate_dag` reports no structural issues, the subagent should confirm all prompt filenames listed in `plan.json` exist in the `prompts/` directory.
+
+    Report back: what was verified, any issues found and fixed, final status ('all files present and valid' or specific remaining issues).
 
 ## Directory structure
 

@@ -12,6 +12,8 @@ If only two areas need coverage, drop one scout section and adjust the todo arra
 
 {{SCOUT_1_GOAL}}
 
+*Specific question anchored to the paths below. Good: "Find all files that import AuthService and identify which ones call refreshToken." Bad: "Look at the auth code." The question must be answerable within 12 steps.*
+
 Paths to explore: {{SCOUT_1_PATHS}}
 
 *List as comma-separated paths or globs: e.g., `src/auth/`, `lib/utils/**`*
@@ -19,6 +21,8 @@ Paths to explore: {{SCOUT_1_PATHS}}
 ## Scout 2 — Patterns and architecture
 
 {{SCOUT_2_GOAL}}
+
+*Specific question anchored to the paths below. Good: "Find all files that import AuthService and identify which ones call refreshToken." Bad: "Look at the auth code." The question must be answerable within 12 steps.*
 
 Paths to explore: {{SCOUT_2_PATHS}}
 
@@ -28,6 +32,8 @@ Paths to explore: {{SCOUT_2_PATHS}}
 
 {{SCOUT_3_GOAL}}
 
+*Specific question anchored to the paths below. Good: "Find all files that import AuthService and identify which ones call refreshToken." Bad: "Look at the auth code." The question must be answerable within 12 steps.*
+
 Paths to explore: {{SCOUT_3_PATHS}}
 
 *List as comma-separated paths or globs: e.g., `src/auth/`, `lib/utils/**`*
@@ -35,6 +41,10 @@ Paths to explore: {{SCOUT_3_PATHS}}
 ## Scope restriction
 
 **Do NOT** send scouts into `.opencode/` session directories — completed sessions contain stale content. Exception: planning infrastructure files (e.g., the node-library) are permitted when explicitly specified.
+
+## Output format requirement (fixed)
+
+Each scout's task prompt must instruct the agent: "Report findings as specific facts and file locations — not as generic 'Codebase Overview', 'Key Decisions', or 'Patterns' sections. List what you found with exact references." Include this instruction verbatim in every scout dispatch.
 
 ## Todo
 

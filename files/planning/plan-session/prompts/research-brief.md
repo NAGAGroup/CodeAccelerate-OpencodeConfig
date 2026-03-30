@@ -4,11 +4,17 @@
 > `@ContextScout` is for **internal codebase exploration ONLY**. It must never be used for external research.
 > For any external lookup — web search, documentation, API references, library comparisons, community resources — dispatch `@ExternalScout`.
 
+> **@ExternalScout known failure modes — Do NOT:** Reverse tool order (Exa before Context7 wastes credits on docs Context7 covers better). Return a bare list of links without synthesis. Conduct deep multi-source research — one focused quick pass only. Hallucinate library documentation when Context7 returns nothing — state "not found in Context7" and try Exa.
+
 Gather targeted documentation before proposing the DAG structure. This is a **quick and cursory research pass** — NOT a deep or comprehensive investigation. Deep research belongs in dedicated research nodes within the generated project DAG, not here. Your role is to gather quick reference material to inform structure planning.
 
 Based on your scout findings and the task description, you should have a good sense of where to look. Propose specific documentation sources as options.
 
-> **Writing the ExternalScout's prompt:** The scout's prompt must specify: (1) which tools to use and in what order (Context7 first for official documentation, then Exa for broader search); (2) the exact question or topic to research; (3) a return format request: cite specific versions where relevant, include code examples when they exist, synthesize findings into a direct answer rather than a list of links.
+> **Writing the @ExternalScout prompt:** The scout's task prompt must include:
+> (1) tool priority and exact names: use `context7_resolve-library-id` to identify library IDs, then `context7_query-docs` to retrieve documentation; use `exa_web_search_exa` only for content not covered by Context7 — always in this order;
+> (2) input spec: the exact question or topic to research (a specific question, not a subject area), plus the overall planning task context;
+> (3) return format: a brief structured summary with sections — Key Findings, Relevant APIs or Patterns, Caveats; cite specific versions; include code examples when they exist; synthesize into direct answers — do NOT return a list of links; if nothing useful is found, state that explicitly;
+> (4) agent-specific constraints: this is a one-shot quick pass — do NOT iterate, do NOT conduct a deep multi-source investigation, do NOT exceed two research calls total.
 
 ## Todo
 

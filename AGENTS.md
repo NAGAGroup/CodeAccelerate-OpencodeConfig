@@ -115,11 +115,13 @@ session-overview → scout → scout-node-library → research-gate
 | `propose-plan` | `["question"]` | HW presents complete plan (structure + decomposition), user approves |
 | `write-dag` | `["task","validate_dag","task"]` | HW subagent writes plan files (reads node library docs first), validate, verify |
 | `activation-gate` | `["question"]` | Ask user: activate now or later? |
-| `activate-now` | `[]` | Calls `activate_plan` immediately; session auto-completes |
+| `activate-now` | `[]` | HW calls `activate_plan`, then calls `next_step()` to advance to `plan-complete` (terminal) |
 | `plan-complete` | `[]` | Terminal: informs user the plan is written and how to activate |
 
 The `planning-enforcement` plugin manages DAG state, enforces todo ordering, and blocks
-off-sequence tool calls at runtime.
+off-sequence tool calls at runtime. Enforcement applies to ALL agents in the session — not only HeadWrench. The `PRIMARY_AGENT` constant is defined in the plugin source but is unused; every agent's tool calls are subject to todo enforcement.
+
+**Exempt tools** (never blocked by DAG enforcement, regardless of current todo): `plan_session`, `activate_plan`, `next_step`, `recover_context`, `question`, `exit_plan`, `validate_dag`, `todowrite`, `sequential-thinking_sequentialthinking`. Note: the last tool uses an underscore between the two halves of the name — any typo causes a permanent block.
 
 ### Node Library
 
@@ -154,6 +156,8 @@ tree — nodes cannot be shared across branches; each branch needs its own termi
 **Every node id must be globally unique within the DAG tree.** Reusing an id (e.g. for a
 loop-back) silently overwrites the node_map entry and causes the node to behave as a terminal,
 ending the session prematurely. The plugin now throws a validation error on duplicate ids.
+
+**Branch routing uses node-ID matching, not `when`-string matching.** When HeadWrench calls `next_step({ next: "<node-id>" })` at a branching node, the plugin resolves the branch by comparing the `next` value against each branch's `nodeId` — not against the human-readable `when` string. The `when` field exists only for display purposes (shown in the branch-choice prompt and in `recover_context()` output). Always pass the exact child node's `id` value — not the `when` description — when routing a branch.
 
 ## Key Files
 
@@ -253,10 +257,14 @@ Apply these techniques when editing any `files/agents/*.md` file:
    - ✓ *"When something is outside your role, say so clearly and tell the user where to go instead."*
    - ✗ *"You are not allowed to perform web searches."*
 
-6. **Delegation boundary explicitness** — For orchestrators, list both what they delegate and what they handle directly. Ambiguity at the delegation boundary is the most common source of HW doing too much or too little.
+6. **Prompt structure ordering** — Order the system prompt sections to exploit positional weighting: (1) Role definition, (2) Core instructions + priorities, (3) Capability boundaries (CAN/CANNOT), (4) Output format, (5) Uncertainty handling, (6) Tool rules (if applicable), (7) Examples, (8) Operational guardrails. Role and core instructions belong first; guardrails belong last.
+   - ✓ Agent prompt opens with a single-sentence role, immediately followed by behavioral priorities, then a "What You Do / Don't Do" section, then output format.
+   - ✗ Interleaving tool rules with examples before the role is defined — the model applies role context to what follows it; content before the role lacks that anchoring.
+
+7. **Delegation boundary explicitness** — For orchestrators, list both what they delegate and what they handle directly. Ambiguity at the delegation boundary is the most common source of HW doing too much or too little.
    - ✓ The `## What You Don't Do (as orchestrator)` section in `headwrench.md` with explicit → delegate targets.
 
-**When to apply Category A:** Any time you are editing `files/agents/*.md` directly — adding a new section, sharpening an existing rule, improving output format instructions, or fixing a recurring behavior failure observed in sessions.
+**When to apply Category A:** Any time you are editing `files/agents/*.md` directly — adding a new section, sharpening an existing rule, improving output format instructions, fixing a recurring behavior failure observed in sessions, or optimizing prompt section ordering for positional weighting.
 
 #### Category B: Improving planning DAG delegation prompts
 
@@ -290,6 +298,10 @@ Apply these techniques when editing any `files/planning/plan-session/prompts/*.m
    - ✓ From `write-dag.md`: the `## Todo` section lists numbered steps (`task`, `validate_dag`, `task`) with distinct ownership; the narrative sections (schema, node rules, examples) are framed as content to pass through, not instructions for HW to act on directly
    - ✓ From `research-brief.md`: `"After the user answers: immediately call the task tool in the same turn — do not emit a response and wait for a new user message"` (explicit sequencing of HW's own actions vs. dispatch)
    - ✗ A single undifferentiated prompt body that mixes "HW should think about X" with "dispatch @ContextScout to do Y" — HW may attempt both or conflate them
+
+7. **Delegation failure prevention — check against MAST failure modes** — Before finalizing a Category B prompt, verify the dispatch template addresses the 6 highest-frequency delegation failure modes: (1) task misinterpretation — is the subagent's deliverable stated concretely, not as a theme? (2) ambiguous role definitions — does the prompt name the exact subagent and what it produces? (3) context collapse — does the dispatch template carry all context the subagent needs (file list, prior findings, constraints)? (4) format mismatches — does the return format in the template match what the downstream node expects? (5) missing context — are there any implicit assumptions about what the subagent already knows? (6) no termination condition — does the subagent know when it is done?
+   - ✓ A dispatch template that names the subagent, provides an explicit file list, states the return format, and includes "one-shot — no follow-ups or deep dives."
+   - ✗ "Dispatch @ContextInsurgent to analyze the authentication system." — fails on (1), (3), (4), and (6).
 
 **When to apply Category B:** Any time you are editing `files/planning/plan-session/prompts/*.md` — adding a new delegation node, sharpening dispatch instructions for an existing node, fixing a recurring subagent output quality failure traced back to a vague dispatch prompt HW wrote, or adding a new subagent type to an existing node. If a session produces a weak subagent output and the root cause is a formless dispatch prompt HW wrote, the fix is a Category B improvement, not a Category A improvement.
 
@@ -327,6 +339,14 @@ Apply these techniques when editing any `files/planning/plan-session/node-librar
    - ✓ From `analyze-deep/README.md` Notes: `"Do not instruct ContextInsurgent to read .opencode/ session directories — they contain stale plan artifacts that may conflict with the actual codebase."` (specific failure mode with concrete consequence)
    - ✗ A Notes section that only says "Use sparingly" — no actionable discrimination between correct and incorrect use
 
+7. **Template section ordering exploits primacy-recency** — Structure `prompt-template.md` in this order: (1) Fixed role/expertise declaration at the start (sets frame for all that follows), (2) Authoring-layer placeholders in the middle (filled by planning agent), (3) Fixed execution-spec sections near the end (output format, scope restriction, behavioral constraints — high-recency weight), (4) Fixed dispatch blockquote as the final element (HW reads it last and acts on it immediately).
+   - ✓ `analyze-deep/prompt-template.md`: opens with dispatch preamble → `{{ANALYSIS_QUESTION}}` and `{{CONTEXT_TO_PROVIDE}}` in the middle → `## Output format requirements` and `## Scope restriction` near end → dispatch blockquote as final element.
+   - ✗ A template that puts the dispatch blockquote before the fixed execution-spec — the executing agent reads the blockquote before receiving the output format constraint, potentially dispatching without propagating it.
+
+8. **Constraint cascade — same constraint must appear in three places** — Any critical behavioral constraint (e.g., "no generic section headers", "no `.opencode/` reads", "one-shot only") must appear in: (1) README.md "must resolve" section — so the planning agent knows to embed it; (2) template's fixed execution-spec section — so it survives the planning-agent fill step verbatim; (3) dispatch blockquote — so HW re-states it when writing the actual task prompt for the subagent. A constraint that appears in only one or two layers will be dropped at one indirection hop.
+   - ✓ The "no generic section headers" constraint in `analyze-deep`: README states it under "Output constraint" → template's `## Output format requirements` repeats it verbatim → dispatch blockquote includes it as item (3).
+   - ✗ A constraint that only appears in the dispatch blockquote but not in the README — the planning agent may weaken or omit the blockquote when filling the template, dropping the constraint.
+
 **When to apply Category C:** Any time you are editing files under `files/planning/plan-session/node-library/` — adding a new node type, sharpening a README's "must resolve" section, adding an output constraint that a subagent is repeatedly violating, adding a fixed execution-spec section that planning agents are accidentally overwriting, or fixing a recurring planning-time error where the planning agent is filling placeholders with the wrong content type. If a session produces a poorly-filled node prompt and the root cause is insufficient authoring guidance in the README or template, the fix is a Category C improvement. If the filled prompt is correct but the executing agent still produces weak output, check whether the template's fixed execution-spec sections and dispatch blockquote are strong enough — those are also Category C concerns.
 
 ### Per-Agent Prompting Patterns
@@ -342,6 +362,7 @@ When HeadWrench dispatches a subagent, the task prompt must include:
 - A single, specific analysis question (the "Answer / Conclusion" CI should produce)
 - An explicit file list — CI needs the full reading list, not just a topic
 - Expected output format (e.g., "return a file-by-file change list")
+- Scope exclusion: instruct CI explicitly NOT to read `.opencode/` session directories — they contain stale planning artifacts that can corrupt analysis. State: "Do not read any files under `.opencode/`."
 
 **@ExternalScout:**
 - Tool priority: *"Use Context7 first (context7_resolve-library-id, then context7_query-docs). Use Exa second."*
@@ -378,6 +399,8 @@ Use verbatim-return instructions when the downstream step needs raw content, not
 - **Generic output sections** — Asking for "Codebase Overview" or "Key Decisions" produces thematic summaries instead of actionable facts. Ask for specific file paths, line numbers, and exact strings.
 - **CS for external research** — ContextScout cannot browse the web. Routing external lookups to CS produces nothing useful.
 - **ES tool order reversed** — Exa before Context7 wastes Exa queries on library docs that Context7 covers better. Always Context7 first.
+- **Wrong tool name in todo array** — The plugin does exact string matching. `sequential-thinking_sequentialthinking` uses an underscore (not a hyphen) between the two parts of the name. Any variant (`sequential-thinking-sequentialthinking`, etc.) causes a permanent block — the expected tool is never called. Copy tool names verbatim from the exempt tools list.
+- **Dispatch without numbered slots in blockquote** — Writing a Category B or C prompt that tells HW to "dispatch @ContextScout to explore X" without a numbered blockquote template forces HW to derive the subagent's full task prompt from scratch, producing inconsistent and often weaker output. Every dispatch instruction requires a numbered template blockquote.
 
 ### Prompting-Mechanism DAG Rule
 

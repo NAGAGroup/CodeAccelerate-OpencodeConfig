@@ -9,7 +9,7 @@ This session will produce a **project DAG** — a nested tree of nodes that Head
 1. Dispatch scouts to explore the relevant codebase
 2. Optionally run cursory web research (user decides)
 3. Read the node library to understand what building blocks are available
-4. Pass through the research gate — you will decide if planning-time research is needed and if the DAG should include execution-time research nodes
+4. Pass through the research gate — you will answer two independent questions: (Q1) should ExternalScout be dispatched now for planning-time research? and (Q2) should the generated project DAG include execution-time research nodes? These are orthogonal decisions.
 5. Use sequential thinking to design the complete plan — structure and node-by-node decomposition — with full context from steps 1–4
 6. Present the complete plan for user approval (single gate)
 7. Write the project DAG files

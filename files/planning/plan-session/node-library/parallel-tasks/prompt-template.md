@@ -70,3 +70,7 @@ Call all three task tools before waiting for results — they run in parallel. R
 ## Before advancing
 
 If agent results were unexpected, conflicting, or raise questions about how to proceed, consider checking in with the user before calling `next_step()`. This is optional — if results are as expected, advance when ready.
+
+## Sync requirement (fixed)
+
+The number of task sections in this prompt must equal the number of `"task"` entries in the plan.json `todo` array for this node. The plugin enforces todo items in order — if the prompt has 3 task sections but the todo array has `["task","task"]`, the third task will never execute. Adjust both together.

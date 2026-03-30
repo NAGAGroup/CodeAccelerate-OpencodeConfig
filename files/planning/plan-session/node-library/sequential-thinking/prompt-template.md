@@ -12,9 +12,13 @@ Use the `sequential-thinking` MCP tool to reason through the following decision 
 
 {{RELEVANT_CONTEXT}}
 
+*What HW already knows that's relevant to this decision: scout findings, constraints, prior decisions, confirmed file paths. Do not say "all prior context" — name specific items. E.g., "Scout phase confirmed token module is in src/auth/token.ts; refresh endpoint is not yet implemented; pattern to follow is in src/auth/session.ts."*
+
 ## Expected conclusion
 
 {{EXPECTED_OUTPUT}}
+
+*The form of the conclusion: a recommendation, a ranked list of approaches, a yes/no with rationale, a structured implementation order. Good: "A recommended refactor order with the primary reason for that order." Bad: "Whatever HW concludes."*
 
 This conclusion feeds directly into {{NEXT_PHASE_OR_DECISION}} — complete the reasoning before proceeding.
 
@@ -29,3 +33,10 @@ This conclusion feeds directly into {{NEXT_PHASE_OR_DECISION}} — complete the 
 ## Before advancing
 
 If reasoning revealed meaningful uncertainty, competing approaches where user preference matters, or open questions that could affect downstream work, consider asking the user before calling `next_step()`. This is optional — if the conclusion is clear, advance when ready.
+
+## Execution constraints (fixed)
+
+- Call `sequential-thinking_sequentialthinking` repeatedly in the same turn — do NOT pause between thoughts for user input.
+- Stop when the conclusion is clear, not when a thought count is reached.
+- If you are repeating already-settled points, stop immediately.
+- State the conclusion explicitly before calling `next_step()` — downstream nodes reference it directly.

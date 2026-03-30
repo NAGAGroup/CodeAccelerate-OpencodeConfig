@@ -12,10 +12,11 @@ HeadWrench calls the `compress` tool directly (provided by the DCP plugin) to re
 
 ## What the planning agent must resolve
 
-- **What to compress** — Which phase of work has concluded and can be summarized (e.g., "scout findings from three ContextScout agents")
-- **What to preserve** — Key findings, file paths, decisions, constraints that must survive compression
-- **What to discard** — Verbose tool outputs, failed attempts, exploratory tangents
-- **Synthesis question** — What question should the summary answer? (e.g., "What are the affected files and the key patterns to follow?")
+- **What to compress** — Which phase of work has concluded and can be summarized (e.g., "scout findings from three ContextScout agents"). Good: "Scout findings from 3 parallel ContextScout agents plus the git context output." Bad: "Everything from before."
+- **What to preserve** — Key findings, file paths, decisions, constraints that must survive compression. Good: "Token module confirmed at src/auth/token.ts; pattern: handler-per-route; constraint: public API must not change." Bad: "Important findings." (too vague — specific items are dropped)
+- **What to discard** — Verbose tool outputs, failed attempts, exploratory tangents. Good: "Verbose bash command outputs, intermediate glob results, exploratory scout queries that found nothing." Bad: "Old stuff." (non-specific — compress call drops needed content)
+- **Synthesis question** — What question should the summary answer? (e.g., "What are the affected files and the key patterns to follow?"). Good: "What files need to change and what patterns/constraints govern the changes?" Bad: "What happened?" (too broad — produces narrative summary, not technical reference)
+- **Output constraint** — The prompt must include this instruction verbatim: "Compress accumulated context from [what]. Preserve: [findings]. Discard: [noise]. The compressed summary must answer: [synthesis question]."
 
 ## Node ID
 
@@ -29,3 +30,5 @@ Default: `compression-node`. Rename for clarity: `compress-scout-findings`, `com
 - Often appears between `scout-parallel` and `parallel-tasks` in long DAGs: scout → compress → implement
 - In a multi-phase DAG, don't limit to one — include a compression node between major phases (e.g., after scouts, after analysis, before implementation). Use a unique node ID per instance: `compress-scout-findings`, `compress-post-analysis`.
 - The prompt should tell HW exactly what to compress, what to preserve, what to discard, and what synthesis question the summary should answer.
+- **Failure mode:** Compressing before scouts have reported — you discard unread findings. Always place the compression-node after the reporting phase is complete, not before.
+- **Failure mode:** `{{FINDINGS_TO_PRESERVE}}` left vague ("important findings") — the compress call drops specific file paths. Always list concrete items: file names, decision strings, constraint values found during the scout phase.

@@ -12,9 +12,10 @@ Displays the session goal, the plan structure, and what success looks like. Head
 
 ## What the planning agent must resolve
 
-- **Session goal** — One clear sentence describing what the DAG accomplishes
-- **DAG summary** — Brief description of the overall flow (phases, key decision points)
-- **Success definition** — What the user will see or have when the DAG completes
+- **Session goal** — One clear sentence describing what the DAG accomplishes. Good: "Implement token refresh logic in the auth module with full test coverage." Bad: "Do auth stuff."
+- **DAG summary** — Brief description of the overall flow (phases, key decision points). Good: "Phases: scout (3 parallel scouts) → compress → analyze-deep → decision gate → implement → verify → done." Bad: "Several nodes that do the work."
+- **Success definition** — What the user will see or have when the DAG completes. Good: "src/auth/token.ts has a working refreshToken function, tests pass, and CHANGELOG.md is updated." Bad: "The feature is done."
+- **Tone constraint** — The filled prompt must be brief (3–5 sentences total). Do not include node-by-node instructions or tool-call guidance — that belongs in subsequent nodes. The session-overview is orientation only.
 
 ## Node ID
 
@@ -26,3 +27,5 @@ Displays the session goal, the plan structure, and what success looks like. Head
 - Keep the prompt short: 3–5 sentences max
 - Do not include instructions about what HW should *do* here — that belongs in subsequent nodes
 - This is the entry node. Every path through the DAG must terminate with `output-success` or `output-failure`.
+- **Failure mode:** Writing a session-overview prompt that instructs HW to take action (e.g., "Now read the codebase" or "Call ContextScout"). This node has `todo: []` — HW auto-advances immediately without executing any instruction-like text. Action instructions here are silently skipped.
+- **Failure mode:** Writing a lengthy session-overview (10+ sentences). Long intros consume context budget unnecessarily. Keep it to 3–5 sentences: goal, phases, success definition.

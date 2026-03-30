@@ -1,29 +1,45 @@
-# [Research Question]
+# {{TOPIC}}
 
-Dispatch @ExternalScout to conduct deep investigative research on [topic]. The findings will inform [downstream decision/node].
+Dispatch @ExternalScout to conduct deep investigative research. The findings will inform [downstream decision/node].
 
 ## Research question
 
-[State the fundamental question as a question. Frame it precisely: what needs to be discovered, not just what topic to explore.]
+{{RESEARCH_QUESTION}}
+*Frame as a specific answerable question, not a topic area. Good: "What are the trade-offs between Redis Pub/Sub and Redis Streams for real-time notification at scale?" Bad: "Redis messaging."*
 
 ## Domain context
 
-[What is the technical domain? What is already known? What should ExternalScout build on vs. explore fresh?]
+{{DOMAIN_CONTEXT}}
+*What is already known. What ExternalScout should build on vs. explore fresh. E.g., "Current architecture uses REST polling; team has Redis available; constraint is sub-100ms delivery."*
 
 ## Exploration mandate
 
 Actively pursue the following research directions:
-- [Direction 1 — e.g., "academic papers and publications"]
-- [Direction 2 — e.g., "production case studies and engineering blogs"]
-- [Direction 3 — e.g., "library and framework comparisons"]
+
+{{DIRECTION_1}}
+*Name the research direction explicitly. E.g., "Academic papers on consensus protocols", "Production case studies from engineering blogs", "GitHub issues for the specific library."*
+
+{{DIRECTION_2}}
+*Second research direction (omit if only one direction needed).*
 
 Do not stop at the first source. Follow threads across multiple sources and synthesize.
 
 ## Expected output
 
-[Describe the synthesis required: a recommendation, a comparison table, a ranked list of approaches with trade-offs, etc.]
+{{EXPECTED_OUTPUT}}
+*Describe the synthesis: a recommendation with rationale, a comparison table, a ranked list. Good: "Recommend one approach with trade-offs and a confidence level." Bad: "Tell me what you found."*
 
 > **Writing the ExternalScout's prompt:** The prompt must specify: (1) the exact research question and scope; (2) authorize all tools: use Context7 first — call `context7_resolve-library-id` to identify the library, then `context7_query-docs` to retrieve documentation — then Exa web search for broad discovery and Exa crawling for in-depth source reading; (3) depth authorization: "You are authorized to perform multiple iterative searches. Use sequential thinking for complex trade-offs. Pursue contradictions to resolution or flag as unresolved."; (4) return format: synthesize findings into a direct answer with supporting evidence and code examples where they illustrate the approach — not a list of sources. Include confidence levels: High (3+ sources), Medium (2 sources), Low (1 source or conflicting). Explicitly state what was found and what was not found.
+
+## Output requirements (fixed)
+
+The research synthesis must include:
+- A direct answer to the research question (recommendation, comparison, or ranked list as specified)
+- Confidence levels for major findings: High (3+ aligned sources), Medium (2 sources), Low (1 source or conflicting)
+- An explicit statement of what was NOT found
+- Code examples where they illustrate the approach (not as decoration)
+
+If ExternalScout returns only a source list without synthesis, flag the gap before advancing.
 
 ## Todo
 

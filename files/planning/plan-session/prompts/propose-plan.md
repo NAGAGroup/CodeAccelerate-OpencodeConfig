@@ -4,7 +4,7 @@ Present the complete plan to the user for approval. By this point, sequential th
 
 **You MUST call the question tool — do not skip this step.**
 
-**IMPORTANT:** The option labels `'Approve — write the DAG'` and `'Rethink'` must be used exactly as written — the DAG branches on these exact strings.
+**IMPORTANT:** Use these option labels exactly as written in your question call. After the user selects, route by calling next_step with the correct node ID (see routing below). The `when` field in plan.json is human-readable — routing is performed by your explicit next_step call, not by string matching.
 
 ## What to present
 
@@ -21,6 +21,6 @@ Write the full plan as prose in your response text (do NOT embed this inside the
 
 1. `question` — Call the `question` tool with a single-sentence question: "Does this plan look right?" Use option label `"Approve — write the DAG"` (description: "Write plan.json and prompt files; activate separately with /activate-plan") and `"Rethink"` (description: "Adjust the plan before writing").
 
-   If the user selects 'Rethink,' call `next_step()` — the session will advance to a revision cycle. In the revision node, the user will be asked what to change before the plan is re-presented. Do not repeat the same plan unchanged.
-
-After the user selects an option, call `next_step()` to advance to the appropriate branch.
+After the user selects an option:
+    - "Approve — write the DAG" → call `next_step({ next: "write-dag" })`
+    - "Rethink" → call `next_step({ next: "propose-plan-2" })`

@@ -18,10 +18,11 @@ For each task, specify:
 - **Target** — Specific files or modules the agent should touch
 - **Goal** — What the agent should produce or change
 - **Constraints** — Any patterns to follow, things to avoid, or dependencies to respect
+- **Output constraint per task** — Each dispatched agent prompt must include a success criterion stated as an observable outcome ("The function compiles without TypeScript errors and is exported from the module index") — not a process description ("Fix the bug"). The success criterion must be verifiable without additional tool calls.
 
 Also determine:
 - **Task count** — How many independent tasks? Adjust the todo array from the default `["task","task","task"]` to match. The number of `task` entries in the `todo` array must match the number of distinct task instructions in the prompt — they are enforced in order by the plugin. Adjust both together.
-- **Independence check** — Are the tasks truly independent? If one depends on another's output, use sequential nodes instead.
+- **Independence check** — Are the tasks truly independent? If one depends on another's output, use sequential nodes instead. Good: "Task 1 edits src/auth/token.ts; Task 2 edits src/auth/session.ts — no shared file, no shared output." Bad: "Task 2 depends on the function Task 1 adds." (dependency → use sequential nodes)
 - **Success criterion** — What observable outcome confirms the task was completed? (E.g., "The function compiles without TypeScript errors and is exported from the module index.")
 - **Conventions reference** — If the edit must match existing style, name the reference file (e.g., "Match the pattern in `src/auth/session.ts`").
 
@@ -37,3 +38,4 @@ Default: `parallel-tasks`. Rename for clarity: `implement-handlers`, `update-sch
 - If tasks need to share context, use sequential nodes or route through HW instead.
 - Fewer than three tasks is fine — remove entries from the todo array.
 - For `@QuickDoc` tasks: the prompt must also include the format/template to follow and a reference file to match style. These are required for QuickDoc to produce consistent output.
+- **Failure mode:** Dispatching tasks that write to the same file from two parallel agents. Both agents read the file, write back independently — one write silently overwrites the other. If two tasks touch the same file, make them sequential nodes or combine them into one task.

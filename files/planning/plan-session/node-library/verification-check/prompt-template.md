@@ -10,13 +10,19 @@ Dispatch HeadWrench as a subagent via `task` — HeadWrench is the only agent wi
 **Test:** `{{TEST_COMMAND}}`
 **Working directory:** `{{WORKING_DIRECTORY}}`
 
+*All three must be exact shell commands and a real path. E.g., Build: `bun run build 2>&1`, Test: `bun test`, Working directory: `/home/user/project` (absolute or repo-relative). Do not leave as `{{PLACEHOLDER}}` — unfilled commands cause the subagent to stall.*
+
 ## Acceptance criteria
 
 {{ACCEPTANCE_CRITERIA}}
 
+*What constitutes a passing result — exit code, specific output string, or absence of error lines. Good: "Exit code 0 and no TypeScript errors in stdout." Bad: "It should work."*
+
 ## On failure
 
 {{FAILURE_HANDLING}}
+
+*Name the node ID that follows on failure. E.g., "On failure, route to the fix-errors node via a conditional-branch." Good: specifies the exact node ID. Bad: "handle the failure somehow."*
 
 Reference the node ID that follows on failure. Standard patterns: route to a `parallel-tasks` fix node, route to `output-failure`, or use a `conditional-branch` after this node. E.g., 'On failure, the conditional-branch node `check-build-result` routes to the fix phase.'
 
@@ -25,6 +31,8 @@ Reference the node ID that follows on failure. Standard patterns: route to a `pa
 End your response with:
 **Outcome:** [PASS | FAIL | PARTIAL]
 Followed by a one-sentence summary of the result.
+
+Do NOT call additional tool calls after reporting the outcome. Do NOT attempt to fix errors found during verification — report findings only. Fixes belong in a separate node.
 
 ## Todo
 
