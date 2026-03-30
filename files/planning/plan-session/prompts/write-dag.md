@@ -5,6 +5,13 @@ Dispatch agents to write the project DAG files to `.opencode/session-plans/{task
 ## Todo
 
 1. `task` — Dispatch @QuickDoc or @JuniorDev to create `plan.json` and all prompt files under `prompts/`. Provide the full DAG structure, node-by-node content, and directory layout.
+
+**CRITICAL: Embed the complete `plan.json` as a JSON code block in the subagent task.** Do not describe the structure in prose or pass only a table. The subagent (@JuniorDev or @QuickDoc) has no DAG schema knowledge — they will write what you show them. If you give them JSON, they write JSON. If you give them a table, they may invent their own format.
+
+The JSON you embed must follow the nested tree schema exactly:
+- `next` is ALWAYS a full node object `{ "id": "...", "prompt": "...", "todo": [...], "next": ... }` — NEVER a string ID like `"next": "node-id"`
+- Branch `next` is an array of `{ "when": "label", "node": { ... } }` — the `node` field is a full object, not a string
+- Terminal nodes omit `next` entirely
 2. `validate_dag` — Call the `validate_dag` tool with the plan name to check structural correctness and prompt quality. Review the findings report — it may identify issues for the next step to fix.
 3. `task` — Dispatch @HeadWrench (subagent) to verify the written files: read `plan.json`, check that all prompt filenames exist in `prompts/`, validate the DAG structure, and fix any issues reported by `validate_dag`.
 
@@ -65,6 +72,48 @@ Use these standard `todo` arrays when writing `plan.json`. Do not invent todo va
 | `output-failure` | `[]` |
 
 Adjust `parallel-tasks` todo length to match the actual number of parallel agent dispatches. All other types use the arrays above exactly.
+
+## ❌ Wrong — do not produce this
+
+```json
+{
+  "entry": {
+    "id": "session-overview",
+    "next": "implement-changes"
+  },
+  "nodes": {
+    "implement-changes": { "id": "implement-changes", "next": "verify" }
+  }
+}
+```
+
+The above uses string IDs for `next` and a flat `nodes` map. The plugin cannot parse this — when `next` is a string, `node.next.id` is `undefined`, the node appears terminal, and the session auto-completes on activation.
+
+## ✅ Correct — always produce this
+
+```json
+{
+  "schema_version": "2.0",
+  "id": "my-plan",
+  "entry": {
+    "id": "session-overview",
+    "prompt": "session-overview.md",
+    "todo": [],
+    "next": {
+      "id": "implement-changes",
+      "prompt": "implement-changes.md",
+      "todo": ["task", "task"],
+      "next": {
+        "id": "verify",
+        "prompt": "verify.md",
+        "todo": ["task"]
+      }
+    }
+  }
+}
+```
+
+Each node is a full object embedded inside its parent's `next` field. No string IDs. No separate `nodes` map.
 
 ## Prompt file content
 

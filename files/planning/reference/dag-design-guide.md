@@ -234,3 +234,81 @@ If a node's todo includes `question`, the prompt MUST explicitly instruct HeadWr
 ### Node library
 
 For reusable node templates with ready-made prompts and schemas, see `{{SESSION_PATH}}/node-library/CATALOGUE.md`.
+
+---
+
+## Anti-patterns
+
+These are common mistakes that cause session failures. Avoid them.
+
+### ❌ String ID in `next` — the most common failure
+
+```json
+{
+  "id": "scout",
+  "next": "analyze"
+}
+```
+
+`next` must be a full node object, not a string. The plugin calls `node.next.id` — if `next` is a string, `.id` is `undefined`, the node appears terminal, and the session auto-completes on activation.
+
+**Fix:**
+
+```json
+{
+  "id": "scout",
+  "next": {
+    "id": "analyze",
+    "prompt": "analyze.md",
+    "todo": ["task"]
+  }
+}
+```
+
+### ❌ String node reference in branch `next`
+
+```json
+"next": [
+  { "when": "pass", "node": "output-success" },
+  { "when": "fail", "node": "fix" }
+]
+```
+
+Branch `node` values must be full objects, not strings.
+
+**Fix:**
+
+```json
+"next": [
+  { "when": "pass", "node": { "id": "output-success", "prompt": "output-success.md", "todo": [] } },
+  { "when": "fail", "node": { "id": "fix", "prompt": "fix.md", "todo": ["task"] } }
+]
+```
+
+### ❌ Duplicate node IDs
+
+Every `id` in the entire tree must be unique. Reusing an ID (e.g., using `output-success` on both the pass and fail branches) silently overwrites the node map entry and causes unpredictable terminal behavior. Use `-<N>` suffixes: `output-success`, `output-success-2`.
+
+### ❌ Path in `prompt` field
+
+```json
+{ "prompt": "prompts/session-overview.md" }
+```
+
+The plugin resolves bare filenames automatically. Including a path breaks resolution.
+
+**Fix:** `{ "prompt": "session-overview.md" }`
+
+---
+
+## Validity checklist
+
+Before writing `plan.json`, verify:
+
+- [ ] Every `next` field is a full node object (not a string)
+- [ ] Every branch `node` field is a full node object (not a string)
+- [ ] Every `id` is unique across the entire tree
+- [ ] Every `prompt` is a bare filename (no path, no directory prefix)
+- [ ] Every non-terminal node has a `next` field
+- [ ] Terminal nodes (`output-success`, `output-failure`) have no `next`
+- [ ] The `todo` array for each node matches the standard reference table

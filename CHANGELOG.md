@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - planning prompt `scout-node-library.md`: fixed node library README path examples to include `{{SESSION_PATH}}/node-library/` prefix — bare relative paths caused agents in other projects to fail when reading node type README files
 - planning prompt `write-dag.md`: corrected `compression-node` quick reference todo from `["task"]` to `["compress"]` to match actual plugin enforcement
 - Fixed tool-call blocking in `planning-enforcement` plugin: non-exempt tools were unblocked during the `waiting_step` window (after a node's todos exhausted but before `next_step()` was called) because both hook guards returned early for any non-`running` status. The before hook now throws explicitly when status is `waiting_step`, and the after hook guard no longer treats `waiting_step` as a skip condition.
+- `write-dag.md` now requires HeadWrench to embed `plan.json` as a JSON code block when delegating to write-dag subagents, preventing format drift where haiku agents produced flat `nodes` map format instead of the required nested-tree format
+- `dag-design-guide.md` now includes an Anti-patterns section with wrong-vs-right examples for `next` field format, branch node references, duplicate IDs, and prompt paths, plus a validity checklist
+- `headwrench.md` Planning section now explicitly requires JSON embedding in write-dag delegations
 
 ## [3.5.0] - 2026-03-29
 
