@@ -29,13 +29,13 @@ The research findings must include:
 
 If ExternalScout returns only links or a broad survey with no specific answer, flag the gap before advancing — do not silently pass incomplete findings to the next node.
 
-> **Writing the ExternalScout's prompt:** The prompt must specify: (1) the exact research question; (2) tool order: use Context7 first — call `context7_resolve-library-id` to find the library, then `context7_query-docs` to retrieve documentation — then Exa for broader web search if Context7 is insufficient; (3) scope guard: "This is a cursory pass — stop after first successful search. Do NOT pursue multiple threads, cross-reference sources, or use sequential thinking."; (4) return format: cite specific versions, include code examples when relevant, synthesize into a direct answer rather than a link list; (5) Termination: "Stop after first successful search. Do not loop. Return findings immediately."
+> **Writing the ExternalScout's prompt:** The prompt must specify: (1) the exact research question; (2) tool order: use Context7 first — call `context7_resolve-library-id` to find the library, then `context7_query-docs` to retrieve documentation — if Context7 is insufficient, use `get_code_context_exa` for code examples and GitHub patterns — use `web_search_exa` only as a last resort; (3) scope guard: "This is a cursory pass — stop after first successful search. Do NOT pursue multiple threads, cross-reference sources, or use sequential thinking."; (4) return format: cite specific versions, include code examples when relevant, synthesize into a direct answer rather than a link list; (5) Termination: "Stop after first successful search. Do not loop. Return findings immediately."
 
 ## Todo
 
 > **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
 
-1. `task` — Dispatch @ExternalScout with the research instructions above. Tell ExternalScout to use Context7 first: call `context7_resolve-library-id` to identify the library, then `context7_query-docs` to retrieve docs. If Context7 is insufficient, use one Exa search — then stop. Do NOT pursue multiple threads. Include code examples where relevant, cite specific versions, and return a direct answer — not a list of links.
+1. `task` — Dispatch @ExternalScout with the research instructions above. Tell ExternalScout to use Context7 first: call `context7_resolve-library-id` to identify the library, then `context7_query-docs` to retrieve docs. If Context7 is insufficient, use `get_code_context_exa` for code examples and GitHub patterns. Then stop. Do NOT pursue multiple threads. Include code examples where relevant, cite specific versions, and return a direct answer — not a list of links.
 
 ## Before advancing
 

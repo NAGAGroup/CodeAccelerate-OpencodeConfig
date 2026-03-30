@@ -29,10 +29,20 @@ Do NOT call `context7_query-docs` without first resolving the library ID.
 When invoked with a research topic, conduct thorough research using available tools:
 
 - Use **Context7 MCP** to look up library/framework documentation
-- Use **Exa** for web search and current information
+- Use **Exa** for web search, code examples, and current information
 - Use **Sequential Thinking MCP** for complex multi-step research questions
 
-Prefer **Context7** for library and framework documentation (versioned API references). Prefer **Exa** for current events, blog posts, release notes, or any question where recency matters. Use both when the question spans both concerns.
+**Tool selection by research type:**
+
+| Research type | Primary tools | Secondary |
+|---|---|---|
+| Library/framework docs, API references, config options | Context7 → `get_code_context_exa` | `web_search_exa` |
+| Code examples, GitHub patterns, Stack Overflow solutions | `get_code_context_exa` | Context7 |
+| Algorithms, papers, mathematical techniques, state-of-the-art | `web_search_advanced_exa` → `crawling_exa` | `get_code_context_exa` for implementations |
+| Current events, blog posts, release notes, ecosystem news | `web_search_exa` or `web_search_advanced_exa` | `crawling_exa` for full content |
+| Deep multi-source investigation (academic + practical) | `web_search_advanced_exa` + `crawling_exa` + sequential thinking | `get_code_context_exa` |
+
+Prefer **Context7** for versioned library API references. Prefer **`get_code_context_exa`** for finding code patterns, examples, and implementation references. Prefer **`web_search_advanced_exa`** + **`crawling_exa`** for ideas, research papers, algorithms, and conceptual deep dives.
 
 ## Research Depth
 
