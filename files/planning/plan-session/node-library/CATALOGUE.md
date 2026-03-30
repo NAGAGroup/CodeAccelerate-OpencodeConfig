@@ -40,6 +40,8 @@ DAGs are composed from three primitives:
 |---|---|---|
 | [`scout-parallel`](#scout-parallel) | `["task","task","task"]` | Need broad codebase coverage before acting. Three scouts run in parallel. |
 | [`analyze-deep`](#analyze-deep) | `["task"]` | Need multi-file reasoning that haiku can't handle. One ContextInsurgent. |
+| [`research-basic`](#research-basic) | `["task"]` | Need to look up external docs, APIs, or references to inform implementation. One ExternalScout. |
+| [`research-deep`](#research-deep) | `["task"]` | Need intensive investigative research — novel approaches, academic sources, multi-source synthesis. One ExternalScout with expanded mandate. |
 
 ### Decision
 
@@ -75,6 +77,12 @@ Dispatches three `@ContextScout` agents in parallel via three sequential `task` 
 
 ### `analyze-deep`
 Dispatches one `@ContextInsurgent` to perform deep multi-file reasoning. Use after `scout-parallel` when scout output needs synthesis, or when a task requires understanding complex cross-file logic. One `task` call — expensive, serial. Do not instruct ContextInsurgent to read .opencode/ session directories — completed sessions are stale.
+
+### `research-basic`
+Dispatches one `@ExternalScout` for targeted external lookup. Use when implementation decisions require external information: API references, library docs, configuration options, known debugging patterns. ExternalScout uses Context7 first, Exa second. One `task` call. For deep investigative research requiring multi-source synthesis, use `research-deep`.
+
+### `research-deep`
+Dispatches one `@ExternalScout` with an expanded research mandate for intensive investigation. Use when the implementation direction itself is uncertain and requires discovery of novel approaches, academic publications, or state-of-the-art techniques. ExternalScout uses the full Exa tool suite plus Context7, and is authorized to pursue multiple threads and synthesize findings. One `task` call. Often followed by a `sequential-thinking` node to reason through what was discovered before acting.
 
 ### `sequential-thinking`
 HeadWrench calls the `sequential-thinking` MCP tool directly to reason through a meaningful decision point. No agent dispatch — HW executes this tool itself. The prompt frames the decision and expected output.

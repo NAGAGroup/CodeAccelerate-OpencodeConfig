@@ -29,7 +29,7 @@
     "context-insurgent": {
       "model": "anthropic/claude-haiku-4-5"
     },
-    "deep-researcher": {
+    "external-scout": {
       "model": "anthropic/claude-haiku-4-5"
     },
     "compaction": {

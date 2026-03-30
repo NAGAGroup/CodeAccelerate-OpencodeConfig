@@ -59,7 +59,7 @@ To switch a model, replace the value with any provider string OpenCode recognize
 | Tier | Agents |
 |---|---|
 | Sonnet-tier | `headwrench`, `context-insurgent` |
-| Haiku-tier | `context-scout`, `quick-doc`, `junior-dev`, `deep-researcher` |
+| Haiku-tier | `context-scout`, `quick-doc`, `junior-dev`, `external-scout` |
 
 Sonnet-tier agents handle orchestration and deep reasoning. Haiku-tier agents handle fast, scoped tasks. If you're on a tighter budget or prefer a different provider, reassign freely — the tier split is a suggestion, not a constraint.
 

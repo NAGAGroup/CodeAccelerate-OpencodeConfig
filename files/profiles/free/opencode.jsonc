@@ -29,7 +29,7 @@
     "context-insurgent": {
       "model": "opencode/big-pickle"
     },
-    "deep-researcher": {
+    "external-scout": {
       "model": "opencode/nemotron-3-super-free"
     },
     "compaction": {

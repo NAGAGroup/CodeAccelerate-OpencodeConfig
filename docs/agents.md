@@ -10,7 +10,7 @@ CodeAccelerate ships a team of specialized agents. You talk to one — **HeadWre
 | **ContextScout** | haiku | Quick codebase exploration | 12 | Yes |
 | **ContextInsurgent** | sonnet | Deep multi-file reasoning | 20 | No |
 | **JuniorDev** | haiku | Targeted code edits | 10 | Yes |
-| **DeepResearcher** | haiku | Web/docs research via MCP | 15 | Yes |
+| **ExternalScout** | haiku | Web/docs research via MCP | 15 | Yes |
 | **QuickDoc** | haiku | Single-file document writes | 8 | Yes |
 
 ---
@@ -49,9 +49,9 @@ Model: sonnet (more capable, used when depth matters).
 
 ---
 
-### @DeepResearcher
+### @ExternalScout
 
-Web and documentation research. When the task requires looking something up — a library's API, an unfamiliar tool, external documentation — HeadWrench dispatches DeepResearcher. It has access to Exa and Context7 MCP servers.
+Web and documentation research. When the task requires looking something up — a library's API, an unfamiliar tool, external documentation — HeadWrench dispatches ExternalScout. It has access to Exa and Context7 MCP servers.
 
 Model: haiku (lighter, suitable for targeted lookup tasks).
 
@@ -101,7 +101,7 @@ HeadWrench decides which agents to use based on the task:
 
 - **Broad exploration** → ContextScout (parallel)
 - **Deep cross-file reasoning** → ContextInsurgent (sequential)
-- **External lookup** → DeepResearcher
+- **External lookup** → ExternalScout
 - **Code changes** → JuniorDev (parallel)
 - **Document writes** → QuickDoc (parallel)
 

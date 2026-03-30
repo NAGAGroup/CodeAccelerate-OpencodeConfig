@@ -8,7 +8,7 @@ The scouts have just completed their codebase exploration. Before synthesizing f
 
 1. `question` — Ask the user whether cursory external research is needed to have the full context required to design a robust plan.
 
-**Option A:** "User wants web research" (description: "Dispatch DeepResearcher for a targeted cursory pass")
+**Option A:** "User wants web research" (description: "Dispatch ExternalScout for a targeted cursory pass")
 
 **Option B:** "User skips web research" (description: "Proceed directly to structure proposal")
 

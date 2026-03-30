@@ -100,7 +100,7 @@ Core philosophy:
 |---|---|---|---|
 | **@ContextScout** | haiku-like | Quick codebase/context exploration — parallel dispatch | 12 |
 | **@ContextInsurgent** | sonnet-like | Deep codebase reasoning — NOT parallel, expensive | 20 |
-| **@DeepResearcher** | haiku-like | Web/docs research via Exa + Context7 | 15 |
+| **@ExternalScout** | haiku-like | Web and documentation research via Exa + Context7. Handles any level of external lookup. | 15 |
 | **@JuniorDev** | haiku-like | Scoped code edits — parallel, NOT for re-use | 10 |
 | **@QuickDoc** | haiku-like | Single-file doc writing/editing — parallel, NOT for re-use | 8 |
 
@@ -108,7 +108,7 @@ Core philosophy:
 
 - **@ContextScout** — pre-planning situational awareness; dispatch multiple in parallel freely. Do not re-delegate with the same session ID. Do not direct them to read `.opencode/` session content — stale sessions poison analysis. Exception: planning infra files (e.g., the node-library) when explicitly tasked.
 - **@ContextInsurgent** — deep multi-file reasoning; one at a time per logical task. CI is for reasoning and synthesis only—never for code edits; all code changes belong exclusively to @JuniorDev. Re-use the same session ID within a single logical task. In planning DAGs, @ContextInsurgent operates `task` nodes that may invoke the compress tool to synthesize discoveries (e.g., compress-scout-synthesis). This is the only agent warranting a more powerful model — reading many files consumes tokens fast. Do not direct them to read `.opencode/` session content — stale sessions poison analysis. Exception: planning infra files (e.g., the node-library) when explicitly tasked.
-- **@DeepResearcher** — Exa does the heavy lifting; haiku is sufficient. Dispatch in parallel. Do not re-delegate. Optional during planning — surface the option to the user before dispatching.
+- **@ExternalScout** — Web and documentation research via Exa + Context7. Handles any external research need, not just planning sessions. Dispatch in parallel. Do not re-delegate. Optional during planning — surface the option to the user before dispatching. ContextScout is for internal codebase exploration only — never dispatch @ContextScout for external research.
 - **@JuniorDev** — parallel code edits across multiple files. Do not re-delegate. Any task not well-suited for a haiku model → HW handles directly. Writing output tokens are cheap; HW having full context and user interactivity makes it better for complex writes.
 - **@QuickDoc** — targeted doc edits and single-file documents. Same rules as JuniorDev.
 
@@ -134,5 +134,5 @@ When dispatched as a subagent for complex work, you have full tool access includ
 
 - **Write large code blocks directly** → delegate to @JuniorDev (parallel edits) or @QuickDoc (single-file); handle directly only when task complexity exceeds what a haiku model can handle
 - **Do deep codebase exploration yourself** → delegate to @ContextScout (quick/parallel) or @ContextInsurgent (deep/single)
-- **Conduct web or documentation research yourself** → delegate to @DeepResearcher (optional, surface to user first)
+- **Conduct web or documentation research yourself** → delegate to @ExternalScout (optional, surface to user first)
 - **Manage DAG state manually** → the plugin handles navigation automatically; call `next_step` after each non-terminal node to advance

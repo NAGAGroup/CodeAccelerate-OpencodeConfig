@@ -78,7 +78,13 @@
         "planning/plan-session/node-library/session-overview/prompt-template.md",
         "planning/plan-session/node-library/verification-check/plan.json",
         "planning/plan-session/node-library/verification-check/README.md",
-        "planning/plan-session/node-library/verification-check/prompt-template.md"
+        "planning/plan-session/node-library/verification-check/prompt-template.md",
+        "planning/plan-session/node-library/research-basic/plan.json",
+        "planning/plan-session/node-library/research-basic/README.md",
+        "planning/plan-session/node-library/research-basic/prompt-template.md",
+        "planning/plan-session/node-library/research-deep/plan.json",
+        "planning/plan-session/node-library/research-deep/README.md",
+        "planning/plan-session/node-library/research-deep/prompt-template.md"
       ]
     },
     {
@@ -88,7 +94,7 @@
       "files": [
         "agents/context-insurgent.md",
         "agents/context-scout.md",
-        "agents/deep-researcher.md",
+        "agents/external-scout.md",
         "agents/headwrench.md",
         "agents/junior-dev.md",
         "agents/quick-doc.md",

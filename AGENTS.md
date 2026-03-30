@@ -78,7 +78,7 @@ One orchestrator routes to five specialists:
 | **context-scout** | haiku | Quick codebase reads (step budget: 12) | Yes |
 | **context-insurgent** | sonnet | Deep multi-file reasoning (step budget: 20) | No |
 | **junior-dev** | haiku | Targeted code edits (step budget: 10) | Yes |
-| **deep-researcher** | haiku | Web/docs research via MCP (step budget: 15) | Yes |
+| **external-scout** | haiku | Web and documentation research via MCP (step budget: 15) | Yes |
 | **quick-doc** | haiku | Single-file document writes (step budget: 8) | Yes |
 
 Users interact only with HeadWrench. It reads intent and delegates to specialists.
@@ -104,7 +104,7 @@ session-overview → scout → research-gate
 | `session-overview` | `[]` | Entry, auto-advance |
 | `scout` | `["task","task","task"]` | 3x @ContextScout in parallel |
 | `research-gate` | `["question"]` | User decides if cursory external research is needed |
-| `research-brief` | `["question", "task"]` | User picks research topic; DeepResearcher does a cursory lookup |
+| `research-brief` | `["question", "task"]` | User picks research topic; ExternalScout does a cursory lookup |
 | `scout-node-library` | `["task"]` | @ContextScout reads node library (pure info-gathering) |
 | `sequential-thinking` | `["sequential-thinking_sequentialthinking"]` | HW designs complete plan with full context (Branch A: with research) |
 | `sequential-thinking-2` | `["sequential-thinking_sequentialthinking"]` | HW designs complete plan with full context (Branch B: no research) |

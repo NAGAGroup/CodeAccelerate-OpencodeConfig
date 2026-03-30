@@ -12,7 +12,7 @@ Dispatches multiple haiku agents (typically `@JuniorDev`) via sequential `task` 
 
 For each task, specify:
 
-- **Agent** — Which agent handles it (`@JuniorDev` for code edits, `@QuickDoc` for docs, `@DeepResearcher` for research)
+- **Agent** — Which agent handles it (`@JuniorDev` for code edits, `@QuickDoc` for docs, `@ExternalScout` for research)
 - **Target** — Specific files or modules the agent should touch
 - **Goal** — What the agent should produce or change
 - **Constraints** — Any patterns to follow, things to avoid, or dependencies to respect

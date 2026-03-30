@@ -50,7 +50,7 @@ HeadWrench is the primary orchestrator. Every message goes through it first. Bas
 - **context-scout** — reads and maps codebases, gathers structural context before any changes happen
 - **context-insurgent** — deep-dives into specific files and logic paths when the scout's overview isn't enough
 - **junior-dev** — executes targeted code edits under HeadWrench's direction
-- **deep-researcher** — searches external documentation, APIs, and references via web and MCP tools
+- **external-scout** — searches external documentation, APIs, and references via web and MCP tools; handles any level of external research from cursory lookups to deep investigative work
 - **quick-doc** — generates documentation from code and context
 
 You don't pick agents. HeadWrench does, based on what the current task needs.

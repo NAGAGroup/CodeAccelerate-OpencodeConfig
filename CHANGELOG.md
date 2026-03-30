@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Renamed `DeepResearcher` agent to `ExternalScout` with expanded scope covering any level of external research (cursory to deep investigative). Added `research-basic` and `research-deep` node library types as first-class research primitives dispatching `@ExternalScout`. Fixed planning DAG `research-brief` prompt to make the `@ExternalScout` vs `@ContextScout` boundary explicit — ContextScout is internal-only.
 - `ocx-default` and `ocx-copilot` profiles: added `provider` block disabling extended thinking (`reasoning: false`) for `claude-sonnet-4-6` / `claude-sonnet-4.6` respectively
 - `context-scout.md` agent: added root-directory glob fallback instruction — if dispatched with no specific file paths, scout must use a broad glob pattern to orient itself rather than returning empty
 - `headwrench.md` agent: added `multiple` parameter guidance to Question Tool Usage section (rule 6) — `multiple: true` for multi-select scenarios, `multiple: false`/omit for binary/exclusive choices

@@ -44,7 +44,7 @@
     "context-insurgent": {
       "model": "github-copilot/claude-sonnet-4.6"
     },
-    "deep-researcher": {
+    "external-scout": {
       "model": "github-copilot/claude-haiku-4.5"
     },
     "compaction": {

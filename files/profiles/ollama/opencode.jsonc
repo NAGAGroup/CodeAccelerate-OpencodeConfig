@@ -43,7 +43,7 @@
     "context-insurgent": {
       "model": "ollama/opencode-model"
     },
-    "deep-researcher": {
+    "external-scout": {
       "model": "ollama/opencode-model"
     },
     "compaction": {
