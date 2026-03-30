@@ -25,3 +25,7 @@ Dispatch `@ContextInsurgent` to synthesize and compress the accumulated context 
 ## Todo
 
 1. `task` — Dispatch @ContextInsurgent to synthesize the findings from {{WHAT_TO_COMPRESS}}. The agent must preserve: {{FINDINGS_TO_PRESERVE}}. It should discard: {{WHAT_TO_DISCARD}}. Answer the question: {{SYNTHESIS_QUESTION}}. The agent calls the `compress` tool to replace stale context with a dense technical summary.
+
+## Before advancing
+
+If synthesis revealed gaps, contradictions, or key uncertainties in the accumulated context, consider surfacing them to the user before calling `next_step()`. This is optional — if the compression is clean and complete, advance when ready.

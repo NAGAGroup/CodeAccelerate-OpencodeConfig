@@ -31,3 +31,7 @@ Paths to explore: {{SCOUT_3_PATHS}}
 3. `task` — Dispatch @ContextScout to explore dependencies and boundaries: {{SCOUT_3_GOAL}}
 
 Call all three task tools before waiting for results — they run in parallel.
+
+## Before advancing
+
+If scout results surfaced unexpected findings, ambiguities, or anything that might affect the plan direction, consider flagging it to the user before calling `next_step()`. This is optional — if results are clear, advance when ready.

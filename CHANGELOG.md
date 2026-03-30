@@ -10,6 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Added `ocx-ollama` profile for local Ollama inference with model specified via `OLLAMA_MODEL` environment variable
 
+### Changed
+
+- Relaxed auto-injected `next_step` instruction verbiage in planning-enforcement plugin to use permissive "when you're ready" language, opening a window for agent-user interaction between todo completion and node advancement
+- Added optional "Before advancing" guidance sections to non-branching node library prompt templates (scout-parallel, analyze-deep, sequential-thinking, parallel-tasks, verification-check, compression-node, generic), prompting agents to consider user interaction when findings warrant it
+
 ## [3.3.0] - 2026-03-29
 
 ### Added

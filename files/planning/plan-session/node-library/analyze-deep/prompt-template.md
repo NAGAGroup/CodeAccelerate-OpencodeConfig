@@ -21,3 +21,7 @@ Dispatch `@ContextInsurgent` to perform deep multi-file reasoning on the followi
 ## Todo
 
 1. `task` — Dispatch @ContextInsurgent to analyze: {{ANALYSIS_QUESTION}}. Provide the agent with: {{CONTEXT_TO_PROVIDE}}. The agent should return: {{EXPECTED_OUTPUT}}.
+
+## Before advancing
+
+If the analysis revealed significant architectural concerns, unexpected complexity, or questions where user input would change the approach, consider surfacing them before calling `next_step()`. This is optional — if findings are clear and actionable, advance when ready.

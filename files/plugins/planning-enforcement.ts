@@ -260,13 +260,13 @@ function activateDag(
   const promptText = readPrompt(entryNode.prompt, worktree);
   let result = `DAG "${dag.id}" activated. Starting at node: ${dag.entry.id}.\n\n---\n\n${promptText}`;
 
-  // If entry node has empty todo, set waiting_step status and ask for next_step
-  if (entryNode.todo.length === 0) {
-    const hasNext = entryNode.nextLinear || (entryNode.branches && entryNode.branches.length > 0);
-    if (hasNext) {
-      state.status = "waiting_step";
-      writeState(statePath, state);
-      result += `\n\n---\n\nNo todos for this node. Call \`next_step()\` to advance.`;
+   // If entry node has empty todo, set waiting_step status and ask for next_step
+   if (entryNode.todo.length === 0) {
+     const hasNext = entryNode.nextLinear || (entryNode.branches && entryNode.branches.length > 0);
+     if (hasNext) {
+       state.status = "waiting_step";
+       writeState(statePath, state);
+       result += `\n\n---\n\nNo todos for this node. When you're ready, call \`next_step()\` to advance.`;
     } else {
       // Terminal node with no todos
       const advanceResult = autoAdvance(state, statePath, worktree);
@@ -289,13 +289,13 @@ function autoAdvance(
   const node = state.node_map[state.current_node];
   if (!node) return null;
 
-  // Linear next — do NOT auto-advance; require explicit next_step()
-  if (node.nextLinear) {
-    state.status = "waiting_step";
-    state.updated_at = now();
-    writeState(statePath, state);
+   // Linear next — do NOT auto-advance; require explicit next_step()
+   if (node.nextLinear) {
+     state.status = "waiting_step";
+     state.updated_at = now();
+     writeState(statePath, state);
 
-    return `All todos complete. Call \`next_step()\` to advance to the next node.`;
+     return `All todos complete. When you're ready, call \`next_step()\` to advance to the next node.`;
   }
 
   // Branching — present choices and require next_step()
@@ -304,11 +304,11 @@ function autoAdvance(
     state.updated_at = now();
     writeState(statePath, state);
 
-    const choices = node.branches
-      .map((b, i) => `${i + 1}. **${b.nodeId}** — ${b.when}`)
-      .join("\n");
+     const choices = node.branches
+       .map((b, i) => `${i + 1}. **${b.nodeId}** — ${b.when}`)
+       .join("\n");
 
-    return `All todos complete. Choose next path:\n\n${choices}\n\nCall \`next_step({ next: "<node-id>" })\` to continue.`;
+     return `All todos complete. Choose next path:\n\n${choices}\n\nWhen you're ready, call \`next_step({ next: "<node-id>" })\` to continue.`;
   }
 
   // Terminal — close session
@@ -452,13 +452,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             const promptText = readPrompt(nextNode.prompt, resolveWorktree(context));
             let result = `Node "${node.id}" complete. Advancing to "${nextNode.id}".\n\n---\n\n${promptText}`;
 
-            // If next node has empty todo, set waiting_step instead of auto-advancing
-            if (nextNode.todo.length === 0) {
-              const hasNext = nextNode.nextLinear || (nextNode.branches && nextNode.branches.length > 0);
-              if (hasNext) {
-                state.status = "waiting_step";
-                writeState(statePath, state);
-                result += `\n\n---\n\nNo todos for this node. Call \`next_step()\` to advance.`;
+             // If next node has empty todo, set waiting_step instead of auto-advancing
+             if (nextNode.todo.length === 0) {
+               const hasNext = nextNode.nextLinear || (nextNode.branches && nextNode.branches.length > 0);
+               if (hasNext) {
+                 state.status = "waiting_step";
+                 writeState(statePath, state);
+                 result += `\n\n---\n\nNo todos for this node. When you're ready, call \`next_step()\` to advance.`;
               } else {
                 // Terminal node with no todos
                 const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
@@ -505,13 +505,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             const promptText = readPrompt(nextNode.prompt, resolveWorktree(context));
             let result = `Branch taken: "${next}". Advancing.\n\n---\n\n${promptText}`;
 
-            // If the branch node has empty todo, set waiting_step instead of auto-advancing
-            if (nextNode.todo.length === 0) {
-              const hasNext = nextNode.nextLinear || (nextNode.branches && nextNode.branches.length > 0);
-              if (hasNext) {
-                state.status = "waiting_step";
-                writeState(statePath, state);
-                result += `\n\n---\n\nNo todos for this node. Call \`next_step()\` to advance.`;
+             // If the branch node has empty todo, set waiting_step instead of auto-advancing
+             if (nextNode.todo.length === 0) {
+               const hasNext = nextNode.nextLinear || (nextNode.branches && nextNode.branches.length > 0);
+               if (hasNext) {
+                 state.status = "waiting_step";
+                 writeState(statePath, state);
+                 result += `\n\n---\n\nNo todos for this node. When you're ready, call \`next_step()\` to advance.`;
               } else {
                 // Terminal node with no todos
                 const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
@@ -575,17 +575,17 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
            result += `**Todo progress:**\n${todoProgress}\n\n`;
            result += `## Current Node Prompt\n\n${promptText}\n`;
 
-           if (currentNode?.branches) {
-             const choices = currentNode.branches
-               .map((b) => `- **${b.nodeId}** — ${b.when}`)
-               .join("\n");
-             result += `\n## Pending Branch Choice\n${choices}\n`;
-             result += `\nAll todos complete. Call \`next_step({ next: "<node-id>" })\` to choose a branch.\n`;
-           } else if (state.status === "waiting_step") {
-             if (currentNode?.nextLinear) {
-               result += `\nAll todos complete. Call \`next_step()\` to advance to the next node.\n`;
-             } else {
-               result += `\nNo todos for this node. Call \`next_step()\` to advance.\n`;
+            if (currentNode?.branches) {
+              const choices = currentNode.branches
+                .map((b) => `- **${b.nodeId}** — ${b.when}`)
+                .join("\n");
+              result += `\n## Pending Branch Choice\n${choices}\n`;
+              result += `\nAll todos complete. When you're ready, call \`next_step({ next: "<node-id>" })\` to choose a branch.\n`;
+            } else if (state.status === "waiting_step") {
+              if (currentNode?.nextLinear) {
+                result += `\nAll todos complete. When you're ready, call \`next_step()\` to advance to the next node.\n`;
+              } else {
+                result += `\nNo todos for this node. When you're ready, call \`next_step()\` to advance.\n`;
              }
            }
 

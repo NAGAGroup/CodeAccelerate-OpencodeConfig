@@ -19,3 +19,7 @@ This conclusion feeds directly into {{NEXT_NODE}} — complete the reasoning bef
 ## Todo
 
 1. `sequential-thinking_sequentialthinking` — Reason through: {{DECISION_QUESTION}}. Use the context above. Produce: {{EXPECTED_OUTPUT}}.
+
+## Before advancing
+
+If reasoning revealed meaningful uncertainty, competing approaches where user preference matters, or open questions that could affect downstream work, consider asking the user before calling `next_step()`. This is optional — if the conclusion is clear, advance when ready.

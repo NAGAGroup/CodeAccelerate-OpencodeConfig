@@ -12484,7 +12484,7 @@ ${promptText}`;
 
 ---
 
-No todos for this node. Call \`next_step()\` to advance.`;
+No todos for this node. When you're ready, call \`next_step()\` to advance.`;
     } else {
       const advanceResult = autoAdvance(state, statePath, worktree);
       if (advanceResult) {
@@ -12506,7 +12506,7 @@ function autoAdvance(state, statePath, worktree) {
     state.status = "waiting_step";
     state.updated_at = now();
     writeState(statePath, state);
-    return `All todos complete. Call \`next_step()\` to advance to the next node.`;
+    return `All todos complete. When you're ready, call \`next_step()\` to advance to the next node.`;
   }
   if (node.branches && node.branches.length > 0) {
     state.status = "waiting_step";
@@ -12518,7 +12518,7 @@ function autoAdvance(state, statePath, worktree) {
 
 ${choices}
 
-Call \`next_step({ next: "<node-id>" })\` to continue.`;
+When you're ready, call \`next_step({ next: "<node-id>" })\` to continue.`;
   }
   state.status = "complete";
   state.updated_at = now();
@@ -12632,7 +12632,7 @@ ${promptText}`;
 
 ---
 
-No todos for this node. Call \`next_step()\` to advance.`;
+No todos for this node. When you're ready, call \`next_step()\` to advance.`;
               } else {
                 const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
                 if (advanceResult) {
@@ -12685,7 +12685,7 @@ ${promptText}`;
 
 ---
 
-No todos for this node. Call \`next_step()\` to advance.`;
+No todos for this node. When you're ready, call \`next_step()\` to advance.`;
               } else {
                 const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
                 if (advanceResult) {
@@ -12755,16 +12755,16 @@ ${promptText}
 ${choices}
 `;
             result += `
-All todos complete. Call \`next_step({ next: "<node-id>" })\` to choose a branch.
+All todos complete. When you're ready, call \`next_step({ next: "<node-id>" })\` to choose a branch.
 `;
           } else if (state.status === "waiting_step") {
             if (currentNode?.nextLinear) {
               result += `
-All todos complete. Call \`next_step()\` to advance to the next node.
+All todos complete. When you're ready, call \`next_step()\` to advance to the next node.
 `;
             } else {
               result += `
-No todos for this node. Call \`next_step()\` to advance.
+No todos for this node. When you're ready, call \`next_step()\` to advance.
 `;
             }
           }
