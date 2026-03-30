@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Added `clarifying-questions` node to the plan-session DAG, inserted after each sequential-thinking node (both branches). The node prompts HW to summarize its understanding and ask any last-minute clarifying questions before presenting the final plan. The `question` tool may be called multiple times (it is exempt from DAG blocking). If no questions exist, HW asks a confirmation question. Post-question sequential thinking is optionally available if answers introduce new information.
+- Created `clarifying-questions.md` prompt file for the new nodes.
 - Sequential thinking prompts (`sequential-thinking.md`, node-library `prompt-template.md`): agents now estimate and verbalize expected thought count before starting, and stop as soon as they have a complete result rather than continuing to a minimum count; the "keep calling continuously" instruction is preserved
 - Improved subagent delegation prompts in `files/agents/headwrench.md`: added per-agent prompt requirements subsection (concrete guidance for ContextScout, ContextInsurgent, ExternalScout, JuniorDev, and QuickDoc), verbatim-return guidance, explicit ExternalScout tool priority (Context7 first, Exa second), and ES=external-only corollary to CS=internal-only boundary rule
 - Fixed ExternalScout description ordering in `files/agents/headwrench.md`: tools now listed as "Context7 + Exa" (was "Exa + Context7") in both Agent Roster and Routing Rules

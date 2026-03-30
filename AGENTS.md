@@ -91,10 +91,10 @@ The `plan-session` DAG lives in `files/planning/plan-session/` and follows this 
 
 ```
 session-overview → scout → scout-node-library → research-gate
-  → [research-brief → sequential-thinking → propose-plan
+  → [research-brief → sequential-thinking → clarifying-questions → propose-plan
         → [write-dag → activation-gate]              (approved path)
         → [propose-plan-2 → write-dag-2 → activation-gate-2]]  (rethink path)
-  → [sequential-thinking-2 → propose-plan-3
+  → [sequential-thinking-2 → clarifying-questions-2 → propose-plan-3
         → [write-dag-3 → activation-gate-3]            (approved path)
         → [propose-plan-4 → write-dag-4 → activation-gate-4]]  (rethink path)
   (all paths) → [activate-now → plan-complete]  (activate now path)
@@ -109,7 +109,9 @@ session-overview → scout → scout-node-library → research-gate
 | `research-gate` | `["question", "question"]` | HW assesses context, forms recommendations, then asks two questions: (1) is cursory planning-time research needed? (2) should the generated DAG include execution-time research nodes? |
 | `research-brief` | `["question", "task"]` | User picks research topic; ExternalScout does a cursory lookup |
 | `sequential-thinking` | `["sequential-thinking_sequentialthinking"]` | HW designs complete plan with full context (Branch A: with research) |
+| `clarifying-questions` | `["question"]` | HW summarizes understanding and asks any last-minute clarifying questions before plan presentation (Branch A: with research) |
 | `sequential-thinking-2` | `["sequential-thinking_sequentialthinking"]` | HW designs complete plan with full context (Branch B: no research) |
+| `clarifying-questions-2` | `["question"]` | Same as clarifying-questions (Branch B: no research) |
 | `propose-plan` | `["question"]` | HW presents complete plan (structure + decomposition), user approves |
 | `write-dag` | `["task","validate_dag","task"]` | HW subagent writes plan files (reads node library docs first), validate, verify |
 | `activation-gate` | `["question"]` | Ask user: activate now or later? |
