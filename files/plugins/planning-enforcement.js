@@ -12801,7 +12801,7 @@ No todos for this node. When you're ready, call \`next_step()\` to advance.
         }
       }),
       validate_dag: tool({
-        description: "Validate a project DAG plan.json file. Performs 6 checks: schema validity, duplicate node IDs, prompt file existence, todo sections, question tool phrases, and template patterns. Returns a formatted report.",
+        description: "Validate a project DAG plan.json file. Checks schema validity, duplicate node IDs, and prompt file discoverability. Returns a formatted report.",
         args: {
           plan_name: tool.schema.string().describe("Name of the session plan to validate (matches directory under .opencode/session-plans/).")
         },
@@ -12834,20 +12834,17 @@ No todos for this node. When you're ready, call \`next_step()\` to advance.
             }
             const issues = [];
             const nodeCollected = collectNodes(dag.entry);
-            let nodeCheckCount = 0;
             let checksPassedCount = 0;
             if (dag.schema_version !== "2.0") {
               issues.push(`- [schema] check-schema: schema_version is "${dag.schema_version}", expected "2.0"`);
             } else {
               checksPassedCount++;
             }
-            nodeCheckCount++;
             if (!dag.entry) {
               issues.push(`- [entry] check-entry: entry field is missing`);
             } else {
               checksPassedCount++;
             }
-            nodeCheckCount++;
             const nodeIds = new Set;
             const duplicates = new Set;
             for (const node of nodeCollected) {
@@ -12862,7 +12859,6 @@ No todos for this node. When you're ready, call \`next_step()\` to advance.
             } else {
               checksPassedCount++;
             }
-            nodeCheckCount++;
             const promptsDir = path.join(resolveWorktree(context), ".opencode", "session-plans", plan_name, "prompts");
             for (const node of nodeCollected) {
               const resolvedPrompt = node.prompt.includes("/") ? expandPath(node.prompt) : path.join(promptsDir, node.prompt);
@@ -12871,38 +12867,6 @@ No todos for this node. When you're ready, call \`next_step()\` to advance.
                 issues.push(`- [${node.id}] check-prompt-exists: prompt file not found at ${node.prompt}`);
               } else {
                 checksPassedCount++;
-              }
-              nodeCheckCount++;
-              let promptContent = "";
-              if (fs.existsSync(fullPromptPath)) {
-                try {
-                  promptContent = fs.readFileSync(fullPromptPath, "utf-8");
-                } catch {}
-              }
-              if (promptContent) {
-                if (node.todo && node.todo.length > 0) {
-                  if (!promptContent.includes("## Todo")) {
-                    issues.push(`- [${node.id}] check-todo-section: todo array is non-empty but prompt has no "## Todo" section`);
-                  } else {
-                    checksPassedCount++;
-                  }
-                  nodeCheckCount++;
-                  if (node.todo.includes("question")) {
-                    const hasQuestionPhrase = promptContent.toLowerCase().includes("question tool");
-                    if (!hasQuestionPhrase) {
-                      issues.push(`- [${node.id}] check-question-phrase: todo contains "question" but prompt does not mention "question tool"`);
-                    } else {
-                      checksPassedCount++;
-                    }
-                    nodeCheckCount++;
-                  }
-                }
-                if (promptContent.includes("{{")) {
-                  issues.push(`- [${node.id}] check-no-placeholders: prompt contains "{{" placeholder patterns that should be resolved`);
-                } else {
-                  checksPassedCount++;
-                }
-                nodeCheckCount++;
               }
             }
             let report = `## validate_dag Report: ${plan_name}

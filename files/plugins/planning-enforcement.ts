@@ -629,177 +629,131 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
          },
        }),
 
-       validate_dag: tool({
-         description:
-           "Validate a project DAG plan.json file. Performs 6 checks: schema validity, duplicate node IDs, prompt file existence, todo sections, question tool phrases, and template patterns. Returns a formatted report.",
-         args: {
-           plan_name: tool.schema
-             .string()
-             .describe(
-               'Name of the session plan to validate (matches directory under .opencode/session-plans/).',
-             ),
-         },
-          async execute({ plan_name }, context) {
-            try {
-              const planPath = path.join(
-                resolveWorktree(context),
-                ".opencode",
-                "session-plans",
-                plan_name,
-                "plan.json",
-              );
-
-             // Helper: collect all nodes in the tree recursively
-             function collectNodes(node: DagNode, collected: DagNode[] = []): DagNode[] {
-               collected.push(node);
-               if (Array.isArray(node.next)) {
-                 for (const branch of node.next as BranchOption[]) {
-                   collectNodes(branch.node, collected);
-                 }
-               } else if (node.next && typeof node.next === "object" && !Array.isArray(node.next)) {
-                 collectNodes(node.next as DagNode, collected);
-               }
-               return collected;
-             }
-
-             // Parse plan.json
-             if (!fs.existsSync(planPath)) {
-               return `## validate_dag Report: ${plan_name}\n\n**Error:** plan.json not found at ${planPath}`;
-             }
-
-             let dag: PlanDag;
+        validate_dag: tool({
+          description:
+            "Validate a project DAG plan.json file. Checks schema validity, duplicate node IDs, and prompt file discoverability. Returns a formatted report.",
+          args: {
+            plan_name: tool.schema
+              .string()
+              .describe(
+                'Name of the session plan to validate (matches directory under .opencode/session-plans/).',
+              ),
+          },
+           async execute({ plan_name }, context) {
              try {
-               dag = JSON.parse(fs.readFileSync(planPath, "utf-8"));
-             } catch {
-               return `## validate_dag Report: ${plan_name}\n\n**Error:** plan.json is not valid JSON`;
-             }
+               const planPath = path.join(
+                 resolveWorktree(context),
+                 ".opencode",
+                 "session-plans",
+                 plan_name,
+                 "plan.json",
+               );
 
-             const issues: string[] = [];
-             const nodeCollected = collectNodes(dag.entry);
-             let nodeCheckCount = 0;
-             let checksPassedCount = 0;
+              // Helper: collect all nodes in the tree recursively
+              function collectNodes(node: DagNode, collected: DagNode[] = []): DagNode[] {
+                collected.push(node);
+                if (Array.isArray(node.next)) {
+                  for (const branch of node.next as BranchOption[]) {
+                    collectNodes(branch.node, collected);
+                  }
+                } else if (node.next && typeof node.next === "object" && !Array.isArray(node.next)) {
+                  collectNodes(node.next as DagNode, collected);
+                }
+                return collected;
+              }
 
-             // Check 1: schema_version and entry field
-             if (dag.schema_version !== "2.0") {
-               issues.push(`- [schema] check-schema: schema_version is "${dag.schema_version}", expected "2.0"`);
-             } else {
-               checksPassedCount++;
-             }
-             nodeCheckCount++;
+              // Parse plan.json
+              if (!fs.existsSync(planPath)) {
+                return `## validate_dag Report: ${plan_name}\n\n**Error:** plan.json not found at ${planPath}`;
+              }
 
-             if (!dag.entry) {
-               issues.push(`- [entry] check-entry: entry field is missing`);
-             } else {
-               checksPassedCount++;
-             }
-             nodeCheckCount++;
+              let dag: PlanDag;
+              try {
+                dag = JSON.parse(fs.readFileSync(planPath, "utf-8"));
+              } catch {
+                return `## validate_dag Report: ${plan_name}\n\n**Error:** plan.json is not valid JSON`;
+              }
 
-             // Check 2: No duplicate node IDs
-             const nodeIds = new Set<string>();
-             const duplicates = new Set<string>();
-             for (const node of nodeCollected) {
-               if (nodeIds.has(node.id)) {
-                 duplicates.add(node.id);
-               }
-               nodeIds.add(node.id);
-             }
-             if (duplicates.size > 0) {
-               const dupList = Array.from(duplicates).join(", ");
-               issues.push(`- [nodes] check-unique-ids: duplicate node ids found: ${dupList}`);
-             } else {
-               checksPassedCount++;
-             }
-             nodeCheckCount++;
+              const issues: string[] = [];
+              const nodeCollected = collectNodes(dag.entry);
+              let checksPassedCount = 0;
+
+              // Check 1: schema_version and entry field
+              if (dag.schema_version !== "2.0") {
+                issues.push(`- [schema] check-schema: schema_version is "${dag.schema_version}", expected "2.0"`);
+              } else {
+                checksPassedCount++;
+              }
+
+              if (!dag.entry) {
+                issues.push(`- [entry] check-entry: entry field is missing`);
+              } else {
+                checksPassedCount++;
+              }
+
+              // Check 2: No duplicate node IDs
+              const nodeIds = new Set<string>();
+              const duplicates = new Set<string>();
+              for (const node of nodeCollected) {
+                if (nodeIds.has(node.id)) {
+                  duplicates.add(node.id);
+                }
+                nodeIds.add(node.id);
+              }
+              if (duplicates.size > 0) {
+                const dupList = Array.from(duplicates).join(", ");
+                issues.push(`- [nodes] check-unique-ids: duplicate node ids found: ${dupList}`);
+              } else {
+                checksPassedCount++;
+              }
 
               const promptsDir = path.join(
-                resolveWorktree(context),
-                ".opencode",
-                "session-plans",
-                plan_name,
-                "prompts",
-              );
+                 resolveWorktree(context),
+                 ".opencode",
+                 "session-plans",
+                 plan_name,
+                 "prompts",
+               );
 
-             // Check 3, 4, 5, 6: For each node, validate prompt file
-             for (const node of nodeCollected) {
-               // Bare filenames (no "/") resolve to the plan's prompts/ subdirectory,
-               // matching the same rewrite logic used by activate_plan.
-               const resolvedPrompt = node.prompt.includes("/")
-                 ? expandPath(node.prompt)
-                 : path.join(promptsDir, node.prompt);
-                const fullPromptPath = path.isAbsolute(resolvedPrompt)
-                  ? resolvedPrompt
-                  : path.join(resolveWorktree(context), resolvedPrompt);
+              // Check 3: For each node, verify prompt file is discoverable
+              for (const node of nodeCollected) {
+                // Bare filenames (no "/") resolve to the plan's prompts/ subdirectory,
+                // matching the same rewrite logic used by activate_plan.
+                const resolvedPrompt = node.prompt.includes("/")
+                  ? expandPath(node.prompt)
+                  : path.join(promptsDir, node.prompt);
+                 const fullPromptPath = path.isAbsolute(resolvedPrompt)
+                   ? resolvedPrompt
+                   : path.join(resolveWorktree(context), resolvedPrompt);
 
-               // Check 3: Prompt file exists
-               if (!fs.existsSync(fullPromptPath)) {
-                 issues.push(`- [${node.id}] check-prompt-exists: prompt file not found at ${node.prompt}`);
-               } else {
-                 checksPassedCount++;
-               }
-               nodeCheckCount++;
+                // Check 3: Prompt file exists
+                if (!fs.existsSync(fullPromptPath)) {
+                  issues.push(`- [${node.id}] check-prompt-exists: prompt file not found at ${node.prompt}`);
+                } else {
+                  checksPassedCount++;
+                }
+              }
 
-               // Read prompt file if it exists
-               let promptContent = "";
-               if (fs.existsSync(fullPromptPath)) {
-                 try {
-                   promptContent = fs.readFileSync(fullPromptPath, "utf-8");
-                 } catch {
-                   // Already counted above, skip
-                 }
-               }
+              // Build report
+              let report = `## validate_dag Report: ${plan_name}\n\n`;
+              report += `**Nodes checked:** ${nodeCollected.length}\n`;
+              report += `**Checks passed:** ${checksPassedCount}\n`;
+              report += `**Issues found:** ${issues.length}\n\n`;
 
-               if (promptContent) {
-                 // Check 4: If todo is non-empty, prompt must contain "## Todo" section
-                 if (node.todo && node.todo.length > 0) {
-                   if (!promptContent.includes("## Todo")) {
-                     issues.push(`- [${node.id}] check-todo-section: todo array is non-empty but prompt has no "## Todo" section`);
-                   } else {
-                     checksPassedCount++;
-                   }
-                   nodeCheckCount++;
+              if (issues.length > 0) {
+                report += `## Issues\n\n${issues.join("\n")}\n\n`;
+                report += `${issues.length} issue(s) found. Review before proceeding.`;
+              } else {
+                report += `All checks passed.`;
+              }
 
-                   // Check 5: If "question" is in todo[], prompt must contain "question tool" phrase
-                   if (node.todo.includes("question")) {
-                     const hasQuestionPhrase = promptContent.toLowerCase().includes("question tool");
-                     if (!hasQuestionPhrase) {
-                       issues.push(`- [${node.id}] check-question-phrase: todo contains "question" but prompt does not mention "question tool"`);
-                     } else {
-                       checksPassedCount++;
-                     }
-                     nodeCheckCount++;
-                   }
-                 }
-
-                 // Check 6: No {{ placeholder patterns in prompt file
-                 if (promptContent.includes("{{")) {
-                   issues.push(`- [${node.id}] check-no-placeholders: prompt contains "{{" placeholder patterns that should be resolved`);
-                 } else {
-                   checksPassedCount++;
-                 }
-                 nodeCheckCount++;
-               }
-             }
-
-             // Build report
-             let report = `## validate_dag Report: ${plan_name}\n\n`;
-             report += `**Nodes checked:** ${nodeCollected.length}\n`;
-             report += `**Checks passed:** ${checksPassedCount}\n`;
-             report += `**Issues found:** ${issues.length}\n\n`;
-
-             if (issues.length > 0) {
-               report += `## Issues\n\n${issues.join("\n")}\n\n`;
-               report += `${issues.length} issue(s) found. Review before proceeding.`;
-             } else {
-               report += `All checks passed.`;
-             }
-
-             return report;
-           } catch (err) {
-             const msg = err instanceof Error ? err.message : String(err);
-             return `## validate_dag Report: ${plan_name}\n\n**Error:** ${msg}`;
-           }
-         },
-       }),
+              return report;
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err);
+              return `## validate_dag Report: ${plan_name}\n\n**Error:** ${msg}`;
+            }
+          },
+        }),
      },
 
     // ── Hooks ────────────────────────────────────────────────────────────────

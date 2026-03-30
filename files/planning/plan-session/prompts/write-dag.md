@@ -42,10 +42,20 @@ Dispatch agents to write the project DAG files to `.opencode/session-plans/{task
    - Branch `next` is an array of `{ "when": "label", "node": { ... } }` — the `node` field is a full object
    - Terminal nodes omit `next` entirely
    - `prompt` is filename only (e.g. `"implement-auth.md"`) — do NOT include paths
-2. `validate_dag` — Call the `validate_dag` tool with the plan name to check structural correctness and prompt quality. Review the findings report — it may identify issues for the next step to fix.
-3. `task` — Dispatch @HeadWrench (subagent) to verify the written files: read `plan.json`, check that all prompt filenames exist in `prompts/`, validate the DAG structure, and fix any issues reported by `validate_dag`. Even if `validate_dag` reports no structural issues, the subagent should confirm all prompt filenames listed in `plan.json` exist in the `prompts/` directory.
+2. `validate_dag` — Call the `validate_dag` tool with the plan name to check JSON validity, duplicate node IDs, and prompt file discoverability. Review the findings report — it may identify issues for the next step to fix.
+3. `task` — Dispatch @HeadWrench (subagent) to verify the written files and validate DAG logical completeness. Instruct the subagent to:
 
-    Report back: what was verified, any issues found and fixed, final status ('all files present and valid' or specific remaining issues).
+    1. **Verify file discoverability** — read `plan.json`, check that all prompt filenames exist in `prompts/` directory
+    2. **Validate DAG structure** — confirm all nodes have unique IDs, branches are well-formed, entry node exists, all terminal nodes are correctly marked
+    3. **Check prompt content** — read each prompt file and validate:
+       - If todo is non-empty: prompt contains a `## Todo` section
+       - If todo contains "question": prompt explicitly instructs HW to use the `question` tool
+       - No unresolved `{{placeholder}}` patterns in prompts
+       - Each prompt clearly states its purpose and what HW should dispatch/do
+    4. **Validate logical flow** — confirm the DAG flow makes sense: branching conditions are meaningful, sequential dependencies are correct, parallel tasks don't have ordering conflicts
+    5. **Fix any issues found** — edit `plan.json` and/or prompts to resolve any structural or content issues
+
+    Return: what was verified, any issues found and fixed (with specifics: which file, what was wrong, how it was fixed), and final status ('all files present and valid' or specific remaining issues with fix recommendations if unable to auto-fix).
 
 ## Directory structure
 
