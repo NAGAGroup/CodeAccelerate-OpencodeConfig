@@ -23,7 +23,36 @@ Each agent has a model assigned under the `agent.<name>.model` field. The defaul
 
 To switch a model, replace the value with any provider string OpenCode recognizes (e.g. `openai/gpt-4o`, `google/gemini-2.5-pro`).
 
-> **Ollama profile:** The `naga-ollama` profile uses `{env:OLLAMA_MODEL}` for all agent model fields — OpenCode's native env var substitution syntax. Set `OLLAMA_MODEL` to your pulled model before launching (e.g. `export OLLAMA_MODEL=ollama/llama3.2`). Ollama must be running locally at `http://localhost:11434`.
+> **Ollama profile:** The `ocx-ollama` profile routes all agent calls to a fixed model alias called `opencode-model`. Before launching, copy your chosen model under that alias:
+>
+> ```sh
+> ollama cp devstral-small-2 opencode-model
+> # replace devstral-small-2 with your actual model name
+> ```
+>
+> Ollama must be running locally at `http://localhost:11434`.
+>
+> **For parallel requests (strongly recommended):** The CodeAccelerate agent system frequently dispatches multiple agents concurrently. Configure Ollama to handle parallel requests via systemctl:
+>
+> ```sh
+> sudo systemctl edit ollama.service
+> ```
+>
+> Add the following under `[Service]`:
+>
+> ```ini
+> [Service]
+> Environment="OLLAMA_NUM_PARALLEL=3"
+> Environment="OLLAMA_FLASH_ATTENTION=1"
+> Environment="OLLAMA_KV_CACHE_TYPE=q8_0"
+> ```
+>
+> Then reload and restart:
+>
+> ```sh
+> sudo systemctl daemon-reload
+> sudo systemctl restart ollama
+> ```
 
 ### Default assignments (for reference)
 

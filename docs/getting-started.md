@@ -31,7 +31,7 @@ What each profile requires:
 - **naga-copilot** — GitHub Copilot subscription (no API key needed)
 - **naga-haiku-copilot** — GitHub Copilot subscription (no API key needed)
 - **naga-free** — Nothing required; uses OpenCode Zen free-tier models
-- **naga-ollama** — Local [Ollama](https://ollama.com/) installation; set `OLLAMA_MODEL` to your pulled model (e.g. `export OLLAMA_MODEL=ollama/llama3.2`)
+- **naga-ollama** — Local [Ollama](https://ollama.com/) installation. Run `ollama cp <your-model> opencode-model` to register your chosen model, then start OpenCode.
 
 ## Run
 

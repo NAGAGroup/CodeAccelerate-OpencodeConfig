@@ -34,7 +34,7 @@ ocx profile add naga-haiku --global --source naga-group/ocx-haiku          # Ant
 ocx profile add naga-copilot --global --source naga-group/ocx-copilot      # GitHub Copilot
 ocx profile add naga-copilot-haiku --global --source naga-group/ocx-haiku-copilot  # GitHub Copilot (all-haiku)
 ocx profile add naga-free --global --source naga-group/ocx-free            # OpenCode Zen free-tier
-ocx profile add naga-ollama --global --source naga-group/ocx-ollama        # Local Ollama (set OLLAMA_MODEL)
+ocx profile add naga-ollama --global --source naga-group/ocx-ollama        # Local Ollama (run: ollama cp <model> opencode-model)
 ```
 
 Launch:

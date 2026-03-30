@@ -193,7 +193,7 @@
     {
       "name": "ocx-ollama",
       "type": "profile",
-      "description": "NAGAGroup's Ollama local profile — model configured via OLLAMA_MODEL env var",
+      "description": "NAGAGroup's Ollama local profile — run 'ollama cp <model> opencode-model' to set your model",
       "files": [
         { "path": "profiles/ollama/opencode.jsonc", "target": "opencode.jsonc" },
         { "path": "profiles/ollama/ocx.jsonc", "target": "ocx.jsonc" }
