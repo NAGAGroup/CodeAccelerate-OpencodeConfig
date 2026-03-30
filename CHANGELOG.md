@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-03-29
+
 ### Changed
 
 - Renamed `DeepResearcher` agent to `ExternalScout` with expanded scope covering any level of external research (cursory to deep investigative). Added `research-basic` and `research-deep` node library types as first-class research primitives dispatching `@ExternalScout`. Fixed planning DAG `research-brief` prompt to make the `@ExternalScout` vs `@ContextScout` boundary explicit — ContextScout is internal-only.
@@ -261,7 +263,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 [1.0.1]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/tree/v0.1.0
-[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.4.0...HEAD
+[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.5.0...HEAD
+[3.5.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.1.2...v3.2.0
