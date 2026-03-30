@@ -29,7 +29,7 @@ Scout 1 is a generic, task-agnostic orientation scan. Its job is to give you the
 
 ## Phase 2 — Targeted scouts + git context (Scouts 2, 3, and git, run AFTER Scout 1)
 
-**Call `task` three more times in sequence** — scouts 2 and 3 targeting areas informed by Scout 1's output, plus the git subagent.
+**Call `task` three more times back-to-back — do NOT wait or pause between tasks 2, 3, and 4.** Write all three prompts using Scout 1's findings, then dispatch them in sequence without stopping.
 
 Use Scout 1's findings to write specific, path-anchored prompts. If Scout 1 found that the project is a TypeScript monorepo with source under `src/` and config under `config/`, your Scout 2 prompt should reference `src/` and `config/` — not generic patterns.
 
@@ -51,12 +51,12 @@ Use Scout 1's findings to write specific, path-anchored prompts. If Scout 1 foun
 
 > **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
 
-1. `task` — Dispatch @ContextScout for generic codebase orientation (Scout 1). **Wait for this result before calling task again.**
+1. `task` — Dispatch @ContextScout for generic codebase orientation (Scout 1). **This is the ONLY task call that requires waiting — do not call task again until Scout 1 returns.**
 
-2. `task` — Dispatch @ContextScout for patterns and architecture (Scout 2, using Scout 1's findings).
+2. `task` — Dispatch @ContextScout for patterns and architecture (Scout 2, using Scout 1's findings). **Do not wait after this — immediately proceed to task 3.**
 
-3. `task` — Dispatch @ContextScout for affected code (Scout 3, using Scout 1's findings).
+3. `task` — Dispatch @ContextScout for affected code (Scout 3, using Scout 1's findings). **Do not wait after this — immediately proceed to task 4.**
 
-4. `task` — Dispatch @HeadWrench (subagent) to run cursory git commands for planning context.
+4. `task` — Dispatch @HeadWrench (subagent) to run cursory git commands for planning context. **Do not wait after this — once all four tasks have returned results, call `next_step()`.**
 
 After all four tasks return results, call `next_step()` to advance.
