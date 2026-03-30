@@ -33,6 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Improved `scout-parallel` node library README with verbatim anti-generic-sections instruction for scout dispatch prompts
 - Improved `analyze-deep` node library templates: added Output constraint bullet to README.md resolve list; updated file-list placeholder hint to require explicit paths; added Output format requirements section to prompt-template.md
 - Improved `verification-check` node library templates: added Outcome format bullet to README.md resolve list; added Response format section to prompt-template.md as first-class body content
+- Updated `files/planning/plan-session/prompts/write-dag.md` to dispatch @HeadWrench subagent (instead of @QuickDoc/@JuniorDev) for writing project DAG artifacts; HW subagent reads node library docs (CATALOGUE.md, dag-design-guide.md, node READMEs) before writing, eliminating the requirement for primary HW to embed a full plan.json JSON blob in its dispatch prompt.
 
 ### Added
 

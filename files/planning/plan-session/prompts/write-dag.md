@@ -2,20 +2,32 @@
 
 Dispatch agents to write the project DAG files to `.opencode/session-plans/{task-name}/`.
 
-> **Writing subagent prompts:** Embed the complete `plan.json` as a JSON code block in the subagent task — not just a table or ASCII diagram. The subagent has no DAG schema knowledge; give them JSON and they write JSON. Include the exact todo arrays for every node. Prompts must address the actual user task — not describe planning infrastructure.
+> **Writing subagent prompts:** Dispatch @HeadWrench subagent for the write task. In your dispatch prompt, provide: (1) the plan name; (2) the complete node decomposition table (Node ID | node type | agent | todo | what it does | branch conditions); (3) the ASCII diagram; (4) the list of node types used in this plan. Instruct the subagent to read the schema docs before writing — it will construct the JSON and prompts itself. Prompts must address the actual user task — not describe planning infrastructure.
 
 ## Todo
 
 > **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
 
-1. `task` — Dispatch @QuickDoc or @JuniorDev to create `plan.json` and all prompt files under `prompts/`. Provide the full DAG structure, node-by-node content, and directory layout. Use @JuniorDev for DAGs with more than 5 prompt files (larger step budget, 10 steps); use @QuickDoc for small DAGs with 3 or fewer prompts (step budget 8).
+1. `task` — Dispatch @HeadWrench (subagent) to write the project DAG files. In your dispatch prompt, provide:
+   - The plan name (directory name under `.opencode/session-plans/`)
+   - The complete node decomposition table: Node ID | node type | agent | todo | what it does | branch conditions (with exact todo arrays from sequential-thinking)
+   - The ASCII diagram of the full DAG
+   - The list of node types used in this plan (so the subagent knows which READMEs to read)
 
-**CRITICAL: Embed the complete `plan.json` as a JSON code block in the subagent task.** Do not describe the structure in prose or pass only a table. The subagent (@JuniorDev or @QuickDoc) has no DAG schema knowledge — they will write what you show them. If you give them JSON, they write JSON. If you give them a table, they may invent their own format.
+   Instruct the subagent to do the following **in order**:
+   1. Read `files/planning/plan-session/node-library/CATALOGUE.md` — for the full node type reference and todo arrays
+   2. Read `files/planning/plan-session/reference/dag-design-guide.md` — for the schema spec and validity rules
+   3. For each node type used in this plan, read `files/planning/plan-session/node-library/{node-type}/README.md` — to understand what each node's prompt should contain
+   4. Write `plan.json` using the nested tree schema (see schema rules and examples below)
+   5. Write all prompt files in `prompts/` — one per node, based on the decomposition table and node README guidance
 
-The JSON you embed must follow the nested tree schema exactly:
-- `next` is ALWAYS a full node object `{ "id": "...", "prompt": "...", "todo": [...], "next": ... }` — NEVER a string ID like `"next": "node-id"`
-- Branch `next` is an array of `{ "when": "label", "node": { ... } }` — the `node` field is a full object, not a string
-- Terminal nodes omit `next` entirely
+   The subagent has full tool access (read, write, edit). It constructs the JSON from the schema docs — you do NOT need to embed a pre-serialized JSON blob.
+
+   Key schema reminders to include in the dispatch prompt:
+   - `next` is ALWAYS a full node object — NEVER a string ID like `"next": "node-id"`
+   - Branch `next` is an array of `{ "when": "label", "node": { ... } }` — the `node` field is a full object
+   - Terminal nodes omit `next` entirely
+   - `prompt` is filename only (e.g. `"implement-auth.md"`) — do NOT include paths
 2. `validate_dag` — Call the `validate_dag` tool with the plan name to check structural correctness and prompt quality. Review the findings report — it may identify issues for the next step to fix.
 3. `task` — Dispatch @HeadWrench (subagent) to verify the written files: read `plan.json`, check that all prompt filenames exist in `prompts/`, validate the DAG structure, and fix any issues reported by `validate_dag`. Even if `validate_dag` reports no structural issues, the subagent should confirm all prompt filenames listed in `plan.json` exist in the `prompts/` directory.
 

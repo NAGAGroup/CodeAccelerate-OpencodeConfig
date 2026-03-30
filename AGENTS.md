@@ -111,7 +111,7 @@ session-overview → scout → scout-node-library → research-gate
 | `sequential-thinking` | `["sequential-thinking_sequentialthinking"]` | HW designs complete plan with full context (Branch A: with research) |
 | `sequential-thinking-2` | `["sequential-thinking_sequentialthinking"]` | HW designs complete plan with full context (Branch B: no research) |
 | `propose-plan` | `["question"]` | HW presents complete plan (structure + decomposition), user approves |
-| `write-dag` | `["task","validate_dag","task"]` | Write plan files, validate, verify |
+| `write-dag` | `["task","validate_dag","task"]` | HW subagent writes plan files (reads node library docs first), validate, verify |
 | `activation-gate` | `["question"]` | Ask user: activate now or later? |
 | `activate-now` | `[]` | Calls `activate_plan` immediately; session auto-completes |
 | `plan-complete` | `[]` | Terminal: informs user the plan is written and how to activate |
