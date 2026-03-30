@@ -29,7 +29,7 @@ Scout 1 is a generic, task-agnostic orientation scan. Its job is to give you the
 
 ## Phase 2 — Targeted scouts + git context (Scouts 2, 3, and git, run AFTER Scout 1)
 
-**Call `task` three more times back-to-back — do NOT wait or pause between tasks 2, 3, and 4.** Write all three prompts using Scout 1's findings, then dispatch them in sequence without stopping.
+**Emit all three `task` calls (tasks 2, 3, and 4) in a single response — do not wait for results between them.** "Parallel dispatch" means emitting multiple tool calls before any of them return. Write all three prompts using Scout 1's findings, then emit `task` calls 2, 3, and 4 one after another in the same response without waiting for any result in between. OpenCode runs the subagents concurrently.
 
 Use Scout 1's findings to write specific, path-anchored prompts. If Scout 1 found that the project is a TypeScript monorepo with source under `src/` and config under `config/`, your Scout 2 prompt should reference `src/` and `config/` — not generic patterns.
 
@@ -51,12 +51,12 @@ Use Scout 1's findings to write specific, path-anchored prompts. If Scout 1 foun
 
 > **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
 
-1. `task` — Dispatch @ContextScout for generic codebase orientation (Scout 1). **This is the ONLY task call that requires waiting — do not call task again until Scout 1 returns.**
+1. `task` — Dispatch @ContextScout for generic codebase orientation (Scout 1). **Wait for Scout 1's result before doing anything else — this is the only task call that blocks.**
 
-2. `task` — Dispatch @ContextScout for patterns and architecture (Scout 2, using Scout 1's findings). **Do not wait after this — immediately proceed to task 3.**
+2. `task` — Dispatch @ContextScout for patterns and architecture (Scout 2, using Scout 1's findings). **Emit this call in the same response as tasks 3 and 4 — do not wait for a result.**
 
-3. `task` — Dispatch @ContextScout for affected code (Scout 3, using Scout 1's findings). **Do not wait after this — immediately proceed to task 4.**
+3. `task` — Dispatch @ContextScout for affected code (Scout 3, using Scout 1's findings). **Emit this call in the same response as tasks 2 and 4 — do not wait for a result.**
 
-4. `task` — Dispatch @HeadWrench (subagent) to run cursory git commands for planning context. **Do not wait after this — once all four tasks have returned results, call `next_step()`.**
+4. `task` — Dispatch @HeadWrench (subagent) to run cursory git commands for planning context. **Emit this call in the same response as tasks 2 and 3 — do not wait for a result.**
 
 After all four tasks return results, call `next_step()` to advance.
