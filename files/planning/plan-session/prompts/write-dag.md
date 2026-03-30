@@ -43,9 +43,32 @@ Dispatch agents to write the project DAG files to `.opencode/session-plans/{task
   - `question` for user decisions — prompts MUST instruct HW to use the `question` tool
   - `bash` for running commands
   - `sequential-thinking_sequentialthinking` for HW reasoning steps
-- `next` — single node (linear), array of `{ when, node }` (branch), or omitted (terminal)
+- `next` — single node (linear), array of `{ when, node }` (branch), or omitted (terminal). **Every non-terminal node must have a `next` field** — omit only for true terminal nodes (`output-success`, `output-failure`).
+
+### Node type → todo quick reference
+
+Use these standard `todo` arrays when writing `plan.json`. Do not invent todo values — use only valid OpenCode tool names from this table:
+
+| Node type | Standard `todo` array |
+|---|---|
+| `session-overview` | `[]` |
+| `scout-parallel` (3 scouts) | `["task", "task", "task"]` |
+| `analyze-deep` | `["task"]` |
+| `sequential-thinking` | `["sequential-thinking_sequentialthinking"]` |
+| `decision-gate` | `["question"]` |
+| `parallel-tasks` (3 agents) | `["task", "task", "task"]` |
+| `parallel-tasks` (4 agents) | `["task", "task", "task", "task"]` |
+| `verification-check` | `["task"]` |
+| `conditional-branch` | `[]` |
+| `compression-node` | `["task"]` |
+| `output-success` | `[]` |
+| `output-failure` | `[]` |
+
+Adjust `parallel-tasks` todo length to match the actual number of parallel agent dispatches. All other types use the arrays above exactly.
 
 ## Prompt file content
+
+> **Important:** Prompts describe steps in the USER's project task — they tell HeadWrench what to do to accomplish the user's goal. Do NOT write prompts that describe or reference the planning system, the DAG infrastructure, or how the planning flow works. Every prompt should address the actual task the user requested.
 
 Each prompt should tell HeadWrench:
 - What the node's goal is

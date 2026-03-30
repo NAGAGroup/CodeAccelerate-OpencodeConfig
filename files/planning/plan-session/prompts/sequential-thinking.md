@@ -4,7 +4,7 @@ The scouts have reported on the codebase, the node library is now available, and
 
 ## Todo
 
-1. `sequential-thinking_sequentialthinking` — Reason through the full plan design. Use as many thought steps as needed.
+1. `sequential-thinking_sequentialthinking` — Reason through the full plan design. **Keep calling this tool repeatedly in the same turn — do NOT wait for user input between thoughts.** Each call builds on the previous. Continue until you have worked through all the questions below and produced a complete plan. Aim for at least 6 thought steps.
 
 ## What to reason through
 
@@ -32,7 +32,9 @@ End with a complete plan ready to present:
 - **Scope** — one sentence
 - **Constraints** — top 2–3
 - **ASCII diagram** — the full node tree
-- **Node decomposition table** — Node ID, node type, agent, what it does, branch conditions
+- **Node decomposition table** — Node ID | node type | agent | todo | what it does | branch conditions
+
+  The `todo` column must contain the exact todo array for each node (e.g., `["task","task","task"]` for a 3-scout parallel node, `["question"]` for a decision gate, `["sequential-thinking_sequentialthinking"]` for a sequential-thinking node). These values come from the node type → todo reference in `write-dag.md`.
 - **Open questions** — any remaining uncertainties to surface to the user
 
 This complete plan is what you will present in `propose-plan`. You do not show it to the user here — this is your internal reasoning step.

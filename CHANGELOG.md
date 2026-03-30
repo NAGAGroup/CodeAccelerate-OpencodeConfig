@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- `write-dag.md` prompt: added node type → todo quick reference table; added user-task context warning; strengthened `next` field rule for non-terminal nodes
+- `sequential-thinking.md` prompt: fixed sequential-thinking stall (explicit "keep calling in same turn" instruction); added `todo` column to required node decomposition output table
+- `propose-plan.md` prompt: added `Todo` column to node decomposition table requirement with explanation that values are written verbatim into `plan.json`
+- `headwrench.md` agent: Planning Step 3 now instructs HW to pass explicit `todo` arrays in the write-dag dispatch prompt
+
 ## [3.4.0] - 2026-03-29
 
 ### Added

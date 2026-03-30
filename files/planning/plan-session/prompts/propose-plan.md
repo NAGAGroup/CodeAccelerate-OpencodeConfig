@@ -10,7 +10,9 @@ Write the full plan as prose in your response text (do NOT embed this inside the
 
 1. **Task** — One-sentence goal
 2. **DAG structure** — ASCII diagram of the complete node tree, including branch paths and terminal nodes
-3. **Node decomposition** — Table with columns: Node ID | Node type | Agent | What it does | Branch conditions (if any)
+3. **Node decomposition** — Table with columns: Node ID | Node type | Agent | Todo | What it does | Branch conditions (if any)
+
+   The `Todo` column must contain the exact todo array for each node (e.g., `["task","task","task"]` for parallel scouts, `["question"]` for a decision gate). These exact values will be written into `plan.json`.
 4. **Estimated dispatches** — Total agent dispatches across all nodes
 
 ## Todo
