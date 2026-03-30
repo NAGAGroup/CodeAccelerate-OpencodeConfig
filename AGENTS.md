@@ -34,11 +34,11 @@ bun run deploy   # Build + deploy to Cloudflare Workers
 │   ├── planning/           # DAG-driven planning scaffolds
 │   │   ├── plan-session/   # The only shipped planning mode
 │   │   │   ├── plan.json   # Executable DAG
-│   │   │   ├── prompts/    # One .md file per node (9 files)
-│   │   │   └── node-library/ # Reusable node type templates (12 node types)
+│   │   │   ├── prompts/    # One .md file per node (11 files)
+│   │   │   └── node-library/ # Reusable node type templates (14 node types)
 │   │   └── reference/      # dag-design-guide.md — schema spec and authoring guide
 │   ├── plugins/            # planning-enforcement.ts (+ compiled .js bundle)
-│   ├── profiles/           # 5 profile configs (opencode.jsonc + ocx.jsonc each)
+│   ├── profiles/           # 6 profile configs (opencode.jsonc + ocx.jsonc each)
 │   └── skills/             # 1 skill (hello-world)
 ├── docs/                   # User-facing documentation
 ├── scripts/                # update-profiles.sh
@@ -53,7 +53,7 @@ bun run deploy   # Build + deploy to Cloudflare Workers
 
 ## Component Architecture
 
-The registry ships **7 components** defined in `registry.jsonc`:
+The registry ships **8 components** defined in `registry.jsonc`:
 
 | Component | Type | Purpose |
 |-----------|------|---------|
@@ -92,11 +92,13 @@ The `plan-session` DAG lives in `files/planning/plan-session/` and follows this 
 ```
 session-overview → scout → scout-node-library → research-gate
   → [research-brief → sequential-thinking → propose-plan
-        → [write-dag]              (approved path)
-        → [propose-plan-2 → write-dag-2]]  (rethink path)
+        → [write-dag → activation-gate]              (approved path)
+        → [propose-plan-2 → write-dag-2 → activation-gate-2]]  (rethink path)
   → [sequential-thinking-2 → propose-plan-3
-        → [write-dag-3]            (approved path)
-        → [propose-plan-4 → write-dag-4]]  (rethink path)
+        → [write-dag-3 → activation-gate-3]            (approved path)
+        → [propose-plan-4 → write-dag-4 → activation-gate-4]]  (rethink path)
+  (all paths) → [activate-now → plan-complete]  (activate now path)
+         → [plan-complete-2]               (activate later path)
 ```
 
 | Node | Todo | Purpose |
@@ -110,6 +112,9 @@ session-overview → scout → scout-node-library → research-gate
 | `sequential-thinking-2` | `["sequential-thinking_sequentialthinking"]` | HW designs complete plan with full context (Branch B: no research) |
 | `propose-plan` | `["question"]` | HW presents complete plan (structure + decomposition), user approves |
 | `write-dag` | `["task","validate_dag","task"]` | Write plan files, validate, verify |
+| `activation-gate` | `["question"]` | Ask user: activate now or later? |
+| `activate-now` | `[]` | Calls `activate_plan` immediately; session auto-completes |
+| `plan-complete` | `[]` | Terminal: informs user the plan is written and how to activate |
 
 The `planning-enforcement` plugin manages DAG state, enforces todo ordering, and blocks
 off-sequence tool calls at runtime.
@@ -123,7 +128,7 @@ agents select from when composing project DAGs. Each node type has three files:
 - `README.md` — when to use it, what the planning agent must resolve before writing it
 - `prompt-template.md` — scaffold with section headers the agent fills in
 
-**12 node types:**
+**14 node types:**
 
 | Node type | Todo | Notes |
 |-----------|------|-------|
@@ -138,6 +143,8 @@ agents select from when composing project DAGs. Each node type has three files:
 | `compression-node` | `["compress"]` | HW calls compress tool directly (DCP plugin) |
 | `output-success` | `[]` | Terminal, happy path |
 | `output-failure` | `[]` | Terminal, failure path |
+| `research-basic` | `["task"]` | Targeted external lookup via @ExternalScout |
+| `research-deep` | `["task"]` | Intensive investigative research via @ExternalScout |
 | `generic` | flexible | Escape hatch, custom todo |
 
 Node ID conventions: repeated nodes use `-<N>` suffix (e.g. `test-2`, `fix-3`). DAG is a
@@ -200,12 +207,125 @@ ending the session prematurely. The plugin now throws a validation error on dupl
 
 ### Improvement Methodology
 
-When improving prompts in this codebase, use the **insurgent → research → change** workflow:
-1. **Analyze gaps** with @ContextInsurgent — read all relevant files, evaluate against gold-standard criteria, produce a precise per-file change list
-2. **Research best practices** with @ExternalScout — targeted external lookup for techniques relevant to the gap (Context7 first, Exa second)
+When improving prompts in this codebase, use the **research → insurgent → write** workflow:
+1. **Research best practices** with @ExternalScout — targeted external lookup for the specific technique category being improved (Context7 first, Exa second). This establishes the gold-standard criteria before analysis.
+2. **Analyze gaps** with @ContextInsurgent — read all relevant files, evaluate against the research-established criteria, produce a precise per-file change list
 3. **Implement targeted edits** with @JuniorDev — surgical changes only; no rewrites of correct content
 
-This workflow (first applied in commit df83c18) consistently produces better results than ad-hoc prompt editing.
+This workflow (first applied in commit df83c18) consistently produces better results than ad-hoc prompt editing. Research precedes analysis so CI has external criteria to audit against, not just internal conventions.
+
+### Prompt Engineering Categories
+
+Prompts in this codebase fall into three categories with distinct improvement patterns:
+
+**Category A — Direct agent prompts** (`files/agents/*.md`)
+The agent model reads the file directly. No delegation or double-indirection. Standard prompt engineering applies.
+
+**Category B — Planning DAG delegation prompts** (`files/planning/plan-session/prompts/*.md`)
+These teach HeadWrench how to write delegation prompts for subagents. Double-indirection: the prompt shapes *another* prompt. Improving these requires understanding both HW's orchestration behavior and the subagent's capabilities.
+
+**Category C — Node library templates** (`files/planning/plan-session/node-library/*/`)
+Triple-indirection: `README.md` + `prompt-template.md` teach the planning agent which node type to select and how to fill the template → the filled template becomes a project DAG node prompt → that prompt delegates to a subagent at execution time.
+
+#### Category A: Improving direct agent prompts
+
+Apply these techniques when editing any `files/agents/*.md` file:
+
+1. **Explicit role definition at the top** — Open the prompt body with a single declarative sentence stating what the agent is and what it does. Readers (including the agent) should not have to read past the first paragraph to understand the agent's scope.
+   - ✓ *"You are ContextScout — a quick, targeted codebase and context explorer."*
+   - ✗ *"This agent handles various codebase tasks as needed."*
+
+2. **Positive constraint framing** — State what the agent does, not just what it avoids. Reserve `NEVER`/`Never` for categorical hard prohibitions only (e.g., never modify files, never re-delegate). For behavioral guidance, prefer positive framing.
+   - ✓ *"Deliver a concise, structured orientation report."*
+   - ✗ *"Don't produce vague or overly broad reports."*
+
+3. **Inline examples for ambiguous behaviors** — Where the agent must choose between plausible interpretations (input format ambiguity, partial information, conflicting signals), provide an inline example showing the expected handling. This is more reliable than abstract rules.
+   - ✓ *"Log your interpretation: `Interpretation: no paths provided — used broad Glob to orient, then focused on *.ts files in src/.`"*
+   - ✗ *"Use your best judgment when paths are not provided."*
+
+4. **Explicit error handling** — Every agent prompt should specify what to do when the input is malformed, missing required information, or out of scope. The answer is never silence.
+   - ✓ *"If your task requires external research, flag it under Potential Concerns: 'This task requires external research (ExternalScout) — not within ContextScout scope.'"*
+   - ✗ (no guidance — agent silently fails or guesses)
+
+5. **Refusal anchored to role, not constraint** — When an agent must decline a request, the explanation cites its role boundary, not an imposed rule. This produces cleaner redirection behavior.
+   - ✓ *"When something is outside your role, say so clearly and tell the user where to go instead."*
+   - ✗ *"You are not allowed to perform web searches."*
+
+6. **Delegation boundary explicitness** — For orchestrators, list both what they delegate and what they handle directly. Ambiguity at the delegation boundary is the most common source of HW doing too much or too little.
+   - ✓ The `## What You Don't Do (as orchestrator)` section in `headwrench.md` with explicit → delegate targets.
+
+**When to apply Category A:** Any time you are editing `files/agents/*.md` directly — adding a new section, sharpening an existing rule, improving output format instructions, or fixing a recurring behavior failure observed in sessions.
+
+#### Category B: Improving planning DAG delegation prompts
+
+**What makes Category B different from Category A:** Category B prompts (`files/planning/plan-session/prompts/*.md`) are read by HeadWrench at DAG execution time. Their job is not to instruct an agent directly — it is to instruct HW how to *write* a delegation prompt for a subagent. This double-indirection means quality degrades at two levels: a weak Category B prompt produces a weak dispatch prompt, which produces a weak subagent output. Category A techniques (role definition, positive framing, error handling) apply to the *subagent's* prompt — Category B techniques govern how HW is taught to produce that prompt.
+
+Apply these techniques when editing any `files/planning/plan-session/prompts/*.md` file:
+
+1. **Embed a dispatch template, not just a directive** — Every Category B prompt that triggers a subagent dispatch must contain a numbered template inside a blockquote telling HW exactly what to include in the subagent's task prompt. Do not tell HW to "write a good prompt." Give it the numbered slots to fill.
+   - ✓ From `scout.md`: `"> **Writing scout prompts:** When writing each scout's task prompt, include: (1) specific file paths or glob patterns to read — not just thematic descriptions; (2) a clear statement of what the scout should return; (3) an explicit instruction that the scout must report findings as specific facts, not as generic 'Codebase Overview' or 'Key Decisions' sections."`
+   - ✗ *"Dispatch three ContextScouts to explore the codebase."* (no template — HW must derive the prompt structure from first principles, producing inconsistent results)
+
+2. **Embed structural artifacts verbatim when the subagent must reproduce them** — When the subagent's output requires a specific format (e.g., JSON schema, directory layout, file structure), embed the exact format in the Category B prompt as a code block. Do not describe the structure in prose. The subagent writes what it is shown; if shown JSON, it writes JSON; if shown prose, it may invent its own format.
+   - ✓ From `write-dag.md`: the full `plan.json` nested-tree schema is embedded with a ❌ wrong / ✅ correct pair showing the exact JSON structure the subagent must produce
+   - ✗ *"Tell the subagent to write a plan.json using the nested tree format."* (HW cannot reliably reconstruct the schema from a label)
+
+3. **State subagent-specific constraints as rejection criteria** — For each subagent the prompt dispatches, include an explicit "do not do X" that is specific to that agent type's known failure mode. This prevents the most common dispatch errors without requiring HW to consult external documentation at runtime.
+   - ✓ From `write-dag.md`: `"Do NOT include paths."` (for `prompt` field values), `"Do not invent todo values — use only valid OpenCode tool names from this table"`, `"Do NOT write prompts that describe or reference the planning system"`
+   - ✓ From `research-brief.md`: `"@ContextScout is for internal codebase exploration ONLY. It must never be used for external research."` (prevents misrouting)
+   - ✗ Omitting rejection criteria entirely — HW defaults to generic dispatch behavior and produces formless prompts
+
+4. **Name the tool-use sequence explicitly** — When the subagent must call tools in a specific order, state that order in the dispatch template, not in a separate section. HW embeds whatever it reads in the blockquote; guidance in a different section may be skipped or not propagated to the subagent.
+   - ✓ From `research-brief.md`: `"Instruct them to follow this tool priority: (1) Context7 first — use context7_resolve-library-id to identify libraries and context7_query-docs to retrieve documentation; (2) Exa second — only search the web for content not covered by Context7."`
+   - ✗ *"Tell ExternalScout to research the topic."* (tool order unspecified — ExternalScout may invert order, wasting Exa queries)
+
+5. **Specify the return format in the template** — The dispatch template must include a return-format slot. The subagent's output feeds into a downstream planning step; vague return format produces summaries that lose precision. State: what sections to include, what level of specificity (exact strings vs. themes), and what to do when nothing is found.
+   - ✓ From `research-brief.md`: `"The output should be a brief structured summary (key findings, relevant APIs or patterns, caveats). Emphasize that this is a one-shot, quick pass — no follow-ups or deep dives."`
+   - ✓ From `scout.md`: `"report findings as specific facts, not as generic 'Codebase Overview' or 'Key Decisions' sections"`
+   - ✗ *"Have the scout report back its findings."* (no format — HW propagates the vagueness)
+
+6. **Separate what HW does from what it delegates** — Category B prompts mix HW's own actions (calling `question`, calling `next_step`, summarizing results) with the subagent dispatch. Make the boundary explicit: use separate sections or explicit markers so HW does not accidentally do the work itself instead of delegating, or vice versa.
+   - ✓ From `write-dag.md`: the `## Todo` section lists numbered steps (`task`, `validate_dag`, `task`) with distinct ownership; the narrative sections (schema, node rules, examples) are framed as content to pass through, not instructions for HW to act on directly
+   - ✓ From `research-brief.md`: `"After the user answers: immediately call the task tool in the same turn — do not emit a response and wait for a new user message"` (explicit sequencing of HW's own actions vs. dispatch)
+   - ✗ A single undifferentiated prompt body that mixes "HW should think about X" with "dispatch @ContextScout to do Y" — HW may attempt both or conflate them
+
+**When to apply Category B:** Any time you are editing `files/planning/plan-session/prompts/*.md` — adding a new delegation node, sharpening dispatch instructions for an existing node, fixing a recurring subagent output quality failure traced back to a vague dispatch prompt HW wrote, or adding a new subagent type to an existing node. If a session produces a weak subagent output and the root cause is a formless dispatch prompt HW wrote, the fix is a Category B improvement, not a Category A improvement.
+
+#### Category C: Improving node library templates
+
+**What makes Category C different from Category B:** Category C artifacts (`files/planning/plan-session/node-library/*/`) introduce a third indirection hop. A Category B prompt teaches HW how to write a dispatch prompt. A Category C template teaches the *planning agent* how to write a node prompt — which HeadWrench will later read as a Category B-style prompt and use to dispatch a subagent. The quality chain is: README + template → planning agent fills template → filled template becomes a project DAG node prompt → HW reads it and dispatches a subagent. A weakness at the authoring layer (bad `README.md`) degrades the filled template; a weakness at the execution layer (bad template structure) degrades the subagent's output even when the planning agent fills placeholders correctly. Both layers must be engineered independently.
+
+The core engineering challenge is **satisfying two audiences simultaneously**: the planning agent (who reads the README and fills the template's `{{PLACEHOLDER}}` slots) and the executing agent (who reads the filled template at DAG runtime and must dispatch a subagent from it). A good Category C artifact gives the planning agent clear authoring guidance and gives the executing agent a complete execution spec — embedded in the same document.
+
+Apply these techniques when editing any `files/planning/plan-session/node-library/*/` file:
+
+1. **README.md must contain an explicit "What the planning agent must resolve" section** — This is the authoring-layer contract. It lists every piece of information the planning agent must determine *before* writing the node's prompt, so the `{{PLACEHOLDER}}` slots are filled with precise, actionable content, not vague descriptions. Each item should name what is needed and distinguish good from bad input.
+   - ✓ From `analyze-deep/README.md`: `"**Synthesis question** — What specific question should ContextInsurgent answer? Be precise."` and `"**Complexity justification** — Why haiku scouts are insufficient for this task. Good: 'This requires tracing three interdependent call chains across 8 files.' Bad: 'Need to understand the codebase.'"` (both name the item and distinguish well-formed from malformed input)
+   - ✗ A README that says only "Use when multi-file analysis is needed" — the planning agent has no authoring checklist and will invent placeholder content from thin air
+
+2. **README.md must state the output constraint the planning agent must propagate into the filled prompt** — When the executing subagent has a known failure mode (e.g., producing boilerplate section headers instead of specific evidence), that rejection criterion must appear in the README's "must resolve" section so the planning agent knows to embed it in the node prompt. The constraint travels from README → filled prompt → subagent.
+   - ✓ From `analyze-deep/README.md`: `"**Output constraint** — The dispatched prompt must include this instruction: 'Do not produce a generic "Architecture Overview" or "Key Decisions" section — report specific file paths, line numbers, and exact strings.'"` (names the exact instruction the planning agent must copy into the prompt)
+   - ✗ Leaving output constraints only in the template's fixed sections — the planning agent may not understand *why* the constraint is there and may inadvertently weaken it when paraphrasing
+
+3. **Template placeholders must be surrounded by authoring-guidance comments, not left bare** — A bare `{{PLACEHOLDER}}` tells the planning agent only where to write, not what to write. The comment or italic annotation adjacent to the placeholder specifies what the slot expects, what to include, and what to avoid. This guidance is read by the planning agent at authoring time and is invisible to (or safely ignored by) the executing agent.
+   - ✓ From `analyze-deep/prompt-template.md`, the `{{CONTEXT_TO_PROVIDE}}` slot is followed immediately by: `"*The file list CI must read (e.g., \`src/auth/token.ts\`, \`src/auth/helpers/*.ts\`) and any prior scout findings to build on. Always include an explicit list of files — do not substitute contextual prose for file paths.*"` (names the exact content type, gives an example, and states an anti-pattern to avoid)
+   - ✗ A template with `{{INPUT_FILES}}` and no adjacent guidance — planning agent may write a prose description of a feature area instead of a list of file paths, producing a useless dispatch prompt
+
+4. **Template must include a fixed execution-spec section that the executing agent reads verbatim** — Fixed sections (not placeholders) carry the subagent's behavioral constraints to runtime. These are not filled by the planning agent — they are part of the template's permanent structure and must survive the fill step unchanged. They constitute the execution layer of the three-zone structure.
+   - ✓ From `analyze-deep/prompt-template.md`: the `## Output format requirements` section is entirely fixed: `"Answer the question directly with specific evidence from the code. Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings."` — HW reads this at DAG runtime and propagates it to ContextInsurgent
+   - ✓ From `analyze-deep/prompt-template.md`: the `## Scope restriction` section is entirely fixed and carries the `.opencode/` exclusion rule — the planning agent cannot accidentally omit it because it is not a placeholder
+   - ✗ Encoding all behavioral constraints as placeholders — the planning agent may fail to fill them, or fill them weakly, allowing the subagent to fall back to default behavior
+
+5. **Template must embed a dispatch blockquote naming the exact prompt construction requirements** — Identical to Category B technique #1, but appearing inside the template itself (not in a planning DAG prompt). The blockquote is read by HW at DAG execution time and tells it what the subagent's task prompt must contain. It must be a numbered list of concrete slots, not a directive like "write a good prompt."
+   - ✓ From `analyze-deep/prompt-template.md` (line 29): `"> **Writing the ContextInsurgent's prompt:** The prompt must specify: (1) the exact analysis question specified for this node; (2) which files or directories to read; (3) the expected return format — a direct answer with supporting evidence, not boilerplate section headers."` (numbered, concrete, names three distinct requirements)
+   - ✗ A blockquote that says only `"> Dispatch @ContextInsurgent with the analysis question."` — HW dispatches without file list, without output format spec, producing an unfocused analysis
+
+6. **README.md must document node-type-specific failure modes in a Notes section** — Beyond the "must resolve" checklist, the README should capture failure patterns specific to *this node type* that cannot be inferred from the node type name alone. These prevent misuse at planning time, before a bad prompt is ever written.
+   - ✓ From `analyze-deep/README.md` Notes: `"If the goal is context compression rather than deep analysis, use compression-node instead — analyze-deep produces reasoning artifacts, not context window pruning."` (names a specific misuse pattern and redirects to the correct node type)
+   - ✓ From `analyze-deep/README.md` Notes: `"Do not instruct ContextInsurgent to read .opencode/ session directories — they contain stale plan artifacts that may conflict with the actual codebase."` (specific failure mode with concrete consequence)
+   - ✗ A Notes section that only says "Use sparingly" — no actionable discrimination between correct and incorrect use
+
+**When to apply Category C:** Any time you are editing files under `files/planning/plan-session/node-library/` — adding a new node type, sharpening a README's "must resolve" section, adding an output constraint that a subagent is repeatedly violating, adding a fixed execution-spec section that planning agents are accidentally overwriting, or fixing a recurring planning-time error where the planning agent is filling placeholders with the wrong content type. If a session produces a poorly-filled node prompt and the root cause is insufficient authoring guidance in the README or template, the fix is a Category C improvement. If the filled prompt is correct but the executing agent still produces weak output, check whether the template's fixed execution-spec sections and dispatch blockquote are strong enough — those are also Category C concerns.
 
 ### Per-Agent Prompting Patterns
 
@@ -259,12 +379,12 @@ Use verbatim-return instructions when the downstream step needs raw content, not
 
 ### Prompting-Mechanism DAG Rule
 
-When generating a project DAG that touches any prompting mechanism — agent files, node library templates, headwrench.md delegation sections, or planning prompts — always structure the DAG using the **insurgent → research-deep → improve** workflow:
+When generating a project DAG that touches any prompting mechanism — agent files, node library templates, headwrench.md delegation sections, or planning prompts — always structure the DAG using the **research-deep → insurgent → improve** workflow:
 
-1. **Analyze phase** — One or more `analyze-deep` nodes (ContextInsurgent) to audit each category of prompting files against gold-standard criteria. Produce a per-file change list.
-2. **Compress** — A `compression-node` after the analysis phase to crystallize findings.
-3. **Research phase** — One `research-deep` node per distinct audit category (agent self-regulation patterns, template design, agent-specific delegation patterns, etc.). Run them sequentially.
-4. **Compress** — A second `compression-node` after the research phase.
+1. **Research phase** — One `research-deep` node per distinct audit category (agent self-regulation patterns, template design, delegation prompting patterns, etc.). Run them sequentially. This establishes the external gold-standard criteria that analysis will audit against.
+2. **Compress** — A `compression-node` after the research phase to crystallize best-practice findings before analysis begins.
+3. **Analyze phase** — One or more `analyze-deep` nodes (ContextInsurgent) to audit each category of prompting files against the research-established criteria. Produce a per-file change list.
+4. **Compress** — A second `compression-node` after the analysis phase to crystallize the change list before implementation.
 5. **Implement phase** — `parallel-tasks` nodes to apply changes (separate nodes for agent files vs. node library files).
 6. **Review** — An `analyze-deep` node (ContextInsurgent) to verify all changes against gold-standard criteria.
 7. **Approval gate** — A `decision-gate` for user approval before finalizing.
