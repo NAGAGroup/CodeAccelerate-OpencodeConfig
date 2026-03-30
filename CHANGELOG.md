@@ -6,25 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.6.0] - 2026-03-29
+
+### Added
+
+- Extended `scout` node in the `plan-session` DAG with a 4th parallel task that dispatches HeadWrench as a subagent to run git commands (`git status`, `git log`, `git diff`) when in a git repo, providing recent commit and in-progress change context during planning
+- `dag-design-guide.md`: added Anti-patterns section with wrong-vs-right examples for `next` field format, branch node references, duplicate IDs, and prompt paths, plus a 7-item validity checklist
+
 ### Changed
 
-- Moved `scout-node-library` to run before `research-gate` in the `plan-session` DAG, giving HeadWrench node library context when forming research recommendations
-- Upgraded `research-gate` to ask two questions with HW recommendations: whether cursory planning-time research is needed, and whether the generated project DAG should include execution-time research nodes
+- Moved `scout-node-library` to run before `research-gate` in the `plan-session` DAG, giving HeadWrench node library context (including `research-basic` and `research-deep` nodes) when forming planning recommendations
+- Upgraded `research-gate` from a single question to two sequential questions with HW recommendations: (1) is cursory planning-time research needed? (2) should the generated project DAG include execution-time research nodes?
 - Removed redundant `scout-node-library-2` node from the no-research branch (node library is now loaded in the main sequence before the gate)
 - Updated `sequential-thinking.md` prompt to incorporate the execution-time research preference from the research gate
-- Extended `scout` node in the plan-session DAG with a 4th parallel task that dispatches HeadWrench as a subagent to run git commands (`git status`, `git log`, `git diff`) when in a git repo, providing planning context about recent commits and in-progress changes
+- `write-dag.md` now requires HeadWrench to embed the complete `plan.json` as a JSON code block when delegating to write-dag subagents, preventing format drift where haiku agents produced flat `nodes` map format instead of the required nested-tree format
+- `headwrench.md` Planning section now explicitly requires JSON embedding in write-dag delegations
 - `planning-enforcement.ts` plugin: added `todowrite` to the exempt tools list so task-list management calls are never blocked by DAG todo enforcement
-- Remove `compress` from exempt tools in planning-enforcement plugin — compress is now blocked unless explicitly listed as a todo item in a DAG node, preventing uncontrolled calls during planning sessions
-- `headwrench.md`: removed incorrect claim that `@ContextInsurgent` may invoke the `compress` tool to synthesize discoveries — CI is for reasoning only and has no compress role; compression is HW's responsibility via dedicated `compression-node` entries in project DAGs
+- Removed `compress` from exempt tools in planning-enforcement plugin — compress is now blocked unless explicitly listed as a todo item in a DAG node, preventing uncontrolled calls during planning sessions
+- `headwrench.md`: removed incorrect claim that `@ContextInsurgent` may invoke the `compress` tool — CI is for reasoning only; compression is HW's responsibility via dedicated `compression-node` entries in project DAGs
 
 ### Fixed
 
-- planning prompt `scout-node-library.md`: fixed node library README path examples to include `{{SESSION_PATH}}/node-library/` prefix — bare relative paths caused agents in other projects to fail when reading node type README files
-- planning prompt `write-dag.md`: corrected `compression-node` quick reference todo from `["task"]` to `["compress"]` to match actual plugin enforcement
-- Fixed tool-call blocking in `planning-enforcement` plugin: non-exempt tools were unblocked during the `waiting_step` window (after a node's todos exhausted but before `next_step()` was called) because both hook guards returned early for any non-`running` status. The before hook now throws explicitly when status is `waiting_step`, and the after hook guard no longer treats `waiting_step` as a skip condition.
-- `write-dag.md` now requires HeadWrench to embed `plan.json` as a JSON code block when delegating to write-dag subagents, preventing format drift where haiku agents produced flat `nodes` map format instead of the required nested-tree format
-- `dag-design-guide.md` now includes an Anti-patterns section with wrong-vs-right examples for `next` field format, branch node references, duplicate IDs, and prompt paths, plus a validity checklist
-- `headwrench.md` Planning section now explicitly requires JSON embedding in write-dag delegations
+- `scout-node-library.md` planning prompt: fixed node library README path examples to include `{{SESSION_PATH}}/node-library/` prefix — bare relative paths caused agents in other projects to fail when reading node type README files
+- `write-dag.md` planning prompt: corrected `compression-node` quick reference todo from `["task"]` to `["compress"]` to match actual plugin enforcement
+- `planning-enforcement` plugin: non-exempt tools were unblocked during the `waiting_step` window (after a node's todos exhausted but before `next_step()` was called) because both hook guards returned early for any non-`running` status. The before hook now throws explicitly when status is `waiting_step`, and the after hook guard no longer treats `waiting_step` as a skip condition.
 
 ## [3.5.0] - 2026-03-29
 
@@ -283,7 +288,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 [1.0.1]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/tree/v0.1.0
-[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.5.0...HEAD
+[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.6.0...HEAD
+[3.6.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.5.0...v3.6.0
 [3.5.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.2.0...v3.3.0

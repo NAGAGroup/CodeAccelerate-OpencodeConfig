@@ -8,7 +8,7 @@
   "name": "Naga Group",
   // Registry refs use the alias chosen by users via:
   // ocx registry add <url> --name <alias>
-  "version": "3.5.0",
+  "version": "3.6.0",
   "author": "Jack Myers",
   // Compatibility versions
   "opencode": "1.27.0", // Minimum OpenCode version required
