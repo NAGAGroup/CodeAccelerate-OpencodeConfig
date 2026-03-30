@@ -12552,7 +12552,7 @@ function ensureOpenCodeIgnore(worktree) {
 }
 var PlanningEnforcementPlugin = async (_ctx) => {
   const blockedCalls = new Map;
-  const resolveWorktree = (ctx) => ctx.worktree || process.cwd();
+  const resolveWorktree = (_ctx2) => process.cwd();
   ensureOpenCodeIgnore(resolveWorktree(_ctx));
   return {
     tool: {

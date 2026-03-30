@@ -6,7 +6,7 @@ When the context window has grown large from accumulated scout output, multi-ste
 
 ## What it does
 
-Dispatches `@ContextInsurgent` via a single `task` call. ContextInsurgent reads the accumulated context, identifies the high-signal findings, and calls the `compress` tool to replace stale content with a dense technical summary. The compressed summary replaces the raw exploration in the context window.
+HeadWrench calls the `compress` tool directly (provided by the DCP plugin) to replace stale conversation content with a dense, high-fidelity summary. No agent is dispatched — HW synthesizes the accumulated context itself and writes a compressed summary that becomes the authoritative record of that phase.
 
 ## What the planning agent must resolve
 
@@ -21,9 +21,8 @@ Default: `compression-node`. Rename for clarity: `compress-scout-findings`, `com
 
 ## Notes
 
-- ContextInsurgent is sonnet-tier — use when context has meaningfully accumulated, not as a reflex. In a multi-phase DAG, don't limit to one — include a compression node between major phases (e.g., after scouts, after analysis, before implementation). Use a unique node ID per instance: `compress-scout-findings`, `compress-post-analysis`.
+- The `compress` tool is provided by the DCP (Dynamic Context Pruning) plugin and is always available to HW — no agent dispatch needed.
 - This node is specifically for context management, not for producing deliverables. If you need deep analysis, use `analyze-deep` instead.
 - Often appears between `scout-parallel` and `parallel-tasks` in long DAGs: scout → compress → implement
-- The planning agent should note in the prompt what the HW subagent previously found, so ContextInsurgent knows what to retain
-- The "accumulated context" to compress comes from codebase exploration — do not instruct ContextInsurgent to read `.opencode/` session directories for source material. Exception: planning infra files (e.g., the node-library) are permitted when explicitly tasked.
-- The planning enforcement plugin's `compress` tool is exempt from DAG todo blocking — ContextInsurgent can always call it when dispatched.
+- In a multi-phase DAG, don't limit to one — include a compression node between major phases (e.g., after scouts, after analysis, before implementation). Use a unique node ID per instance: `compress-scout-findings`, `compress-post-analysis`.
+- The prompt should tell HW exactly what to compress, what to preserve, what to discard, and what synthesis question the summary should answer.

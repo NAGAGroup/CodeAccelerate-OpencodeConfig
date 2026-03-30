@@ -350,7 +350,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
   const blockedCalls = new Map<string, { expected: string; actual: string }>();
 
   // Helper to resolve worktree with fallback to cwd
-  const resolveWorktree = (ctx: { worktree?: string }) => ctx.worktree || process.cwd();
+  const resolveWorktree = (_ctx: { worktree?: string }) => process.cwd();
 
   // Ensure .opencodeignore exists and includes !.opencode/ pattern
   ensureOpenCodeIgnore(resolveWorktree(_ctx));

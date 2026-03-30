@@ -135,7 +135,7 @@ agents select from when composing project DAGs. Each node type has three files:
 | `parallel-tasks` | `["task","task","task"]` | Parallel haiku agents |
 | `verification-check` | `["task"]` | @HeadWrench subagent, shell access |
 | `conditional-branch` | `[]` | HW calls `next_step` from prior context |
-| `compression-node` | `["task"]` | @ContextInsurgent + compress tool |
+| `compression-node` | `["compress"]` | HW calls compress tool directly (DCP plugin) |
 | `output-success` | `[]` | Terminal, happy path |
 | `output-failure` | `[]` | Terminal, failure path |
 | `generic` | flexible | Escape hatch, custom todo |

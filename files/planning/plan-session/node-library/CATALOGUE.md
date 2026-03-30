@@ -55,7 +55,7 @@ DAGs are composed from three primitives:
 | [`parallel-tasks`](#parallel-tasks) | `["task","task","task"]` | Multiple independent edits or dispatches can run concurrently. |
 | [`verification-check`](#verification-check) | `["task"]` | Need to run build, tests, or lint and verify results. |
 | [`conditional-branch`](#conditional-branch) | `[]` | Branch on a condition inferable from prior context (exit code, agent output, file check). Plugin presents branches; HW calls `next_step`. |
-| [`compression-node`](#compression-node) | `["task"]` | Context window is large; synthesize scout/agent output before proceeding. |
+| [`compression-node`](#compression-node) | `["compress"]` | Context window is large; HW calls compress tool directly to synthesize and crystallize findings. |
 
 ### Escape Hatch
 
@@ -100,7 +100,7 @@ Dispatches HW as a subagent to run build/test commands and verify results. The p
 No todo — branching instructions are presented automatically on node entry. The prompt describes the condition and what each branch means. HW evaluates the condition from prior context and follows the branching instructions to choose the correct path. Use when the decision is machine-readable and requires no new tool calls.
 
 ### `compression-node`
-Dispatches `@ContextInsurgent` to synthesize and compress accumulated context. Use when scout output or multi-step agent work has filled the context window and key findings need crystallization before proceeding. One `task` call — the agent calls the `compress` tool internally. Source material for compression should come from codebase exploration, not .opencode/ session directories.
+HeadWrench calls the `compress` tool directly (via the DCP plugin) to synthesize and compress accumulated context. Use when scout output or multi-step agent work has filled the context window and key findings need crystallization before proceeding. One `compress` call — HW writes a dense technical summary that replaces the stale content. No agent is dispatched.
 
 Don't limit to one per DAG — a multi-phase project often benefits from compression at multiple junctures: after the scout phase, after deep analysis, before implementation. Use a unique node ID for each instance (e.g., `compress-scout-findings`, `compress-post-analysis`). Between any two major phases where raw context has accumulated, a compression node is appropriate.
 
