@@ -538,17 +538,27 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
-      recover_context: tool({
-        description:
-          "Recover DAG session context after autocompaction or context loss. Returns current node, completed work, and decisions made.",
-        args: {},
-        async execute(_args, context) {
-          const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
-          const state = readState(statePath);
+       recover_context: tool({
+         description:
+           "Recover DAG session context after autocompaction or context loss. Returns current node, completed work, and decisions made.",
+         args: {},
+         async execute(_args, context) {
+           const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
+           const state = readState(statePath);
 
-          if (!state) return "No active DAG session found.";
+           if (!state) return "No active DAG session found.";
 
-          const currentNode = state.node_map[state.current_node];
+           // Resume an abandoned session from where it left off
+           if (state.status === "abandoned") {
+             const node = state.node_map[state.current_node];
+             const remaining = node ? node.todo.length - state.todo_index : 0;
+             // If all todos were done, resume as waiting_step; otherwise resume as running
+             state.status = remaining === 0 ? "waiting_step" : "running";
+             state.updated_at = now();
+             writeState(statePath, state);
+           }
+
+           const currentNode = state.node_map[state.current_node];
           const promptText = currentNode
             ? readPrompt(currentNode.prompt, resolveWorktree(context))
             : "(prompt not found)";
@@ -606,7 +616,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
              return `DAG session "${state.dag_id}" is already complete. Nothing to abandon.`;
            }
            if (state.status === "abandoned") {
-             return `DAG session "${state.dag_id}" is already abandoned.`;
+             return `DAG session "${state.dag_id}" is already abandoned. Call recover_context() to resume it.`;
            }
 
            state.status = "abandoned";
@@ -614,8 +624,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
            writeState(statePath, state);
 
             return `DAG session "${state.dag_id}" has been abandoned. ` +
-              `State saved at ${statePath}. ` +
-              `You can start a new session with plan_session() or activate_plan().`;
+              `State saved at node "${state.current_node}". ` +
+              `Call recover_context() to resume from where you left off.`;
          },
        }),
 

@@ -12719,6 +12719,13 @@ ${advanceResult}`;
           const state = readState(statePath);
           if (!state)
             return "No active DAG session found.";
+          if (state.status === "abandoned") {
+            const node = state.node_map[state.current_node];
+            const remaining = node ? node.todo.length - state.todo_index : 0;
+            state.status = remaining === 0 ? "waiting_step" : "running";
+            state.updated_at = now();
+            writeState(statePath, state);
+          }
           const currentNode = state.node_map[state.current_node];
           const promptText = currentNode ? readPrompt(currentNode.prompt, resolveWorktree(context)) : "(prompt not found)";
           const todoProgress = currentNode ? currentNode.todo.map((t, i) => `  ${i < state.todo_index ? "[x]" : "[ ]"} ${t}`).join(`
@@ -12785,12 +12792,12 @@ No todos for this node. When you're ready, call \`next_step()\` to advance.
             return `DAG session "${state.dag_id}" is already complete. Nothing to abandon.`;
           }
           if (state.status === "abandoned") {
-            return `DAG session "${state.dag_id}" is already abandoned.`;
+            return `DAG session "${state.dag_id}" is already abandoned. Call recover_context() to resume it.`;
           }
           state.status = "abandoned";
           state.updated_at = now();
           writeState(statePath, state);
-          return `DAG session "${state.dag_id}" has been abandoned. ` + `State saved at ${statePath}. ` + `You can start a new session with plan_session() or activate_plan().`;
+          return `DAG session "${state.dag_id}" has been abandoned. ` + `State saved at node "${state.current_node}". ` + `Call recover_context() to resume from where you left off.`;
         }
       }),
       validate_dag: tool({
