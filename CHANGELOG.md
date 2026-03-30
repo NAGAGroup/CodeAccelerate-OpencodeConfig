@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `ocx-default` and `ocx-copilot` profiles: added `provider` block disabling extended thinking (`reasoning: false`) for `claude-sonnet-4-6` / `claude-sonnet-4.6` respectively
 - `context-scout.md` agent: added root-directory glob fallback instruction — if dispatched with no specific file paths, scout must use a broad glob pattern to orient itself rather than returning empty
 - `headwrench.md` agent: added `multiple` parameter guidance to Question Tool Usage section (rule 6) — `multiple: true` for multi-select scenarios, `multiple: false`/omit for binary/exclusive choices
 - `planning-enforcement.ts` plugin: improved `next_step` error message to show remaining todo count and next expected tool name when called prematurely
