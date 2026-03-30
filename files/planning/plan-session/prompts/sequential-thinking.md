@@ -24,7 +24,9 @@ Work through these questions in order. Each builds on the previous:
 
     **Validate todo arrays:** After assigning node types, validate every `todo` array against the node type → todo quick reference table in `write-dag.md`. Use ONLY valid OpenCode tool names. Common errors to avoid: `sequential-thinking_sequentialthinking` is only for HW's own reasoning nodes (not for dispatching subagents); `compress` is a valid todo value used exclusively by `compression-node` and should only appear in nodes explicitly intended for context compression; subagent-internal tool names (`exa_web_search_exa`, `context7_query-docs`, `bash`) are not valid todo values.
 
-   **Compression nodes for long DAGs:** For long, multi-phase DAGs — especially those with extensive scout or analysis phases — include compression nodes between major phases. Multiple compression nodes in a single DAG is appropriate and encouraged; don't limit to one. Place them after phases where context has accumulated (e.g., after 3 scouts, after a deep analysis) and before phases that need a clean context window.
+    **Compression nodes for long DAGs:** For long, multi-phase DAGs — especially those with extensive scout or analysis phases — include compression nodes between major phases. Multiple compression nodes in a single DAG is appropriate and encouraged; don't limit to one. Place them after phases where context has accumulated (e.g., after 3 scouts, after a deep analysis) and before phases that need a clean context window.
+
+6b. **Execution-time research preference:** Did the user indicate at the research gate that the project DAG should include research nodes? If yes, include `research-basic` or `research-deep` nodes at appropriate points in the generated plan. Position them before the implementation steps that depend on that research. If no, omit dedicated research nodes.
 
 7. **What am I confident about vs. still unsure of?** Be explicit. If something is genuinely unclear, note it — you'll surface it to the user at `propose-plan`.
 

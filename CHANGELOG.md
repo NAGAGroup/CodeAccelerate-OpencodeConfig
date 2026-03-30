@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Moved `scout-node-library` to run before `research-gate` in the `plan-session` DAG, giving HeadWrench node library context when forming research recommendations
+- Upgraded `research-gate` to ask two questions with HW recommendations: whether cursory planning-time research is needed, and whether the generated project DAG should include execution-time research nodes
+- Removed redundant `scout-node-library-2` node from the no-research branch (node library is now loaded in the main sequence before the gate)
+- Updated `sequential-thinking.md` prompt to incorporate the execution-time research preference from the research gate
 - Extended `scout` node in the plan-session DAG with a 4th parallel task that dispatches HeadWrench as a subagent to run git commands (`git status`, `git log`, `git diff`) when in a git repo, providing planning context about recent commits and in-progress changes
 - `planning-enforcement.ts` plugin: added `todowrite` to the exempt tools list so task-list management calls are never blocked by DAG todo enforcement
 - Remove `compress` from exempt tools in planning-enforcement plugin — compress is now blocked unless explicitly listed as a todo item in a DAG node, preventing uncontrolled calls during planning sessions

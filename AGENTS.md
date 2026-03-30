@@ -90,11 +90,11 @@ One DAG-driven planning mode ships: **plan-session**, triggered by `/plan-sessio
 The `plan-session` DAG lives in `files/planning/plan-session/` and follows this flow:
 
 ```
-session-overview → scout → research-gate
-  → [research-brief → scout-node-library → sequential-thinking → propose-plan
+session-overview → scout → scout-node-library → research-gate
+  → [research-brief → sequential-thinking → propose-plan
         → [write-dag]              (approved path)
         → [propose-plan-2 → write-dag-2]]  (rethink path)
-  → [scout-node-library-2 → sequential-thinking-2 → propose-plan-3
+  → [sequential-thinking-2 → propose-plan-3
         → [write-dag-3]            (approved path)
         → [propose-plan-4 → write-dag-4]]  (rethink path)
 ```
@@ -103,9 +103,9 @@ session-overview → scout → research-gate
 |------|------|---------|
 | `session-overview` | `[]` | Entry, auto-advance |
 | `scout` | `["task","task","task","task"]` | 3x @ContextScout in parallel, plus 4th task dispatches HeadWrench as subagent for git context |
-| `research-gate` | `["question"]` | User decides if cursory external research is needed |
+| `scout-node-library` | `["task"]` | @ContextScout reads node library (pure info-gathering) before the research gate |
+| `research-gate` | `["question", "question"]` | HW assesses context, forms recommendations, then asks two questions: (1) is cursory planning-time research needed? (2) should the generated DAG include execution-time research nodes? |
 | `research-brief` | `["question", "task"]` | User picks research topic; ExternalScout does a cursory lookup |
-| `scout-node-library` | `["task"]` | @ContextScout reads node library (pure info-gathering) |
 | `sequential-thinking` | `["sequential-thinking_sequentialthinking"]` | HW designs complete plan with full context (Branch A: with research) |
 | `sequential-thinking-2` | `["sequential-thinking_sequentialthinking"]` | HW designs complete plan with full context (Branch B: no research) |
 | `propose-plan` | `["question"]` | HW presents complete plan (structure + decomposition), user approves |
