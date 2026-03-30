@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Corrected environment variable interpolation syntax for Exa MCP in all 6 profile configs (`default`, `copilot`, `haiku`, `haiku-copilot`, `free`, `ollama`): changed `${EXA_API_KEY}` (shell syntax, not interpolated by OpenCode) to `{env:EXA_API_KEY}` (correct OpenCode syntax); also corrected the documented syntax in `AGENTS.md`
+
 ### Changed
 
 - Fixed bug in `planning-enforcement.ts` where exempt tools were blocked during `waiting_step` and `running` states if they weren't the expected todo item; the `tool.execute.before` hook now correctly bypasses blocking for all exempt tools regardless of DAG status; also added `sequential-thinking_sequentialthinking` to the exempt tools list
