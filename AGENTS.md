@@ -196,6 +196,67 @@ ending the session prematurely. The plugin now throws a validation error on dupl
 1. Edit `opencode.jsonc` and/or `ocx.jsonc` in `files/profiles/{name}/`
 2. `scripts/update-profiles.sh` can help synchronize changes across profiles
 
+## Prompt Engineering
+
+### Improvement Methodology
+
+When improving prompts in this codebase, use the **insurgent → research → change** workflow:
+1. **Analyze gaps** with @ContextInsurgent — read all relevant files, evaluate against gold-standard criteria, produce a precise per-file change list
+2. **Research best practices** with @ExternalScout — targeted external lookup for techniques relevant to the gap (Context7 first, Exa second)
+3. **Implement targeted edits** with @JuniorDev — surgical changes only; no rewrites of correct content
+
+This workflow (first applied in commit df83c18) consistently produces better results than ad-hoc prompt editing.
+
+### Per-Agent Prompting Patterns
+
+When HeadWrench dispatches a subagent, the task prompt must include:
+
+**@ContextScout:**
+- Specific file paths or glob patterns — not thematic descriptions ("look at the auth system")
+- A clear statement of what to return (e.g., "return the exact function signatures from X")
+- Verbatim-return instruction when summarization would lose information: *"Do not produce generic 'Codebase Overview' or 'Key Decisions' sections — report specific file paths, line numbers, and exact strings."*
+
+**@ContextInsurgent:**
+- A single, specific analysis question (the "Answer / Conclusion" CI should produce)
+- An explicit file list — CI needs the full reading list, not just a topic
+- Expected output format (e.g., "return a file-by-file change list")
+
+**@ExternalScout:**
+- Tool priority: *"Use Context7 first (context7_resolve-library-id, then context7_query-docs). Use Exa second."*
+- The exact question or topic — not just a subject area
+- Return format: cite versions, include code examples, synthesize into a direct answer (not a list of links)
+
+**@JuniorDev:**
+- Specific target files (repo-relative paths)
+- Success criterion: what the edit achieves, as an observable outcome
+- Scope note: files JD must NOT touch
+
+**@QuickDoc:**
+- Target file path
+- What to write and what format/template to follow
+- Conventions reference: point to an existing file to match
+
+### Verbatim-Return Pattern
+
+Use verbatim-return instructions when the downstream step needs raw content, not a summary:
+- Planning agents reading the node library (need exact node type names and todo arrays)
+- Scouts reading config files or schemas
+- Any retrieval task where summarization destroys precision
+
+**Exact instruction language:** *"Return file contents verbatim. Do NOT summarize, restructure, or add section headers. The planning agent needs the raw content — summarizing destroys the information."*
+
+### Agent Boundary Rules
+
+- **@ContextScout = internal codebase only.** Never dispatch for external research (docs, APIs, web search). Misrouting burns its 12-step budget on network lookups it cannot perform.
+- **@ExternalScout = external research only.** Never dispatch for codebase reads. It is the designated agent for ALL external lookups — from a quick API reference to a deep multi-source investigation.
+
+### Anti-Patterns
+
+- **Thematic scout prompts** — "Look at the auth system" → scout cannot orient on a less-capable model. Always provide file paths.
+- **Generic output sections** — Asking for "Codebase Overview" or "Key Decisions" produces thematic summaries instead of actionable facts. Ask for specific file paths, line numbers, and exact strings.
+- **CS for external research** — ContextScout cannot browse the web. Routing external lookups to CS produces nothing useful.
+- **ES tool order reversed** — Exa before Context7 wastes Exa queries on library docs that Context7 covers better. Always Context7 first.
+
 ## File Naming Conventions
 
 - Agents: `files/agents/{kebab-case-name}.md`
