@@ -417,6 +417,20 @@ When generating a project DAG that touches any prompting mechanism — agent fil
 
 **Trigger:** Any DAG whose implementation phase will modify or create files in `files/agents/`, `files/planning/plan-session/node-library/`, or `files/planning/plan-session/prompts/`.
 
+**Adjacent-triplets rule:** When a DAG uses the research→insurgent→implement pattern across multiple audit categories (e.g., agent files, planning prompts, node library), each category's research, analysis, and implementation nodes must appear **consecutively** in the DAG — not all-research-first then all-insurgent then all-write across all categories. Structure the DAG as:
+
+```
+research-A → analyze-A → impl-A → [compress] → research-B → analyze-B → impl-B → [compress] → ...
+```
+
+Not:
+
+```
+research-A → research-B → research-C → analyze-A → analyze-B → analyze-C → impl-A → impl-B → impl-C
+```
+
+This keeps each category's context focused and prevents context window pollution from unrelated audit categories.
+
 ## File Naming Conventions
 
 - Agents: `files/agents/{kebab-case-name}.md`

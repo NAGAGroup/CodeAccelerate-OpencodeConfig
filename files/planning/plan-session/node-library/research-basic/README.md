@@ -10,12 +10,13 @@ Dispatches one `@ExternalScout` agent via a single `task` call. ExternalScout us
 
 ## What the planning agent must resolve
 
-- **Research topic** — What specific information is needed? Be concrete: "React Query v5 invalidation API" not "React Query"
-- **Output format** — What should ExternalScout return? (e.g., code examples, config options, comparison table, summary of findings) Good: "A summary of configuration options with inline code examples, citing the specific library version." Bad: "Something useful about the library." (no format specified — ES returns whatever it deems useful)
+- **Research topic** — What specific information is needed? Good: "React Query v5 — the `invalidateQueries` API and cache invalidation patterns when used with server-side mutations." Bad: "React Query" (topic, not a question — ES returns a survey, not an API reference.)
+- **Output format** — What should ExternalScout return? (e.g., code examples, config options, comparison table, summary of findings) Good: "A summary of configuration options with inline code examples, citing the specific library version." Bad: "A summary of findings." (No format requirement — ES may return prose with no code examples or version citations.)
 - **Scope** — What threads should ExternalScout follow if the first source is insufficient?
-- **Downstream use** — How will the findings be used in subsequent nodes?
+- **Downstream use** — How will the findings be used in subsequent nodes? Good: "Findings feed the `sequential-thinking` node to decide which React Query pattern to adopt." Bad: "Used later." (No specificity — planning agent cannot determine what format the downstream node needs.)
 - **Answer format** — The dispatched ES prompt must instruct ExternalScout to synthesize a direct answer with code examples — not return a list of links. Cite specific versions.
-- **Scope guard** — The dispatched ES prompt must explicitly state: "This is a cursory research pass. Use Context7 first, then one Exa search if needed. Do NOT perform multiple search iterations or cross-reference contradictory sources — report what you find and stop."
+- **Scope guard** — The dispatched ES prompt must explicitly state: "This is a cursory research pass. Use Context7 first, then one Exa search if needed. Do NOT perform multiple search iterations or cross-reference contradictory sources — report what you find and stop." Don't omit the scope guard — without it, ExternalScout pursues multiple research threads and exhausts its 15-step budget on tangential sources before answering the primary question.
+- **Scope check** — Is this a targeted API/config lookup (1–2 sources sufficient)? Use `research-basic`. If the question requires comparing approaches across 3+ sources or discovering novel techniques, use `research-deep` instead.
 
 ## Node ID
 

@@ -1,5 +1,7 @@
 # [Research Topic]
 
+You are HeadWrench. In this node, write and dispatch a single targeted ExternalScout research task.
+
 Dispatch @ExternalScout to research [specific topic]. The findings will be used by [downstream node] to [purpose].
 
 ## Research target
@@ -27,7 +29,7 @@ The research findings must include:
 
 If ExternalScout returns only links or a broad survey with no specific answer, flag the gap before advancing — do not silently pass incomplete findings to the next node.
 
-> **Writing the ExternalScout's prompt:** The prompt must specify: (1) the exact research question; (2) tool order: use Context7 first — call `context7_resolve-library-id` to find the library, then `context7_query-docs` to retrieve documentation — then Exa for broader web search if Context7 is insufficient; (3) scope guard: "This is a cursory pass — stop after first successful search. Do NOT pursue multiple threads, cross-reference sources, or use sequential thinking."; (4) return format: cite specific versions, include code examples when relevant, synthesize into a direct answer rather than a link list.
+> **Writing the ExternalScout's prompt:** The prompt must specify: (1) the exact research question; (2) tool order: use Context7 first — call `context7_resolve-library-id` to find the library, then `context7_query-docs` to retrieve documentation — then Exa for broader web search if Context7 is insufficient; (3) scope guard: "This is a cursory pass — stop after first successful search. Do NOT pursue multiple threads, cross-reference sources, or use sequential thinking."; (4) return format: cite specific versions, include code examples when relevant, synthesize into a direct answer rather than a link list; (5) Termination: "Stop after first successful search. Do not loop. Return findings immediately."
 
 ## Todo
 
@@ -38,3 +40,17 @@ If ExternalScout returns only links or a broad survey with no specific answer, f
 ## Before advancing
 
 After the researcher reports back, call `next_step()` to advance to the next node. If the research returned no useful findings, note this in your context and proceed — the gap itself is useful information.
+
+## Fill examples
+
+**Example 1 — Library API lookup:**
+- Research topic: "React Query v5 cache invalidation API"
+- Scope: "Use Context7 first. If not covered, one Exa search for React Query v5 invalidateQueries."
+- Expected output: "Code examples showing invalidateQueries usage with mutation callbacks; cite the specific version."
+- Downstream node: "`sequential-thinking` decides which invalidation pattern to use."
+
+**Example 2 — Configuration options:**
+- Research topic: "Cloudflare Workers wrangler.jsonc configuration for custom domains"
+- Scope: "Context7 only — Cloudflare docs should be well covered."
+- Expected output: "The exact wrangler.jsonc fields for custom domain routing with a working example config."
+- Downstream node: "`impl-deploy` uses this to write the wrangler.jsonc file."

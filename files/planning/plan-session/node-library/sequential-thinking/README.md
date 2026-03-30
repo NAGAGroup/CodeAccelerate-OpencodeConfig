@@ -23,8 +23,9 @@ HW calls the `sequential-thinking` MCP tool directly (no agent dispatch). The to
 - **The decision** — What specific question or trade-off HW should reason through. Good: "Should we refactor the token module before adding refresh logic, or add it first?" Bad: "Figure out the auth approach."
 - **Context to provide** — What information HW already has that's relevant to the decision
 - **Expected output** — What conclusion or decision the reasoning should produce. Good: "A recommended implementation order with rationale — e.g., 'refactor first because the current structure makes adding refresh logic fragile'." Bad: "A conclusion."
-- **What comes next** — Which node uses this conclusion and how. The output of the sequential-thinking call stays in HW's active context — subsequent nodes reference conclusions directly. No explicit capture step is needed unless the context window is large.
-- **Output constraint** — After reasoning, HW's conclusion must be stated explicitly before calling `next_step()`. The prompt must instruct HW: "State your conclusion clearly before advancing — the next node will reference it."
+- **What comes next** — Which node uses this conclusion and how. The output of the sequential-thinking call stays in HW's active context — subsequent nodes reference conclusions directly. No explicit capture step is needed unless the context window is large. Good: 'The decision-gate node at `feature-branch-choice` uses this conclusion to pick the implementation branch.' Bad: 'The next node.' (Too vague — HW cannot confirm the conclusion is in the right form.)
+- **Output constraint** — After reasoning, HW's conclusion must be stated explicitly before calling `next_step()`. The prompt must instruct HW: "State your conclusion clearly before advancing — the next node will reference it." Don't call `next_step()` without first emitting the conclusion text — downstream nodes reference HW's active context; a silent advance leaves the conclusion unrecorded.
+- **Complexity estimate** — How many thoughts will this decision need? Include a range in the prompt. Good: 'A tightly scoped binary decision — estimate 4–7 thoughts.' Bad: (No estimate — HW defaults to an arbitrary count or pads to an internal target.)
 
 ## Node ID
 
@@ -36,5 +37,8 @@ Default: `sequential-thinking`. If used multiple times in a DAG, suffix: `sequen
 - Use liberally in complex project DAGs — a multi-phase task often warrants 2–4 sequential-thinking nodes, one at each key decision point
 - Particularly useful before `decision-gate` (to prepare HW's recommendation) or before `write-dag` nodes (to finalize structure)
 - The `sequential-thinking_sequentialthinking` tool name is the MCP server tool — use this exact name in the todo array. A typo silently breaks the todo sequence.
-- **Failure mode:** Setting a fixed thought-count target (e.g., "use exactly 10 thoughts") instead of a complexity-guided estimate. Fixed counts cause HW to pad reasoning or truncate before reaching a conclusion. Instruct HW to stop when the conclusion is clear, not when a count is reached.
+- **Failure mode:** Setting a fixed thought count target (e.g., "use exactly 10 thoughts") instead of a complexity-guided estimate.
+- **Consequence:** HW pads reasoning or truncates before reaching a conclusion.
+- **Fix:** Instruct HW to stop when the conclusion is clear, not when a count is reached.
+- **Failure mode:** Setting a broad topic as the decision question ('How should we approach auth?'). Sequential thinking loops without converging because there is no bounded deliverable. The question must have a clear yes/no or ranked-choice answer.
 - **Failure mode:** Using a single sequential-thinking node for a multi-phase project when each decision point deserves its own node. One 15-thought chain covering 3 distinct decisions is harder to follow and debug than 3 separate focused nodes.

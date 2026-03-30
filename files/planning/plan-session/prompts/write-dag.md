@@ -8,12 +8,13 @@ Dispatch agents to write the project DAG files to `.opencode/session-plans/{task
 > (3) return format: after writing all files, report: the plan name, list of all files written with their paths, any schema issues encountered, and confirmation that all prompt filenames in plan.json exist in prompts/;
 > (4) see the Do NOT block below for agent-specific constraints.
 
-> **@HeadWrench subagent — Do NOT:**
+ > **@HeadWrench subagent — Do NOT:**
 > - Write prompts that describe or reference the planning system/DAG infrastructure (prompts address the user's actual task only)
 > - Use string IDs for `next` field values — `next` must always be a full embedded node object
 > - Reuse node IDs across branches — every node ID must be globally unique in the DAG tree
 > - Include file paths in `prompt` field values — use bare filenames only (e.g., `"prompt": "scout.md"` not `"prompt": "prompts/scout.md"`)
 > - Invent todo values — use only valid OpenCode tool names from the todo reference table
+> - Continue dispatching further agents after writing is complete — write files, validate locally, then return the report
 
 ## Todo
 
@@ -21,14 +22,14 @@ Dispatch agents to write the project DAG files to `.opencode/session-plans/{task
 
 1. `task` — Dispatch @HeadWrench (subagent) to write the project DAG files. In your dispatch prompt, provide:
    - The plan name (directory name under `.opencode/session-plans/`)
-   - The complete node decomposition table: Node ID | node type | agent | todo | what it does | branch conditions (with exact todo arrays from sequential-thinking)
+    - The complete node decomposition table: Node ID | node type | agent | todo | what it does | branch conditions — **copy the exact todo arrays verbatim from sequential-thinking output; do NOT reconstruct them**
    - The ASCII diagram of the full DAG
    - The list of node types used in this plan (so the subagent knows which READMEs to read)
 
    Instruct the subagent to do the following **in order**:
-   1. Read `files/planning/plan-session/node-library/CATALOGUE.md` — for the full node type reference and todo arrays
-   2. Read `files/planning/plan-session/reference/dag-design-guide.md` — for the schema spec and validity rules
-   3. For each node type used in this plan, read `files/planning/plan-session/node-library/{node-type}/README.md` — to understand what each node's prompt should contain
+    1. Read `{{SESSION_PATH}}/node-library/CATALOGUE.md` — for the full node type reference and todo arrays
+    2. Read `{{SESSION_PATH}}/reference/dag-design-guide.md` — for the schema spec and validity rules
+    3. For each node type used in this plan, read `{{SESSION_PATH}}/node-library/{node-type}/README.md` — to understand what each node's prompt should contain
    4. Write `plan.json` using the nested tree schema (see schema rules and examples below)
    5. Write all prompt files in `prompts/` — one per node, based on the decomposition table and node README guidance
 

@@ -15,7 +15,7 @@ Write the full plan as prose in your response text (do NOT embed this inside the
 3. **Node decomposition** — Table with columns: Node ID | Node type | Agent | Todo | What it does | Branch conditions (if any)
 
    The `Todo` column must contain the exact todo array for each node (e.g., `["task","task","task"]` for parallel scouts, `["question"]` for a decision gate). These exact values will be written into `plan.json`.
-4. **Estimated dispatches** — Estimated dispatches — count the number of `task` todo items across all nodes in the DAG (each `task` entry in a node's todo array = one agent dispatch).
+4. **Estimated dispatches** — Count the number of `task` entries across all nodes' todo arrays (each `task` = one agent dispatch). Do NOT count `question`, `bash`, `validate_dag`, `sequential-thinking_sequentialthinking`, or `compress` entries — those are HW's own actions, not dispatches.
 
 ## Todo
 
@@ -24,3 +24,4 @@ Write the full plan as prose in your response text (do NOT embed this inside the
 After the user selects an option:
     - "Approve — write the DAG" → call `next_step({ next: "write-dag" })`
     - "Rethink" → call `next_step({ next: "propose-plan-2" })`
+    - Any other answer → treat as "Rethink" and call `next_step({ next: "propose-plan-2" })`.

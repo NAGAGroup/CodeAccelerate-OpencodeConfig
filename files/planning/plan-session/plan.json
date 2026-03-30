@@ -12,14 +12,18 @@
       "next": {
         "id": "scout-node-library",
         "prompt": "scout-node-library.md",
-        "todo": ["read", "task"],
+        "todo": ["read"],
         "next": {
-          "id": "research-gate",
+          "id": "pre-research-thinking",
+          "prompt": "pre-research-thinking.md",
+          "todo": ["sequential-thinking_sequentialthinking"],
+          "next": {
+            "id": "research-gate",
           "prompt": "research-gate.md",
           "todo": ["question", "question"],
           "next": [
             {
-              "when": "User wants web research",
+              "when": "Yes, research would help",
               "node": {
                 "id": "research-brief",
                 "prompt": "research-brief.md",
@@ -111,7 +115,7 @@
               }
             },
             {
-              "when": "User skips web research",
+              "when": "No, skip research",
               "node": {
                 "id": "sequential-thinking-2",
                 "prompt": "sequential-thinking.md",
@@ -193,13 +197,14 @@
                         }
                       }
                     ]
-                  }
-                }
-              }
-            }
-          ]
-        }
-      }
-    }
-  }
-}
+                   }
+                 }
+               }
+             }
+           ]
+           }
+         }
+       }
+     }
+   }
+ }

@@ -20,7 +20,7 @@ Use these option labels exactly in your `question` call so the user sees consist
 
 You MUST call the `question` tool. Do not present the choice as plain text.
 
-**Before advancing:** Confirm you know the plan name (the directory name under `.opencode/session-plans/`) — the next node needs it immediately.
+**Before advancing:** Confirm you know the plan name (the directory name under `.opencode/session-plans/`) — the next node needs it immediately. If you are uncertain of the plan name, look back at the write-dag summary or ask the user: "What name did we use for this plan?" before calling next_step.
 
 **After the user answers:**
 - "Yes, activate now" → call `next_step({ next: "activate-now" })`

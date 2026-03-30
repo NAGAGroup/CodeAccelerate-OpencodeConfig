@@ -14,9 +14,10 @@ Dispatches one `@ContextInsurgent` agent via a single `task` call. ContextInsurg
 
 - **Synthesis question** — What specific question should ContextInsurgent answer? Be precise.
 - **Input context** — Which files to read, what prior scout findings to consider
-- **Expected output** — What the agent should return (a hypothesis, a summary, a list of affected paths, etc.)
+- **Expected output** — What the agent should return (a hypothesis, a summary, a list of affected paths, etc.). Good: 'A bullet list of all call sites for `refreshToken` with exact file paths and line numbers.' Bad: 'What CI found.' (No deliverable format — CI returns a narrative instead.)
 - **Complexity justification** — Why haiku scouts are insufficient for this task. Good: 'This requires tracing three interdependent call chains across 8 files.' Bad: 'Need to understand the codebase.'
-- **Output constraint** — The dispatched prompt must include this instruction: "Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings."
+- **Output constraint** — The dispatched prompt must include this instruction: "Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings." Don't accept a CI output organized under 'Architecture Overview', 'Key Decisions', or 'Potential Issues' headers without specific file path and line number evidence — those are structural boilerplate, not analysis.
+- **Budget scope** — Is the analysis completable within 20 steps? If it requires reading more than ~8–10 files AND synthesizing across all of them, break it into two `analyze-deep` nodes.
 
 ## Node ID
 
@@ -26,7 +27,8 @@ Default: `analyze-deep`. Rename for specificity: `analyze-auth-flow`, `analyze-m
 
 - ContextInsurgent is expensive — only use it when haiku is genuinely insufficient
 - Serial by design — do not place two analyze-deep nodes in parallel
-- Often follows `scout-parallel`: scouts gather breadth, ContextInsurgent synthesizes depth
+- Often placed after `scout-parallel`.
+- Scouts gather breadth; ContextInsurgent synthesizes depth from scout findings.
 - If the goal is **context compression** rather than deep analysis, use `compression-node` instead — `analyze-deep` produces reasoning artifacts, not context window pruning.
 - Do not instruct ContextInsurgent to read `.opencode/` session directories — they contain stale plan artifacts that may conflict with the actual codebase. Exception: planning infra files (e.g., the node-library) are permitted when explicitly tasked.
 - ContextInsurgent produces reasoning artifacts (hypotheses, summaries, affected path lists) — it does NOT write or edit code. Assign edits to @JuniorDev or @QuickDoc.

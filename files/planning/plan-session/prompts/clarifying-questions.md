@@ -2,7 +2,7 @@
 
 Before presenting the full plan for approval, take a moment to surface any clarifying questions you have for the user — and to share your current understanding of the problem.
 
-**Note:** The `question` tool is exempt from DAG blocking. You may call it as many times as needed in this node, even though the todo lists only one `question` call.
+**Note:** Both the `question` tool and `sequential-thinking_sequentialthinking` are exempt from DAG blocking in this node. You may call `question` as many times as needed. You may also call `sequential-thinking_sequentialthinking` once if user answers introduce new information that materially affects the plan.
 
 ## Steps
 
@@ -24,6 +24,8 @@ Call the `question` tool for each question you have. You may call it multiple ti
 ### 3. Reflect on the answers
 
 After the user answers your questions: if any answers introduce new information that materially affects your plan design, run a sequential-thinking pass now to update your thinking. Sequential-thinking is also exempt from DAG blocking — call `sequential-thinking_sequentialthinking` directly if needed. This step is optional — only do it if the answers genuinely change something.
+
+To trigger: call the `sequential-thinking_sequentialthinking` tool directly — it is exempt from DAG blocking in this node and can be called without a matching todo item. Limit to one sequential-thinking pass; do not loop.
 
 ### 4. Advance
 

@@ -15,14 +15,15 @@ Dispatches multiple haiku agents (typically `@JuniorDev`) via sequential `task` 
 For each task, specify:
 
 - **Agent** — Which agent handles it (`@JuniorDev` for code edits, `@QuickDoc` for docs, `@ExternalScout` for research)
-- **Target** — Specific files or modules the agent should touch
+- **Target** — Specific files or modules the agent should touch. Good: 'Add a `refreshToken(userId: string): Promise<Token>` function to `src/auth/token.ts` and export it from the module index.' Bad: 'Fix the token module.' (No observable outcome.)
 - **Goal** — What the agent should produce or change
 - **Constraints** — Any patterns to follow, things to avoid, or dependencies to respect
-- **Output constraint per task** — Each dispatched agent prompt must include a success criterion stated as an observable outcome ("The function compiles without TypeScript errors and is exported from the module index") — not a process description ("Fix the bug"). The success criterion must be verifiable without additional tool calls.
+- **Output constraint per task** — Each dispatched agent prompt must include a success criterion stated as an observable outcome ("The function compiles without TypeScript errors and is exported from the module index") — not a process description ("Fix the bug"). The success criterion must be verifiable without additional tool calls. Bad: 'Agent completes the task.' (This is a process description — it does not specify what to observe.)
 
 Also determine:
 - **Task count** — How many independent tasks? Adjust the todo array from the default `["task","task","task"]` to match. The number of `task` entries in the `todo` array must match the number of distinct task instructions in the prompt — they are enforced in order by the plugin. Adjust both together.
-- **Independence check** — Are the tasks truly independent? If one depends on another's output, use sequential nodes instead. Good: "Task 1 edits src/auth/token.ts; Task 2 edits src/auth/session.ts — no shared file, no shared output." Bad: "Task 2 depends on the function Task 1 adds." (dependency → use sequential nodes)
+- **Independence check** — Are the tasks truly independent? If one depends on another's output, use sequential nodes instead. Good: "Task 1 edits src/auth/token.ts; Task 2 edits src/auth/session.ts — no shared file, no shared output." Bad: "Task 2 depends on the function Task 1 adds." (dependency → use sequential nodes) Don't describe tasks as independent if they touch the same file — two concurrent writes cause a silent overwrite.
+- **File-write conflict check** — Do any two tasks target the same file? If yes, make them sequential — do not dispatch them as parallel tasks.
 - **Success criterion** — What observable outcome confirms the task was completed? (E.g., "The function compiles without TypeScript errors and is exported from the module index.")
 - **Conventions reference** — If the edit must match existing style, name the reference file (e.g., "Match the pattern in `src/auth/session.ts`").
 

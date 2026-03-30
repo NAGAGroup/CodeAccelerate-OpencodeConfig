@@ -1,5 +1,7 @@
 # Deep Analysis
 
+You are HeadWrench. In this node, write and dispatch a single ContextInsurgent task prompt for deep multi-file reasoning.
+
 @ContextInsurgent is serial and expensive — use after `scout-parallel` when haiku cannot handle the synthesis, or when multi-file root-cause reasoning is required. Do not use for simple file reads.
 
 Dispatch `@ContextInsurgent` to perform deep multi-file reasoning on the following question:
@@ -7,6 +9,8 @@ Dispatch `@ContextInsurgent` to perform deep multi-file reasoning on the followi
 ## Analysis question
 
 {{ANALYSIS_QUESTION}}
+
+*A single specific, bounded question. Good: 'Which call sites invoke `verifyToken()` directly vs. through a middleware wrapper, and in which files?' Bad: 'Analyze the auth system.' (No bounded deliverable.)*
 
 ## Context to provide
 
@@ -18,6 +22,8 @@ Dispatch `@ContextInsurgent` to perform deep multi-file reasoning on the followi
 
 {{EXPECTED_OUTPUT}}
 
+*What form the answer takes. Good: 'A bullet list of all call sites for `refreshToken` with file paths and line numbers.' Bad: 'Whatever CI finds.' (No format — CI returns a narrative.)*
+
 ## Output format requirements
 
 Answer the question directly with specific evidence from the code. Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings.
@@ -26,7 +32,19 @@ Answer the question directly with specific evidence from the code. Do not produc
 
 **Do NOT** instruct ContextInsurgent to read `.opencode/` session directories — completed sessions contain stale content that may poison analysis. Exception: planning infrastructure files (e.g., the node-library) are permitted when explicitly specified.
 
-> **Writing the ContextInsurgent's prompt:** The prompt must specify: (1) the exact analysis question specified for this node; (2) which files or directories to read; (3) the expected return format — a direct answer with supporting evidence, not boilerplate section headers. Instruct the agent: "Do not produce generic 'Architecture Overview' or 'Key Decisions' sections. Answer the question directly with specific evidence from the code."
+> **Writing the ContextInsurgent's prompt:** The prompt must specify: (1) the exact analysis question specified for this node; (2) which files or directories to read; (3) the expected return format — a direct answer with supporting evidence, not boilerplate section headers. Instruct the agent: "Do not produce generic 'Architecture Overview' or 'Key Decisions' sections. Answer the question directly with specific evidence from the code." (4) termination condition: "Return your full structured report when analysis is complete. Do not ask the user for confirmation."
+
+## Fill examples
+
+**Example 1 — Authentication call chain:**
+- Analysis question: "Which files call `verifyToken()` directly vs. through middleware? List exact file paths and line numbers."
+- Context to provide: "Scout findings: `src/auth/token.ts` (exports verifyToken), `src/middleware/auth.ts`, `src/routes/users.ts`. Read these three files."
+- Expected output: "Bullet list of all call sites with file path, line number, and whether direct or via middleware."
+
+**Example 2 — Data migration impact:**
+- Analysis question: "Which database query functions will break if the `users` table schema changes to add a required `tenant_id` column?"
+- Context to provide: "Scout found DB queries in `src/db/users.ts`, `src/db/sessions.ts`, `src/api/admin.ts`. Read these files."
+- Expected output: "Per-function list of affected queries with file paths and line numbers."
 
 ## Todo
 

@@ -4,7 +4,7 @@ The scouts have reported on the codebase, the node library is now available, and
 
 ## Todo
 
-0. Before calling the tool, state aloud how many thoughts you expect to need for this task, based on its complexity. A focused single-concern decision may need 5–8 thoughts; a broad multi-phase plan design typically needs 12–18. Name your estimate explicitly — this is your target, not a hard cap.
+0. Before calling the tool, write one sentence in your response (NOT inside the tool call) stating your thought-count estimate: e.g., "Expecting 10–14 thoughts for this multi-phase plan." A focused decision: 5–8 thoughts. A broad multi-phase plan: 12–18. This estimate is a planning target, not a hard cap — stop when reasoning is complete regardless of count.
 
 1. `sequential-thinking_sequentialthinking` — Reason through the full plan design. **Keep calling this tool repeatedly in the same turn — do NOT wait for user input between thoughts.** Each call builds on the previous. Continue until you have worked through all the questions below and produced a complete plan. Stop when the reasoning is complete and the output is ready — not when a count is reached. If you are repeating or circling already-established points, stop immediately.
 
@@ -29,6 +29,8 @@ Work through these questions in order. Each builds on the previous:
     **Compression nodes for long DAGs:** For long, multi-phase DAGs — especially those with extensive scout or analysis phases — include compression nodes between major phases. Multiple compression nodes in a single DAG is appropriate and encouraged; don't limit to one. Place them after phases where context has accumulated (e.g., after 3 scouts, after a deep analysis) and before phases that need a clean context window.
 
 7. **Execution-time research preference:** Did the user indicate at the research gate that the project DAG should include research nodes? If yes, include `research-basic` or `research-deep` nodes at appropriate points in the generated plan. Position them before the implementation steps that depend on that research. If no, omit dedicated research nodes.
+
+7a. **Pre-research thinking recommendation:** If a "Research recommendation: YES/NO" statement is in your context (from `pre-research-thinking`), use it alongside the user's Q1 answer to confirm or adjust your assumption about whether planning-time research was conducted and whether its findings are available in context.
 
 8. **What am I confident about vs. still unsure of?** Be explicit. If something is genuinely unclear, note it — you'll surface it to the user at `propose-plan`.
 

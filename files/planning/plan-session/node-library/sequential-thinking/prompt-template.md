@@ -1,5 +1,7 @@
 # Sequential Reasoning
 
+You are HeadWrench. In this node, reason through a bounded decision using the sequential-thinking MCP tool, then state a conclusion before advancing.
+
 Use the `sequential-thinking` MCP tool to reason through the following decision before acting.
 
 ## Decision to reason through
@@ -30,6 +32,8 @@ This conclusion feeds directly into {{NEXT_PHASE_OR_DECISION}} — complete the 
 
 1. `sequential-thinking_sequentialthinking` — Reason through: {{DECISION_QUESTION}}. Use the context above. Produce: {{EXPECTED_OUTPUT}}. **Keep calling this tool repeatedly in the same turn — do NOT wait for user input between thoughts.** Each call builds on the previous. Stop when the reasoning is complete and the conclusion is clear — not when a count is reached. If you are repeating already-settled points, stop immediately.
 
+2. After completing the final thought, state the conclusion explicitly in your response before calling `next_step()`.
+
 ## Before advancing
 
 If reasoning revealed meaningful uncertainty, competing approaches where user preference matters, or open questions that could affect downstream work, consider asking the user before calling `next_step()`. This is optional — if the conclusion is clear, advance when ready.
@@ -40,3 +44,17 @@ If reasoning revealed meaningful uncertainty, competing approaches where user pr
 - Stop when the conclusion is clear, not when a thought count is reached.
 - If you are repeating already-settled points, stop immediately.
 - State the conclusion explicitly before calling `next_step()` — downstream nodes reference it directly.
+
+## Fill examples
+
+**Example 1 — Binary refactor-order decision:**
+- Decision question: "Should we refactor the token module before adding refresh logic, or add refresh logic first?"
+- Relevant context: "Scout found token.ts has 3 tightly coupled functions. Adding refresh now would require duplicating 2 of them."
+- Expected output: "A recommended order with rationale."
+- Next phase: "The `parallel-tasks` node after this uses the decision to sequence the implementation."
+
+**Example 2 — Approach selection:**
+- Decision question: "Should we use React Query's `invalidateQueries` or manual cache updates for the post-mutation refresh?"
+- Relevant context: "ExternalScout found React Query v5 deprecates direct cache mutations; invalidateQueries is the recommended pattern."
+- Expected output: "A ranked recommendation with trade-offs."
+- Next phase: "`impl-handlers` node will implement using the recommended approach."
