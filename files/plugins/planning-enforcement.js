@@ -12527,7 +12527,7 @@ When you're ready, call \`next_step({ next: "<node-id>" })\` to continue.`;
 
 ` + `---
 
-` + `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` + `Present a summary of what was produced to the user. ` + `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`. ` + `Do NOT call activate_plan yourself or dispatch any more agents.`;
+` + `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` + `Present a summary of what was produced to the user. ` + `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`;
 }
 function ensureOpenCodeIgnore(worktree) {
   try {
@@ -12706,7 +12706,7 @@ ${advanceResult}`;
 
 ` + `---
 
-` + `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` + `Present a summary of what was produced to the user. ` + `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`. ` + `Do NOT call activate_plan yourself or dispatch any more agents.`;
+` + `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` + `Present a summary of what was produced to the user. ` + `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`;
         }
       }),
       recover_context: tool({

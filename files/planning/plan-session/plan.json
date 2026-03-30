@@ -49,7 +49,7 @@
                                   "node": {
                                     "id": "activate-now",
                                     "prompt": "activate-now.md",
-                                    "todo": []
+                                    "todo": ["activate_plan"]
                                   }
                                 },
                                 {
@@ -84,7 +84,7 @@
                                     "node": {
                                       "id": "activate-now-2",
                                       "prompt": "activate-now.md",
-                                      "todo": []
+                                      "todo": ["activate_plan"]
                                     }
                                   },
                                   {
@@ -135,9 +135,9 @@
                             {
                               "when": "Yes, activate now",
                               "node": {
-                                "id": "activate-now-3",
-                                "prompt": "activate-now.md",
-                                "todo": []
+                                 "id": "activate-now-3",
+                                 "prompt": "activate-now.md",
+                                 "todo": ["activate_plan"]
                               }
                             },
                             {
@@ -170,9 +170,9 @@
                               {
                                 "when": "Yes, activate now",
                                 "node": {
-                                  "id": "activate-now-4",
-                                  "prompt": "activate-now.md",
-                                  "todo": []
+                                   "id": "activate-now-4",
+                                   "prompt": "activate-now.md",
+                                   "todo": ["activate_plan"]
                                 }
                               },
                               {

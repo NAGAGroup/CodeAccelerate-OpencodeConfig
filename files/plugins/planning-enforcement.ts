@@ -316,12 +316,11 @@ function autoAdvance(
   state.updated_at = now();
   writeState(statePath, state);
 
-  return `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.\n\n` +
-    `---\n\n` +
-    `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` +
-    `Present a summary of what was produced to the user. ` +
-    `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`. ` +
-    `Do NOT call activate_plan yourself or dispatch any more agents.`;
+   return `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.\n\n` +
+     `---\n\n` +
+     `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` +
+     `Present a summary of what was produced to the user. ` +
+     `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`;
 }
 
 // ─── Plugin ──────────────────────────────────────────────────────────────────
@@ -529,12 +528,11 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           state.updated_at = now();
           writeState(statePath, state);
 
-          return `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.\n\n` +
-            `---\n\n` +
-            `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` +
-            `Present a summary of what was produced to the user. ` +
-            `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`. ` +
-            `Do NOT call activate_plan yourself or dispatch any more agents.`;
+           return `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.\n\n` +
+             `---\n\n` +
+             `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` +
+             `Present a summary of what was produced to the user. ` +
+             `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`;
         },
       }),
 

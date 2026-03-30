@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `propose-plan.md` prompt: added `Todo` column to node decomposition table requirement with explanation that values are written verbatim into `plan.json`
 - `headwrench.md` agent: Planning Step 3 now instructs HW to pass explicit `todo` arrays in the write-dag dispatch prompt
 
+### Fixed
+
+- Fixed `activate-now` nodes in the `plan-session` DAG: changed `todo` from `[]` to `["activate_plan"]` so HeadWrench can call `activate_plan` before the terminal completion message fires; removed contradictory "Do NOT call activate_plan yourself" instruction from the plugin's terminal completion message; updated `activate-now.md` with a clarifying note.
+
 ## [3.4.0] - 2026-03-29
 
 ### Added
