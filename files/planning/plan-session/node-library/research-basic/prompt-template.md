@@ -1,56 +1,78 @@
-# [Research Topic]
+# Research: {{RESEARCH_TOPIC}}
 
-You are HeadWrench. In this node, write and dispatch a single targeted ExternalScout research task.
+## Zone 1: Fixed Framing
 
-Dispatch @ExternalScout to research [specific topic]. The findings will be used by [downstream node] to [purpose].
+You are HeadWrench. In this node, dispatch @ExternalScout for targeted external research on a code-related topic. This is a cursory lookup — not a deep investigation. ExternalScout will prioritize Context7 (library documentation) first, then use code-example tools if needed. No multi-threaded exploration.
 
-## Research target
+---
 
-{{RESEARCH_TARGET}}
-*Describe exactly what ExternalScout should find: library name, version, API surface, configuration options. Good: "React Query v5 — the `invalidateQueries` API and cache invalidation patterns." Bad: "React Query stuff."*
+## Zone 2: Planning Agent Fills These Slots
 
-## Scope
+### {{RESEARCH_TOPIC}}
+*What is the specific question or API/config lookup target?*
 
-{{SCOPE}}
-*What secondary threads ExternalScout may follow if the primary source is insufficient. Omit if no secondary threads are relevant.*
+*Example (good): "What is the exact syntax for configuring TLS client certificates in the requests library (Python)?"*
 
-## Expected output
+*Example (bad): "Python HTTP libraries" (too broad — produces a survey, not a how-to)*
 
-{{EXPECTED_OUTPUT}}
-*Return format with specific format and version requirement. E.g., "A summary of configuration options with code examples, citing library version X." Bad: "Whatever is useful."*
+### {{OUTPUT_FORMAT}}
+*What specific form should the answer take?*
 
-## Output requirements (fixed)
+*Example: "Include the exact configuration code, which library versions support it, and a working example. Cite the minimum required version."*
 
-The research findings must include:
-- A direct answer to the research question (not a list of links)
-- Specific library version(s) cited
-- At least one code example if the question concerns an API or configuration
-- An explicit statement of what was NOT found if the search was partially successful
+### {{DOWNSTREAM_USE}}
+*How will this research feed into the next planning step?*
 
-If ExternalScout returns only links or a broad survey with no specific answer, flag the gap before advancing — do not silently pass incomplete findings to the next node.
+*Example: "A code implementation node will use this to write the HTTP client setup — include exact syntax and version requirements."*
 
-> **Writing the ExternalScout's prompt:** The prompt must specify: (1) the exact research question; (2) tool order: use Context7 first — call `context7_resolve-library-id` to find the library, then `context7_query-docs` to retrieve documentation — if Context7 is insufficient, use `get_code_context_exa` for code examples and GitHub patterns — use `web_search_exa` only as a last resort; (3) scope guard: "This is a cursory pass — stop after first successful search. Do NOT pursue multiple threads, cross-reference sources, or use sequential thinking."; (4) return format: cite specific versions, include code examples when relevant, synthesize into a direct answer rather than a link list; (5) Termination: "Stop after first successful search. Do not loop. Return findings immediately."
+### {{SCOPE_BOUNDARY}}
+*What threads can ExternalScout follow if the first source is incomplete?*
+
+*Example: "Use Context7 first. If the docs lack a working example, use `get_code_context_exa` to find one from GitHub repos. Stop after first example is found."*
+
+---
+
+## Zone 3: Fixed Execution Specs (Recency)
+
+### Answer Format Requirement
+
+ExternalScout must synthesize a **direct answer with code examples**. Do NOT return a list of links or a survey-style summary. Cite specific library versions and minimum version requirements. If the research is partially successful, state explicitly what was found and what was NOT found.
+
+### Scope Guard
+
+This is a cursory research pass. Use Context7 first (`context7_resolve-library-id` to resolve the library ID, then `context7_query-docs` with that ID). Use `get_code_context_exa` second if needed for code examples. Do NOT perform multiple search iterations — report what you find and stop. Do NOT loop or pursue multiple threads.
+
+---
+
+### Dispatch Blockquote (Final Element)
+
+> **Writing the @ExternalScout task prompt:** Include:
+>
+> 1. The specific research topic/question — name the exact library, API, configuration option, or error pattern.
+> 2. Tool priority: Context7 first — call `context7_resolve-library-id` to identify the library, then `context7_query-docs` with that ID. Use `get_code_context_exa` second for code examples and GitHub patterns. `web_search_exa` only as last resort.
+> 3. Return format: synthesize a direct answer with code examples; cite specific versions; do NOT return a list of links.
+> 4. Scope guard: "This is a cursory research pass — use at most 2–3 research tool calls and stop. Do not pursue multiple threads or cross-reference conflicting sources."
 
 ## Todo
 
-> **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
+> **Task tool:** Required params: `subagent_type` ("external-scout"), `description` (3–5 words), `prompt` (full instructions). Omit `task_id` for new tasks.
 
-1. `task` — Dispatch @ExternalScout with the research instructions above. Tell ExternalScout to use Context7 first: call `context7_resolve-library-id` to identify the library, then `context7_query-docs` to retrieve docs. If Context7 is insufficient, use `get_code_context_exa` for code examples and GitHub patterns. Then stop. Do NOT pursue multiple threads. Include code examples where relevant, cite specific versions, and return a direct answer — not a list of links.
+1. `task` — Dispatch @ExternalScout with the research instructions from Zones 1–3 above.
 
-## Before advancing
+## After ExternalScout Reports Back
 
-After the researcher reports back, call `next_step()` to advance to the next node. If the research returned no useful findings, note this in your context and proceed — the gap itself is useful information.
+Call `next_step()` to advance to the downstream node. If the research found nothing useful, note this in your context — the absence of documentation is itself actionable information.
 
-## Fill examples
+## Fill Examples
 
 **Example 1 — Library API lookup:**
-- Research topic: "React Query v5 cache invalidation API"
-- Scope: "Use Context7 first. If not covered, one Exa search for React Query v5 invalidateQueries."
-- Expected output: "Code examples showing invalidateQueries usage with mutation callbacks; cite the specific version."
-- Downstream node: "`sequential-thinking` decides which invalidation pattern to use."
+- Research topic: "React Query v5 — the `invalidateQueries` API and how to use it after a mutation"
+- Output format: "Function signature, parameter descriptions, a working code example showing invalidateQueries in a mutation callback, and the React Query version number"
+- Downstream use: "A sequential-thinking node will decide which invalidation pattern to use in our mutation handler"
+- Scope boundary: "Use Context7 first. If the docs lack a complete example, use `get_code_context_exa` to find one from a GitHub repo. Stop after first example found."
 
 **Example 2 — Configuration options:**
-- Research topic: "Cloudflare Workers wrangler.jsonc configuration for custom domains"
-- Scope: "Context7 only — Cloudflare docs should be well covered."
-- Expected output: "The exact wrangler.jsonc fields for custom domain routing with a working example config."
-- Downstream node: "`impl-deploy` uses this to write the wrangler.jsonc file."
+- Research topic: "PostgreSQL connection pooling in Node.js — exact options for node-postgres (pg) pool configuration"
+- Output format: "The key configuration parameters (max, idleTimeoutMillis, max_overflow), their defaults, and one complete working example config file"
+- Downstream use: "An implementation node will copy this config into the database connection setup"
+- Scope boundary: "Context7 only — the node-postgres documentation should cover all pooling options"

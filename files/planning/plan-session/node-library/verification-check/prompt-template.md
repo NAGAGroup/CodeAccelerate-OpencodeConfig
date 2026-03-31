@@ -1,47 +1,84 @@
 # Verification Check
 
-**Important:** All command placeholders must be filled with exact shell commands at DAG-authoring time. Do not ship this node with unfilled command placeholders.
+## Zone 1: Fixed Framing
 
-Dispatch HeadWrench as a subagent via `task` — HeadWrench is the only agent with shell access. Do NOT substitute another agent here.
+You are dispatching HeadWrench as a subagent with full shell access. HW runs the build and test commands specified for this node, inspects the output, and reports outcomes in a machine-parseable format. **HeadWrench is the only agent with shell access** — do not substitute another agent here.
 
-## Commands
+---
 
-**Build:** `{{BUILD_COMMAND}}`
-**Test:** `{{TEST_COMMAND}}`
-**Working directory:** `{{WORKING_DIRECTORY}}`
+## Zone 2: Authoring-Layer Placeholders
 
-*All three must be exact shell commands and a real path. E.g., Build: `bun run build 2>&1`, Test: `bun test`, Working directory: `/home/user/project` (absolute or repo-relative). Do not leave as `{{PLACEHOLDER}}` — unfilled commands cause the subagent to stall.*
+### Build command
+`{{BUILD_COMMAND}}`
 
-## Acceptance criteria
+*The exact shell command to run. Do not describe it — provide the literal command (e.g., `cmake --build build/`, `make -j$(nproc)`, `cargo build --release`). This command will be executed as-is.*
 
+### Test command
+`{{TEST_COMMAND}}`
+
+*The exact shell command to run tests, or "testing is included in the build command above" if not separate. Examples: `ctest --output-on-failure`, `./build/tests/run_tests`, `pytest tests/ -v`. The HW subagent must know whether to run a second command.*
+
+### Working directory
+`{{WORKING_DIRECTORY}}`
+
+*The directory from which commands will run. Use absolute path (e.g., `/home/user/my-project`) or repo-relative (e.g., `.` for root, or `build/` for out-of-source builds). If commands use relative paths, specifying the directory is critical — omitting it causes "file not found" errors.*
+
+### Acceptance criteria
 {{ACCEPTANCE_CRITERIA}}
 
-*What constitutes a passing result — exit code, specific output string, or absence of error lines. Good: "Exit code 0 and no TypeScript errors in stdout." Bad: "It should work."*
+*Machine-readable definition of PASS. Include exit code check (e.g., "exit code 0"), output patterns (e.g., "test output contains 'all tests passed'"), or coverage thresholds. Good: "Exit code 0 from both commands. Test output must contain 'all tests passed' and coverage >= 90%." Bad: "code quality is good."*
 
-## On failure
-
+### Failure handling
 {{FAILURE_HANDLING}}
 
-*Name the node ID that follows on failure. E.g., "On failure, route to the fix-errors node via a conditional-branch." Good: specifies the exact node ID. Bad: "handle the failure somehow."*
+*What to do if verification fails. Include: whether to stop on first failure or continue, what error output to capture, whether to investigate or simply report. Good: "If build fails, stop and report error output. If build succeeds but tests fail, report failing test names and error messages. Do not attempt fixes." Bad: "report what went wrong."*
 
-Reference the node ID that follows on failure. Standard patterns: route to a `parallel-tasks` fix node, route to `output-failure`, or use a `conditional-branch` after this node. E.g., 'On failure, the conditional-branch node `check-build-result` routes to the fix phase.'
+---
 
-## Response format
+## Zone 3: Fixed Execution-Spec Sections (Recency)
+
+### Outcome format requirement
 
 End your response with:
-**Outcome:** [PASS | FAIL | PARTIAL]
-Followed by a one-sentence summary of the result.
 
-Do NOT call additional tool calls after reporting the outcome. Do NOT attempt to fix errors found during verification — report findings only. Fixes belong in a separate node.
+```
+**Outcome:** [PASS | FAIL | PARTIAL]
+<one-sentence summary>
+```
+
+FAIL and PARTIAL outcomes **must include the specific command that failed and the error text.** This format is required — downstream nodes parse it programmatically to route to the next step.
+
+**Good example:**
+```
+**Outcome:** FAIL
+Build succeeded but tests failed. Command: `ctest --output-on-failure`. Error: "Assertion failed: expected 0.0 got 1.4e-6 at src/kernels/matmul_test.cpp:42".
+```
+
+**Bad example:**
+```
+Build check: Tests failed.
+```
+(missing the marker and specific error text — downstream routing fails)
+
+### Scope constraint
+
+Run only the commands specified. Do not install dependencies, modify files, or attempt to fix failures — report findings only. Fixes belong in a separate implementation node. Do not call `task` again after reporting the outcome.
+
+---
+
+## Final Element: Dispatch Blockquote
+
+> **Writing the HeadWrench subagent's task prompt:** The prompt must specify:
+> 1. The exact commands to run (build command from this node, test command from this node)
+> 2. The exact working directory (absolute or repo-relative path)
+> 3. Acceptance criteria — machine-readable definition of PASS (exit codes, output patterns, thresholds)
+> 4. Failure handling — what to capture and report on FAIL, whether to stop on first failure or continue
+> 5. Mandatory outcome format: `**Outcome:** [PASS | FAIL | PARTIAL]` + one-sentence summary; FAIL/PARTIAL outcomes must include the command that failed and the error text
 
 ## Todo
 
-> **Task tool:** Required params: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions). **`task_id` is optional — omit it for new tasks.** Only include `task_id` if resuming a prior session; it must start with `ses_`. Do not fabricate a `task_id`.
+```json
+["task"]
+```
 
-> **Writing the HeadWrench subagent's prompt:** The prompt must include: (1) the exact commands to run (the build command and test command specified for this node); (2) the exact working directory; (3) explicit pass/fail criteria — what output or exit code constitutes success; (4) instructions to end the response with: "**Outcome:** [PASS | FAIL | PARTIAL]" followed by a one-sentence summary.
-
-1. `task` — Dispatch @HeadWrench (subagent) to run `{{BUILD_COMMAND}}` and `{{TEST_COMMAND}}` from `{{WORKING_DIRECTORY}}`. Verify: {{ACCEPTANCE_CRITERIA}}. Report pass or fail clearly.
-
-## Before advancing
-
-If build or test results were ambiguous, showed partial failures, or raise questions about whether to proceed, consider asking the user before calling `next_step()`. This is optional — if results clearly pass or fail, advance when ready.
+Dispatch @HeadWrench (subagent) via a single `task` call. Include the blockquote template above in your dispatch prompt.

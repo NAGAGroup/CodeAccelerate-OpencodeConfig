@@ -1,42 +1,68 @@
 # {{NODE_TITLE}}
 
-*Descriptive title matching the condition being evaluated. E.g., "Build Result Check" or "File Exists Check". Avoid generic titles like "Branch Node".*
+*Descriptive title matching the condition being evaluated. E.g., "Build Result Check", "File Exists Verification", "Test Output Evaluation". Avoid generic titles like "Branch Node".*
 
-{{CONDITION_DESCRIPTION}}
+---
 
-*Describe the condition in one sentence: what was evaluated, when it was evaluated, and what the possible results are. E.g., "The build command `bun run build` ran in the preceding `run-build` node — check whether it exited 0 (success) or non-zero (failure)."*
+## ZONE 1: Fixed Framing (HW Evaluates Condition — No Tool Call Needed)
 
-## Branch conditions
+This node branches on a condition that is already available in prior context. No new tool calls are needed. HeadWrench will evaluate the condition from the prior context and call `next_step()` to route to the appropriate branch.
 
-- **{{BRANCH_1_LABEL}}** — {{BRANCH_1_DESCRIPTION}}
-- **{{BRANCH_2_LABEL}}** — {{BRANCH_2_DESCRIPTION}}
+**The condition being evaluated:**
+{{CONDITION}}
 
-Branch labels must exactly match the `when` conditions in this node's `next` array in `plan.json`. A mismatch silently breaks routing.
+*What specific value, file state, or output property is being checked? E.g., "Exit code from the build-and-test task (0 = success, non-zero = failure)". Do NOT describe a feature or goal — describe the exact machine-readable result.*
 
-## How to decide
+**Where HW finds the condition result:**
+{{CONDITION_SOURCE}}
 
-{{HOW_HW_KNOWS}}
+*Describe the exact location in prior context: which node produced it, which section or field contains it, what it looks like. E.g., "In the prior 'run-tests' node's task[1] output, under the '## Test Results' section, the 'Exit code:' field shows either 0 or a non-zero number." Do NOT say "HW will figure it out" — provide the exact location.*
 
-*Describe where the condition result lives in HW's context: which prior node produced it, what tool call generated it, and what the result looks like. E.g., "The bash tool output from the `run-build` node shows either 'Build succeeded' or an error trace." Do NOT write "HW should check the results" — name the exact context artifact.*
+---
 
-## What to do
+## ZONE 2: Branch Definitions (Planning Agent Fills These)
 
-Evaluate the condition using prior context — no new tool calls are needed.
+### Branch A: {{BRANCH_A_CONDITION}}
 
-Then call `next_step({ next: '<node-id>' })` where `<node-id>` is the exact `id` field of the branch node in plan.json — NOT the `when` string. Branch routing uses node ID matching. The available branch IDs are in the `next` array for this node in plan.json.
+**When this condition occurs:** {{BRANCH_A_CONDITION}}
 
-Do NOT call `question` to ask the user — this branch is machine-decided.
+*Describe what the condition outcome means in plain language. E.g., "Exit code is 0, indicating all tests passed successfully."*
 
-## Todo
+**Route to node:** `{{BRANCH_A_NODE_ID}}`
 
-`[]` — No tools to call. HW evaluates the condition from prior context and calls `next_step({ next: '<node-id>' })` to take the branch.
+*The exact node id from plan.json where HW should route when Branch A is true. E.g., "deploy-staging". This must be the `id` field from the branch object in plan.json — NOT the `when` string.*
 
-> **How to branch:**
-> (1) Identify the condition result from prior context — do not call any tool to re-evaluate it;
-> (2) match the result against the branch conditions listed above;
-> (3) call `next_step({ next: '<node-id>' })` using the id from the matching branch's node object in plan.json.
-> Do NOT use the `when` string as the argument.
+### Branch B: {{BRANCH_B_CONDITION}}
 
-## Example
+**When this condition occurs:** {{BRANCH_B_CONDITION}}
 
-If the preceding bash node ran `bun run build` and exited 0, take the `build-passed` branch. If it exited non-zero, call `next_step({ next: 'fix-errors' })`.
+*Describe what the condition outcome means in plain language. E.g., "Exit code is non-zero, indicating test failures."*
+
+**Route to node:** `{{BRANCH_B_NODE_ID}}`
+
+*The exact node id from plan.json where HW should route when Branch B is true. E.g., "debug-and-retry". This must be the `id` field from the branch object in plan.json — NOT the `when` string.*
+
+---
+
+## ZONE 3: Fixed Execution Spec (Recency-Weighted — HW Reads Last)
+
+## Routing requirement
+
+Call `next_step({ next: '<node-id>' })` where `<node-id>` **exactly matches the id field of the branch node in plan.json** — NOT the when string.
+
+The plugin matches `<node-id>` against the `id` field of each branch. Passing the `when` string will cause the router to misidentify the target and silently route to an unintended subtree. Always use the exact node id (e.g., `deploy-staging`, not `"Tests passed"`).
+
+## No tool calls required
+
+This node has an **empty todo** — `[]`. No tools are called.
+
+**Your action:**
+1. Read the condition result from prior context (do not call any tool to re-evaluate it)
+2. Match the result against the branch conditions (Branch A or Branch B)
+3. Call `next_step({ next: '<node-id>' })` using the exact node id from the matching branch
+
+Do NOT call any other tools. Do NOT call `question`. This decision is machine-determined, not user-determined.
+
+## Important reminder
+
+This is a routing node, not a decision or action node. You are evaluating an existing condition, not making a judgment or dispatching work. If the condition requires a new bash command, code execution, or agent dispatch, that should have happened in a preceding node (e.g., `verification-check`, `generic`). This node only routes on the result that is already in context.

@@ -1,45 +1,64 @@
 # Decision Gate
 
-Present the following choice to the user using the `question` tool. Their answer determines which branch is followed.
+**Zone 1 — Framing (Primacy):**
 
-## Decision
+You will call the `question` tool once, presenting the decision and options below. The user's choice maps to a branch in the plan. Your job: ask the question, wait for the response, then call `next_step()` with the branch's node ID.
+
+---
+
+**Zone 2 — Content to Present (Middle — Placeholders with Authoring Guidance):**
+
+## The Decision
 
 {{DECISION_DESCRIPTION}}
 
-*One sentence stating the decision the user is making. Frame as a question or choice. E.g., "Should we refactor the auth module before adding the new feature, or add the feature first?" Bad: "Decide what to do next."*
+*What specific choice is the user making? One sentence, framed as a question or decision point. Example: "Should we optimize the database before adding the feature, or add the feature first?" Bad: "What should we do next?" (too vague for the user to decide)*
 
-## Options
+## The Options
 
-The option labels below must exactly match the `when` conditions in this node's `next` array in `plan.json`. The plugin matches the user's selected label against those conditions to pick the branch.
+You will present these two options to the user in the `question` tool. **The option labels below must exactly match the `when` strings in this node's branch array in plan.json — character-for-character, including capitalization and punctuation.**
 
-{{OPTION_1_LABEL}} — {{OPTION_1_DESCRIPTION}}
-{{OPTION_2_LABEL}} — {{OPTION_2_DESCRIPTION}}
+- **Option A:** {{OPTION_A_LABEL}} — {{OPTION_A_DESCRIPTION}}
+- **Option B:** {{OPTION_B_LABEL}} — {{OPTION_B_DESCRIPTION}}
 
-*Option labels must exactly match the `when` conditions in this node's `next` array in plan.json. The plugin matches on these exact strings — any mismatch silently breaks routing. Use short, unambiguous labels. E.g., "Refactor first" not "Option A: Refactor the auth module first (recommended)."*
+*Option labels must be short and unambiguous. Example: "Optimize database first" (good) vs. "Option A: Optimize the database before any new features are added (recommended)" (bad — too long, uses "Option A" instead of clear action). These labels are what the user will see and select; they must match plan.json `when` strings exactly.*
 
-> **Extensibility:** Add `{{OPTION_3_LABEL}} — {{OPTION_3_DESCRIPTION}}` etc. for each additional branch; each must have a matching `when` entry in plan.json.
+**For more than two options:** Add additional `{{OPTION_C_LABEL}}`, `{{OPTION_D_LABEL}}` etc. — each must have a matching `when` entry in plan.json.
 
-Example `plan.json` branch structure for this node:
+Example plan.json branch structure:
 ```json
 "next": [
-  { "when": "Refactor first", "node": { "id": "refactor-auth", "prompt": "prompts/refactor-auth.md", "todo": ["task", "task"] } },
-  { "when": "Add feature first", "node": { "id": "add-refresh", "prompt": "prompts/add-refresh.md", "todo": ["task"] } }
+  { "when": "Optimize database first", "node": { "id": "optimize-db", "prompt": "prompts/optimize-db.md", "todo": ["task"] } },
+  { "when": "Add feature first", "node": { "id": "add-feature", "prompt": "prompts/add-feature.md", "todo": ["task"] } }
 ]
 ```
 
 ## Todo
 
-1. `question` — Ask the user: {{DECISION_DESCRIPTION}}. Offer options: {{OPTION_1_LABEL}}, {{OPTION_2_LABEL}}. (Add more options if needed — ensure each label has a matching `when` entry in plan.json.)
+1. `question` — Present {{DECISION_DESCRIPTION}} with options: {{OPTION_A_LABEL}}, {{OPTION_B_LABEL}}.
 
-You MUST call the `question` tool — do not present the choice as plain text.
+---
 
-> **Writing the question call:**
-> (1) Frame the question as described in `{{DECISION_DESCRIPTION}}`;
-> (2) list exactly the option labels defined above — do not paraphrase or abbreviate;
-> (3) each label must be a verbatim copy of the corresponding `when` string in plan.json.
+**Zone 3 — Execution Spec & Routing (Recency):**
 
-## After the question is answered
+## Routing requirement
 
-After the user selects an option, HeadWrench calls `next_step({ next: '<node-id>' })` where `<node-id>` is the id field of the chosen branch node in plan.json.
+**After the user responds, call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the `id` field of the branch node in plan.json — NOT the `when` string.**
 
-Do NOT call `next_step()` before the user answers — the `question` tool must complete first.
+The `when` field is human-readable display text. The routing key is the node's `id`.
+
+Example:
+- User selects "Optimize database first"
+- plan.json branch has: `{ "when": "Optimize database first", "node": { "id": "optimize-db", ... } }`
+- You call: `next_step({ next: 'optimize-db' })` — NOT `next_step({ next: 'Optimize database first' })`
+
+## Question tool constraint
+
+- Call `question` exactly once
+- Do not emit additional tool calls to this node
+- Do not present the choice as plain text — you must use the `question` tool
+- The `question` tool will return the user's selection; use that selection to call `next_step()`
+
+---
+
+**Final Reminder:** Ensure the option labels you present in the `question` call exactly match the `when` strings in plan.json. A mismatch prevents proper routing.

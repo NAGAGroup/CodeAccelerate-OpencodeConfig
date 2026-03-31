@@ -1,34 +1,80 @@
-# research-basic
+# research-basic Node Type
 
-## When to use
+**Use this node type to:** Look up code-related external information — API references, library documentation, configuration options, debugging guidance, code examples, and patterns. Answers "how do I use X" questions with practical, immediately applicable answers.
 
-When the task requires looking up code-related external information before or during implementation. Use for: API references, library documentation, configuration options, debugging known issues, finding code examples and patterns. This is the **code and implementation** research node — it answers "how do I use X" questions.
+**Do NOT use this node type for:** Conceptual research, algorithm design, architectural comparisons, or academic papers. Use `research-deep` instead when you need to understand design trade-offs or compare multiple competing approaches.
 
-**Not for:** discovering novel algorithms, reading academic papers, comparing conceptual approaches, or any research where the goal is understanding ideas rather than finding code. Use `research-deep` for those.
+## When to Use
 
-## What it does
+- **API/library reference lookup** — "What are the exact parameters for the boto3 S3 client?" or "How do I configure CORS headers in Express?"
+- **Code examples and patterns** — "Show me how to implement retry logic in Python async code" or "What's the pattern for graceful shutdown in Node.js?"
+- **Debugging and troubleshooting** — "What does this TypeScript error mean and how do I fix it?" or "How do I enable HTTPS in a local dev environment?"
+- **Configuration options** — "What are the available options for Vite's build configuration?" or "How do I set up environment-based logging levels?"
 
-Dispatches one `@ExternalScout` agent via a single `task` call. ExternalScout uses Context7 for versioned library documentation and `get_code_context_exa` for code examples, GitHub patterns, and implementation references. Research is targeted and cursory — the prompt specifies what to find, not how deep to go.
+**Contrast with research-deep:**
+- `research-basic`: Implementation details, specific how-to answers, code examples with versions. Cursory pass. Step budget: 15.
+- `research-deep`: Conceptual understanding, architectural decisions, trade-off analysis, design patterns. Deep investigation. Step budget: higher.
 
-## What the planning agent must resolve
+## What the Planning Agent Must Resolve
 
-- **Research topic** — What specific code information is needed? Good: "React Query v5 — the `invalidateQueries` API and cache invalidation patterns when used with server-side mutations." Bad: "React Query" (topic, not a question — ES returns a survey, not an API reference.)
-- **Output format** — What should ExternalScout return? Good: "A summary of configuration options with inline code examples, citing the specific library version." Bad: "A summary of findings." (No format requirement — ES may return prose with no code examples or version citations.)
-- **Scope** — What threads should ExternalScout follow if the first source is insufficient?
-- **Downstream use** — How will the findings be used in subsequent nodes? Good: "Findings feed the `sequential-thinking` node to decide which React Query pattern to adopt." Bad: "Used later." (No specificity — planning agent cannot determine what format the downstream node needs.)
-- **Answer format** — The dispatched ES prompt must instruct ExternalScout to synthesize a direct answer with code examples — not return a list of links. Cite specific versions.
-- **Scope guard** — The dispatched ES prompt must explicitly state: "This is a cursory research pass. Use Context7 first, then `get_code_context_exa` if needed. Do NOT perform multiple search iterations or cross-reference contradictory sources — report what you find and stop." Don't omit the scope guard — without it, ExternalScout pursues multiple research threads and exhausts its 15-step budget on tangential sources before answering the primary question.
-- **Scope check** — Is this a targeted API/config/code lookup (1–2 sources sufficient)? Use `research-basic`. If the question requires understanding ideas, algorithms, or comparing conceptual approaches across 3+ sources, use `research-deep` instead.
+Before writing this node's prompt, the planning agent must determine and specify:
 
-## Node ID
+### 1. Research Topic
+**What:** The specific question or lookup target — not a broad subject area.
+- ✓ Good: "What is the exact syntax for defining a custom Jest matcher in TypeScript?"
+- ✓ Good: "How do I configure PostgreSQL connection pooling in Node.js using node-postgres?"
+- ✗ Bad: "Research the authentication system"
+- ✗ Bad: "Look up documentation"
 
-Default: `research-basic`. Rename for specificity: `research-library-api`, `research-config-options`, `research-error-pattern`.
+### 2. Output Format
+**What:** What ExternalScout should return — the structure and specificity level.
+- ✓ Good: "Return the function signature, parameter descriptions, and a working code example with at least one practical use case. Include the library version that introduced or last changed this API."
+- ✓ Good: "Return a step-by-step troubleshooting guide with the most common cause first. Include the exact error message pattern and the fix."
+- ✗ Bad: "Return documentation"
+- ✗ Bad: "Find relevant information"
+
+### 3. Scope Boundary
+**What:** What to do if the first source is insufficient — which follow-up threads are in scope.
+- ✓ Good: "If Context7 has the docs, use them. If those docs lack a code example, use `get_code_context_exa` to find one. Stop after the first code example is found."
+- ✓ Good: "Use Context7 for the API reference. If the reference does not cover the configuration option, stop — do not search the web for third-party configuration guides."
+- ✗ Bad: "Research until you have a complete answer"
+- ✗ Bad: No guidance — ExternalScout invents its own scope
+
+### 4. Downstream Use
+**What:** How the answer feeds into the next planning step — what the consuming node expects.
+- ✓ Good: "This answer will be passed to a coding node — include exact syntax and working code examples, not explanatory prose."
+- ✓ Good: "This answer feeds into a decision gate where the user will choose a configuration option — list the 3–5 most common options with trade-offs."
+- ✗ Bad: "Use in the next step"
+- ✗ Bad: Omitted
+
+### 5. Answer Format (Cascade)
+**Explicit requirement to copy into the dispatch prompt:**
+Synthesize a direct answer with code examples — do not return a list of links. Cite specific versions (library version, language version if relevant).
+
+### 6. Scope Guard (Cascade — Verbatim)
+**Explicit requirement to copy into the dispatch prompt:**
+This is a cursory research pass. Use Context7 first, then `get_code_context_exa` if needed. Do NOT perform multiple search iterations — report what you find and stop.
 
 ## Notes
 
-- ExternalScout has a 15-step budget — enough for targeted multi-source lookup
-- Tool priority: Context7 first for versioned library docs; `get_code_context_exa` second for code examples and GitHub patterns; `web_search_exa` last resort
-- For deep investigative research (novel algorithms, academic papers, state-of-the-art techniques, conceptual exploration), use `research-deep` instead
-- ExternalScout is for EXTERNAL research only — if you need codebase exploration, use `scout-parallel` or `analyze-deep`
-- **Failure mode:** Dispatching ExternalScout with an overly broad topic ("React Query") instead of a specific question ("React Query v5 invalidation API — how to programmatically invalidate a query by key after a mutation"). Broad topics produce survey-style responses with no actionable specifics.
-- **Failure mode:** Omitting the scope guard from the dispatched prompt. Without it, ExternalScout pursues multiple threads and exhausts its 15-step budget before answering the specific question. Always include: "This is a cursory pass — stop after first successful search."
+### Failure Mode 1: Overly Broad Topic
+**Mechanism:** Planning agent specifies topic as a subject area ("the authentication system", "error handling") instead of a specific question. ExternalScout produces a survey response with no actionable specifics. Downstream node cannot use the answer.
+
+**Prevention:** In the "Research Topic" checklist item, the planning agent must write a question, not a subject. Test: if the topic ends with a question mark, it is usually specific enough. If it is a noun phrase ("API documentation", "configuration options"), it is too broad — push back and ask for the specific question.
+
+### Failure Mode 2: Exhausted Step Budget (Scope Guard Omitted)
+**Mechanism:** Planning agent writes the prompt but omits or weakens the scope guard. ExternalScout pursues multiple research threads — "if the first source doesn't have X, search for Y; if Y doesn't cover Z, try Z"—and runs out of steps before producing an answer. The 15-step budget is consumed in unguided exploration.
+
+**Prevention:** The scope guard must be copied into the prompt verbatim (see "Scope Guard" under "What the Planning Agent Must Resolve"). It is non-negotiable. When writing this node's prompt, the planning agent must include the exact constraint: "This is a cursory research pass. Use Context7 first, then `get_code_context_exa` if needed. Do NOT perform multiple search iterations — report what you find and stop."
+
+### Failure Mode 3: Tool Priority Reversed
+**Mechanism:** ExternalScout uses `get_code_context_exa` or web search before checking Context7. Context7 has the answer in the first query, but it is never called. The expensive Exa quota is burned on library lookups Context7 covers. Or: ExternalScout cannot find the answer in web search and exhausts budget without trying Context7.
+
+**Prevention:** The dispatch prompt must explicitly state tool priority and show the exact tool call sequence: "Use Context7 first (`context7_resolve-library-id` to identify the library, then `context7_query-docs` with that ID). Use `get_code_context_exa` second. `web_search_exa` only as a last resort."
+
+## When NOT to Use
+
+- Conceptual/algorithmic research → use `research-deep`
+- Internal codebase questions → use `analyze-deep` with @ContextInsurgent
+- Multi-source trade-off analysis → use `research-deep`
+- Anything that requires reading the project's own code → use scout or analyze-deep, not external research

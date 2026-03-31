@@ -1,34 +1,69 @@
-# output-failure
+# output-failure Node Type
 
-## When to use
+Terminal node for communicating task failure to the user when retries are exhausted, a hard stop is encountered, or the user aborts the session.
 
-As the terminal node for the failure path — when retries are exhausted, a hard stop is hit, or the user chooses to abort. Every failure path in the DAG must terminate with `output-failure`. Do not reuse `output-success` on failure paths, even if the failure is soft.
+## When to Use
 
-**Do not** use as the immediate failure target when a retry is feasible. Route recoverable failures through a fix node first. Reserve `output-failure` for when retries are exhausted or the failure is unrecoverable.
+Route to `output-failure` when:
+- Retries or recovery attempts have been exhausted and the issue remains unresolved
+- A hard constraint (missing dependency, permission denial, incompatible version) cannot be bypassed
+- The user explicitly requests termination or aborts the session
+- No further automated recovery is feasible or appropriate
 
-## What it does
+**Do NOT use** `output-failure` as the immediate target for recoverable failures. If a failure might be fixable via a retry, fix node, or user input, exhaust those recovery paths first. Reserve `output-failure` for true terminal scenarios — retries attempted and failed, or unrecoverable hard stops.
 
-Auto-advances immediately (empty todo). The prompt instructs HW what to communicate to the user: what was attempted, what failed, and what recovery options exist.
+## What the Planning Agent Must Resolve
 
-## What the planning agent must resolve
+Complete this four-item checklist before filling the prompt template:
 
-- **What failed** — Brief description of what the DAG attempted and where it stopped
-  Good: "Three ContextScout agents explored the codebase; JuniorDev attempted 2 edits to src/auth/token.ts; build failed with TypeScript errors." Bad: "The plan failed."
-- **Failure cause** — What the anticipated failure scenario is (e.g., "tests failed after two fix attempts", "build error not resolved")
-  Good: "TypeScript errors in src/auth/token.ts remained unresolved after 2 fix attempts." Bad: "Something went wrong."
-- **Recovery options** — What the user can try manually or with a fresh session. Good: 'Run `npm install` manually to resolve dependency conflicts, then re-run the plan.' Bad: 'Try again.'
-- **Communication constraint** — The filled prompt must communicate in plain language. Must NOT reference DAG node IDs, "todo: []", or plugin mechanics — only what was tried, what failed, and what to do next.
+1. **What was attempted** — Concretely describe all major phases the DAG completed before failure (e.g., "Scout phase: 3 parallel ContextScouts read the codebase. Implementation phase: 2 JuniorDev edits attempted."). Do not gloss over completed work — only focus on failures.
+   - ✓ Good: "Scout phase completed (3 agents read codebase). Implementation attempted (JuniorDev attempted 2 edits to src/auth/token.ts over 45 minutes). Build verification failed both times."
+   - ✗ Bad: "The plan failed."
 
-## Node ID
+2. **Failure point** — Name the exact phase or step where the plan stopped, including the specific failure. State the root cause clearly (e.g., "TypeScript error persisted," "permission denied on file X," "required dependency not installed").
+   - ✓ Good: "Build failed after 2 fix attempts. TypeScript errors in src/auth/token.ts line 47-52 remained unresolved. Root cause: strict mode violation in type signature."
+   - ✗ Bad: "Build step had an error."
 
-Always `output-failure`. If a DAG has multiple failure paths, each branch gets its own `output-failure` instance — nodes cannot be shared or referenced by ID across branches.
+3. **Recovery options** — List 1–3 specific, executable recovery paths. Each must be:
+   - Exact command-level (copy-paste ready: `npm install`, `bun run test`, `git clone <url>`)
+   - File or path references where applicable
+   - A fallback (contact support, abort and retry manually) only if concrete actions are exhausted
+   - ✓ Good: "1. Run `bun run typecheck` to see exact errors. 2. Manually edit src/auth/token.ts and resolve the type annotation on line 47. 3. If errors persist, contact support with the error output."
+   - ✗ Bad: "Try again." or "Restart the session." (both too vague, user cannot act on them)
 
-> **Anti-pattern:** Do NOT reuse the `output-failure` ID across branches. Every terminal node must have a unique ID — e.g., `output-failure`, `output-failure-2`. Reusing an ID causes a **validation error** at DAG-authoring time.
+4. **Output constraint** — The filled prompt MUST communicate in plain user-facing language. Do NOT reference:
+   - DAG node IDs or todo arrays
+   - Planning system mechanics or plugin internals
+   - HW-internal state or reasoning
+   - Only describe: what was tried, why it failed, and what the user can do next.
 
 ## Notes
 
-- Empty todo — no tool calls required
-- Keep the prompt honest and helpful: tell the user exactly what happened and what to do next
-- Do not leave recovery options vague — be specific about what manual steps are needed
-- **Failure mode:** Vague recovery options (e.g., "restart the session") — users cannot act on them. Always include at least one command-level instruction: exact shell command, file path, or URL.
-- **Failure mode:** Routing to output-failure on the first error without a retry node. Reserve output-failure for when retries are exhausted — recoverable failures should have a fix-and-retry loop before this node.
+### Failure Mode: Vague Recovery Options
+
+**Symptom:** User receives output like "restart the session" or "try again" with no specific action.
+
+**Mechanism:** Planning agent filled `{{RECOVERY_OPTIONS}}` with generic phrases instead of exact commands or file paths. User cannot act on abstract suggestions.
+
+**Fix:** For each recovery option, include:
+1. Exact command (with all flags): `npm install --save-dev @types/node`, not "install dependencies"
+2. File path if applicable: `/path/to/config.json` or `src/index.ts`, not "the config file"
+3. Expected outcome: "This will resolve version conflicts" so user knows success when it happens
+4. Fallback only if concrete options exhausted: provide support contact or documented issue link
+
+### Failure Mode: Premature Routing to output-failure
+
+**Symptom:** DAG routes to `output-failure` on the first error without attempting recovery.
+
+**Mechanism:** Planning agent did not include a retry or fix node before `output-failure`. The plan gives up before recovery is tried.
+
+**Fix:** Always precede `output-failure` with at least one recovery node:
+- `parallel-tasks` with multiple fix strategies (e.g., "try fix A, if that fails try fix B")
+- `sequential-thinking` to analyze the failure and propose a workaround
+- `decision-gate` to ask user for input (abort or continue)
+
+Only route to `output-failure` after recovery has been **attempted and confirmed failed**.
+
+## Node ID
+
+Always `output-failure` within a single failure branch. If a DAG has multiple failure paths (e.g., branches from a decision gate), each branch gets its own terminal node with a unique ID: `output-failure`, `output-failure-2`, etc. **Do not reuse the same ID across branches** — reusing an ID overwrites the node_map entry and causes premature session termination.

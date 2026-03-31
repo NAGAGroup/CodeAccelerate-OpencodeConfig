@@ -1,42 +1,90 @@
-# research-deep
+# research-deep Node Type
 
-## When to use
+## When to Use
 
-When the task requires genuine investigative research — not code lookup, but **discovery of ideas**: algorithms, mathematical techniques, academic approaches, state-of-the-art methods, architectural patterns, and comparative analysis across the field. Use when you need to understand *what approaches exist and which is best* before you can even decide what to implement.
+Use `research-deep` for **investigative and discovery research** — when you need to understand what approaches, algorithms, architectures, or patterns exist in a domain before deciding what to build or how to solve a problem. The goal is answering "what are the options and which is best given our constraints?"
 
-**Typical use cases:** numerical methods for a class of physics simulation; rendering techniques for a graphics feature; loss functions and training strategies for an AI/ML task; consensus algorithms for distributed systems; theoretical trade-offs between competing mathematical approaches.
+**Contrast with `research-basic`:**
+- **research-basic:** Quick API reference, config syntax, simple facts. Single-source answer sufficient. Example: "What are the required environment variables for service X?"
+- **research-deep:** Comparative analysis, design trade-offs, state-of-the-art methods, architectural patterns. Multiple sources required. Synthesis mandatory. Example: "Compare caching strategies (Redis vs. in-memory vs. distributed) for a high-throughput read-heavy system with 100GB dataset."
 
-**Not for:** finding how to use a specific library or API — use `research-basic` for that. `research-deep` is for questions where the answer isn't already in a docs page.
+Use `research-deep` when:
+- You are choosing between competing approaches and need trade-off analysis
+- You are discovering novel or best-practice patterns in a domain
+- You need evidence from 2+ independent sources to build confidence
+- The finding will inform architecture or technology decisions downstream
 
-## What it does
+Use `research-basic` when:
+- You need a single fact or config detail
+- A lookup in official docs is sufficient
+- No comparison is needed
 
-Dispatches one `@ExternalScout` agent via a single `task` call with full investigative authority. ExternalScout uses `web_search_advanced_exa` for broad discovery, `crawling_exa` to read key sources in depth, and `get_code_context_exa` for reference implementations of techniques found. Sequential thinking is authorized for synthesizing across contradictory or complex sources. Context7 is secondary — most deep research topics won't be in library docs.
+## What the Planning Agent Must Resolve
 
-## What the planning agent must resolve
+Before writing a `research-deep` node, the planning agent must determine and embed these six elements in the node prompt:
 
-- **Research question** — What is the fundamental question to answer? Good: "What numerical methods are best suited for simulating incompressible fluid dynamics at interactive frame rates?" (specific, answerable domain question). Bad: "fluid simulation" (topic, not a question — ES has no way to know what level of answer is needed).
-- **Domain context** — What is the technical domain? What existing knowledge can ExternalScout build on? What constraints (performance targets, hardware, language) bound the answer?
-- **Exploration mandate** — Which directions should ExternalScout actively pursue? Name them explicitly. Good: "academic papers on the topic", "production implementations or benchmarks", "reference implementations on GitHub". Bad: open-ended ("explore widely") — ES has no search anchor and wastes budget.
-- **Synthesis requirement** — What should the final output synthesize? Good: "compare the top 2–3 approaches with trade-offs and recommend one given the stated constraints." Bad: (none specified — ES returns a source list rather than a recommendation). Don't dispatch without a synthesis requirement.
-- **Downstream decision** — How will findings inform subsequent decisions? Will results gate a `decision-gate` or feed directly into `sequential-thinking`? Good: "Findings feed `sequential-thinking-2` which selects the algorithm and designs the implementation plan." Bad: "Used by a later node."
-- The dispatched ES prompt must instruct ExternalScout to synthesize a direct answer — not a source list.
-- ES must explicitly state what was found and what was not found.
-- Include confidence levels for major findings: "High" (3+ sources aligned), "Medium" (2 sources), "Low" (1 source or conflicting).
-- **Direction count** — How many research directions should ExternalScout actively pursue? Good: 2–3 specific named directions. Bad: Open-ended exploration (budgets 15 steps on undirected searches and produces low-quality synthesis.)
+### 1. Research Question (fundamental, singular)
+The core question the research must answer. Must be specific enough to scope the research, not so narrow that it excludes relevant patterns.
 
-## Node ID
+**Good:** "What architectural patterns are most suitable for real-time data streaming at scale with sub-second latency requirements?"
+**Bad:** "Tell me about data streaming."
 
-Default: `research-deep`. Rename for specificity: `research-fluid-sim-methods`, `research-rendering-techniques`, `research-loss-functions`, `research-consensus-algorithms`.
+### 2. Domain Context (technical domain + existing knowledge + constraints)
+The landscape in which the research applies. Name the technology domain, what the planning agent already knows, and any hard constraints the solution must satisfy.
+
+**Good:** "Domain: event-driven messaging. We have a 100GB/day ingest volume, sub-100ms latency requirement, and AWS-only deployment constraint. We've evaluated Kafka but need to know if Pulsar, AWS Kinesis, or RabbitMQ are viable alternatives."
+**Bad:** "We need to choose a streaming technology."
+
+### 3. Exploration Mandate (2–3 explicitly named directions)
+The planning agent must name 2–3 specific research directions @ExternalScout must pursue. Do not say "explore relevant approaches" — name them. This prevents ExternalScout from returning generic overviews.
+
+**Good:** "(1) Kafka architecture and scaling characteristics for 100GB/day, (2) Pulsar vs. Kafka trade-offs at scale, (3) AWS Kinesis as a managed alternative with cost implications."
+**Bad:** "Research streaming technologies."
+
+### 4. Synthesis Requirement (compare top 2–3 approaches with trade-offs and recommend one)
+The planning agent must explicitly state that @ExternalScout must compare the top 2–3 approaches and recommend one given the stated constraints. Omitting this produces a source list, not findings.
+
+**Good:** "Synthesize by comparing the top 2–3 approaches (from your research directions above) on these dimensions: operational overhead, cost at 100GB/day scale, latency characteristics, and AWS compatibility. Recommend one approach and justify it against our constraints."
+**Bad:** "Find information about different streaming approaches."
+
+### 5. Downstream Decision (how findings feed into next nodes)
+The planning agent must name what decision or action depends on this research. This clarifies scope and prevents over-research.
+
+**Good:** "Findings will inform whether we build on Kafka (existing knowledge) or pivot to Pulsar/Kinesis. Decision gates follow."
+**Bad:** "This research is background research."
+
+### 6. Output Format Expectation
+The planning agent must understand that @ExternalScout will return: a direct answer + explicit statement of what was NOT found + confidence levels. This shapes the downstream summary they may write.
+
+**Good:** Expect "Recommendation: Pulsar (high confidence, 3 sources aligned). Trade-off: operational complexity higher than Kafka but matches our latency requirement. NOT found: comprehensive cost modeling for 100GB/day on AWS — Pulsar is self-hosted only."
+**Bad:** Expect "a list of links and summaries."
 
 ## Notes
 
-- ExternalScout has a 15-step budget — scope the question carefully; deep research burns budget fast
-- Tool priority for this node: `web_search_advanced_exa` first for broad discovery, `crawling_exa` for reading key sources in depth, `get_code_context_exa` for reference implementations — Context7 only if the topic happens to be a well-documented library
-- If findings need to be synthesized before the next decision, follow this node with a `sequential-thinking` node
-- For multi-topic deep research, use multiple `research-deep` nodes sequentially rather than trying to cover everything in one pass
-- ExternalScout is for EXTERNAL research only — if you need codebase exploration, use `scout-parallel` or `analyze-deep`
-- Use `research-basic` for implementation-time code/API lookups; use `research-deep` for pre-implementation idea discovery
-- **Failure mode:** Using research-deep for a simple API or config lookup.
-- **Mechanism:** Deep research authorizes multiple search threads — the extra latitude wastes the 15-step budget on tangential exploration.
-- **Fix:** If the question is "how do I use X", use `research-basic` instead.
-- **Failure mode:** Omitting the synthesis requirement from the dispatched prompt. Without explicit synthesis instructions, ExternalScout returns a list of sources rather than actionable findings. Always specify what to synthesize: a recommendation, a comparison table, or a ranked list of approaches.
+### Failure Mode 1: Using research-deep for simple lookup
+**Mechanism:** Planning agent writes a research-deep node when the question requires only a single API reference or config syntax lookup. This wastes @ExternalScout's 15-step budget on an investigation when `research-basic` would answer in 2 steps.
+
+**Example:** "research-deep: What is the syntax for Redis HGET?"
+**Fix:** Use `research-basic` for single-fact lookups. Reserve `research-deep` for comparative or discovery questions.
+
+### Failure Mode 2: Omitting or weakening the synthesis requirement
+**Mechanism:** Planning agent fails to state that @ExternalScout must compare approaches and recommend one. The dispatched prompt says only "research X and Y." @ExternalScout returns a source list or generic overview, not findings. Downstream nodes cannot make a decision because they have not received analysis — only raw sources.
+
+**Example (weak):** "Research caching strategies."
+**Fix (strong):** "Synthesize by comparing Redis, in-memory caching, and distributed cache (Memcached) on: operational overhead, latency, cost at 100GB/day, and AWS compatibility. Recommend one approach given our constraint: 50ms max latency, 100GB dataset."
+
+### Failure Mode 3: Exploration mandate too vague
+**Mechanism:** Planning agent says "research caching" without naming specific directions. @ExternalScout produces a generic overview covering 10 approaches with no depth on any of them. Downstream decision cannot be made because no approach has been deeply investigated.
+
+**Example (weak):** "Explore caching approaches."
+**Fix (strong):** "(1) Redis at scale: cluster mode architecture and latency characteristics. (2) AWS ElastiCache managed Redis vs. self-hosted Redis trade-offs. (3) In-memory caching performance trade-offs for our 100GB dataset."
+
+## Step Budget
+
+@ExternalScout has a 15-step budget. Scope research carefully. If multiple independent research topics are needed, split them into separate sequential `research-deep` nodes rather than combining them into one node (which would exceed the budget or produce shallow findings on all topics).
+
+## Output Constraint
+
+The synthesis requirement is mandatory. The dispatched prompt must include this instruction verbatim:
+
+"Compare the top 2–3 approaches identified in your research with explicit trade-offs on each dimension named in the exploration mandate. Recommend one approach and justify it against the stated constraints. State what was found AND what was NOT found (gaps in available research). Include confidence levels: High (3+ sources aligned), Medium (2 sources), Low (1 source or conflicting)."

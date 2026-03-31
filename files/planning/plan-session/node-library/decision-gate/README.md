@@ -2,29 +2,59 @@
 
 ## When to use
 
-When the user must choose a path at runtime. Use when a decision can't be made automatically — it requires human judgment, preference, or approval.
+Use `decision-gate` when **the user must choose between two or more paths, and the choice requires human judgment, preference, or approval** — not when the decision can be made automatically.
 
-**When NOT to use:** **Do not** use when the decision is machine-readable (exit code, file presence, prior context) — use `conditional-branch` instead. `decision-gate` is only for decisions requiring explicit human judgment or approval.
-
-## What it does
-
-HW calls `question` once, presenting options that map directly to branch `when` conditions. The user's choice determines which branch is followed.
+**Contrast:**
+- **Use decision-gate:** "Should we prioritize API rate-limiting or database optimization?" (User must decide based on project priorities.)
+- **Use conditional-branch:** "If exit code is 0, route to success-node; else route to failure-node." (Decision is machine-readable.)
+- **Use decision-gate for:** Strategy choice, approval/rejection, preference between viable options.
+- **Do NOT use decision-gate for:** Conditional logic based on file presence, exit codes, prior context, or any machine-determined state.
 
 ## What the planning agent must resolve
 
-- **What decision the user is making** — Be specific. "Approve the plan?" vs. "Choose the migration strategy?"
-- **The options** — List each branch option with a clear label and description. These become the `when` conditions in the plan.json branch array.
-- **Branch paths** — For each option, what subtree follows? The `when` string for each branch in plan.json must **exactly** match the option label (including capitalization and punctuation). Good: question asks "Refactor first" → when condition is "Refactor first". Bad: question asks "Option A: Refactor" → when condition is "Refactor" (partial match silently misroutes). Branch nodes in `plan.json` must be full embedded objects (`{ "id": ..., "prompt": ..., "todo": ... }`), not string references. See dag-design-guide.md anti-patterns.
-- **Routing constraint** — The filled prompt must state: "After the user responds, call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the branch node's id in plan.json — NOT the `when` string."
+Before writing a `decision-gate` node, answer these four items explicitly:
 
-## Node ID
+1. **Decision statement** — What specific choice is the user making? Be concrete, not thematic.
+   - ✓ Good: "Should we optimize the database before adding the new feature, or add the feature first?"
+   - ✗ Bad: "What should we do next?"
 
-Default: `decision-gate`. Rename for clarity: `approve-plan`, `choose-strategy`, `retry-or-abort`.
+2. **Option labels** — List each option with a short, clear label (one to five words). These labels become the `when` strings in plan.json and must match exactly in the question the user sees.
+   - ✓ Good: `"Optimize database first"` / `"Add feature first"`
+   - ✗ Bad: `"Option A"` / `"Option B"` (user cannot decide without substance)
+   - ✗ Bad: Long descriptive prose instead of a label
+
+3. **Branch routing** — For each option, which node ID executes next? Each node ID must exist in plan.json as the `id` field of a branch child node.
+   - ✓ Good: "Optimize database first" → routes to `optimize-db-node`; "Add feature first" → routes to `add-feature-node`
+   - ✗ Bad: No explicit routing plan — HW will not know where to send the user's choice
+
+4. **Routing constraint (cascade)** — After the user responds, the executing prompt must call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the branch node's id in plan.json — NOT the `when` string. The `when` field is human-readable display text only; routing always uses the node ID.
+   - ✓ Good: User selects "Optimize database first" → prompt calls `next_step({ next: 'optimize-db-node' })`
+   - ✗ Bad: User selects "Optimize database first" → prompt calls `next_step({ next: 'Optimize database first' })`
 
 ## Notes
 
-- One `question` call only — do not add more tool calls to this node
-- The `when` strings in `plan.json` must **exactly match** the option labels the question presents. The plugin uses these strings for branch routing — a mismatch causes HW to pick the wrong path. There is no fuzzy matching.
-- After the user responds, the plugin presents available branch targets. HW then calls `next_step({ next: "<node-id>" })` to follow the chosen path.
-- **Failure mode:** If the planning agent writes question option labels that don't exactly match the `when` strings in plan.json, HW will stall or silently pick the wrong branch. Verify exact string match between question options and `when` conditions at DAG-authoring time.
-- **Failure mode:** Using decision-gate when the decision is machine-readable (e.g., checking an exit code). This adds unnecessary user friction. Use conditional-branch when no human judgment is required.
+### Option label ↔ `when` string mismatch
+
+**Failure mode:** The planning agent writes question option labels that do not exactly match the `when` strings in plan.json. When the user selects an option, HW tries to route using the chosen option text but finds no matching `when` entry. The session stalls.
+
+**Example:** Question offers "Optimize database" as an option. plan.json branch has `when: "Optimize database first"`. User selects "Optimize database". HW cannot match the response to any branch and stalls.
+
+**Prevention:** The planning agent must verify that each question option label exactly matches the corresponding `when` string in plan.json — including capitalization and punctuation. No fuzzy matching; the match is character-for-character.
+
+### Routing by node ID, not `when` string
+
+**Failure mode:** The executing prompt calls `next_step({ next: 'Optimize database first' })` using the `when` string instead of the node ID. The plugin expects a node ID and cannot find a node with that name, blocking the session.
+
+**Example:** plan.json has `{ "when": "Optimize database first", "node": { "id": "optimize-db", ... } }`. The prompt calls `next_step({ next: 'Optimize database first' })`. The plugin looks for a node named "Optimize database first" (not "optimize-db") and fails.
+
+**Prevention:** The fixed `## Routing requirement` section in the prompt template states this rule explicitly. HW reads it and routes using the node ID, never the `when` string.
+
+### Using decision-gate for machine-readable decisions
+
+**Failure mode:** The planning agent adds a decision-gate node to ask the user about something the DAG could determine itself (e.g., "Did the build succeed?"). This wastes user time and adds unnecessary friction.
+
+**Prevention:** Use parallel research or analysis nodes to gather facts; use decision-gate only when the user's judgment is genuinely required.
+
+## Output constraint (cascade)
+
+After the user responds, call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the branch node's id in plan.json — NOT the `when` string. The `when` field is human-readable display text only; routing must use the node's actual id value.

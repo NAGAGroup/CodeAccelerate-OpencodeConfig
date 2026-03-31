@@ -1,34 +1,85 @@
-# analyze-deep
+# analyze-deep Node Type
 
 ## When to use
 
-When the task requires multi-file reasoning that haiku scouts can't handle — understanding complex logic across many files, tracing call chains, synthesizing scout findings into a coherent picture, or reasoning about cross-cutting concerns.
+Select `analyze-deep` when:
 
-**Do not** use `analyze-deep` when a ContextScout can answer the question within 12 steps. Reserve this for genuinely cross-cutting reasoning tasks. Using it for simple lookups wastes expensive sonnet-tier budget.
+- Prior scout reports have surfaced conflicting information or incomplete coverage that requires synthesis across multiple files
+- The question requires tracing execution flow, dependency chains, or state transitions across 3+ files
+- You need to reason about cross-cutting concerns (e.g., concurrency safety, data consistency) that no single file reveals
+- The scope is tightly defined and achievable within 8–10 files of sonnet-tier reading (ContextInsurgent, 20-step budget)
 
-## What it does
-
-Dispatches one `@ContextInsurgent` agent via a single `task` call. ContextInsurgent is sonnet-tier and has a 20-step budget. Use it only when the reasoning task is genuinely complex.
+**Do NOT use analyze-deep for:**
+- Single-file clarifications (route to scout instead)
+- Context compression / token pruning (→ `compression-node`)
+- Questions answerable by a haiku scout with the right file paths (→ `scout-parallel`)
+- Scope >10 files or unbounded exploration (split into two `analyze-deep` nodes instead)
 
 ## What the planning agent must resolve
 
-- **Synthesis question** — What specific question should ContextInsurgent answer? Be precise.
-- **Input context** — Which files to read, what prior scout findings to consider
-- **Expected output** — What the agent should return (a hypothesis, a summary, a list of affected paths, etc.). Good: 'A bullet list of all call sites for `refreshToken` with exact file paths and line numbers.' Bad: 'What CI found.' (No deliverable format — CI returns a narrative instead.)
-- **Complexity justification** — Why haiku scouts are insufficient for this task. Good: 'This requires tracing three interdependent call chains across 8 files.' Bad: 'Need to understand the codebase.'
-- **Output constraint** — The dispatched prompt must include this instruction: "Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings." Don't accept a CI output organized under 'Architecture Overview', 'Key Decisions', or 'Potential Issues' headers without specific file path and line number evidence — those are structural boilerplate, not analysis.
-- **Budget scope** — Is the analysis completable within 20 steps? If it requires reading more than ~8–10 files AND synthesizing across all of them, break it into two `analyze-deep` nodes.
+Before writing this node's prompt, determine and fill in:
 
-## Node ID
+1. **Synthesis question** — The specific question ContextInsurgent must answer.
+   - ✓ Good: "Which components read from the session store and write without acquiring the lock?"
+   - ✗ Bad: "Understand the session system" (too broad, no convergence criterion)
+   - ✓ Good: "Trace the call chain from `UserController.login()` through auth middleware to the JWT token store — which components inject the secret?"
+   - ✗ Bad: "How does authentication work?" (vague, produces boilerplate)
 
-Default: `analyze-deep`. Rename for specificity: `analyze-auth-flow`, `analyze-migration-impact`. If multiple `analyze-deep` nodes are needed, prefer descriptive IDs (`analyze-auth-flow`, `analyze-migration-impact`). If no descriptive name fits, use `analyze-deep-2`.
+2. **Input context** — The exact file list ContextInsurgent must read, plus any prior scout findings it builds on.
+   - ✓ Good: `src/auth/controller.ts`, `src/auth/middleware.ts`, `src/store/session.ts`, and scout findings from the concurrency analysis (see prior node output)
+   - ✗ Bad: "The auth system" (no file paths — CI cannot orient without them)
+   - Always include: prior scout findings (name the node they came from), exact repo-relative file paths
+
+3. **Complexity justification** — Why haiku scouts are insufficient for this specific question.
+   - ✓ Good: "This requires cross-file tracing: middleware calls three different token validation functions across two modules, and we need to verify each one checks the lock state before writing."
+   - ✗ Bad: "Need a smart agent" (no mechanism — doesn't justify why scouts failed)
+
+4. **Expected output format** — What ContextInsurgent should produce.
+   - ✓ Good: "A list of affected components with file paths, line numbers, and the specific unsafe pattern in each. Example: `src/auth/token.ts line 42: token written without lock check`"
+   - ✗ Bad: "A report" (too vague — CI may produce thematic summary instead of evidence)
+
+5. **Output constraint (cascade verbatim into the prompt)** — "Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings."
+   - This must appear in the dispatched prompt exactly as stated.
+
+6. **Budget scope check** — If the file list exceeds 10 files or the question requires 8+ independent reasoning steps, split into two `analyze-deep` nodes instead. This node carries a 20-step budget; dense synthesis with >10 files risks hitting the limit.
 
 ## Notes
 
-- ContextInsurgent is expensive — only use it when haiku is genuinely insufficient
-- Serial by design — do not place two analyze-deep nodes in parallel
-- Often placed after `scout-parallel`.
-- Scouts gather breadth; ContextInsurgent synthesizes depth from scout findings.
-- If the goal is **context compression** rather than deep analysis, use `compression-node` instead — `analyze-deep` produces reasoning artifacts, not context window pruning.
-- Do not instruct ContextInsurgent to read `.opencode/` session directories — they contain stale plan artifacts that may conflict with the actual codebase. Exception: planning infra files (e.g., the node-library) are permitted when explicitly tasked.
-- ContextInsurgent produces reasoning artifacts (hypotheses, summaries, affected path lists) — it does NOT write or edit code. Assign edits to @JuniorDev or @QuickDoc.
+### Failure Mode: Broad synthesis questions
+
+**Mechanism:** If the question lacks a specific convergence point (e.g., "Understand the system"), ContextInsurgent will produce a generic architectural summary instead of answering a precise question. Haiku scouts do this naturally when given bad input; sonnet does it *deliberately* when left without constraints.
+
+**Prevention:** The synthesis question must be a single, answerable interrogative. Use the test: "Can ContextInsurgent answer this with a list of files and line numbers, or does it require prose narrative?" If the latter, the question is too broad.
+
+### Failure Mode: Exceeding budget with file scope
+
+**Mechanism:** The node carries a 20-step budget. Reading 12+ files with cross-file reasoning consumes ~15–18 steps alone, leaving minimal margin for synthesis output. Planning agents who list "all files in the auth/ directory" or "everything related to session handling" will exceed the budget.
+
+**Prevention:** Before filling the `{{CONTEXT_TO_PROVIDE}}` placeholder, count files. If the list exceeds 10, split the analysis: create two `analyze-deep` nodes, one for each subset (e.g., "token validation chain" vs. "session store mutations"). Each node answers a narrower synthesis question.
+
+### Failure Mode: Using analyze-deep for context compression
+
+**Mechanism:** Planning agents sometimes mistakenly use `analyze-deep` to "summarize and compress the codebase." ContextInsurgent will produce a long architectural narrative, consuming steps and token budget without answering any specific question. This is not what the node is for.
+
+**Prevention:** If the goal is token pruning or context window reclamation, use `compression-node` instead. The compression-node dispatches HW directly (not a subagent) and calls the compress tool. `analyze-deep` is for *reasoning about specific questions*, not compression.
+
+### Failure Mode: Reading .opencode/ session directories
+
+**Mechanism:** Planning agents sometimes include `.opencode/` paths in the file list, expecting ContextInsurgent to read prior session plans or artifacts. These directories contain stale planning state and may reference files or code patterns that have changed, corrupting the analysis.
+
+**Prevention:** Instruct ContextInsurgent explicitly NOT to read `.opencode/`. State in the dispatched prompt: "Do not read any files under `.opencode/` session directories — they contain stale plan artifacts that may conflict with the actual codebase." The prompt template's fixed `## Scope restriction` section will include this, but the planning agent must not override it.
+
+### Three-constraint cascade check
+
+The constraint "Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings" must appear in:
+1. Your "must resolve" checklist (item 5) — so you know to propagate it
+2. The template's fixed `## Output format requirements` section — so it survives the fill step
+3. The dispatch blockquote as item 3 — so HW re-states it when delegating to CI
+
+If it appears in fewer than three places, it will be dropped at one indirection hop.
+
+## Output constraint
+
+**Cascade this verbatim into the node prompt:**
+
+> Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings.
