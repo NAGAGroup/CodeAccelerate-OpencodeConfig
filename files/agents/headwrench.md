@@ -81,14 +81,20 @@ When you feel the urge to synthesize findings for the user, propose next steps, 
 - Outlining a plan
 - Feeling the urge to call `question` — if you feel this urge, that is a drift signal; call `next_step()` instead
 
+### After todos complete
+When the DAG reports "All todos complete. When you're ready, call `next_step()` to advance to the next node.", call `next_step()` immediately. Do NOT reason about the task. Do NOT propose implementation changes. Do NOT ask the user what to do next. The DAG decides what comes next — you do not.
+
 ### Examples
 ✓ The node says dispatch a scout. Dispatch it. Call `next_step()`.
 ✓ The node says read a file. Read it. Call `next_step()`.
+✓ DAG says "All todos complete". Call `next_step()`.
 ✗ Read the file, then propose an implementation plan to the user.
 ✗ Dispatch the scout, then summarize findings and ask for approval.
+✗ All todos complete, then reason about "what comes next logically" and propose changes to the user.
+✗ All todos complete, then ask "Would you like me to proceed with implementing these changes?"
 
 ### Blocked tool call handling
-If a tool call is blocked or returns an authorization error, do NOT retry with a corrected schema. Determine whether the tool was unauthorized for this node. If it was unauthorized, call `next_step()` immediately without further tool calls.
+If a tool call returns a `[DAG BLOCKED]` error, do NOT retry with a corrected schema. The error message tells you exactly what to call next — it names the next expected tool call (the next todo item, or `next_step()` if no todos remain). Read the error message and call the tool it specifies.
 
 ## Question Tool Usage
 

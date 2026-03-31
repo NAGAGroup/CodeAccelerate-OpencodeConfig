@@ -33,17 +33,23 @@ Before dispatching Scouts 2 & 3, verify Scout 1's result: (a) it is not truncate
 
 Both scouts receive the user's task description and Scout 1's file map. Write both prompts using that context, then **emit both `task` calls in a single response turn**.
 
+**Your dispatch prompts for Scouts 2 and 3 MUST embed the user's task description verbatim AND Scout 1's complete output verbatim.** Do not paraphrase, summarize, or tell the scout to "use Scout 1's map" — paste the actual content directly into the prompt so the scout can read it.
+
 > **When dispatching @ContextScout (Scout 2), your task prompt must tell the agent to:**
-> (1) Review the user's task description and Scout 1's file list.
-> (2) Identify and read the files most relevant to the task, then extract: naming conventions, structural patterns, coding style, and any existing implementations the task will need to fit alongside.
-> (3) Return: file paths read plus specific patterns found (naming, structure, style) with file:line citations — not thematic summaries.
-> (4) State 'Nothing found' if an area has no content.
+> (1) The user's task is: `<paste user task description verbatim here>`
+> (2) Scout 1 returned this project map: `<paste Scout 1's complete output verbatim here>`
+> (3) Using the file list above, identify and read the files most relevant to the task, then extract: naming conventions, structural patterns, coding style, and any existing implementations the task will need to fit alongside.
+> (4) Return: file paths read plus specific patterns found (naming, structure, style) with file:line citations — not thematic summaries.
+> (5) State 'Nothing found' if an area has no content.
 
 > **When dispatching @ContextScout (Scout 3), your task prompt must tell the agent to:**
-> (1) Review the user's task description and Scout 1's file list.
-> (2) Identify files that define build dependencies, external libraries, public interfaces, or integration points relevant to the task — then read and summarize them.
-> (3) Return: dependency names and versions, public API surfaces, build system constraints — with exact file references.
-> (4) State 'No relevant boundaries found' if nothing applies.
+> (1) The user's task is: `<paste user task description verbatim here>`
+> (2) Scout 1 returned this project map: `<paste Scout 1's complete output verbatim here>`
+> (3) Using the file list above, identify files that define build dependencies, external libraries, public interfaces, or integration points relevant to the task — then read and summarize them.
+> (4) Return: dependency names and versions, public API surfaces, build system constraints — with exact file references.
+> (5) State 'No relevant boundaries found' if nothing applies.
+
+✗ Bad: "Analyze the user's task and Scout 1's map" — this tells Scouts 2 & 3 to reference content they cannot see; they have no prior context.
 
 **Wait for both Scout 2 and Scout 3 to return before proceeding.**
 

@@ -8,9 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-- `files/agents/headwrench.md`: Added zero-todo node rule, blocked-tool-call handling rule, and sequential-thinking batch prohibition to tighten small-model behavioral compliance.
+- `files/agents/headwrench.md`: Added zero-todo node rule, blocked-tool-call handling rule, and sequential-thinking batch prohibition to tighten small-model behavioral compliance; added explicit "After todos complete → call `next_step()` immediately" rule with negative examples covering post-task reasoning and user-facing proposals; corrected blocked-tool-call rule to name `[DAG BLOCKED]` error format and read the error message for next expected tool.
 - `files/planning/plan-session/prompts/session-overview.md`: Added Permitted Actions section (tool restrictions) and Todo section.
-- `files/planning/plan-session/prompts/scout.md`: Added same-turn parallel dispatch enforcement for Scouts 2 & 3, and Scout 1 acceptance gate.
+- `files/planning/plan-session/prompts/scout.md`: Added same-turn parallel dispatch enforcement for Scouts 2 & 3, and Scout 1 acceptance gate; Scout 2 & 3 dispatch prompts now require verbatim embedding of both user task description and Scout 1's complete output (not paraphrase); added negative example for reference-without-embedding failure.
 - `files/planning/plan-session/prompts/pre-research-thinking.md`: Added CRITICAL tool call required warning and explicit numbered execution sequence with example.
 - `files/planning/plan-session/prompts/scout-node-library.md`: Strengthened advisory language to explicit prohibition, added Todo section.
 - `files/planning/plan-session/prompts/propose-plan.md`: Added one-concept-per-thought rule and sequential-thinking example.
