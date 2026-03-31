@@ -2,6 +2,8 @@
 
 A multi-agent development system for [OpenCode](https://opencode.ai/) that plans, debugs, researches, and writes code as a coordinated team — not a single general-purpose assistant.
 
+**v4.0.0 milestone:** The full orchestration stack — multi-agent planning, DAG execution, scouts, deep analysis, clarifying questions, verification gates — has been validated on a local Ollama model running on a single 4090. No API key. No cloud spend. Frontier-model-level coordination from hardware you own.
+
 You talk to one agent, **HeadWrench**. It reads your intent, delegates to the right specialist, and tracks everything across sessions so you never re-explain your codebase. Planning sessions produce structured execution plans. Debug sessions run hypothesis-driven investigations. Research sessions explore documentation and codebases in depth. All of it persists.
 
 Ships as six profiles: Anthropic API (default), Anthropic API with all-haiku models, GitHub Copilot, GitHub Copilot with all-haiku models, OpenCode Zen (free), and local Ollama.
@@ -55,13 +57,34 @@ HeadWrench is the primary orchestrator. Every message goes through it first. Bas
 
 You don't pick agents. HeadWrench does, based on what the current task needs.
 
-## Planning modes
+## Planning
 
-CodeAccelerate ships with one DAG-driven planning mode:
+CodeAccelerate ships with a DAG-driven planning mode:
 
-- **Session** (`/plan-session`) — Scopes a feature, refactor, or migration through guided questions, then produces a structured execution plan
+- **Session** (`/plan-session`) — Scopes a feature, refactor, or migration. The planner scouts your codebase, researches what it needs, asks clarifying questions, then proposes a structured execution plan for your approval. Once approved, the plan is written to disk as a DAG and visualized directly in your terminal.
 
-Planning sessions are DAG-based: each plan is a directed acyclic graph of tasks, questions, and verification gates. Once a plan exists, `/activate-plan` picks it up and executes it step by step. Plans persist across sessions — come back later and continue where you left off.
+Planning sessions are DAG-based: each plan is a directed acyclic graph of tasks, questions, and verification gates. The agent authors the DAG using dedicated tools — it never hand-writes JSON. Every mutation is validated and rendered as an ASCII diagram so you can see exactly what's being built.
+
+Once a plan exists, `/activate-plan` picks it up and executes it step by step. Plans persist across sessions — come back later and continue where you left off.
+
+## Running on local models
+
+The Ollama profile is designed to run the full system on local hardware. The v4.0.0 release was validated on a single 4090 using Qwen 2.5 14B as the primary model. The entire orchestration stack works: multi-agent delegation, parallel scouting, DAG planning, clarifying questions, and tool-based plan authoring.
+
+To use the Ollama profile:
+
+```sh
+# Copy your chosen model to the opencode-model alias
+ollama cp qwen2.5:14b opencode-model
+
+# Install the profile
+ocx profile add naga-ollama --global --source naga-group/ocx-ollama
+
+# Launch
+ocx oc -p naga-ollama
+```
+
+See the [Ollama model recommendations](docs/reports/ollama-model-recommendations.md) for a ranked list of tested models and tier guidance.
 
 ## Configuration
 
