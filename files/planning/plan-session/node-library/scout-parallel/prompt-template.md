@@ -88,11 +88,11 @@ Wait for Scout 1's result before writing and dispatching Scouts 2 and 3. Scout 1
 
 ## Dispatch instructions (final element — recency)
 
-> **Writing each scout's task prompt:** Each prompt must include ALL of the following:
+> **When dispatching @ContextScout, your task prompt must tell the agent to:**
 >
-> 1. **For Scout 1:** Run `**/*` glob unconditionally; self-select key files; return full file list + summaries. No task context.
-> 2. **For Scouts 2+3:** Specific file paths or glob patterns — from planning agent placeholders, enriched with Scout 1 findings and current session context. Do NOT substitute thematic descriptions.
-> 3. **Clear goal statement** — restate the goal from the placeholder as a specific question the scout should answer.
+> 1. **For Scout 1:** Include this exact instruction verbatim in your dispatch prompt: "Run `**/*` glob unconditionally to get the full file list. From the results, self-select 3–5 structurally significant files and read them. Return the complete file list and brief summaries of the files you chose to read. Provide no task context filtering — your job is pure project discovery."
+> 2. **For Scouts 2+3:** In your dispatch prompt, tell @ContextScout: "Focus on these specific paths: [insert file paths or glob patterns from planning agent placeholders, enriched with Scout 1's findings and current session context]. Do not substitute thematic descriptions — use only the paths provided."
+> 3. **Clear goal statement:** In your dispatch prompt, restate the scout's goal as a specific question the agent should answer (e.g., "What are the naming conventions for kernel functions in this codebase?" or "What external libraries does this module depend on?").
 > 4. **Output constraint (verbatim)** — "Report findings as specific facts and file locations — not as generic section headers. List exact references: file paths, line numbers, cited strings."
 > 5. **Termination instruction** — "Return findings when complete. Do not ask clarifying questions or wait for confirmation."
 

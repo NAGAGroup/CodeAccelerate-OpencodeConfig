@@ -56,8 +56,8 @@ After validate_dag completes (successfully or with errors), dispatch @HeadWrench
 
 > **Writing the verify+fix subagent's prompt:** When dispatching this subagent, include:
 > 
-> 1. **Plan name** — The same directory name from Step 1.
-> 2. **Verification checklist** — The subagent must check:
+> 1. **Provide the plan name** — Use the same directory name from Step 1.
+> 2. **Perform a verification checklist** — Check:
 >    - (a) **File discoverability:** All prompt files referenced in plan.json exist under `.opencode/session-plans/{plan-name}/prompts/` with filenames matching node IDs exactly.
 >    - (b) **DAG structure validity:** Verify (i) every node has a unique ID; (ii) all branch conditions point to valid next nodes by ID; (iii) entry node exists and is the root; (iv) all terminal nodes (nodes with `next: null` or no `next` field) are marked as terminals in the node definition.
 >    - (c) **Prompt file content quality:** For each prompt file: (i) if the node's todo array is non-empty, the prompt must have a `## Todo` section listing each todo in order; (ii) if the node's todo includes `"question"`, the prompt must instruct HW to call the `question` tool with options; (iii) if the node's todo includes `"task"`, the prompt must dispatch a subagent with a numbered blockquote template; (iv) no unresolved `{{PLACEHOLDER}}` text remains; (v) the prompt states a clear purpose at the top.

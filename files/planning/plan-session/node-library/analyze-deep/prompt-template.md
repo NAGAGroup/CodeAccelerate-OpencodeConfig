@@ -44,9 +44,9 @@ Do not read any files under `.opencode/` session directories — they contain st
 
 > **Writing the ContextInsurgent's task prompt:** When you call the task tool to dispatch @ContextInsurgent, the prompt must include:
 >
-> 1. **The exact analysis question** — Restate the {{ANALYSIS_QUESTION}} placeholder exactly. The question must be answerable with specific evidence (file paths, line numbers, code strings), not narrative prose.
->
-> 2. **The file list to read** — Explicitly list every file from {{CONTEXT_TO_PROVIDE}} that CI should read. Do not vague this up to "explore the module" — provide exact file paths. Include any prior scout findings the agent should synthesize.
+ > 1. **The exact analysis question** — In your dispatch prompt, state the analysis question directly: restate the filled {{ANALYSIS_QUESTION}} content as the question @ContextInsurgent must answer, worded so the answer requires specific evidence (file paths, line numbers, code strings), not narrative prose.
+ >
+ > 2. **The file list to read** — In your dispatch prompt, provide the exact file paths from {{CONTEXT_TO_PROVIDE}} that @ContextInsurgent should read. Do not substitute thematic descriptions like "explore the module" — embed the exact file paths. Include any prior scout findings the agent should synthesize.
 >
 > 3. **Output format constraint** — Include this exact instruction: "Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings. Structure your response to directly answer the question with evidence."
 

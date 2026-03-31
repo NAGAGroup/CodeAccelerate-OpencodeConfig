@@ -38,11 +38,11 @@ Set `multiple: false` so the user picks one research direction.
 
 After the user answers Q1, **immediately call the `task` tool in the same response turn** — do NOT emit a plain-text acknowledgment and wait for a new user message. Same-turn dispatch is required.
 
-> **Writing the @ExternalScout prompt:** Include these numbered elements:
-> 1. **Tool priority:** "Use Context7 first — call `context7_resolve-library-id` to resolve library IDs, then `context7_query-docs` to retrieve documentation. Use Exa second — only search the web for content not covered by Context7."
-> 2. **Research topic:** The exact topic or question the user chose in Step 1, plus brief context about the overall planning task.
-> 3. **Return format:** "Return a brief structured summary with sections: **Key Findings**, **Relevant APIs or Patterns**, **Caveats**. Cite specific versions. Include code examples where they exist. Synthesize into direct answers — do NOT return a list of links. If nothing useful is found, state that explicitly."
-> 4. **One-shot constraint:** "This is a quick pass only — one round of research, maximum two tool calls total. No iteration, no deep multi-source investigation."
+> **When you dispatch @ExternalScout, include these direct instructions:**
+> 1. Use Context7 first — call `context7_resolve-library-id` to resolve library IDs, then `context7_query-docs` to retrieve documentation. Use Exa second — only search the web for content not covered by Context7.
+> 2. Research the exact topic or question the user chose in Step 1, plus include brief context about the overall planning task.
+> 3. Return a brief structured summary with sections: **Key Findings**, **Relevant APIs or Patterns**, **Caveats**. Cite specific versions. Include code examples where they exist. Synthesize into direct answers — do NOT return a list of links. If nothing useful is found, state that explicitly.
+> 4. This is a quick pass only — one round of research, maximum two tool calls total. No iteration, no deep multi-source investigation.
 
 ## Sequencing Rule
 

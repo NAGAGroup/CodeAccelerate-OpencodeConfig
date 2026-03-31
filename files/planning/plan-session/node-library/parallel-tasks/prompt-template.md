@@ -104,12 +104,12 @@ If you have fewer than 3 independent tasks, remove unused task sections above an
 
 When writing each subagent's full task prompt, include:
 
-> 1. **Target agent name and type** — Specify which agent and their role (e.g., "@JuniorDev for code edits")
- > 2. **Exact file paths** — Never substitute thematic descriptions. Always provide repo-relative paths (e.g., `src/kernels/matmul.cpp`, not "the kernel module")
-> 3. **Goal as observable outcome** — State what the agent should produce as an end-state, not what process to follow. Good: "Add the `computeL2Norm` function and declare it in the header." Bad: "Update the compute module."
-> 4. **Constraints and conventions** — What the agent must NOT do, where it must stay within, and which files to match style from (e.g., "Match the error handling in src/kernels/reduction.cpp; do not modify generated headers")
-> 5. **Success criterion as observable outcome** — How the agent verifies the edit succeeded without downstream dependencies. Good: "The function is declared in the header and the project compiles without errors." Bad: "Task 2 will use this."
-> 6. **For @QuickDoc only** — Include the format/template name and a reference file to match style (e.g., "Write in Markdown format matching the structure of `docs/api.md`")
+ > 1. In your dispatch prompt, name the agent and their role (e.g., "You are @JuniorDev. Your task is to perform targeted code edits in our repository.").
+> 2. In your dispatch prompt, give the agent the exact repo-relative file paths to read or edit — never substitute thematic descriptions (write `src/kernels/matmul.cpp`, not "the kernel module" or "the compute system").
+> 3. In your dispatch prompt, state the goal as an observable end-state, not a process: what should exist or be true when the agent finishes (e.g., "Add the `computeL2Norm` function and declare it in the header" — not "Update the compute module").
+> 4. In your dispatch prompt, state the constraints clearly: what the agent must NOT do (e.g., "do not modify generated files"), where they must stay within (e.g., "edit only src/kernels/"), and which files to match style from (e.g., "match the error handling pattern in src/kernels/reduction.cpp"). For @QuickDoc: also specify the format/template name and a reference file.
+> 5. In your dispatch prompt, state the success criterion as an observable outcome — how the agent verifies the edit succeeded without depending on downstream tasks. Good: "The function is declared in the header and the project compiles without errors." Bad: "Task 2 will use this function."
+> 6. In your dispatch prompt, if the agent is @QuickDoc, include the format/template name and a reference file to match style (e.g., "Write in Markdown format matching the structure of `docs/api.md`").
 > 7. **Termination instruction** — "Complete the edit. Return a brief confirmation stating the observable success criterion is met. Do not request further user input."
 
 ### Todo

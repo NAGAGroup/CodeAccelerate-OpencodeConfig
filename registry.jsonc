@@ -44,6 +44,7 @@
         "planning/plan-session/prompts/activation-gate.md",
         "planning/plan-session/prompts/activate-now.md",
         "planning/plan-session/prompts/plan-complete.md",
+        "planning/plan-session/prompts/git-context.md",
         "planning/plan-session/node-library/CATALOGUE.md",
         "planning/plan-session/node-library/analyze-deep/plan.json",
         "planning/plan-session/node-library/analyze-deep/README.md",

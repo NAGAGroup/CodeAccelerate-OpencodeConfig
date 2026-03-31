@@ -46,6 +46,10 @@ Use for: surgical edits to specific files, bug fixes, bounded refactoring (2–3
 
 Use for: markdown docs, config files, prompt files, structured docs. Dispatch with: (1) target file path; (2) what to write + format/template; (3) reference to existing file for conventions. Same scope rules as @JuniorDev.
 
+**@HeadWrench** — self-delegation (subagent mode)
+
+Use for: bash operations, git commands, build/test runs, and verification steps that require direct shell access. Self-dispatch uses `subagent_type: headwrench`. In subagent mode, HW has full tool access including bash and runs the task directly without further delegation. Do NOT self-delegate: file reads and content search (route to @ContextScout); code edits (route to @JuniorDev); document writes (route to @QuickDoc). Self-delegation is for shell-access work that no other specialist agent can perform.
+
 ## Planning & DAG Execution
 
 **Planning entry point:** `/plan-session` triggers interactive planning mode. Use when the user explicitly asks to plan or when a complex task requires multi-phase decomposition with decision gates.

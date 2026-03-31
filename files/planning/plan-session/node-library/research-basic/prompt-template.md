@@ -46,12 +46,12 @@ This is a cursory research pass. Use Context7 first (`context7_resolve-library-i
 
 ### Dispatch Blockquote (Final Element)
 
-> **Writing the @ExternalScout task prompt:** Include:
+> **Writing the @ExternalScout task prompt:** Include these instructions verbatim or adapted:
 >
-> 1. The specific research topic/question — name the exact library, API, configuration option, or error pattern.
-> 2. Tool priority: Context7 first — call `context7_resolve-library-id` to identify the library, then `context7_query-docs` with that ID. Use `get_code_context_exa` second for code examples and GitHub patterns. `web_search_exa` only as last resort.
-> 3. Return format: synthesize a direct answer with code examples; cite specific versions; do NOT return a list of links.
-> 4. Scope guard: "This is a cursory research pass — use at most 2–3 research tool calls and stop. Do not pursue multiple threads or cross-reference conflicting sources."
+> 1. Tell @ExternalScout the exact research topic/question — name the specific library, API, configuration option, or error pattern you need researched.
+> 2. Include this exact instruction: "Prioritize Context7 first — call `context7_resolve-library-id` to identify the library, then `context7_query-docs` with that ID. Use `get_code_context_exa` second for code examples and GitHub patterns. Use `web_search_exa` only as a last resort."
+> 3. Include this exact instruction: "Synthesize a direct answer with code examples. Cite specific library versions and minimum version requirements. Do NOT return a list of links or a survey-style summary."
+> 4. Include this exact instruction: "This is a cursory research pass — use at most 2–3 research tool calls and stop. Do not pursue multiple threads or cross-reference conflicting sources."
 
 ## Todo
 

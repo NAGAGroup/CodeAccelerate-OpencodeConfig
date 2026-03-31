@@ -58,13 +58,13 @@ Explicitly direct @ExternalScout to pursue these research directions:
 
 ## Zone 3: Dispatch Instructions (Final — HW reads and acts immediately)
 
-> **Writing the @ExternalScout task prompt:** Include these five elements:
+> **Writing the @ExternalScout task prompt:** Embed these five elements in your dispatch prompt:
 >
-> 1. **Research question and domain context** — The exact question from above and the technical landscape that constrains it
-> 2. **Exploration mandate** — All 2–3 research directions named explicitly (copy from above)
-> 3. **Tool priority** — `web_search_advanced_exa` first for broad discovery → `crawling_exa` for depth → `get_code_context_exa` for reference implementations (Context7 only for well-documented libraries)
-> 4. **Synthesis requirement** — "Compare the top 2–3 approaches identified in your research with explicit trade-offs on each dimension named in the exploration mandate. Recommend one approach and justify it against the stated constraints. State what was found AND what was NOT found (gaps in available research). Include confidence levels: High (3+ sources aligned), Medium (2 sources), Low (1 source or conflicting)."
-> 5. **Output format** — A synthesized direct answer with supporting evidence and confidence levels (not a source list or generic overview)
+> 1. **Research question and domain context** — In your dispatch prompt, state the research question and domain context from above verbatim. This grounds ExternalScout's investigation in the specific constraints.
+> 2. **Exploration mandate** — In your dispatch prompt, list the 2–3 exploration directions from above exactly as written. This prevents open-ended exploration and keeps the research focused.
+> 3. **Tool priority** — Include this exact instruction in your dispatch prompt: "Use `web_search_advanced_exa` first for broad discovery, then `crawling_exa` to read key sources in depth, then `get_code_context_exa` for reference implementations. Use Context7 only for well-documented libraries."
+> 4. **Synthesis requirement** — Include this exact instruction verbatim in your dispatch prompt: "Compare the top 2–3 approaches identified in your research with explicit trade-offs on each dimension named in the exploration mandate. Recommend one approach and justify it against the stated constraints. State what was found AND what was NOT found (gaps in available research). Include confidence levels: High (3+ sources aligned), Medium (2 sources), Low (1 source or conflicting)."
+> 5. **Output format** — Include this exact instruction in your dispatch prompt: "Return a synthesized direct answer with supporting evidence and confidence levels, not a source list or generic overview."
 
 ---
 

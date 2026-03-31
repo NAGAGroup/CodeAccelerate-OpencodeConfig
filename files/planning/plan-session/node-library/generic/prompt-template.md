@@ -72,10 +72,10 @@ For each `task` item in the todo sequence above, include a numbered blockquote h
 
 **Format:**
 > **Dispatch [agent name]:** When executing this step, dispatch the named agent with:
-> (1) exact file paths or patterns to read/edit — e.g., `src/kernels/*.cpp`, `CMakeLists.txt`
-> (2) the specific change, question, or goal — not a vague theme
-> (3) expected return format — e.g., "a file-by-file list of changes with line numbers"
-> (4) scope note: files the agent must NOT touch — e.g., "Do NOT modify .opencode/ or test files"
+> (1) In your dispatch prompt, tell [agent] the exact file paths or patterns to read/edit (e.g., `src/kernels/*.cpp`, `CMakeLists.txt`, not "the kernel module")
+> (2) In your dispatch prompt, state the specific change, question, or goal — not a vague theme
+> (3) In your dispatch prompt, specify the expected return format — e.g., "a file-by-file list of changes with line numbers"
+> (4) In your dispatch prompt, specify the scope note: files the agent must NOT touch — e.g., "Do NOT modify .opencode/ or test files"
 > (5) termination instruction — "Return a brief confirmation of the observable outcome. Do not request further user input."
 
 Example:

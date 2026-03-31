@@ -5,15 +5,20 @@
     "id": "session-overview",
     "prompt": "session-overview.md",
     "todo": [],
-    "next": {
-      "id": "scout",
-      "prompt": "scout.md",
-      "todo": ["task", "task", "task", "task"],
       "next": {
-        "id": "scout-node-library",
-        "prompt": "scout-node-library.md",
-        "todo": ["read"],
-        "next": {
+       "id": "scout",
+       "prompt": "scout.md",
+       "todo": ["task", "task", "task", "task"],
+       "next": {
+         "id": "git-context",
+         "nodeType": "generic",
+         "prompt": "git-context.md",
+         "todo": ["task"],
+         "next": {
+           "id": "scout-node-library",
+           "prompt": "scout-node-library.md",
+           "todo": ["read"],
+           "next": {
           "id": "pre-research-thinking",
           "prompt": "pre-research-thinking.md",
           "todo": ["sequential-thinking_sequentialthinking"],
