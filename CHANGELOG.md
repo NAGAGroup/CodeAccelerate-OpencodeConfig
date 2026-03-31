@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- **Free profile** (`files/profiles/free/opencode.jsonc`): updated `context-scout` model from `opencode/gpt-5-nano` to `opencode/nemotron-3-super-free`
+
 - **AGENTS.md rewritten from first principles**: stripped all operational agent-system content (agent roster, planning system flow, per-agent dispatch patterns, Category A/B/C technique lists, anti-patterns) that is already covered by the deployed agent config; retained only project-specific editorial knowledge — project identity, meta-context challenge, repository structure, component architecture, prompting framework (category definitions + improvement methodology), source code constraints, development/release workflow, and config conventions; reduced from 517 → ~200 lines
 - **session-overview planning prompt** (`files/planning/plan-session/prompts/session-overview.md`): rewritten to a minimal agent-facing orientation — removes full phase-by-phase flow description and "when the user says yes" framing; now simply establishes that a planning session is beginning and instructs HW to call `next_step()`
 - **session-overview node library** (`files/planning/plan-session/node-library/session-overview/`): README and prompt-template rewritten to reflect that the node is agent-facing only (not user-facing); template reduced to a single `{{SESSION_GOAL}}` placeholder; README "must resolve" section reduced to one item; failure modes updated to explicitly call out phase-listing and step-prediction as the primary anti-pattern

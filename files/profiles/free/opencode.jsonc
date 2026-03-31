@@ -18,7 +18,7 @@
       "model": "opencode/big-pickle"
     },
     "context-scout": {
-      "model": "opencode/gpt-5-nano"
+      "model": "opencode/nemotron-3-super-free"
     },
     "quick-doc": {
       "model": "opencode/mimo-v2-omni-free"
