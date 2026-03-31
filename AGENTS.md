@@ -356,7 +356,7 @@ When HeadWrench dispatches a subagent, the task prompt must include:
 **@ContextScout:**
 - Specific file paths or glob patterns — not thematic descriptions ("look at the auth system")
 - A clear statement of what to return (e.g., "return the exact function signatures from X")
-- Verbatim-return instruction when summarization would lose information: *"Do not produce generic 'Codebase Overview' or 'Key Decisions' sections — report specific file paths, line numbers, and exact strings."*
+- Return-as-is instruction when summarization would lose information: *"Return file contents exactly as-is. Do NOT summarize, restructure, or add section headers. You need the raw content — any transformation loses essential information."*
 
 **@ContextInsurgent:**
 - A single, specific analysis question (the "Answer / Conclusion" CI should produce)
@@ -379,14 +379,14 @@ When HeadWrench dispatches a subagent, the task prompt must include:
 - What to write and what format/template to follow
 - Conventions reference: point to an existing file to match
 
-### Verbatim-Return Pattern
+### Precision-Critical Content Retrieval Pattern
 
-Use verbatim-return instructions when the downstream step needs raw content, not a summary:
+Use return-as-is instructions when the downstream step needs raw content, not a summary:
 - Planning agents reading the node library (need exact node type names and todo arrays)
 - Scouts reading config files or schemas
 - Any retrieval task where summarization destroys precision
 
-**Exact instruction language:** *"Return file contents verbatim. Do NOT summarize, restructure, or add section headers. The planning agent needs the raw content — summarizing destroys the information."*
+**Exact instruction language:** *"Return the file contents exactly as-is. Do NOT summarize, restructure, or add section headers. [Downstream consumer] needs the raw content — any transformation loses essential information."*
 
 ### Agent Boundary Rules
 

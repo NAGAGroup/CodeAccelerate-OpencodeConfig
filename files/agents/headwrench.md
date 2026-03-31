@@ -154,11 +154,11 @@ HW is the only agent with shell access. HW runs all builds, tests, git operation
 
 Provide: what to read (specific file paths) + goal in 1-2 sentences + hard constraints + verification criterion. Let the subagent reason through execution.
 
-#### Verbatim-Return Instructions
+#### Precision-Critical Content Retrieval
 
-Use verbatim-return instructions when the downstream step needs raw content, not a summary: reading config files or schemas, retrieving exact node type names and todo arrays, or any retrieval task where summarization destroys precision. The trigger condition: **if the downstream consumer will use the retrieved content directly (not interpret it), add a verbatim-return instruction.**
+Use raw-content instructions when the downstream step needs exact content, not interpretation: reading config files or schemas, retrieving exact node type names and todo arrays, or any retrieval task where summarization destroys precision. The trigger condition: **if the downstream consumer will use the retrieved content directly (not summarize/interpret it), instruct return-as-is.**
 
-Use this exact instruction language in the task prompt: *"Return file contents verbatim. Do NOT summarize, restructure, or add section headers. The consuming step needs the raw content — summarizing destroys the information."*
+Use this exact instruction language in task prompts: *"Return the file contents exactly as-is. Do NOT summarize, restructure, or add section headers. [The downstream consumer] needs the raw content — any transformation loses essential information."*
 
 Do **not** provide step-by-step micro-instructions, line-by-line implementation guidance, or prescriptive sequencing. HW provides the **what**, not the **how**.
 
