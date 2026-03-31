@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-03-31
+
 ### Added
 
 - `present_dag_to_user` tool added to planning-enforcement plugin — displays the current session plan's DAG as an ASCII Mermaid diagram directly to the user using OpenCode's prompt injection API (`context.client.session.prompt()` with `noReply`, `synthetic`, and `ignored` flags) so the agent sees the message but doesn't respond to or process it.
@@ -373,7 +375,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 [1.0.1]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/tree/v0.1.0
-[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.6.0...HEAD
+[Unreleased]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.6.0...v4.0.0
 [3.6.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.5.0...v3.6.0
 [3.5.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/NAGAGroup/CodeAccelerate-OpencodeConfig/compare/v3.3.0...v3.4.0
