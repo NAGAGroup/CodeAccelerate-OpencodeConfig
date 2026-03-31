@@ -39,9 +39,9 @@ Before writing this node's prompt, answer all of the following in sequence:
    - Good: "`src/auth/token.ts`"
    - Bad: "the authentication system" or "auth-related files"
 
-4. **Per-task goal** — What is the observable outcome for each task? State the end-state, not the process.
-   - Good: "The `authenticate()` function accepts a Bearer token parameter and returns a user ID on success"
-   - Bad: "Update the authentication logic" (process description, not observable outcome)
+4. **Per-task goal** — What is the observable outcome for each task? State the end-state, not the process. Task goals must be concrete observable outcomes, never thematic descriptions.
+    - Good: "The `authenticate()` function accepts a Bearer token parameter and returns a user ID on success"; "Update auth token expiry from 24h to 7d in config.ts"
+    - Bad: "Update the authentication logic" (process description, not observable outcome); "Update the authentication system" (thematic description — too vague to be actionable). Vague goal descriptions propagate through all three cascade layers (planning → dispatch → execution).
 
 5. **Per-task success criterion** — How will you verify each task succeeded? Make it observable and testable, independent of downstream tasks.
    - Good: "The function `validateEmail()` rejects addresses without an @ symbol and is exported from the module"

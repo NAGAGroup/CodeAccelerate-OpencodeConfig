@@ -1,8 +1,6 @@
 # Compress Context
 
-## STOP — Do not work ahead
-
-Your only job in this node is to call the `compress` tool once with the instruction below, then call `next_step()`. Do NOT dispatch subagents, read files, or perform any reasoning here.
+Your job in this node: call the `compress` tool once with the format below, then call `next_step()` immediately.
 
 ## Todo
 

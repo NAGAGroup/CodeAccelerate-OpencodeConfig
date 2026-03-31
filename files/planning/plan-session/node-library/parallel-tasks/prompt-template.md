@@ -1,8 +1,6 @@
 # Parallel Tasks
 
-## STOP — Do not work ahead
-
-Your only job in this node is to dispatch all tasks in a single turn, then call `next_step()`. Do NOT dispatch tasks in separate turns, reorder tasks, or begin any synthesis or follow-on work here. Each task must be fully independent — no task may depend on another's output.
+Your job in this node: dispatch all tasks in a single turn, then call `next_step()` immediately.
 
 ### Todo
 

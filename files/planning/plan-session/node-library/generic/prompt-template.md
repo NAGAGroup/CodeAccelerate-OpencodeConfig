@@ -2,9 +2,7 @@
 
 *A descriptive name for this node, not the generic type. Good: "Verify file exists before branching". Bad: "Generic node".*
 
-## STOP — Do not work ahead
-
-Your only job in this node is to execute the todo sequence below in exact order, then call `next_step()`. Do NOT skip steps, reorder them, or deviate from the sequence. If a step fails, consult the failure handling in the step instructions — do not invent recovery steps not listed.
+Your job in this node: execute the todo sequence below in exact order, then call `next_step()` immediately.
 
 ### Todo sequence
 

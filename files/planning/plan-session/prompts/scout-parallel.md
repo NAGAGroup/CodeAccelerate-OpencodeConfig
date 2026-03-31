@@ -1,8 +1,8 @@
 # Scouts 2 + 3 — Task-Targeted Exploration
 
-## STOP — Do not work ahead
+## Your Role
 
-Your only job in this node is to dispatch Scouts 2 and 3 in a single response turn, then call `next_step()`. Do NOT synthesize findings, propose a plan, or begin any implementation work here.
+Your job in this node: dispatch Scouts 2 and 3 in a single response turn, then call `next_step()`.
 
 ## Todo
 
@@ -11,9 +11,9 @@ Your only job in this node is to dispatch Scouts 2 and 3 in a single response tu
 
 ---
 
-Scout 1's project map is in your context from the previous node. Use it — along with the user's task description — to write targeted prompts for Scouts 2 and 3, then dispatch both in the same response turn.
-
 ## Dispatch Instructions
+
+Scout 1's project map is in your context from the previous node. Use it — along with the user's task description — to write targeted prompts for Scouts 2 and 3, then dispatch both in the same response turn.
 
 **You MUST emit both `task` calls in a single response turn. Do NOT dispatch them in separate turns.**
 

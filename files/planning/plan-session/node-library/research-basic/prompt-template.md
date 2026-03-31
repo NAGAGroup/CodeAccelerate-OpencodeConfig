@@ -1,8 +1,6 @@
 # Research: {{RESEARCH_TOPIC}}
 
-## STOP — Do not work ahead
-
-Do NOT read additional files, perform your own research, or start any planning work. Your only action in this node is to dispatch @ExternalScout once, then call `next_step()`.
+Your job in this node: dispatch @ExternalScout with the research instructions below, then call `next_step()` immediately.
 
 ## Todo
 

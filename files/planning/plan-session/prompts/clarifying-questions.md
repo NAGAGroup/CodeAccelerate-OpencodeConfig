@@ -1,10 +1,8 @@
 # Clarifying Questions
 
-Before presenting the full plan for approval, take a moment to surface any clarifying questions you have for the user — and to share your current understanding of the problem.
+## Your Role
 
-## STOP — Do not work ahead
-
-Your only jobs in this node are: (1) write a brief understanding summary, (2) ask clarifying questions, (3) optionally run sequential thinking if answers change the plan, (4) call `next_step()`. Do NOT design the full plan, write DAG nodes, or perform any implementation work here.
+Your job in this node: summarize your understanding, ask clarifying questions, optionally run sequential thinking if answers change your plan, then call `next_step()`.
 
 **Note:** Both the `question` tool and `sequential-thinking_sequentialthinking` are exempt from DAG blocking in this node. You may call `question` as many times as needed. You may also call `sequential-thinking_sequentialthinking` once if user answers introduce new information that materially affects the plan.
 

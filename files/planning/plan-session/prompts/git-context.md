@@ -1,8 +1,8 @@
 # Git Context Collection
 
-## STOP — Do not work ahead
+## Your Role
 
-Your only job in this node is to dispatch @HeadWrench as a subagent to collect git context, then call `next_step()`. Do NOT read files, summarize findings for the user, or add commentary — advance immediately after the subagent returns.
+Your job in this node: dispatch @HeadWrench to collect git context, then call `next_step()`.
 
 ## Todo
 

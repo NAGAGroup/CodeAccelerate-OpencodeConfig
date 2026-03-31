@@ -1,8 +1,8 @@
 # Present DAG to User
 
-## STOP — Do not work ahead
+## Your Role
 
-Your only job in this node is to call `present_dag_to_user`, then call `next_step()` immediately. Do NOT add commentary, summaries, or ask the user anything — the diagram speaks for itself.
+Your job in this node: call `present_dag_to_user`, then call `next_step()` immediately.
 
 ## Todo
 

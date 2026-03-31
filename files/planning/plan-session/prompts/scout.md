@@ -1,8 +1,8 @@
 # Scout 1 — Project Map
 
-## STOP — Do not work ahead
+## Your Role
 
-Your only job in this node is to dispatch Scout 1 and call `next_step()`. Do NOT dispatch Scouts 2 or 3 here — that happens in the next node. Do NOT synthesize findings or begin any planning work.
+Your job in this node: dispatch Scout 1 to build a zero-assumption project map. Call `next_step()` when done.
 
 ## Todo
 
@@ -10,9 +10,9 @@ Your only job in this node is to dispatch Scout 1 and call `next_step()`. Do NOT
 
 ---
 
-Dispatch a single @ContextScout agent to build a zero-assumption project map. Scout 1 gets **no task context** — its only job is to discover what exists.
-
 ## Dispatch Instructions
+
+Dispatch a single @ContextScout agent to build a zero-assumption project map. Scout 1 gets **no task context** — its only job is to discover what exists.
 
 > **VERBATIM COPY REQUIRED — copy the numbered instructions below word-for-word into your dispatch prompt. Do NOT paraphrase, summarize, or convert to prose.**
 >

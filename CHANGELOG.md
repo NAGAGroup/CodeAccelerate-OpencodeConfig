@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- `files/planning/plan-session/prompts/sequential-thinking.md` — restructured to place `sequential-thinking_sequentialthinking` tool call first; reduced reasoning framework from 8 to 6 items; removed stale node reference; converted STOP opening to positive framing
+- `files/planning/plan-session/prompts/pre-research-thinking.md` — integrated CRITICAL tool call constraint inline with Todo; moved Goal section after core instructions; made `sequential-thinking_sequentialthinking` Todo item most prominent
+- `files/planning/plan-session/prompts/propose-plan.md` — extracted question tool call to first subsection; moved Sequential Thinking Guidelines before What to Present; converted STOP opening
+- `files/planning/plan-session/prompts/write-dag.md` — aligned Todo with exactly 3 tool calls; consolidated nested verification sub-items to ≤4 per section; removed duplicate schema reminders
+- `files/planning/plan-session/prompts/research-brief.md` — moved ExternalScout dispatch blockquote to immediately after Todo; converted STOP opening
+- `files/planning/plan-session/prompts/scout.md` — moved dispatch blockquote to immediately after Todo; converted STOP opening
+- `files/planning/plan-session/prompts/scout-parallel.md` — moved dispatch blockquotes to immediately after Todo; converted STOP opening
+- `files/planning/plan-session/prompts/session-overview.md` — moved Permitted Actions before Todo; converted STOP opening
+
+### Changed
+
+- `files/planning/plan-session/prompts/git-context.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/prompts/scout-node-library.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/prompts/research-gate.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/prompts/clarifying-questions.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/prompts/present-dag.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/prompts/activation-gate.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/node-library/analyze-deep/prompt-template.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/node-library/compression-node/prompt-template.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/node-library/generic/prompt-template.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/node-library/parallel-tasks/prompt-template.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/node-library/research-basic/prompt-template.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/node-library/verification-check/prompt-template.md` — converted STOP opening to positive role statement
+- `files/planning/plan-session/node-library/parallel-tasks/README.md` — added concrete-goals constraint to authoring guidance
+- `files/planning/plan-session/node-library/decision-gate/README.md` — fixed branch routing docs; added nodeId-vs-when-string example
+- `files/plugins/planning-enforcement.ts` — replaced all hedging language in injected messages with directive language; todo-completion message now reads "You MUST call next_step() right now"
+
 ### Changed
 
 - Applied structural prompt engineering fix across all 22 planning DAG prompt files and node library templates: moved STOP/deviation constraint blocks and Todo sections to the top of each file (immediately after the title), with all detail/execution specs following a `---` separator. Affected files: `prompts/session-overview.md`, `prompts/scout.md`, `prompts/scout-parallel.md`, `prompts/git-context.md`, `prompts/pre-research-thinking.md`, `prompts/sequential-thinking.md`, `prompts/scout-node-library.md`, `prompts/research-gate.md`, `prompts/propose-plan.md`, `prompts/present-dag.md`, `prompts/activation-gate.md`, `prompts/activate-now.md`, `node-library/sequential-thinking/prompt-template.md`, `node-library/decision-gate/prompt-template.md`, `node-library/conditional-branch/prompt-template.md`, `node-library/verification-check/prompt-template.md`, `node-library/scout-parallel/prompt-template.md`, `node-library/parallel-tasks/prompt-template.md`, `node-library/generic/prompt-template.md`, `node-library/research-basic/prompt-template.md`, `node-library/research-deep/prompt-template.md`, `node-library/analyze-deep/prompt-template.md`, `node-library/compression-node/prompt-template.md`. Written STOP blocks for all 15 files that were missing them; merged duplicate Todo sections in `scout-node-library.md`; resolved title-before-content inversion in `pre-research-thinking.md` (removed duplicate Goal/intro paragraph, moved CRITICAL block to position 2); moved Todo from last position to top in `verification-check`, `analyze-deep`, and `research-deep` templates; added explicit Todo and STOP to `sequential-thinking` and `compression-node` templates which previously had no Todo section; added closing `MUST call next_step()` statement to `sequential-thinking` and `compression-node` templates.

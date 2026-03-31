@@ -1,14 +1,14 @@
 # Sequential Thinking — Design the Complete Plan
 
-## STOP — Do not work ahead
+## Your Role: Invoke Sequential Thinking to Design the Complete Plan
 
-Your only job in this node is to call `sequential-thinking_sequentialthinking` to design the complete plan, then call `next_step()`. Do NOT present the plan to the user here — that happens at `propose-plan`. Do NOT ask the user anything.
+You are the planning orchestrator. Your role is to call `sequential-thinking_sequentialthinking` to design the complete plan, then call `next_step()` to advance to proposal. The plan you construct here is internal reasoning only — presentation to the user happens at the `propose-plan` node.
 
 ## Todo
 
-1. Before calling the tool, write one sentence in your response (NOT inside the tool call) stating your thought-count estimate: e.g., "Expecting 10–14 thoughts for this multi-phase plan." A focused decision: 5–8 thoughts. A broad multi-phase plan: 12–18. This estimate is a planning target, not a hard cap — stop when reasoning is complete regardless of count.
-
-2. `sequential-thinking_sequentialthinking` — Reason through the full plan design. **Keep calling this tool repeatedly in the same turn — do NOT wait for user input between thoughts.** Each call builds on the previous. Continue until you have worked through all the questions below and produced a complete plan. Stop when the reasoning is complete and the output is ready — not when a count is reached. If you are repeating or circling already-established points, stop immediately.
+1. `sequential-thinking_sequentialthinking` — Reason through the full plan design. **Keep calling this tool repeatedly in the same turn — do NOT wait for user input between thoughts.** Each call builds on the previous. Continue until you have worked through all the questions below and produced a complete plan. Stop when the reasoning is complete and the output is ready — not when a count is reached. If you are repeating or circling already-established points, stop immediately.
+   
+   *Thought-count note: Estimate at the start (5–8 thoughts for a focused decision, 12–18 for a broad multi-phase plan) as a planning target, not a hard cap. Stop when reasoning is complete regardless of count.*
 
 ---
 
@@ -18,25 +18,21 @@ The scouts have reported on the codebase, the node library is now available, and
 
 Work through these questions in order. Each builds on the previous:
 
-1. **What did the scouts actually find?** Consolidate the key facts: what exists, what's missing, what's ambiguous. Discard noise.
+1. **Scout findings and scope alignment:** Consolidate key facts from scouts: what exists, what's missing, what's ambiguous. Given actual codebase structure, what does the user's request genuinely require? Is scope bigger or smaller than it first appeared?
 
-2. **What is the real scope of the user's request?** Given what the codebase actually looks like, what does this task genuinely require? Is it bigger or smaller than it first appeared?
+2. **Constraints and risks:** What are the meaningful constraints (tech stack, dependencies, existing patterns, things that can't be changed)? Where are the risks — what could go wrong, what's uncertain, coupled, or likely to surface surprises?
 
-3. **What are the meaningful constraints?** Tech stack, dependencies, existing patterns, things that can't be changed. What do these rule out?
+3. **Sound plan structure:** Compose from primitives: sequence, branch, iteration (unrolled). Roughly: how many phases? What has to be sequential vs. parallel? Are there branch points where user decisions are needed?
 
-4. **Where are the risks?** What could go wrong? What parts of this task are uncertain, coupled, or likely to surface surprises?
+4. **Node types, agents, and decomposition:** Using the node library context from `scout-node-library`, select the right node type for each step. Assign agents (haiku in parallel, sonnet for deep reasoning). Draft decomposition: Node ID | Node type | Agent | What it does | Branch conditions.
 
-5. **What does a sound structure look like?** Compose from primitives: sequence, branch, iteration (unrolled). Roughly: how many phases? What has to be sequential vs. what can run in parallel? Are there branch points where user decisions are needed?
+    **Validate todo arrays:** After assigning node types, validate every `todo` array against the node type → todo table in `CATALOGUE.md` (already in context from scout-node-library). Use ONLY valid OpenCode tool names. Common errors: `sequential-thinking_sequentialthinking` is only for HW's own reasoning nodes (not for dispatching subagents); `compress` is valid only for `compression-node` and should only appear in nodes explicitly intended for context compression; subagent-internal tool names (`exa_web_search_exa`, `context7_query-docs`, `bash`) are not valid todo values.
 
-6. **What node types fit best?** Using the node library context from `scout-node-library`, select the right node type for each step. Assign agents (haiku in parallel, sonnet for deep reasoning). Draft the decomposition: Node ID | Node type | Agent | What it does | Branch conditions.
+    **Compression nodes:** For long, multi-phase DAGs — especially with extensive scout or analysis phases — include compression nodes between major phases. Multiple compression nodes in a single DAG is appropriate and encouraged. Place them after phases where context has accumulated (e.g., after 3 scouts, after deep analysis) and before phases that need a clean context window.
 
-    **Validate todo arrays:** After assigning node types, validate every `todo` array against the node type → todo table in `CATALOGUE.md` (already in context from scout-node-library). Use ONLY valid OpenCode tool names. Common errors to avoid: `sequential-thinking_sequentialthinking` is only for HW's own reasoning nodes (not for dispatching subagents); `compress` is a valid todo value used exclusively by `compression-node` and should only appear in nodes explicitly intended for context compression; subagent-internal tool names (`exa_web_search_exa`, `context7_query-docs`, `bash`) are not valid todo values.
+5. **Research integration:** Check if the user indicated at the research gate that the DAG should include research nodes. If yes, position `research-basic` or `research-deep` nodes before implementation steps that depend on them. If no, omit dedicated research nodes. Use research recommendations from `pre-research-thinking` context alongside user Q1 answers to confirm planning-time research availability.
 
-    **Compression nodes for long DAGs:** For long, multi-phase DAGs — especially those with extensive scout or analysis phases — include compression nodes between major phases. Multiple compression nodes in a single DAG is appropriate and encouraged; don't limit to one. Place them after phases where context has accumulated (e.g., after 3 scouts, after a deep analysis) and before phases that need a clean context window.
-
-7. **Execution-time research preference:** Did the user indicate at the research gate that the project DAG should include research nodes? If yes, include `research-basic` or `research-deep` nodes at appropriate points in the generated plan. Position them before the implementation steps that depend on that research. If no, omit dedicated research nodes. If a "Research recommendation: YES/NO" statement is in your context (from `pre-research-thinking`), use it alongside the user's Q1 answer to confirm or adjust your assumption about whether planning-time research was conducted and whether its findings are available in context.
-
-8. **What am I confident about vs. still unsure of?** Be explicit. If something is genuinely unclear, note it — you'll surface it to the user at `propose-plan`.
+6. **Confidence and clarity:** Be explicit about what you're confident about vs. still unsure of. If something is genuinely unclear, note it — you'll surface it to the user at `propose-plan`.
 
 ## Output
 

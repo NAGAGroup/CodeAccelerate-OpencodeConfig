@@ -1,8 +1,8 @@
 # Scout Node Library
 
-## STOP — Do not act on what you just read
+## Your Role
 
-The CATALOGUE is context for later planning nodes — not a trigger to plan now. You MUST NOT perform any internal plan reasoning, design DAG nodes, or make planning decisions in this node. Do NOT call `question`, `task`, or any planning tool. Your ONLY actions are: read `files/planning/plan-session/node-library/CATALOGUE.md` and call `next_step()`.
+Your job in this node: read the node library CATALOGUE, then call `next_step()`. The CATALOGUE is context for later planning nodes — you will not act on it here.
 
 ## Todo
 

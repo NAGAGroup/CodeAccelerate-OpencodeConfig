@@ -1,8 +1,8 @@
 # activation-gate
 
-## STOP — Do not work ahead
+## Your Role
 
-Your only jobs in this node are: call the `question` tool to ask the user about activation, then call `next_step()` with the correct node ID. Do NOT present the DAG content, add commentary, or perform any other work.
+Your job in this node: call the `question` tool to ask the user about activation, then call `next_step()` with the correct node ID.
 
 ## Todo
 

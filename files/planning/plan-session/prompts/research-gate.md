@@ -1,8 +1,8 @@
 # research-gate
 
-## STOP — Do not work ahead
+## Your Role
 
-Your only jobs in this node are: (1) call `question` twice in sequence for Q1 and Q2, (2) apply the routing table to determine the branch, (3) call `next_step()` with the correct node ID. Do NOT skip either question. Do NOT route before both questions are answered.
+Your job in this node: call `question` twice for Q1 and Q2, apply the routing table to determine the branch, then call `next_step()` with the correct node ID.
 
 ## Todo
 

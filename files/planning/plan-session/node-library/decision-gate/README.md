@@ -24,12 +24,20 @@ Before writing a `decision-gate` node, answer these four items explicitly:
    - ✗ Bad: Long descriptive prose instead of a label
 
 3. **Branch routing** — For each option, which node ID executes next? Each node ID must be a valid branch child node ID in the DAG.
-   - ✓ Good: "Optimize database first" → routes to `optimize-db-node`; "Add feature first" → routes to `add-feature-node`
-   - ✗ Bad: No explicit routing plan — HW will not know where to send the user's choice
+    - ✓ Good: "Optimize database first" → routes to `optimize-db-node`; "Add feature first" → routes to `add-feature-node`
+    - ✗ Bad: No explicit routing plan — HW will not know where to send the user's choice
 
 4. **Routing constraint (cascade)** — After the user responds, the executing prompt must call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the branch node's id in the DAG — NOT the `when` string. The `when` field is human-readable display text only; routing always uses the node ID.
-   - ✓ Good: User selects "Optimize database first" → prompt calls `next_step({ next: 'optimize-db-node' })`
-   - ✗ Bad: User selects "Optimize database first" → prompt calls `next_step({ next: 'Optimize database first' })`
+    - ✓ Good: User selects "Optimize database first" → prompt calls `next_step({ next: 'optimize-db-node' })`
+    - ✗ Bad: User selects "Optimize database first" → prompt calls `next_step({ next: 'Optimize database first' })`
+    
+    **Concrete example showing the difference:**
+    ```
+    Branch defined as:    { "when": "Approve", "id": "do-the-thing", ... }
+    Correct routing:      next_step({ next: "do-the-thing" })    // use the node ID
+    Wrong routing:        next_step({ next: "Approve" })         // when string does NOT work
+    ```
+    The `when` string ("Approve") is what the user sees in the question; the node `id` ("do-the-thing") is what you pass to `next_step()`.
 
 ## Notes
 
@@ -46,6 +54,11 @@ Before writing a `decision-gate` node, answer these four items explicitly:
 **Failure mode:** The executing prompt calls `next_step({ next: 'Optimize database first' })` using the `when` string instead of the node ID. The plugin expects a node ID and cannot find a node with that name, blocking the session.
 
 **Example:** The DAG has `{ "when": "Optimize database first", "node": { "id": "optimize-db", ... } }`. The prompt calls `next_step({ next: 'Optimize database first' })`. The plugin looks for a node named "Optimize database first" (not "optimize-db") and fails.
+
+**Concrete difference:**
+- Branch defined as: `{ "when": "Approve", "id": "do-the-thing", ... }`
+- Correct: `next_step({ next: "do-the-thing" })` — uses the node **id**
+- Wrong: `next_step({ next: "Approve" })` — uses the **when** string (does not work)
 
 **Prevention:** The fixed `## Routing requirement` section in the prompt template states this rule explicitly. HW reads it and routes using the node ID, never the `when` string.
 

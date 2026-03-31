@@ -4,9 +4,9 @@ Write the complete project DAG (plan.json) and all node prompt files. Three-step
 
 ## Todo
 
-1. **task** — Dispatch @HeadWrench subagent to write plan.json and prompt files
-2. **validate_dag** — Call validate_dag tool to check JSON structure and node ID uniqueness
-3. **task** — Dispatch @HeadWrench subagent to verify DAG structure, prompt content, and logical flow; fix any issues
+1. `task` — Dispatch @HeadWrench subagent to write plan.json and prompt files
+2. `validate_dag` — Call validate_dag tool to check JSON structure and node ID uniqueness
+3. `task` — Dispatch @HeadWrench subagent to verify DAG structure, prompt content, and logical flow; fix any issues
 
 ---
 
@@ -57,11 +57,11 @@ After validate_dag completes (successfully or with errors), dispatch @HeadWrench
 > **Writing the verify+fix subagent's prompt:** When dispatching this subagent, include:
 > 
 > 1. **Provide the plan name** — Use the same directory name from Step 1.
-> 2. **Perform a verification checklist** — Check:
+ > 2. **Perform a verification checklist** — Check:
 >    - (a) **File discoverability:** All prompt files referenced in plan.json exist under `.opencode/session-plans/{plan-name}/prompts/` with filenames matching node IDs exactly.
->    - (b) **DAG structure validity:** Verify (i) every node has a unique ID; (ii) all branch conditions point to valid next nodes by ID; (iii) entry node exists and is the root; (iv) all terminal nodes (nodes with `next: null` or no `next` field) are marked as terminals in the node definition.
->    - (c) **Prompt file content quality:** For each prompt file: (i) if the node's todo array is non-empty, the prompt must have a `## Todo` section listing each todo in order; (ii) if the node's todo includes `"question"`, the prompt must instruct HW to call the `question` tool with options; (iii) if the node's todo includes `"task"`, the prompt must dispatch a subagent with a numbered blockquote template; (iv) no unresolved `{{PLACEHOLDER}}` text remains; (v) the prompt states a clear purpose at the top.
->    - (d) **Logical flow validation:** Check (i) branches make semantic sense (e.g., decision-gate branches to two different nodes, not the same node twice); (ii) nodes that depend on prior findings from scout nodes are positioned after those scouts in the execution path; (iii) no orphaned nodes exist that cannot be reached from the entry node.
+>    - (b) **DAG structure validity:** Verify every node has a unique ID; all branch conditions point to valid next nodes by ID; entry node exists and is the root; all terminal nodes are marked as terminals.
+>    - (c) **Prompt file content quality:** If todo is non-empty, verify `## Todo` section exists; if todo includes `"question"`, the prompt instructs the `question` tool call; if todo includes `"task"`, the prompt dispatches a subagent with a numbered blockquote; no unresolved `{{PLACEHOLDER}}` text; prompt states clear purpose at top.
+>    - (d) **Logical flow validation:** Branches make semantic sense; nodes depending on prior scout findings are positioned after scouts; no orphaned nodes.
 > 3. **Fix instruction** — Any issues found must be fixed in place. For JSON errors, correct the plan.json syntax. For missing prompt files, create them with a minimal scaffold. For malformed branches, rewrite them to point to valid nodes. For content gaps, add the missing sections.
 > 4. **Subagent return format** — Report: (a) what was verified and the status of each check; (b) specific issues found (cite file paths and line numbers); (c) fixes applied; (d) final confirmation: "DAG is ready for activation."
 

@@ -1,20 +1,12 @@
 # Pre-Research Thinking
 
-## CRITICAL: Tool Call Required
-
-Your native `_Thinking:_` monologue does NOT satisfy the `sequential-thinking_sequentialthinking` tool requirement. You MUST call the tool explicitly. Producing a reasoning chain in response text without calling the tool is a compliance failure.
-
 ## Todo
 
-1. `sequential-thinking_sequentialthinking` — Reason through all 8 questions below. Do NOT wait for user input between thoughts. Call next_step() after the final thought to advance to the research gate.
+1. **Call `sequential-thinking_sequentialthinking` explicitly** — Reason through all 8 questions below. Do NOT wait for user input between thoughts. Your native `_Thinking:_` monologue does not satisfy the tool requirement — you MUST call the tool explicitly via the function interface, not as prose reasoning. Call `next_step()` after the final thought to advance to the research gate.
 
-**Tool note:** `sequential-thinking_sequentialthinking` is exempt from DAG blocking — call it directly.
+   *Tool note: `sequential-thinking_sequentialthinking` is exempt from DAG blocking — call it directly.*
 
 ---
-
-## Goal
-
-HeadWrench uses sequential-thinking to reason across three dimensions before reaching the research gate, producing a structured 3-line output block that the research-gate node consumes.
 
 ## What to Reason Through
 
@@ -30,7 +22,7 @@ Minimal example of a single tool call:
 sequential-thinking_sequentialthinking({
   thought: "First research question: ...",
   thoughtNumber: 1,
-  totalThoughts: 5,
+  totalThoughts: 8,
   nextThoughtNeeded: true
 })
 ```
@@ -58,6 +50,10 @@ Work through these eight questions in sequence:
    - **NO** — deterministic edit or refactor with no external dependencies; planning research (if done) covered everything needed.
 
 8. **Execution research type (if execution research is NECESSARY or RECOMMENDED):** Is the implementation question specific with a known answer to look up (→ `research-basic`), or is the direction itself uncertain and requires multi-source synthesis across many sources (→ `research-deep`)?
+
+## Goal
+
+HeadWrench uses sequential-thinking to reason across three dimensions before reaching the research gate, producing a structured 3-line output block that the research-gate node consumes.
 
 ## Output Format
 

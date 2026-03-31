@@ -1,8 +1,6 @@
 # Verification Check
 
-## STOP — Do not work ahead
-
-Your only job in this node is to dispatch @HeadWrench as a subagent to run the build and test commands, then call `next_step()`. Do NOT run build commands yourself, modify files, or attempt fixes — report findings only.
+Your job in this node: dispatch @HeadWrench as a subagent to run the build/test commands below, then call `next_step()` immediately.
 
 ## Todo
 

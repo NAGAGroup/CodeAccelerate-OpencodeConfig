@@ -1,8 +1,6 @@
 # Deep Analysis
 
-## STOP — Do not work ahead
-
-Your only job in this node is to dispatch @ContextInsurgent with the analysis question and file list below, then call `next_step()`. Do NOT add your own analysis, summarize for the user, or propose next steps — advance immediately after ContextInsurgent returns.
+Your job in this node: dispatch @ContextInsurgent with the analysis question below, then call `next_step()` immediately.
 
 ## Todo
 
