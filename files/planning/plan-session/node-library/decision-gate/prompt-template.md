@@ -1,5 +1,15 @@
 # Decision Gate
 
+## STOP — Do not work ahead
+
+Your only job in this node is to call the `question` tool exactly once, wait for the user's response, then call `next_step()` with the correct branch node ID. Do NOT call `question` more than once, do NOT present the choice as plain text, and do NOT route before the user responds.
+
+## Todo
+
+1. `question` — Present {{DECISION_DESCRIPTION}} with options: {{OPTION_A_LABEL}}, {{OPTION_B_LABEL}}.
+
+---
+
 **Zone 1 — Framing (Primacy):**
 
 You will call the `question` tool once, presenting the decision and options below. The user's choice maps to a branch in the plan. Your job: ask the question, wait for the response, then call `next_step()` with the branch's node ID.
@@ -24,10 +34,6 @@ You will present these two options to the user in the `question` tool. **The opt
 *Option labels must be short and unambiguous. Example: "Optimize database first" (good) vs. "Option A: Optimize the database before any new features are added (recommended)" (bad — too long, uses "Option A" instead of clear action). These labels are what the user will see and select; they must match the DAG branch `when` strings exactly.*
 
 **For more than two options:** Add additional `{{OPTION_C_LABEL}}`, `{{OPTION_D_LABEL}}` etc. — each must have a matching `when` entry in the DAG branch array.
-
-## Todo
-
-1. `question` — Present {{DECISION_DESCRIPTION}} with options: {{OPTION_A_LABEL}}, {{OPTION_B_LABEL}}.
 
 ---
 

@@ -2,6 +2,14 @@
 
 *Descriptive title matching the condition being evaluated. E.g., "Build Result Check", "File Exists Verification", "Test Output Evaluation". Avoid generic titles like "Branch Node".*
 
+## STOP — No tool calls needed
+
+This node evaluates a condition already in prior context — no tool calls are needed. Do NOT call `question`, `task`, `bash`, or any other tool. Your only action is to read the condition result from prior context and call `next_step()` with the correct branch node ID.
+
+## Todo
+
+*(empty — no tool calls required; this node routes only)*
+
 ---
 
 ## ZONE 1: Fixed Framing (HW Evaluates Condition — No Tool Call Needed)

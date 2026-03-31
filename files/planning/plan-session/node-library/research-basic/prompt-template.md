@@ -1,5 +1,15 @@
 # Research: {{RESEARCH_TOPIC}}
 
+## STOP — Do not work ahead
+
+Do NOT read additional files, perform your own research, or start any planning work. Your only action in this node is to dispatch @ExternalScout once, then call `next_step()`.
+
+## Todo
+
+1. `task` — Dispatch @ExternalScout with the research instructions from the zones below.
+
+---
+
 ## Zone 1: Fixed Framing
 
 You are HeadWrench. In this node, dispatch @ExternalScout for targeted external research on a code-related topic. This is a cursory lookup — not a deep investigation. ExternalScout will prioritize Context7 (library documentation) first, then use code-example tools if needed. No multi-threaded exploration.
@@ -34,10 +44,6 @@ You are HeadWrench. In this node, dispatch @ExternalScout for targeted external 
 
 ## Zone 3: Fixed Execution Specs (Recency)
 
-### Work-ahead prevention
-
-Do NOT read additional files, perform your own research, or start any planning work. Your only action in this node is to dispatch @ExternalScout once, then call `next_step()`.
-
 ### Answer Format Requirement
 
 ExternalScout must synthesize a **direct answer with code examples**. Do NOT return a list of links or a survey-style summary. Cite specific library versions and minimum version requirements. If the research is partially successful, state explicitly what was found and what was NOT found.
@@ -57,11 +63,7 @@ This is a cursory research pass. Use Context7 first (`context7_resolve-library-i
 > 3. Include this exact instruction: "Synthesize a direct answer with code examples. Cite specific library versions and minimum version requirements. Do NOT return a list of links or a survey-style summary."
 > 4. Include this exact instruction: "This is a cursory research pass — use at most 2–3 research tool calls and stop. Do not pursue multiple threads or cross-reference conflicting sources."
 
-## Todo
-
 > **Task tool:** Required params: `subagent_type` ("ExternalScout"), `description` (3–5 words), `prompt` (full instructions). Omit `task_id` for new tasks.
-
-1. `task` — Dispatch @ExternalScout with the research instructions from Zones 1–3 above.
 
 ## After ExternalScout Reports Back
 

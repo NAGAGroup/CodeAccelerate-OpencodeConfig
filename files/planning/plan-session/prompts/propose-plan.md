@@ -1,5 +1,15 @@
 # Propose Plan
 
+## STOP — Do not work ahead
+
+Your only jobs in this node are: present the complete plan as prose, call the `question` tool for approval, then call `next_step()` with the correct branch node ID. Do NOT design additional nodes, write DAG files, or start any implementation work here.
+
+## Todo
+
+1. `question` — Call the `question` tool with a single-sentence question: "Does this plan look right?" Use option label `"Approve — write the DAG"` (description: "Write plan.json and prompt files; activate separately with /activate-plan") and `"Rethink"` (description: "Adjust the plan before writing").
+
+---
+
 Present the complete plan to the user for approval. By this point, sequential thinking has produced a full plan — DAG structure plus node-by-node decomposition. Present it clearly, then ask for approval.
 
 **You MUST call the question tool — do not skip this step.**
@@ -31,11 +41,7 @@ sequential-thinking_sequentialthinking({
 })
 ```
 
-## Todo
-
-1. `question` — Call the `question` tool with a single-sentence question: "Does this plan look right?" Use option label `"Approve — write the DAG"` (description: "Write plan.json and prompt files; activate separately with /activate-plan") and `"Rethink"` (description: "Adjust the plan before writing").
-
 After the user selects an option:
-    - "Approve — write the DAG" → call `next_step({ next: "write-dag" })`
-    - "Rethink" → call `next_step({ next: "propose-plan-2" })`
-    - Any other answer → treat as "Rethink" and call `next_step({ next: "propose-plan-2" })`.
+- "Approve — write the DAG" → call `next_step({ next: "write-dag" })`
+- "Rethink" → call `next_step({ next: "propose-plan-2" })`
+- Any other answer → treat as "Rethink" and call `next_step({ next: "propose-plan-2" })`.

@@ -1,5 +1,19 @@
 # Verification Check
 
+## STOP — Do not work ahead
+
+Your only job in this node is to dispatch @HeadWrench as a subagent to run the build and test commands, then call `next_step()`. Do NOT run build commands yourself, modify files, or attempt fixes — report findings only.
+
+## Todo
+
+```json
+["task"]
+```
+
+Dispatch @HeadWrench (subagent) via a single `task` call. Include the blockquote template below in your dispatch prompt.
+
+---
+
 ## Zone 1: Fixed Framing
 
 You are dispatching HeadWrench as a subagent with full shell access. HW runs the build and test commands specified for this node, inspects the output, and reports outcomes in a machine-parseable format. **HeadWrench is the only agent with shell access** — do not substitute another agent here.
@@ -75,10 +89,4 @@ Run only the commands specified. Do not install dependencies, modify files, or a
 > 4. Failure handling — what to capture and report on FAIL, whether to stop on first failure or continue
 > 5. Mandatory outcome format: `**Outcome:** [PASS | FAIL | PARTIAL]` + one-sentence summary; FAIL/PARTIAL outcomes must include the command that failed and the error text
 
-## Todo
-
-```json
-["task"]
-```
-
-Dispatch @HeadWrench (subagent) via a single `task` call. Include the blockquote template above in your dispatch prompt.
+MUST call `next_step()` after the subagent reports back.

@@ -1,12 +1,16 @@
 # activation-gate
 
-Ask the user whether to activate and execute the plan immediately or defer activation. Route based on their response.
+## STOP — Do not work ahead
+
+Your only jobs in this node are: call the `question` tool to ask the user about activation, then call `next_step()` with the correct node ID. Do NOT present the DAG content, add commentary, or perform any other work.
 
 ## Todo
 
 1. `question` — Ask the user for their activation preference
 
 ---
+
+Ask the user whether to activate and execute the plan immediately or defer activation. Route based on their response.
 
 ## Decision Flow
 

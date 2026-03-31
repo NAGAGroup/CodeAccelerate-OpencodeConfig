@@ -1,5 +1,15 @@
 # Deep Analysis
 
+## STOP — Do not work ahead
+
+Your only job in this node is to dispatch @ContextInsurgent with the analysis question and file list below, then call `next_step()`. Do NOT add your own analysis, summarize for the user, or propose next steps — advance immediately after ContextInsurgent returns.
+
+## Todo
+
+1. `task` — Dispatch @ContextInsurgent to answer: {{ANALYSIS_QUESTION}}. Provide these files: {{CONTEXT_TO_PROVIDE}}. Follow the dispatch blockquote below.
+
+---
+
 ## Zone 1: Dispatch Preamble (Fixed Role Definition)
 
 You are HeadWrench. In this node, you will write and dispatch a single task to @ContextInsurgent for deep multi-file reasoning.
@@ -59,12 +69,6 @@ Do not read any files under `.opencode/` session directories — they contain st
 - **Analysis Question:** "Which kernel dispatch sites pass raw host pointers where the new API requires USM device allocations, and in which files do they appear?"
 - **Context to Provide:** "Scout findings from scout-1 node: dispatch calls live in `src/pipeline/executor.cpp`, `src/pipeline/stages.cpp`, `tests/integration/pipeline_test.cpp`. Read these three files and identify all kernel dispatch calls and their buffer arguments."
 - **Output (direct answer, not boilerplate):** "Affected sites: `runMatmul()` at `src/pipeline/executor.cpp:87` (passes `float*` host pointer), `runReduction()` at `src/pipeline/stages.cpp:134` (passes stack-allocated array), `benchmarkKernel()` at `tests/integration/pipeline_test.cpp:56` (passes `std::vector::data()`). Dispatch in `src/pipeline/stages.cpp:201` already uses `sycl::malloc_device` — unaffected."
-
----
-
-## Todo
-
-1. `task` — Dispatch @ContextInsurgent to answer: {{ANALYSIS_QUESTION}}. Provide these files: {{CONTEXT_TO_PROVIDE}}. Follow the dispatch blockquote above.
 
 ## After ContextInsurgent Reports Back
 

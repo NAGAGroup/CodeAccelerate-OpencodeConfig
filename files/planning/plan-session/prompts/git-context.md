@@ -1,10 +1,16 @@
 # Git Context Collection
 
-This node runs after the scout phase and before the node library scout. It dispatches HeadWrench as a subagent to collect git context using file paths identified by the preceding scouts. The subagent runs a fixed set of git commands and returns output verbatim under labeled headings.
+## STOP — Do not work ahead
+
+Your only job in this node is to dispatch @HeadWrench as a subagent to collect git context, then call `next_step()`. Do NOT read files, summarize findings for the user, or add commentary — advance immediately after the subagent returns.
 
 ## Todo
 
 1. `task` — Dispatch @HeadWrench as a subagent to collect git context. Wait for it to return before calling `next_step()`.
+
+---
+
+This node runs after the scout phase and before the node library scout. It dispatches HeadWrench as a subagent to collect git context using file paths identified by the preceding scouts. The subagent runs a fixed set of git commands and returns output verbatim under labeled headings.
 
 > **Dispatch @HeadWrench (subagent):** Your task prompt must tell the HW subagent to execute the following steps:
 >

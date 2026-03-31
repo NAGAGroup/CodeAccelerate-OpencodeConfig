@@ -2,6 +2,32 @@
 
 *A descriptive name for this node, not the generic type. Good: "Verify file exists before branching". Bad: "Generic node".*
 
+## STOP — Do not work ahead
+
+Your only job in this node is to execute the todo sequence below in exact order, then call `next_step()`. Do NOT skip steps, reorder them, or deviate from the sequence. If a step fails, consult the failure handling in the step instructions — do not invent recovery steps not listed.
+
+### Todo sequence
+
+{{TODO_SEQUENCE}}
+
+*List tools in order. Valid items:*
+- *`task` — dispatch a subagent*
+- *`bash` — run a shell command*
+- *`question` — ask the user*
+- *`compress` — compress context*
+- *`sequential-thinking_sequentialthinking` — HW reasons step-by-step (exact tool name, underscore not hyphen)*
+- *`validate_dag` — validate a project DAG*
+- *Any MCP tool name (e.g., `context7_query-docs`, `exa_search`)*
+
+Example:
+```
+1. bash — Run 'cmake --build build/' to verify compilation
+2. task — Dispatch @JuniorDev to fix compile errors if any
+3. question — Ask: "Ready to deploy?"
+```
+
+---
+
 ## Escape hatch node
 
 This node type allows custom tool sequencing when standard templates don't fit. You define the exact todo array and instructions for each step. HW follows your sequence exactly.
@@ -23,27 +49,7 @@ This node type allows custom tool sequencing when standard templates don't fit. 
 
 ---
 
-## Zone 2: Todo sequence and step instructions
-
-### Todo sequence
-
-{{TODO_SEQUENCE}}
-
-*List tools in order. Valid items:*
-- *`task` — dispatch a subagent*
-- *`bash` — run a shell command*
-- *`question` — ask the user*
-- *`compress` — compress context*
-- *`sequential-thinking_sequentialthinking` — HW reasons step-by-step (exact tool name, underscore not hyphen)*
-- *`validate_dag` — validate a project DAG*
-- *Any MCP tool name (e.g., `context7_query-docs`, `exa_search`)*
-
-Example:
-```
-1. bash — Run 'cmake --build build/' to verify compilation
-2. task — Dispatch @JuniorDev to fix compile errors if any
-3. question — Ask: "Ready to deploy?"
-```
+## Zone 2: Step instructions
 
 ### Step instructions
 

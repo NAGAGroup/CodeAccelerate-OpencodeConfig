@@ -1,21 +1,30 @@
 # Scout 1 — Project Map
 
-Dispatch a single @ContextScout agent to build a zero-assumption project map. Scout 1 gets **no task context** — its only job is to discover what exists.
+## STOP — Do not work ahead
+
+Your only job in this node is to dispatch Scout 1 and call `next_step()`. Do NOT dispatch Scouts 2 or 3 here — that happens in the next node. Do NOT synthesize findings or begin any planning work.
 
 ## Todo
 
 1. `task` — Dispatch @ContextScout for full project map (zero task context). Wait for result.
 
+---
+
+Dispatch a single @ContextScout agent to build a zero-assumption project map. Scout 1 gets **no task context** — its only job is to discover what exists.
+
 ## Dispatch Instructions
 
-> **When dispatching @ContextScout (Scout 1), your task prompt must tell the agent to:**
-> (1) Use the `glob` tool with pattern `*` to get the top-level file and directory list only (depth-1 entries).
+> **VERBATIM COPY REQUIRED — copy the numbered instructions below word-for-word into your dispatch prompt. Do NOT paraphrase, summarize, or convert to prose.**
+>
+> **When dispatching @ContextScout (Scout 1), your task prompt must include these exact instructions:**
+> (1) Use the `read` tool with path `.` to get the top-level file and directory list only (depth-1 entries).
 > (2) From the depth-1 list, identify 3–5 files that look like the most important orientation anchors (README, build config, project manifest, top-level entry point — whatever the project structure suggests). Read those files.
 > (3) Return: the complete depth-1 entries list **verbatim as-is, one per line**. Then append a high-level summary covering: the overall directory structure and purpose suggested by the top-level layout, plus a brief description of each key file you read and what it reveals about the project's purpose and entry points.
 > (4) Do NOT interpret the task or filter for relevance — return everything. HW will determine relevance.
 > (5) Termination: return when you have the file list and key file summaries. Do not explore further.
 
-✓ Good: Uses `glob` with pattern `*`, returns top-level paths one-per-line verbatim, then a brief structural overview and 3–5 key file summaries.
+✓ Good dispatch prompt: Contains the exact text `Use the \`read\` tool with path \`.\`` — copied verbatim from item (1) above.
+✗ Bad: Rewriting item (1) as "Read the top-level directory structure" — this loses the tool name and causes the scout to use `glob` instead.
 ✗ Bad: "Find files related to the task." — Scout 1 gets no task context and must not filter by it.
 ✗ Bad: Using `glob` with `**/*` or recursively returning nested files — Scout 1's output must be depth-1-only.
 

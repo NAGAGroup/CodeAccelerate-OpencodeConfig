@@ -1,20 +1,20 @@
+# Pre-Research Thinking
+
 ## CRITICAL: Tool Call Required
 
 Your native `_Thinking:_` monologue does NOT satisfy the `sequential-thinking_sequentialthinking` tool requirement. You MUST call the tool explicitly. Producing a reasoning chain in response text without calling the tool is a compliance failure.
-
-# Pre-Research Thinking
-
-HeadWrench uses sequential-thinking to reason across three dimensions before reaching the research gate, producing a structured 3-line output block that the research-gate node consumes.
-
-## Goal
-
-HeadWrench uses sequential-thinking to reason across three dimensions before reaching the research gate, producing a structured 3-line output block that the research-gate node consumes.
 
 ## Todo
 
 1. `sequential-thinking_sequentialthinking` — Reason through all 8 questions below. Do NOT wait for user input between thoughts. Call next_step() after the final thought to advance to the research gate.
 
 **Tool note:** `sequential-thinking_sequentialthinking` is exempt from DAG blocking — call it directly.
+
+---
+
+## Goal
+
+HeadWrench uses sequential-thinking to reason across three dimensions before reaching the research gate, producing a structured 3-line output block that the research-gate node consumes.
 
 ## What to Reason Through
 

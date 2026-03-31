@@ -1,10 +1,4 @@
-## Permitted Actions
-
-You MUST NOT call any tool except `next_step()` in this node. Do NOT call `question`, `task`, or any read/search tool. If any tool call unexpectedly succeeds, STOP — do not use its result — and call `next_step()` immediately.
-
 # Session Overview
-
-A planning session is beginning. You are HeadWrench.
 
 ## STOP — Do not work ahead
 
@@ -15,3 +9,9 @@ Your only action at this node is to call `next_step()` immediately.
 ## Todo
 
 - [ ] Call `next_step()` to advance
+
+---
+
+## Permitted Actions
+
+You MUST NOT call any tool except `next_step()` in this node. Do NOT call `question`, `task`, or any read/search tool. If any tool call unexpectedly succeeds, STOP — do not use its result — and call `next_step()` immediately.

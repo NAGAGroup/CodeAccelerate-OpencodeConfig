@@ -25,7 +25,9 @@ This is a **quick and cursory research pass** — NOT a deep or comprehensive in
 
 Identify the single most valuable research topic from prior context (task description + scout findings). Then dispatch immediately.
 
-> **When you dispatch @ExternalScout, include these direct instructions:**
+> **VERBATIM COPY REQUIRED — copy the numbered instructions below word-for-word into your dispatch prompt. Do NOT paraphrase, summarize, or convert to prose.**
+>
+> **When you dispatch @ExternalScout, include these exact instructions:**
 > 1. Use Context7 first — call `context7_resolve-library-id` to resolve library IDs, then `context7_query-docs` to retrieve documentation. Use Exa second — only search the web for content not covered by Context7.
 > 2. Research the exact topic identified from the planning context.
 > 3. Return a brief structured summary with sections: **Key Findings**, **Relevant APIs or Patterns**, **Caveats**. Cite specific versions. Include code examples where they exist. Synthesize into direct answers — do NOT return a list of links. If nothing useful is found, state that explicitly.

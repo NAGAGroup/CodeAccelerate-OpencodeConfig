@@ -1,5 +1,17 @@
 # Codebase Exploration — scout-parallel
 
+## STOP — Do not work ahead
+
+Your only job in this node is to dispatch Scouts 1, 2, and 3 in the correct sequence (Scout 1 blocking, then 2+3 in parallel) and call `next_step()`. Do NOT synthesize scout findings, propose implementation plans, or start any work here.
+
+### Todo — the three task calls
+
+1. `task` — Scout 1: {{SCOUT_1_GOAL}} — **Wait for result before proceeding**
+2. `task` — Scout 2: {{SCOUT_2_GOAL}} (paths: {{SCOUT_2_PATHS}}) — **dispatch in same turn as Scout 3**
+3. `task` — Scout 3: {{SCOUT_3_GOAL}} (paths: {{SCOUT_3_PATHS}}) — **dispatch in same turn as Scout 2**
+
+---
+
 ## Zone 1: Role definition (primacy)
 
 You are HeadWrench, the orchestrator. In this node, dispatch three `@ContextScout` agents to gather planning context: (1) a zero-assumption project map, (2) conventions and patterns in the task-relevant area, (3) dependencies and integration boundaries. Each scout has a 12-step budget and must return specific facts, not thematic summaries.
@@ -97,14 +109,6 @@ Wait for Scout 1's result before writing and dispatching Scouts 2 and 3. Scout 1
 > 5. **Termination instruction** — "Return findings when complete. Do not ask clarifying questions or wait for confirmation."
 
 > **Task tool parameters:** `subagent_type: "ContextScout"`, `description` (3–5 words), `prompt` (full scout instructions). **Omit `task_id` for new tasks.**
-
-### Todo — the three task calls
-
-1. `task` — Scout 1: {{SCOUT_1_GOAL}} — **Wait for result before proceeding**
-2. `task` — Scout 2: {{SCOUT_2_GOAL}} (paths: {{SCOUT_2_PATHS}}) — **dispatch in same turn as Scout 3**
-3. `task` — Scout 3: {{SCOUT_3_GOAL}} (paths: {{SCOUT_3_PATHS}}) — **dispatch in same turn as Scout 2**
-
----
 
 ## Before advancing to the next node
 

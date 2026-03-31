@@ -1,12 +1,16 @@
 # activate-now
 
-Activate and begin executing the project DAG immediately.
+## STOP — Do not work ahead
+
+Your only job in this node is to call `activate_plan` with the plan name. Do NOT call `next_step()` — the planning session auto-completes once `activate_plan` returns. Do NOT ask the user anything.
 
 ## Todo
 
 1. `activate_plan` — Call activate_plan with the plan name from write-dag context
 
 ---
+
+Activate and begin executing the project DAG immediately.
 
 ## Action
 

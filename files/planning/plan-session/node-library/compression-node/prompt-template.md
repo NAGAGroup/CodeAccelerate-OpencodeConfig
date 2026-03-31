@@ -1,5 +1,15 @@
 # Compress Context
 
+## STOP — Do not work ahead
+
+Your only job in this node is to call the `compress` tool once with the instruction below, then call `next_step()`. Do NOT dispatch subagents, read files, or perform any reasoning here.
+
+## Todo
+
+1. `compress` — Call the compress tool with the exact format specified below.
+
+---
+
 **ZONE 1 — Fixed framing**
 
 You are HeadWrench. In this node, call the `compress` tool directly — no agent is dispatched — to replace stale conversation context with a dense technical summary. Compression is a context management step only, not a reasoning or planning step. HW acts directly; no subagent is involved.
@@ -80,3 +90,5 @@ Do NOT produce a narrative recap — the summary is a technical reference, not a
 - Preserve: "`runMatmul()` called at `src/pipeline/executor.cpp:87` and `src/pipeline/stages.cpp:134`. Both pass raw host pointers. No USM allocation wrapper exists yet."
 - Discard: "Sequential thinking steps, file discovery overhead, rejected hypotheses."
 - Synthesis question: "Which call sites need a new USM allocation wrapper and what exact changes are required at each location?"
+
+MUST call `next_step()` after compress returns.
