@@ -16,22 +16,14 @@ You will call the `question` tool once, presenting the decision and options belo
 
 ## The Options
 
-You will present these two options to the user in the `question` tool. **The option labels below must exactly match the `when` strings in this node's branch array in plan.json — character-for-character, including capitalization and punctuation.**
+You will present these two options to the user in the `question` tool. **The option labels below must exactly match the `when` strings in this node's branch array in the DAG — character-for-character, including capitalization and punctuation.**
 
 - **Option A:** {{OPTION_A_LABEL}} — {{OPTION_A_DESCRIPTION}}
 - **Option B:** {{OPTION_B_LABEL}} — {{OPTION_B_DESCRIPTION}}
 
-*Option labels must be short and unambiguous. Example: "Optimize database first" (good) vs. "Option A: Optimize the database before any new features are added (recommended)" (bad — too long, uses "Option A" instead of clear action). These labels are what the user will see and select; they must match plan.json `when` strings exactly.*
+*Option labels must be short and unambiguous. Example: "Optimize database first" (good) vs. "Option A: Optimize the database before any new features are added (recommended)" (bad — too long, uses "Option A" instead of clear action). These labels are what the user will see and select; they must match the DAG branch `when` strings exactly.*
 
-**For more than two options:** Add additional `{{OPTION_C_LABEL}}`, `{{OPTION_D_LABEL}}` etc. — each must have a matching `when` entry in plan.json.
-
-Example plan.json branch structure:
-```json
-"next": [
-  { "when": "Optimize database first", "node": { "id": "optimize-db", "prompt": "prompts/optimize-db.md", "todo": ["task"] } },
-  { "when": "Add feature first", "node": { "id": "add-feature", "prompt": "prompts/add-feature.md", "todo": ["task"] } }
-]
-```
+**For more than two options:** Add additional `{{OPTION_C_LABEL}}`, `{{OPTION_D_LABEL}}` etc. — each must have a matching `when` entry in the DAG branch array.
 
 ## Todo
 
@@ -43,13 +35,13 @@ Example plan.json branch structure:
 
 ## Routing requirement
 
-**After the user responds, call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the `id` field of the branch node in plan.json — NOT the `when` string.**
+**After the user responds, call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the `id` field of the branch node in the DAG — NOT the `when` string.**
 
 The `when` field is human-readable display text. The routing key is the node's `id`.
 
 Example:
 - User selects "Optimize database first"
-- plan.json branch has: `{ "when": "Optimize database first", "node": { "id": "optimize-db", ... } }`
+- The DAG branch has: `{ "when": "Optimize database first", "node": { "id": "optimize-db", ... } }`
 - You call: `next_step({ next: 'optimize-db' })` — NOT `next_step({ next: 'Optimize database first' })`
 
 ## Question tool constraint
@@ -61,4 +53,4 @@ Example:
 
 ---
 
-**Final Reminder:** Ensure the option labels you present in the `question` call exactly match the `when` strings in plan.json. A mismatch prevents proper routing.
+**Final Reminder:** Ensure the option labels you present in the `question` call exactly match the `when` strings in the DAG branch array. A mismatch prevents proper routing.

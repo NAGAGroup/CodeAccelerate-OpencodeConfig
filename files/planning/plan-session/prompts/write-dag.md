@@ -12,7 +12,7 @@ Write the complete project DAG (plan.json) and all node prompt files. Three-step
 
 ## Step 1: Write Plan Files
 
-When the planning agent (or sequential-thinking node) has finalized the DAG structure and content, you must write the executable plan files. Dispatch @HeadWrench as a subagent with this task.
+When the planning agent (or sequential-thinking node) has finalized the DAG structure and content, you must write the executable plan files. Dispatch @HeadWrench as a subagent with this task. The subagent builds the DAG using `init_dag` and `add_node` — not by hand-writing `plan.json`.
 
 > **Writing the plan write subagent's prompt:** When dispatching this subagent, include:
 > 
@@ -20,13 +20,13 @@ When the planning agent (or sequential-thinking node) has finalized the DAG stru
 > 2. **Complete node decomposition table** — Include a table with these columns: Node ID | Node Type | Agent | Todo Array | What it does | Branch conditions (if any). Each todo array must be quoted as JSON and must match exactly what will appear in the final plan.json. This table is the reference spec for what the subagent will write.
 > 3. **ASCII diagram** — A top-to-bottom or left-to-right ASCII flowchart showing node connections, branch points, and terminal nodes. Format: node IDs in boxes, arrows between nodes, labeled branch conditions (e.g., `[yes] → activate-now`, `[no] → plan-complete`).
 > 4. **List of node types used** — A bullet list of every distinct node type used in the DAG (e.g., `session-overview`, `sequential-thinking`, `decision-gate`, `research-basic`, etc.). This helps the subagent verify it has all required node library files to reference.
-> 5. **Instructions for the subagent:**
->    - (a) Read `files/planning/plan-session/node-library/CATALOGUE.md` — the node type reference.
->    - (b) Read `files/planning/reference/dag-design-guide.md` — the schema spec and authoring rules.
->    - (c) Read each node's README and template in `files/planning/plan-session/node-library/{node-type}/` for every node type listed above.
->    - (d) Write `plan.json` in `.opencode/session-plans/{plan-name}/` using the nested tree schema. **Critical:** In all `next` fields, embed the full node object, NOT a string ID. Every `next` value must be `{ id, nodeType, ... }`, never `"node-id-string"`. Branch arrays use this format: `"branches": [{ when: "condition text", next: { id, nodeType, ... } }, ...]`.
->    - (e) Write all prompt files in `.opencode/session-plans/{plan-name}/prompts/`, one file per node ID (e.g., `prompts/session-overview.md`, `prompts/scout.md`). Prompt filenames must use the exact node ID, not the node type.
-> 6. **Subagent return format** — Report back: (a) list of all files written with their paths, (b) any JSON syntax errors encountered and how they were fixed, (c) confirmation that every prompt filename exists and matches its node ID.
+ > 5. **Instructions for the subagent:**
+>    - (a) Read `{{SESSION_PATH}}/node-library/CATALOGUE.md` — the node type reference. Use this exact path; do not glob or list directories.
+>    - (b) For each node type listed above, read the README and prompt-template in `{{SESSION_PATH}}/node-library/{node-type}/`.
+ >    - (c) Call `init_dag` first to create the plan directory and entry node (`session-overview`). Pass: `plan_name` (the plan name from above), `dag_id` (same value), `entry_node_id: "session-overview"`, `entry_prompt_file: "session-overview.md"`, `entry_todo: []`.
+>    - (d) Then call `add_node` for each subsequent node in execution order. For all DAG tool calls (`add_node`, `show_dag`, `modify_node`, `delete_node`), the `target` parameter is always the **plan name** (e.g., `"my-feature-delivery"`) — never a file path or directory path. Use `show_dag` to review the current structure after each addition. Use `modify_node` to update a node's prompt, todo, or `when` labels if needed. Use `delete_node` only if a node must be removed and replaced (it deletes the entire subtree).
+>    - (e) Write all prompt files in `.opencode/session-plans/{plan-name}/prompts/`, one file per node ID (e.g., `prompts/session-overview.md`, `prompts/scout.md`). Prompt filenames must use the exact node ID, not the node type. Write prompt files alongside DAG authoring — do not wait until all nodes are added.
+> 6. **Subagent return format** — Report back: (a) list of all files written with their paths, (b) the final `show_dag` ASCII diagram confirming the full structure, (c) confirmation that every prompt filename exists and matches its node ID.
 
 ---
 

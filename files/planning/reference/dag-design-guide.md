@@ -2,35 +2,38 @@
 
 Reference for composing project DAGs. Project DAGs are nested trees of nodes that HeadWrench executes by dispatching specialist agents.
 
-## Schema (v2.0)
+---
 
-```json
-{
-  "schema_version": "2.0",
-  "id": "my-project-dag",
-  "entry": {
-    "id": "session-overview",
-    "prompt": "session-overview.md",
-    "todo": [],
-    "next": { ... }
-  }
-}
-```
+## Authoring Tools
 
-### Node fields
+DAGs are built with five tools — do not hand-write `plan.json`.
+
+| Tool | When to call |
+|------|-------------|
+| `init_dag` | Once per DAG — creates the plan directory and entry node |
+| `add_node` | Once per subsequent node, in execution order |
+| `show_dag` | After each addition to verify structure |
+| `modify_node` | To update a node's prompt, todo, or `when` label |
+| `delete_node` | To remove a node and its entire subtree |
+
+**`target` is always the plan name** (e.g., `"my-feature-delivery"`), never a file path or directory.
+
+---
+
+## Node Fields
+
+Each node has four fields:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` | string | yes | Unique within the tree. Use suffixes for duplicates: `test-<N>`, `fix-<N>` |
-| `prompt` | string | yes | Filename of the prompt file (e.g. `"implement-auth.md"`) |
-| `todo` | string[] | yes | Strict sequence of OpenCode tool names |
-| `next` | node, branch[], or omitted | no | What comes after this node (optional: omit for terminal nodes) |
+| `id` | string | yes | Unique within the tree. Suffixes for duplicates: `test`, `test-2`, `test-3` (never `-1`) |
+| `prompt` | string | yes | Bare filename of the prompt file (e.g. `"implement-auth.md"`) |
+| `todo` | string[] | yes | Strict sequence of OpenCode tool names HW must call at this node |
+| `next` | linear, branch, or omitted | no | What comes after this node; omit for terminal nodes |
 
-> ⚠️ **Node ID uniqueness is a breaking constraint.** Every `id` in the entire DAG tree must be unique. The plugin throws a validation error on duplicate IDs. Use `-<N>` suffixes for all repeated nodes (e.g., `test`, `test-2`, `test-3`). Never use `-1` as a first suffix.
+> ⚠️ **Node ID uniqueness is a breaking constraint.** Every `id` in the entire tree must be unique. The plugin throws on duplicate IDs.
 
 ### Todo items
-
-Todo lists use OpenCode built-in tool names. The most common:
 
 | Tool | Use when |
 |------|----------|
@@ -38,24 +41,20 @@ Todo lists use OpenCode built-in tool names. The most common:
 | `question` | Asking the user for input or approval |
 | `bash` | Running a shell command (tests, builds) |
 | `sequential-thinking_sequentialthinking` | HW reasons through a decision directly |
+| `validate_dag` | Checking plan.json structure before activation |
+| `compress` | Compressing stale context |
 
-HeadWrench delegates — it does not call `read`, `write`, `edit` directly. Those are for subagents.
+HeadWrench delegates — it does not call `read`, `write`, or `edit` directly. Those are for subagents.
 
-### Execution & Advancement
+---
+
+## Execution
 
 Every non-terminal node requires an explicit `next_step()` call after all todos complete:
 
-- **Linear nodes:** `next_step()` with no argument — advances to the single child
-- **Branch nodes:** `next_step({ next: "<node-id>" })` — specify which branch to follow
-- **Terminal nodes:** auto-complete — the plugin detects no `next` field and closes the session automatically
-
-### Next field
-
-> ⚠️ **`next` must always be a full node object, never a string.** Writing `"next": "analyze"` is wrong. Always write `"next": { "id": "analyze", "prompt": "...", "todo": [...], ... }`. See Anti-patterns section.
-
-- **Linear:** `"next": { "id": "step-2", ... }` — single child
-- **Branch:** `"next": [{ "when": "...", "node": { ... } }, ...]` — multiple paths, `next_step()` specifies which
-- **Terminal:** omit `next` — session auto-completes, no `next_step()` needed
+- **Linear nodes:** `next_step()` — no argument, advances to the single child
+- **Branch nodes:** `next_step({ next: "<node-id>" })` — pass the **node ID** of the chosen branch (not the `when` string)
+- **Terminal nodes:** auto-complete — no `next_step()` needed
 
 ---
 
@@ -71,24 +70,11 @@ Nodes in a straight line. Use when steps have a clear order with no decisions.
 setup → implement → test → document
 ```
 
-```json
-{
-  "id": "setup", "prompt": "setup.md", "todo": ["task"],
-  "next": {
-    "id": "implement", "prompt": "implement.md", "todo": ["task", "task"],
-    "next": {
-      "id": "test", "prompt": "test.md", "todo": ["task"],
-      "next": {
-        "id": "document", "prompt": "document.md", "todo": ["task"]
-      }
-    }
-  }
-}
-```
+Build with `add_node` calls in order: `init_dag` creates `setup`, then `add_node` with `parentId: "setup"` creates `implement`, then `add_node` with `parentId: "implement"` creates `test`, and so on. Each `add_node` call omits `when` (linear add).
 
 ### 2. Branch
 
-A choice point where the path depends on a decision. Each branch carries its own complete subtree — branches do NOT converge. The DAG is a tree, not a graph; nodes cannot be shared across branches.
+A choice point where the path depends on a decision. Each branch carries its own complete subtree. Branches do NOT converge — the DAG is a tree, not a graph.
 
 ```
 investigate → [decision]
@@ -96,41 +82,17 @@ investigate → [decision]
   └── "option B" → subtree-B
 ```
 
-**User-decided branch** — use a `decision-gate` node (todo: `["question"]`):
+Build by calling `add_node` with `parentId: "investigate"` and a `when` string for each branch. Call it twice (once per branch option) — the first call initializes the branch array, the second appends to it. The plugin requires ≥2 branches before activation (`validate_dag` enforces this).
 
-```json
-{
-  "id": "choose-strategy",
-  "prompt": "choose-strategy.md",
-  "todo": ["question"],
-  "next": [
-    { "when": "User chose JWT", "node": { "id": "impl-jwt", ... } },
-    { "when": "User chose OAuth", "node": { "id": "impl-oauth", ... } }
-  ]
-}
-```
+**User-decided branch** — use a `decision-gate` node (todo: `["question"]`). HW asks the user, then routes via `next_step({ next: "<chosen-node-id>" })`.
 
-Each `when` string must be specific enough that HW can unambiguously map the runtime condition to exactly one branch. Ambiguous pairs like `'good'` and `'not good'` will cause misrouting — prefer `'Tests pass'` and `'Tests fail'` or `'User approved'` and `'User rejected'`.
+**Condition-decided branch** — use a `conditional-branch` node (todo: `[]`). HW reads prior context and routes immediately via `next_step({ next: "<node-id>" })`.
 
-**Condition-decided branch** — use a `conditional-branch` node (todo: `[]`). HW evaluates the condition from prior context and calls `next_step({ next: "<node-id>" })` to choose the path:
-
-```json
-{
-  "id": "check-build-result",
-  "prompt": "check-build-result.md",
-  "todo": [],
-  "next": [
-    { "when": "Build succeeded", "node": { "id": "deploy", ... } },
-    { "when": "Build failed", "node": { "id": "fix", ... } }
-  ]
-}
-```
-
-For branch nodes, HW calls `next_step({ next: "<child-node-id>" })` to advance — this argument is the **node ID**, not the `when` string. The `when` string describes the condition in natural language to help HW interpret which branch to pick. The `when` strings must be unambiguous enough for HW to map them to node IDs reliably.
+`when` strings must be specific enough that HW can unambiguously map the runtime condition to exactly one branch. Prefer `"Tests pass"` / `"Tests fail"` over `"good"` / `"not good"`.
 
 ### 3. Iteration (Unrolled)
 
-A pattern repeated N times with an exit branch after each repetition. No loop-backs — each iteration is an explicit duplicate of the nodes.
+A pattern repeated N times. No loop-backs — each iteration is an explicit duplicate of the nodes, with suffixed IDs.
 
 ```
 implement → test → [pass?]
@@ -140,35 +102,9 @@ implement → test → [pass?]
   └── "pass" → output-success
 ```
 
-The unroll depth IS the iteration cap. Ask the user how many iterations to budget during planning.
+The unroll depth IS the iteration cap. Ask the user how many iterations to budget during planning. All paths — including forced exits — must terminate with `output-success` or `output-failure`.
 
-In a real DAG, always terminate all paths (including forced exits from iteration loops) with `output-success` or `output-failure` to give the user feedback.
-
-```json
-{
-  "id": "test", "prompt": "test.md", "todo": [],
-  "next": [
-    { "when": "Tests fail", "node": {
-      "id": "fix", "prompt": "fix.md", "todo": ["task"],
-      "next": {
-        "id": "test-2", "prompt": "test.md", "todo": [],
-        "next": [
-          { "when": "Tests fail", "node": {
-            "id": "fix-2", "prompt": "fix.md", "todo": ["task"],
-            "next": { "id": "test-3", "prompt": "test.md", "todo": [] }
-          }},
-          { "when": "Tests pass", "node": {
-            "id": "output-success-2", "prompt": "output-success.md", "todo": []
-          }}
-        ]
-      }
-    }},
-    { "when": "Tests pass", "node": {
-      "id": "output-success", "prompt": "output-success.md", "todo": []
-    }}
-  ]
-}
-```
+Build by adding `test` as a branch node, then `fix` as its child, then `test-2` (suffixed ID) as `fix`'s child, and so on. Each loop is a separate set of `add_node` calls.
 
 ---
 
@@ -177,6 +113,7 @@ In a real DAG, always terminate all paths (including forced exits from iteration
 Combine primitives freely. A branch can contain iteration on one path. An iteration step can contain a branch. There are no named "shapes" — just trees built from primitives.
 
 **Example: Branch with iteration on one path**
+
 ```
 overview → investigate → [branch]
   ├── "auth" → implement-auth → test-auth → [iterate if fail]
@@ -184,33 +121,6 @@ overview → investigate → [branch]
   │     └── "pass" → output-success
   └── "payments" → implement-pay → test-pay → output-success-2
 ```
-
----
-
-## Validity Rules
-
-1. Every `id` must be unique within the tree (use `-<N>` suffixes for duplicates)
-2. Every path must reach a terminal node (no `next` field)
-3. Every `prompt` filename must have a corresponding `.md` file in the `prompts/` directory
-4. `todo` arrays must only contain valid OpenCode tool names
-5. Branch arrays must have at least 2 options
-6. Each `when` string must be distinct and clearly describe when to choose that path
-7. Nodes cannot be shared across branches — the DAG is a tree
-
----
-
-## Project DAG Directory Structure
-
-```
-.opencode/session-plans/{task-name}/
-├── plan.json           ← The executable DAG
-└── prompts/            ← One markdown file per node
-    ├── session-overview.md
-    ├── implement-auth.md
-    └── ...
-```
-
-Prompt fields in `plan.json` use **bare filenames only** (e.g. `"implement-auth.md"`). The plugin resolves them to the `prompts/` subdirectory automatically. Do NOT include directory paths in the `prompt` field.
 
 ---
 
@@ -225,9 +135,9 @@ Each prompt tells HeadWrench what to do at that node:
 
 ### Todo section (required for non-empty todos)
 
-Every prompt whose node has a non-empty `todo` array MUST include a `## Todo` section that mirrors the JSON todo list with explanations. The numbered list must match the JSON array in order and length.
+Every prompt whose node has a non-empty `todo` array MUST include a `## Todo` section that mirrors the todo list with explanations. The numbered list must match the array in order and length.
 
-Example for a node with `"todo": ["task", "task", "bash"]`:
+Example for a node with `todo: ["task", "task", "bash"]`:
 
 ```markdown
 ## Todo
@@ -239,7 +149,7 @@ Example for a node with `"todo": ["task", "task", "bash"]`:
 
 ### Question tool instructions
 
-If a node's todo includes `question`, the prompt MUST explicitly instruct HeadWrench to use the `question` tool. Do not assume HW will infer this — state it clearly. The plugin blocks tool calls that don't match the expected todo sequence.
+If a node's todo includes `question`, the prompt MUST explicitly instruct HeadWrench to use the `question` tool with the specific options. The plugin blocks tool calls that don't match the expected todo sequence — HW will not infer this.
 
 ### Node library
 
@@ -247,80 +157,74 @@ For reusable node templates with ready-made prompts and schemas, see `{{SESSION_
 
 ---
 
-## Anti-patterns
+## Validity Rules
 
-These are common mistakes that cause session failures. Avoid them.
+1. Every `id` must be unique within the tree (use `-<N>` suffixes for duplicates)
+2. Every path must reach a terminal node (a node with no `next`)
+3. Every `prompt` filename must have a corresponding `.md` file in the `prompts/` directory
+4. `todo` arrays must only contain valid OpenCode tool names
+5. Branch arrays must have at least 2 options
+6. Each `when` string must be distinct and clearly describe when to choose that path
+7. Nodes cannot be shared across branches — the DAG is a tree
 
-### ❌ String ID in `next` — the most common failure
-
-```json
-{
-  "id": "scout",
-  "next": "analyze"
-}
-```
-
-`next` must be a full node object, not a string. The plugin calls `node.next.id` — if `next` is a string, `.id` is `undefined`, the node appears terminal, and the session auto-completes on activation.
-
-**Fix:**
-
-```json
-{
-  "id": "scout",
-  "next": {
-    "id": "analyze",
-    "prompt": "analyze.md",
-    "todo": ["task"]
-  }
-}
-```
-
-### ❌ String node reference in branch `next`
-
-```json
-"next": [
-  { "when": "pass", "node": "output-success" },
-  { "when": "fail", "node": "fix" }
-]
-```
-
-Branch `node` values must be full objects, not strings.
-
-**Fix:**
-
-```json
-"next": [
-  { "when": "pass", "node": { "id": "output-success", "prompt": "output-success.md", "todo": [] } },
-  { "when": "fail", "node": { "id": "fix", "prompt": "fix.md", "todo": ["task"] } }
-]
-```
-
-### ❌ Duplicate node IDs
-
-Every `id` in the entire tree must be unique. Reusing an ID (e.g., using `output-success` on both the pass and fail branches) causes the plugin to throw a validation error at write time. Use `-<N>` suffixes: `output-success`, `output-success-2`.
-
-### ❌ Path in `prompt` field
-
-```json
-{ "prompt": "prompts/session-overview.md" }
-```
-
-The plugin resolves bare filenames automatically. Including a path breaks resolution.
-
-**Fix:** `{ "prompt": "session-overview.md" }`
+Run `validate_dag` before activation. It checks JSON validity, node ID uniqueness, and prompt file accessibility automatically.
 
 ---
 
-## Validity checklist
+## Project DAG Directory Structure
 
-Before writing `plan.json`, verify:
+```
+.opencode/session-plans/{task-name}/
+├── plan.json           ← The executable DAG (written by tools, not by hand)
+└── prompts/            ← One markdown file per node
+    ├── session-overview.md
+    ├── implement-auth.md
+    └── ...
+```
 
-- [ ] Every `next` field is a full node object (not a string)
-- [ ] Every branch `node` field is a full node object (not a string)
-- [ ] Every `id` is unique across the entire tree
-- [ ] Every `prompt` is a bare filename (no path, no directory prefix)
-- [ ] Every non-terminal node has a `next` field
-- [ ] Terminal nodes (`output-success`, `output-failure`) have no `next`
-- [ ] The `todo` array for each node matches the standard reference table
+Prompt filenames use the **exact node ID** (e.g., `implement-auth.md` for node `implement-auth`). The `prompt` field in each node is a bare filename — no directory path. The plugin resolves it to the `prompts/` subdirectory automatically.
+
+---
+
+## Anti-patterns
+
+These cause session failures. Each has a tool-level fix.
+
+### ❌ Passing a path instead of a plan name
+
+Calling `add_node(target: ".opencode/session-plans/my-plan", ...)` instead of `add_node(target: "my-plan", ...)`. The `target` parameter for all DAG tools is always the **plan name** — a bare string like `"my-plan"` or `"feature-delivery"`. Paths and directory names are not valid inputs.
+
+### ❌ Adding a branch node with only one branch
+
+Calling `add_node` with `when` only once and then activating. Branch nodes require ≥2 options. `validate_dag` will catch this before activation. Always add both (or all) branches before proceeding.
+
+### ❌ Reusing a node ID
+
+Using `output-success` on both the pass and fail branches of the same DAG. Every node ID must be unique across the entire tree. Use `-<N>` suffixes: `output-success`, `output-success-2`.
+
+### ❌ Path in the prompt field
+
+Setting `prompt` to `"prompts/session-overview.md"` instead of `"session-overview.md"`. The plugin resolves bare filenames automatically. Directory paths break resolution.
+
+### ❌ Prompt file with wrong name
+
+Writing the prompt file as `scout.md` when the node ID is `run-scout`. Prompt filenames must exactly match the node ID. `validate_dag` checks this.
+
+### ❌ Todo array mismatch with prompt
+
+A node has `todo: ["task", "task"]` but its prompt file only has one `## Todo` entry. The plugin enforces todos in order — if the prompt only describes one task, the second `task` todo will never be satisfied and the session will stall.
+
+---
+
+## Before activating the plan
+
+Run `validate_dag` first, then confirm:
+
+- [ ] Every node has a unique ID across the entire tree
+- [ ] Every `prompt` is a bare filename (no path prefix)
+- [ ] Every non-terminal node has a successor (added via `add_node`)
+- [ ] Terminal nodes (`output-success`, `output-failure`) have no successor
+- [ ] Every branch node has ≥2 branch options
 - [ ] Each branch `when` string is distinct and unambiguous within its branch array
-- [ ] Every node with a non-empty todo array has a ## Todo section in its prompt file that mirrors the JSON todo list in order and length
+- [ ] Every node with a non-empty todo array has a `## Todo` section in its prompt file that mirrors the todo list in order and length
+- [ ] `show_dag` output matches the intended structure

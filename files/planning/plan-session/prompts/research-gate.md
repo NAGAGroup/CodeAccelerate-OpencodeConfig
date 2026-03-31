@@ -1,93 +1,56 @@
 # research-gate
 
-Assess whether planning-time external research would improve the project plan, and decide whether the generated DAG should include execution-time research nodes.
+You are HeadWrench at the research gate. The pre-research-thinking node has already produced a 3-line recommendation block in your context window. You will read that block and use it to construct dynamic question text for two `question` tool calls.
 
 ## Todo
 
-1. `question` — Ask: "Would a cursory external research pass improve the plan for this task?"
-2. `question` — Ask: "Should the generated project DAG include execution-time research nodes?"
+1. `question` — Ask Q1: planning research approval (see Step 1 below). Do NOT route after this question — proceed directly to Step 2.
+2. `question` — Ask Q2: execution research approval (see Step 2 below). After user answers, proceed to Step 3 (routing).
 
-## Your Role
+## Step 1 — Q1 (Planning research)
 
-You are HeadWrench at the research-gate decision point. The scouts have completed codebase exploration and the node library is available. Before proceeding to plan design, assess two **independent** questions:
+Read the `Planning research:` line from the pre-research-thinking output in your context. Extract the verdict (NECESSARY, RECOMMENDED, or NO) and the one-sentence reason. Construct the question text as:
 
-1. **Planning-time research (Q1):** Would dispatching @ExternalScout *right now* yield information that meaningfully improves the plan?
-2. **Execution-time research (Q2):** Should the generated project DAG include `research-basic` or `research-deep` nodes for the task executor to use?
+> "HW recommends [NECESSARY|RECOMMENDED|NO] for planning-time research — [paste the one-sentence reason here]. Approve?"
 
-These questions are orthogonal — answer Q2 independently of Q1.
+Use the `question` tool with:
+- `questions[0].question`: the dynamically constructed text above
+- `questions[0].header`: "Planning research" (max 30 chars)
+- `questions[0].options`:
+  - `{ "label": "Approve", "description": "Proceed with HW's planning research recommendation." }`
+  - `{ "label": "Deny", "description": "Override — do the opposite of HW's recommendation." }`
 
-## Assessment Criteria
+After the user answers, record their response. Do NOT route or call `next_step()` yet — proceed immediately to Step 2.
 
-### Q1: Planning-Time Research Need
+## Step 2 — Q2 (Execution research)
 
-Review the task description and scout findings. Ask yourself: would 15 minutes of external documentation lookup (Context7 or Exa) meaningfully improve the plan?
+Read the `Execution research:` and `Execution research type:` lines from the pre-research-thinking output. Extract the verdict (NECESSARY, RECOMMENDED, or NO), the type (research-basic, research-deep, or N/A), and the one-sentence reason for execution research. Construct the question text as:
 
-**Say YES if ANY apply:**
-- The task involves external APIs, new frameworks, or library integrations where documentation gaps exist
-- Model knowledge may be stale (recent library releases, new language features, ecosystem shifts)
-- External technique literature or community patterns would prevent hallucination on unfamiliar approaches
-- The codebase alone does not provide sufficient context for key implementation decisions
+> "HW recommends [NECESSARY|RECOMMENDED|NO] execution research ([research-basic|research-deep|N/A]) — [paste the one-sentence reason here]. Approve?"
 
-**Say NO only if:**
-- The task is fully self-contained in the codebase with no external dependencies
-- Knowledge staleness poses no risk
-- Scout findings establish clear technical direction
+Use the `question` tool with:
+- `questions[0].question`: the dynamically constructed text above
+- `questions[0].header`: "Execution research" (max 30 chars)
+- `questions[0].options`:
+  - `{ "label": "Approve", "description": "Proceed with HW's execution research recommendation." }`
+  - `{ "label": "Deny", "description": "Override — do the opposite of HW's recommendation." }`
 
-### Q2: Execution-Time Research Nodes
+After the user answers, record their response. Proceed to Step 3.
 
-Independently, assess whether the *generated* DAG should include research nodes.
+## Step 3 — Routing
 
-**Say YES if:**
-- Implementation decisions benefit from looking up external docs at execution time (integrating a library, using an API, following a framework pattern)
-- The task scope suggests benefit from just-in-time information retrieval
+Determine the resolved Q1 decision by applying the user's approve/deny to HW's planning research recommendation:
 
-**Say NO if:**
-- The task is straightforward refactoring or editing where the codebase provides all needed context
-- The plan is deterministic and does not depend on external state at execution time
-- All external context needed for implementation is known at planning time
+| Planning rec | User answer | Resolved decision | Route |
+|---|---|---|---|
+| NECESSARY or RECOMMENDED | Approve | Planning research YES | `next_step({ next: "research-brief" })` |
+| NECESSARY or RECOMMENDED | Deny | Planning research NO | `next_step({ next: "sequential-thinking-2" })` |
+| NO | Approve | Planning research NO | `next_step({ next: "sequential-thinking-2" })` |
+| NO | Deny | Planning research YES | `next_step({ next: "research-brief" })` |
 
-## Step 1: Call Question for Planning-Time Research
-
-Form your recommendation (YES or NO based on the criteria above), then call `question`:
-
-**Question text:** "Would a cursory external research pass improve the plan for this task?"
-
-**Options:**
-- "Yes, research would help (HW recommends)" ← if you lean toward research
-- "Yes, research would help" ← if you're unsure
-- "No, skip research (HW recommends)" ← if you lean against research
-- "No, skip research" ← if you're unsure
-
-**Description for both:** Describe the consequence — e.g., "Dispatch @ExternalScout for a quick pass on [topic]" for YES; "Proceed directly to plan design" for NO.
-
-After the user answers, **do not route yet** — proceed to Step 2.
-
-## Step 2: Call Question for Execution-Time Research Nodes
-
-Form your independent recommendation (YES or NO based on the criteria above), then call `question`:
-
-**Question text:** "Should the generated project DAG include execution-time research nodes?"
-
-**Options:**
-- "Include execution research nodes (HW recommends)" ← if you lean toward including them
-- "Include execution research nodes" ← if you're unsure
-- "No execution research (HW recommends)" ← if you lean against including them
-- "No execution research" ← if you're unsure
-
-**Description for both:** Describe the consequence — e.g., "Include `research-basic` or `research-deep` nodes in the plan" for YES; "Proceed without research nodes" for NO.
-
-## Step 3: Route Based on Q1 Answer
-
-After both questions are answered, write a one-sentence summary of your two decisions (e.g., "Q1: dispatch ExternalScout; Q2: include research nodes in DAG").
-
-**Then immediately call `next_step` with this routing logic:**
-- Q1 = "Yes, research would help" → call `next_step({ next: "research-brief" })`
-- Q1 = "No, skip research" → call `next_step({ next: "sequential-thinking-2" })`
-
-**Carry the Q2 answer forward** in your context so sequential-thinking knows whether to author research nodes in the DAG.
+Carry the resolved Q2 decision (execution research yes/no and type) forward in context for the downstream sequential-thinking node to use when authoring execution-time research nodes in the DAG.
 
 ## Notes
 
-- Both decisions are independent. "Yes" to planning-time research and "No" to execution research is valid.
-- Append "(HW recommends)" only to the option that your honest assessment supports — do not hedge or recommend research just because it is available.
-- The Q1 answer determines routing; the Q2 answer informs the planning phase.
+- Q1 and Q2 decisions are independent of each other. Q1 routes the DAG; Q2 informs plan design only (it does not affect which branch is taken here).
+- The `question` tool is called twice in sequence within a single node. Do NOT skip either question.

@@ -1,45 +1,53 @@
 # Pre-Research Thinking
 
-Before the research gate asks the user, reason through whether planning-time external research would materially improve the plan for this specific task.
+HeadWrench uses sequential-thinking to reason across three dimensions before reaching the research gate, producing a structured 3-line output block that the research-gate node consumes.
 
 ## Goal
 
-Form a clear YES or NO recommendation: would external research (documentation, APIs, specs, frameworks) materially improve the plan? This recommendation will inform the research gate questions.
+HeadWrench uses sequential-thinking to reason across three dimensions before reaching the research gate, producing a structured 3-line output block that the research-gate node consumes.
 
 ## Todo
 
-1. `sequential-thinking_sequentialthinking` — Reason through the five questions below, one thought per item. State your final YES/NO recommendation in the last thought.
+1. `sequential-thinking_sequentialthinking` — Reason through all 8 questions below. Do NOT wait for user input between thoughts. Call next_step() after the final thought to advance to the research gate.
 
-**Tool note:** `sequential-thinking_sequentialthinking` is exempt from DAG blocking — call it directly. Do NOT wait for user input between thoughts — continue calling until the final recommendation is complete.
+**Tool note:** `sequential-thinking_sequentialthinking` is exempt from DAG blocking — call it directly.
 
 ## What to Reason Through
 
-Work through these five questions in sequence:
+Work through these eight questions in sequence:
 
-1. **What is the task?** Summarize it in one sentence. What is the user trying to accomplish?
+1. **What is the task?** Summarize the session goal in one sentence.
 
-2. **Does the codebase provide sufficient context?** Based on scout findings: are all implementation decisions answerable from the code alone? Or are there gaps where the codebase doesn't tell you which approach, library, or pattern to use?
+2. **Does the codebase provide sufficient context for planning?** Are all key implementation decisions answerable from internal scouts alone, or are there gaps that require external knowledge to write a complete plan?
 
-3. **Could model knowledge be stale?** Is this in a fast-moving domain — recent library releases, new framework features, updated APIs, recent ecosystem shifts? If yes, training data may be out of date and external sources prevent hallucination.
+3. **Could model knowledge be stale for this task?** Is this a fast-moving domain? Are there recent library releases, API changes, or framework updates that may have occurred after the model's training cutoff? If yes, training data may be incorrect or incomplete.
 
-4. **Would external research prevent hallucination?** Are there unfamiliar APIs, patterns, or third-party systems where consulting documentation would reduce guessing? Even for internal tasks, if implementation requires external APIs or libraries the codebase barely touches, research prevents errors.
+4. **Planning research verdict:** Based on questions 1–3, determine the planning research level:
+   - **NECESSARY** — external information is required to write a good plan; the approach cannot be determined without it.
+   - **RECOMMENDED** — would help avoid execution-time scouting or prevent hallucination risk, but a plan could be written without it.
+   - **NO** — the task is fully self-contained from codebase context and model knowledge.
 
-5. **Recommendation:** Based on thoughts 1–4, state a clear YES or NO: would dispatching ExternalScout during planning materially improve the plan — either by filling a knowledge gap, preventing hallucination, or providing context the codebase lacks? Write one sentence reasoning.
+5. **Would cursory planning research be insufficient at execution time?** Even if planning research helps establish direction, are there decisions that can only be resolved during implementation — such as exact API behavior, runtime configuration, environment-specific behavior, or version-specific edge cases?
+
+6. **Is deep research implicitly required?** Does the task involve a direction uncertain enough that it requires multi-source synthesis, novel approaches, or academic sources — work that the DAG structure forbids during planning and must defer to execution-time research nodes?
+
+7. **Execution research verdict:** Determine the execution research level:
+   - **NECESSARY** — cursory planning search won't suffice for implementation, OR deep research is being deferred from planning to execution.
+   - **RECOMMENDED** — would augment planning research with just-in-time lookup; useful but not required.
+   - **NO** — deterministic edit or refactor with no external dependencies; planning research (if done) covered everything needed.
+
+8. **Execution research type (if execution research is NECESSARY or RECOMMENDED):** Is the implementation question specific with a known answer to look up (→ `research-basic`), or is the direction itself uncertain and requires multi-source synthesis across many sources (→ `research-deep`)?
 
 ## Output Format
 
-End your final thought with a single line in this format:
+End your final thought with this exact 3-line block:
 
 ```
-Research recommendation: YES — [one-sentence reason]
+Planning research: [NECESSARY|RECOMMENDED|NO] — [one-sentence reason]
+Execution research: [NECESSARY|RECOMMENDED|NO] — [one-sentence reason]
+Execution research type: [research-basic|research-deep|N/A] — [one-sentence reason]
 ```
 
-or
-
-```
-Research recommendation: NO — [one-sentence reason]
-```
-
-This recommendation carries into the research gate, where it will tag the matching Q1 option with "(HW recommends)".
+Use `N/A` for execution research type when execution research is NO.
 
 After completing your final thought, call `next_step()` to advance to the research gate.

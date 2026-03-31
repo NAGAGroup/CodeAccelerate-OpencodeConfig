@@ -29,13 +29,13 @@ The planning agent must determine and document the following **before** writing 
 4. **Branch B interpretation and routing** — What does condition outcome B mean, and where should HW route? Good: `"If exit code is non-zero (tests failed), route to node 'debug-and-retry' to investigate and re-run failing tests."` Bad: `"Handle the failure."` (no specific node).
 
 5. **Routing constraint (verbatim — do NOT paraphrase):**
-   > Call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the id field of the branch node in plan.json — NOT the when string. Using the `when` string as the `next` argument will cause the router to misidentify the target branch and silently advance to an unintended subtree.
+   > Call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the id field of the branch node in the DAG — NOT the when string. Using the `when` string as the `next` argument will cause the router to misidentify the target branch and silently advance to an unintended subtree.
 
 ## Notes
 
 ### when-string vs. node-ID routing failure
 
-**Mechanism:** In plan.json, each branch has two fields: `id` and `when`. The `id` is a unique node identifier (e.g., `"debug-and-retry"`). The `when` is a human-readable description (e.g., `"Tests failed"`). HeadWrench must call `next_step({ next: '<node-id>' })` — passing the `id`, not the `when` string. The planning-enforcement plugin does exact string matching on the `next` argument against child node ids. If HW passes the `when` string instead, the plugin cannot match it, and the node does not advance; if the `when` string happens to match a different node's id, the session silently routes to the wrong subtree.
+**Mechanism:** In the DAG, each branch has two fields: `id` and `when`. The `id` is a unique node identifier (e.g., `"debug-and-retry"`). The `when` is a human-readable description (e.g., `"Tests failed"`). HeadWrench must call `next_step({ next: '<node-id>' })` — passing the `id`, not the `when` string. The planning-enforcement plugin does exact string matching on the `next` argument against child node ids. If HW passes the `when` string instead, the plugin cannot match it, and the node does not advance; if the `when` string happens to match a different node's id, the session silently routes to the wrong subtree.
 
 **Fix:** In the prompt template's routing requirement section, repeat the constraint verbatim with a concrete example. In your must-resolve checklist for the planning agent, emphasize that both Branch A and Branch B descriptions must include the **exact node id** HW will use in `next_step()`. Provide the structure they must fill:
 ```
@@ -57,30 +57,9 @@ Branch B: When {{BRANCH_B_CONDITION}}, route to node id '{{BRANCH_B_NODE_ID}}'
 
 ---
 
-## Example: Correct conditional-branch node in a plan
+## Example: Correct conditional-branch usage
 
-```json
-{
-  "id": "test-and-branch",
-  "type": "conditional-branch",
-  "nodeId": "test-and-branch",
-  "prompt": "files/planning/plan-session/prompts/test-and-branch.md",
-  "branches": [
-    {
-      "when": "Tests passed",
-      "id": "deploy-staging",
-      "nodeId": "deploy-staging"
-    },
-    {
-      "when": "Tests failed",
-      "id": "debug-and-retry",
-      "nodeId": "debug-and-retry"
-    }
-  ]
-}
-```
-
-In the prompt, the planning agent fills:
+When the planning agent fills this node type, it must specify:
 - `{{CONDITION}}` = "Exit code from 'run-tests' node"
 - `{{CONDITION_SOURCE}}` = "Prior task output, 'Test Results' section, 'Exit code:' field"
 - `{{BRANCH_A_CONDITION}}` = "Exit code 0"

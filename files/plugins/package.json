@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@opencode-ai/plugin": "1.2.27"
+    "@opencode-ai/plugin": "1.2.27",
+    "beautiful-mermaid": "^1.1.3"
   }
 }

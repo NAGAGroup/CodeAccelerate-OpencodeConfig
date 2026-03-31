@@ -96,9 +96,9 @@ Each dispatched agent prompt must state a success criterion as an **observable o
 
 ### Sync Requirement
 
-The number of task sections above must equal the number of `"task"` entries in the plan.json `todo` array for this node. The plugin enforces todo items in order — if this prompt defines 3 tasks but the `todo` array has `["task","task"]`, the third task will never execute. Adjust both together.
+The number of task sections above must equal the number of `"task"` entries in this node's `todo` array. The plugin enforces todo items in order — if this prompt defines 3 tasks but the `todo` array has `["task","task"]`, the third task will never execute. Use `modify_node` to update the todo array if you add or remove task sections.
 
-If you have fewer than 3 independent tasks, remove unused task sections above and reduce the `todo` array accordingly.
+If you have fewer than 3 independent tasks, remove unused task sections above and reduce the `todo` array accordingly (via `modify_node`).
 
 ### Writing Each Agent's Task Prompt
 
@@ -120,7 +120,7 @@ When writing each subagent's full task prompt, include:
 2. `task` — Dispatch {{TASK_2_AGENT}} to {{TASK_2_GOAL}} in {{TASK_2_TARGET}}
 3. `task` — Dispatch {{TASK_3_AGENT}} to {{TASK_3_GOAL}} in {{TASK_3_TARGET}}
 
-Call all task tools before waiting for results. They execute concurrently. If you have fewer than 3 independent tasks, remove the unused task sections and reduce the `todo` array.
+Call all task tools before waiting for results. They execute concurrently. If you have fewer than 3 independent tasks, remove the unused task sections and update the `todo` array via `modify_node`.
 
 ### Task Tool Parameters
 

@@ -120,7 +120,7 @@ After all scouts return:
 If your task needs only 1–2 scopes:
 
 1. **Delete unused Scout sections** (e.g., remove Scout 3 if only 2 scouts needed)
-2. **Update the todo array** in plan.json to match: `["task"]` for 1 scout, `["task", "task"]` for 2 scouts
+2. **Update the todo array** in the node (via `modify_node`) to match: `["task"]` for 1 scout, `["task", "task"]` for 2 scouts
 3. **Update dispatch instructions** to list only the scouts you are using
 
 Example — 2-scout node:

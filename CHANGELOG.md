@@ -6,9 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `init_dag` tool added to planning-enforcement plugin — creates a new project DAG's `plan.json` and session plan directory structure with the entry node as the tree root; must be called before `add_node` when starting a new plan.
+- DAG editing tools (`show_dag`, `add_node`, `delete_node`, `modify_node`) added to planning-enforcement plugin — tools guarantee valid DAGs on every call, accept session-plan name or raw file path, and return plain-text ASCII mermaid diagrams using `beautiful-mermaid` (ANSI color disabled via `colorMode: 'none'`).
+
 ### Changed
 
-- **Free profile** (`files/profiles/free/opencode.jsonc`): updated `context-scout` model from `opencode/gpt-5-nano` to `opencode/nemotron-3-super-free`
+- **`write-dag.md` subagent instructions**: replaced hardcoded `files/planning/plan-session/node-library/` and `files/planning/reference/dag-design-guide.md` paths (which only exist in the CodeAccelerate source repo) with `{{SESSION_PATH}}/node-library/` — substituted at activation time to the exact session directory, giving the write-dag subagent the precise node library path with no glob or directory listing needed; added `init_dag` as the required first call before `add_node` when building a new DAG; added explicit instruction that `target` for all DAG tool calls is the plan name, never a file or directory path.
+- **`dag-design-guide.md` rewritten from first principles**: removed all inline JSON code blocks (schema examples, structural primitive examples, anti-pattern bad/fix JSON blocks, validity checklist JSON field references); replaced with tool-call-centric documentation — authoring tools table, tool-based primitive descriptions (sequence/branch/iteration explained in terms of `add_node` call patterns), behavioral anti-patterns (what you called wrong vs. what to call instead); explicit note that `target` is always the plan name; rewritten checklist references DAG concepts not JSON fields.
+- **`planning-enforcement.ts` — `resolveDagPath` bug fix**: when the resolved path is an existing directory, appends `/plan.json` automatically — prevents "plan.json is not valid JSON" error when agents pass a directory path (e.g., `.opencode/session-plans/my-plan`) instead of a bare plan name.
+- **`planning-enforcement.ts` — `add_node` branch validation relaxed**: post-mutation validation now uses `validateDagTreeIds` (ID uniqueness only) instead of the full `validateDagTree` (which includes the ≥2 branch count check) — allows incremental branch building by calling `add_node` once per branch option without triggering a "fewer than 2 branches" error on the first addition. Full branch-count validation remains in `validate_dag`.
+- **`write-dag.md` instruction (d)**: explicitly states that `target` for all DAG tool calls (`add_node`, `show_dag`, `modify_node`, `delete_node`) is always the plan name, never a file path or directory path.
+- **`dag-design-guide.md` tool reference**: updated tool list to include `init_dag`; added explicit workflow order (init_dag → add_node → show_dag/modify_node/delete_node).
+- **`scout-node-library.md`**: tightened `read` instruction to specify the exact `filePath` argument and explicitly prohibit listing the directory first; removed rationale prose to reduce ambiguity.
+- **`research-brief.md`**: removed `question` todo — agent now derives the research topic from prior context (task description + scout findings) and dispatches @ExternalScout directly; `plan.json` todo updated from `["question", "task"]` to `["task"]`.
+- **DAG authoring workflow**: removed hand-written JSON instructions from all planning prompts, node-library templates, and reference documentation; replaced with tool-based authoring (`add_node`, `show_dag`, `modify_node`, `delete_node`) — affects `files/planning/reference/dag-design-guide.md`, `files/planning/plan-session/prompts/write-dag.md`, `files/planning/plan-session/prompts/propose-plan.md`, `files/planning/plan-session/node-library/decision-gate/README.md`, `files/planning/plan-session/node-library/decision-gate/prompt-template.md`, `files/planning/plan-session/node-library/conditional-branch/README.md`, `files/planning/plan-session/node-library/conditional-branch/prompt-template.md`, `files/planning/plan-session/node-library/scout-parallel/prompt-template.md`, `files/planning/plan-session/node-library/parallel-tasks/prompt-template.md`, `files/planning/plan-session/node-library/generic/prompt-template.md`
 
 - **AGENTS.md rewritten from first principles**: stripped all operational agent-system content (agent roster, planning system flow, per-agent dispatch patterns, Category A/B/C technique lists, anti-patterns) that is already covered by the deployed agent config; retained only project-specific editorial knowledge — project identity, meta-context challenge, repository structure, component architecture, prompting framework (category definitions + improvement methodology), source code constraints, development/release workflow, and config conventions; reduced from 517 → ~200 lines
 - **session-overview planning prompt** (`files/planning/plan-session/prompts/session-overview.md`): rewritten to a minimal agent-facing orientation — removes full phase-by-phase flow description and "when the user says yes" framing; now simply establishes that a planning session is beginning and instructs HW to call `next_step()`
@@ -65,11 +78,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Improved `analyze-deep` node library templates: added Output constraint bullet to README.md resolve list; updated file-list placeholder hint to require explicit paths; added Output format requirements section to prompt-template.md
 - Improved `verification-check` node library templates: added Outcome format bullet to README.md resolve list; added Response format section to prompt-template.md as first-class body content
 - Updated `files/planning/plan-session/prompts/write-dag.md` to dispatch @HeadWrench subagent (instead of @QuickDoc/@JuniorDev) for writing project DAG artifacts; HW subagent reads node library docs (CATALOGUE.md, dag-design-guide.md, node READMEs) before writing, eliminating the requirement for primary HW to embed a full plan.json JSON blob in its dispatch prompt.
-
-### Added
-
-- Added `research-basic` node library: README.md (cursory ExternalScout research with Context7-first tool priority, scope guard against multiple iterations), prompt-template.md (delegation guidance with exact Context7 function names and stop-after-first-search constraint), plan.json
-- Added `research-deep` node library: README.md (comprehensive ExternalScout investigation with iterative search authorization, confidence levels, what-was-not-found requirement), prompt-template.md (delegation guidance with Context7 two-step invocation, deep-research authorization language), plan.json
+- Expanded `pre-research-thinking` to reason across three dimensions (planning research, execution research, execution research type) with explicit criteria for each level (NECESSARY/RECOMMENDED/NO) and a structured 3-line output block that downstream nodes consume
+- Redesigned `research-gate` questions to use an approve/deny pattern where HW constructs dynamic question text at runtime from its pre-research-thinking recommendations, replacing the broken static "(HW recommends)" option-label approach
 
 ### Fixed
 

@@ -29,7 +29,7 @@ This node type allows custom tool sequencing when standard templates don't fit. 
 
 {{TODO_SEQUENCE}}
 
-*List tools in order, matching plan.json format. Valid items:*
+*List tools in order. Valid items:*
 - *`task` — dispatch a subagent*
 - *`bash` — run a shell command*
 - *`question` — ask the user*
@@ -87,7 +87,7 @@ Example:
 
 ### Rename requirement
 
-**The node ID in plan.json must NOT be `generic`.** Rename it to a descriptive kebab-case identifier that captures the node's purpose. Examples: `verify-build-succeeds`, `confirm-and-deploy`, `check-env-vars`, `custom-mcp-lookup`.
+**The node ID in the DAG must NOT be `generic`.** Rename it to a descriptive kebab-case identifier that captures the node's purpose. Examples: `verify-build-succeeds`, `confirm-and-deploy`, `check-env-vars`, `custom-mcp-lookup`.
 
 A node with `"id": "generic"` in a project DAG will be confusing to future readers and can collide silently with other generic nodes if IDs are not unique. Always rename before saving the DAG.
 

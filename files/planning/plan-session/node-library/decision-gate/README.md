@@ -18,16 +18,16 @@ Before writing a `decision-gate` node, answer these four items explicitly:
    - ✓ Good: "Should we optimize the database before adding the new feature, or add the feature first?"
    - ✗ Bad: "What should we do next?"
 
-2. **Option labels** — List each option with a short, clear label (one to five words). These labels become the `when` strings in plan.json and must match exactly in the question the user sees.
+2. **Option labels** — List each option with a short, clear label (one to five words). These labels become the `when` strings in the DAG branch array and must match exactly in the question the user sees.
    - ✓ Good: `"Optimize database first"` / `"Add feature first"`
    - ✗ Bad: `"Option A"` / `"Option B"` (user cannot decide without substance)
    - ✗ Bad: Long descriptive prose instead of a label
 
-3. **Branch routing** — For each option, which node ID executes next? Each node ID must exist in plan.json as the `id` field of a branch child node.
+3. **Branch routing** — For each option, which node ID executes next? Each node ID must be a valid branch child node ID in the DAG.
    - ✓ Good: "Optimize database first" → routes to `optimize-db-node`; "Add feature first" → routes to `add-feature-node`
    - ✗ Bad: No explicit routing plan — HW will not know where to send the user's choice
 
-4. **Routing constraint (cascade)** — After the user responds, the executing prompt must call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the branch node's id in plan.json — NOT the `when` string. The `when` field is human-readable display text only; routing always uses the node ID.
+4. **Routing constraint (cascade)** — After the user responds, the executing prompt must call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the branch node's id in the DAG — NOT the `when` string. The `when` field is human-readable display text only; routing always uses the node ID.
    - ✓ Good: User selects "Optimize database first" → prompt calls `next_step({ next: 'optimize-db-node' })`
    - ✗ Bad: User selects "Optimize database first" → prompt calls `next_step({ next: 'Optimize database first' })`
 
@@ -35,17 +35,17 @@ Before writing a `decision-gate` node, answer these four items explicitly:
 
 ### Option label ↔ `when` string mismatch
 
-**Failure mode:** The planning agent writes question option labels that do not exactly match the `when` strings in plan.json. When the user selects an option, HW tries to route using the chosen option text but finds no matching `when` entry. The session stalls.
+**Failure mode:** The planning agent writes question option labels that do not exactly match the `when` strings in the DAG branch array. When the user selects an option, HW tries to route using the chosen option text but finds no matching `when` entry. The session stalls.
 
-**Example:** Question offers "Optimize database" as an option. plan.json branch has `when: "Optimize database first"`. User selects "Optimize database". HW cannot match the response to any branch and stalls.
+**Example:** Question offers "Optimize database" as an option. The DAG branch has `when: "Optimize database first"`. User selects "Optimize database". HW cannot match the response to any branch and stalls.
 
-**Prevention:** The planning agent must verify that each question option label exactly matches the corresponding `when` string in plan.json — including capitalization and punctuation. No fuzzy matching; the match is character-for-character.
+**Prevention:** The planning agent must verify that each question option label exactly matches the corresponding `when` string — including capitalization and punctuation. No fuzzy matching; the match is character-for-character.
 
 ### Routing by node ID, not `when` string
 
 **Failure mode:** The executing prompt calls `next_step({ next: 'Optimize database first' })` using the `when` string instead of the node ID. The plugin expects a node ID and cannot find a node with that name, blocking the session.
 
-**Example:** plan.json has `{ "when": "Optimize database first", "node": { "id": "optimize-db", ... } }`. The prompt calls `next_step({ next: 'Optimize database first' })`. The plugin looks for a node named "Optimize database first" (not "optimize-db") and fails.
+**Example:** The DAG has `{ "when": "Optimize database first", "node": { "id": "optimize-db", ... } }`. The prompt calls `next_step({ next: 'Optimize database first' })`. The plugin looks for a node named "Optimize database first" (not "optimize-db") and fails.
 
 **Prevention:** The fixed `## Routing requirement` section in the prompt template states this rule explicitly. HW reads it and routes using the node ID, never the `when` string.
 
@@ -57,4 +57,4 @@ Before writing a `decision-gate` node, answer these four items explicitly:
 
 ## Output constraint (cascade)
 
-After the user responds, call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the branch node's id in plan.json — NOT the `when` string. The `when` field is human-readable display text only; routing must use the node's actual id value.
+After the user responds, call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the branch node's id in the DAG — NOT the `when` string. The `when` field is human-readable display text only; routing must use the node's actual id value.

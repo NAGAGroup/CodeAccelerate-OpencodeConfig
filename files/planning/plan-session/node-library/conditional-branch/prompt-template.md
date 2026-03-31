@@ -30,7 +30,7 @@ This node branches on a condition that is already available in prior context. No
 
 **Route to node:** `{{BRANCH_A_NODE_ID}}`
 
-*The exact node id from plan.json where HW should route when Branch A is true. E.g., "deploy-staging". This must be the `id` field from the branch object in plan.json — NOT the `when` string.*
+*The exact node id where HW should route when Branch A is true. E.g., "deploy-staging". This must be the `id` field from the DAG branch object — NOT the `when` string.*
 
 ### Branch B: {{BRANCH_B_CONDITION}}
 
@@ -40,7 +40,7 @@ This node branches on a condition that is already available in prior context. No
 
 **Route to node:** `{{BRANCH_B_NODE_ID}}`
 
-*The exact node id from plan.json where HW should route when Branch B is true. E.g., "debug-and-retry". This must be the `id` field from the branch object in plan.json — NOT the `when` string.*
+*The exact node id where HW should route when Branch B is true. E.g., "debug-and-retry". This must be the `id` field from the DAG branch object — NOT the `when` string.*
 
 ---
 
@@ -48,7 +48,7 @@ This node branches on a condition that is already available in prior context. No
 
 ## Routing requirement
 
-Call `next_step({ next: '<node-id>' })` where `<node-id>` **exactly matches the id field of the branch node in plan.json** — NOT the when string.
+Call `next_step({ next: '<node-id>' })` where `<node-id>` **exactly matches the id field of the branch node in the DAG** — NOT the when string.
 
 The plugin matches `<node-id>` against the `id` field of each branch. Passing the `when` string will cause the router to misidentify the target and silently route to an unintended subtree. Always use the exact node id (e.g., `deploy-staging`, not `"Tests passed"`).
 

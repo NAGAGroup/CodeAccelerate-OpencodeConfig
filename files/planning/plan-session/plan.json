@@ -32,7 +32,7 @@
                   "node": {
                     "id": "research-brief",
                     "prompt": "research-brief.md",
-                    "todo": ["question", "task"],
+                     "todo": ["task"],
                     "next": {
                       "id": "sequential-thinking",
                       "prompt": "sequential-thinking.md",

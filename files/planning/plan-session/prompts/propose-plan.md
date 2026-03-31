@@ -14,7 +14,7 @@ Write the full plan as prose in your response text (do NOT embed this inside the
 2. **DAG structure** — ASCII diagram of the complete node tree, including branch paths and terminal nodes
 3. **Node decomposition** — Table with columns: Node ID | Node type | Agent | Todo | What it does | Branch conditions (if any)
 
-   The `Todo` column must contain the exact todo array for each node (e.g., `["task","task","task"]` for parallel scouts, `["question"]` for a decision gate). These exact values will be written into `plan.json`.
+   The `Todo` column must contain the exact todo array for each node (e.g., `["task","task","task"]` for parallel scouts, `["question"]` for a decision gate). These exact values will be used when building the DAG.
 4. **Estimated dispatches** — Count the number of `task` entries across all nodes' todo arrays (each `task` = one agent dispatch). Do NOT count `question`, `bash`, `validate_dag`, `sequential-thinking_sequentialthinking`, or `compress` entries — those are HW's own actions, not dispatches.
 
 ## Todo

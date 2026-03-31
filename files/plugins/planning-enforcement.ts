@@ -2,6 +2,7 @@ import { tool } from "@opencode-ai/plugin";
 import type { Plugin } from "@opencode-ai/plugin";
 import * as fs from "fs";
 import * as path from "path";
+import { renderMermaidASCII } from 'beautiful-mermaid';
 
 // The config root is the directory that contains this plugin's parent folder.
 // When installed via OCX the layout is:
@@ -14,7 +15,7 @@ const CONFIG_ROOT = path.dirname(import.meta.dirname);
 const PRIMARY_AGENT = "headwrench";
 
 // Tools that bypass DAG blocking, regardless of current node's todos
-const exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "todowrite", "sequential-thinking_sequentialthinking"];
+const exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "todowrite", "sequential-thinking_sequentialthinking", "show_dag", "init_dag", "add_node", "delete_node", "modify_node"];
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -98,6 +99,122 @@ function readPrompt(promptPath: string, worktree: string): string {
     return fs.readFileSync(expanded, "utf-8");
   }
   return fs.readFileSync(path.join(worktree, expanded), "utf-8");
+}
+
+function resolveDagPath(target: string, worktree: string): string {
+  if (target.includes('/') || target.includes('\\') || target.endsWith('.json')) {
+    const expanded = expandPath(target);
+    const resolved = path.resolve(worktree, expanded);
+    // If the resolved path is a directory, append plan.json automatically
+    if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
+      return path.join(resolved, 'plan.json');
+    }
+    return resolved;
+  }
+  return path.join(worktree, '.opencode', 'session-plans', target, 'plan.json');
+}
+
+function readDag(planPath: string): PlanDag {
+  if (!fs.existsSync(planPath)) {
+    throw new Error(`plan.json not found at ${planPath}`);
+  }
+  try {
+    return JSON.parse(fs.readFileSync(planPath, 'utf-8')) as PlanDag;
+  } catch {
+    throw new Error(`plan.json is not valid JSON at ${planPath}`);
+  }
+}
+
+function writeDag(planPath: string, dag: PlanDag): void {
+  fs.writeFileSync(planPath, JSON.stringify(dag, null, 2), 'utf-8');
+}
+
+function collectAllNodes(node: DagNode, collected: DagNode[] = []): DagNode[] {
+  collected.push(node);
+  if (Array.isArray(node.next)) {
+    for (const branch of node.next as BranchOption[]) {
+      collectAllNodes(branch.node, collected);
+    }
+  } else if (node.next && typeof node.next === 'object') {
+    collectAllNodes(node.next as DagNode, collected);
+  }
+  return collected;
+}
+
+function dagToMermaid(dag: PlanDag): string {
+  const lines: string[] = ['flowchart TD'];
+  const nodes = collectAllNodes(dag.entry);
+  for (const node of nodes) {
+    const promptFile = path.basename(node.prompt);
+    const todoStr = node.todo.length > 0 ? node.todo.join(', ') : 'none';
+    const label = `${node.id}["${node.id}<br/>${promptFile} | [${todoStr}]"]`;
+    lines.push(`  ${label}`);
+  }
+  for (const node of nodes) {
+    if (Array.isArray(node.next)) {
+      for (const branch of node.next as BranchOption[]) {
+        lines.push(`  ${node.id} -->|"${branch.when}"| ${branch.node.id}`);
+      }
+    } else if (node.next && typeof node.next === 'object') {
+      lines.push(`  ${node.id} --> ${(node.next as DagNode).id}`);
+    }
+  }
+  return lines.join('\n');
+}
+
+function validateDagTree(dag: PlanDag): void {
+  const nodes = collectAllNodes(dag.entry);
+  const ids = new Set<string>();
+  const duplicates: string[] = [];
+  for (const node of nodes) {
+    if (ids.has(node.id)) {
+      duplicates.push(node.id);
+    } else {
+      ids.add(node.id);
+    }
+  }
+  if (duplicates.length > 0) {
+    throw new Error(`Duplicate node IDs in DAG: ${duplicates.join(', ')}`);
+  }
+  for (const node of nodes) {
+    if (Array.isArray(node.next) && (node.next as BranchOption[]).length < 2) {
+      throw new Error(`Branch node "${node.id}" has fewer than 2 branches`);
+    }
+  }
+}
+
+// Validates only node ID uniqueness — used by add_node to allow incremental
+// branch building (branches can have <2 options while being constructed).
+function validateDagTreeIds(dag: PlanDag): void {
+  const nodes = collectAllNodes(dag.entry);
+  const ids = new Set<string>();
+  const duplicates: string[] = [];
+  for (const node of nodes) {
+    if (ids.has(node.id)) {
+      duplicates.push(node.id);
+    } else {
+      ids.add(node.id);
+    }
+  }
+  if (duplicates.length > 0) {
+    throw new Error(`Duplicate node IDs in DAG: ${duplicates.join(', ')}`);
+  }
+}
+
+function findNode(dag: PlanDag, nodeId: string): DagNode | null {
+  function search(node: DagNode): DagNode | null {
+    if (node.id === nodeId) return node;
+    if (Array.isArray(node.next)) {
+      for (const branch of node.next as BranchOption[]) {
+        const found = search(branch.node);
+        if (found) return found;
+      }
+    } else if (node.next && typeof node.next === 'object') {
+      return search(node.next as DagNode);
+    }
+    return null;
+  }
+  return search(dag.entry);
 }
 
 // ─── Tree flattening ─────────────────────────────────────────────────────────
@@ -754,7 +871,297 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
           },
         }),
-     },
+
+    show_dag: tool({
+      description: "Display an ASCII Mermaid diagram of a DAG. Accepts a session plan name or a raw path to plan.json.",
+      args: {
+        target: tool.schema.string().describe(
+          "Session plan name (under .opencode/session-plans/) or raw file path to plan.json."
+        ),
+      },
+      async execute({ target }, context) {
+        try {
+          const worktree = resolveWorktree(context);
+          const planPath = resolveDagPath(target, worktree);
+          const dag = readDag(planPath);
+          validateDagTree(dag);
+          const mermaid = dagToMermaid(dag);
+          const ascii = await renderMermaidASCII(mermaid, { colorMode: 'none' });
+          return `## DAG: ${dag.id}\n\n${ascii}`;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          return `Error in show_dag: ${msg}`;
+        }
+      },
+    }),
+
+    init_dag: tool({
+      description: "Initialize a new project DAG plan.json with a single entry node. Call this first before using add_node. Creates the session plan directory and plan.json with the entry node as the root.",
+      args: {
+        plan_name: tool.schema.string().describe(
+          "Name for the session plan (e.g., 'my-feature-delivery'). Used as the directory name under .opencode/session-plans/. Lowercase, hyphens only, no spaces."
+        ),
+        dag_id: tool.schema.string().describe(
+          "Identifier for this DAG (e.g., 'my-feature-delivery'). Stored as the 'id' field in plan.json."
+        ),
+        entry_node_id: tool.schema.string().describe(
+          "ID for the entry node. Must be 'session-overview' by convention."
+        ),
+        entry_prompt_file: tool.schema.string().describe(
+          "Prompt filename for the entry node (e.g., 'session-overview.md'). Bare filename only."
+        ),
+        entry_todo: tool.schema.array(tool.schema.string()).describe(
+          "Todo array for the entry node. Use [] for session-overview (auto-advances)."
+        ),
+      },
+      async execute({ plan_name, dag_id, entry_node_id, entry_prompt_file, entry_todo }, context) {
+        try {
+          const worktree = resolveWorktree(context);
+          const planDir = path.join(worktree, '.opencode', 'session-plans', plan_name);
+          const planPath = path.join(planDir, 'plan.json');
+          const promptsDir = path.join(planDir, 'prompts');
+
+          if (fs.existsSync(planPath)) {
+            return `Error in init_dag: plan.json already exists at ${planPath}. Use add_node to extend the existing DAG, or delete the file manually to start fresh.`;
+          }
+
+          fs.mkdirSync(planDir, { recursive: true });
+          fs.mkdirSync(promptsDir, { recursive: true });
+
+          const dag: PlanDag = {
+            schema_version: "2.0",
+            id: dag_id,
+            entry: {
+              id: entry_node_id,
+              prompt: entry_prompt_file,
+              todo: entry_todo,
+            },
+          };
+
+          writeDag(planPath, dag);
+          const ascii = await renderMermaidASCII(dagToMermaid(dag), { colorMode: 'none' });
+          return `## init_dag: Created DAG "${dag_id}"\n\nPlan directory: ${planDir}\nPrompts directory: ${promptsDir}\n\n${ascii}`;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          return `Error in init_dag: ${msg}`;
+        }
+      },
+    }),
+
+    add_node: tool({
+      description: "Add a new node to a DAG. For linear add (extending a terminal node), omit 'when'. For branch add (adding a branch option), provide 'when'.",
+      args: {
+        target: tool.schema.string().describe(
+          "Session plan name or raw path to plan.json."
+        ),
+        parentId: tool.schema.string().describe(
+          "ID of the existing node to attach the new node to."
+        ),
+        newNodeId: tool.schema.string().describe(
+          "ID for the new node. Must be unique across all existing node IDs."
+        ),
+        promptFile: tool.schema.string().describe(
+          "Prompt filename for the new node (bare filename like 'my-node.md')."
+        ),
+        todo: tool.schema.array(tool.schema.string()).describe(
+          "Ordered array of tool-name strings for the new node's todo list."
+        ),
+        when: tool.schema.string().optional().describe(
+          "Branch condition string. Required when adding a branch option to a branching parent. Omit for linear add (parent must be a terminal node)."
+        ),
+      },
+      async execute({ target, parentId, newNodeId, promptFile, todo, when }, context) {
+        try {
+          const worktree = resolveWorktree(context);
+          const planPath = resolveDagPath(target, worktree);
+          const dag = readDag(planPath);
+          validateDagTree(dag);
+
+          const parent = findNode(dag, parentId);
+          if (!parent) {
+            return `Error in add_node: Node "${parentId}" not found in DAG.`;
+          }
+
+          const existing = findNode(dag, newNodeId);
+          if (existing) {
+            return `Error in add_node: Node ID "${newNodeId}" already exists in DAG.`;
+          }
+
+          const newNode: DagNode = { id: newNodeId, prompt: promptFile, todo };
+
+          if (when === undefined) {
+            // Linear add — parent must be terminal
+            if (parent.next !== undefined && parent.next !== null) {
+              return `Error in add_node: Parent node "${parentId}" is not a terminal (has next). Linear add requires a terminal parent. Use "when" to add a branch option instead.`;
+            }
+            parent.next = newNode;
+          } else {
+            // Branch add
+            if (parent.next !== undefined && !Array.isArray(parent.next)) {
+              return `Error in add_node: Parent node "${parentId}" has a linear next. Cannot add a branch option to a linear node. Remove the linear next first, or omit "when" for a linear add on a terminal node.`;
+            }
+            if (parent.next === undefined || parent.next === null) {
+              parent.next = [{ when, node: newNode }];
+            } else {
+              (parent.next as BranchOption[]).push({ when, node: newNode });
+            }
+          }
+
+          validateDagTreeIds(dag);
+          writeDag(planPath, dag);
+          const ascii = await renderMermaidASCII(dagToMermaid(dag), { colorMode: 'none' });
+          return `## add_node: Added "${newNodeId}" to "${parentId}"\n\n${ascii}`;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          return `Error in add_node: ${msg}`;
+        }
+      },
+    }),
+
+    delete_node: tool({
+      description: "Delete a node and its entire subtree from a DAG. Returns before-and-after ASCII diagrams.",
+      args: {
+        target: tool.schema.string().describe(
+          "Session plan name or raw path to plan.json."
+        ),
+        nodeId: tool.schema.string().describe(
+          "ID of the node to delete. The node and its entire subtree are removed."
+        ),
+      },
+      async execute({ target, nodeId }, context) {
+        try {
+          const worktree = resolveWorktree(context);
+          const planPath = resolveDagPath(target, worktree);
+          const dag = readDag(planPath);
+          validateDagTree(dag);
+
+          const beforeAscii = await renderMermaidASCII(dagToMermaid(dag), { colorMode: 'none' });
+
+          if (nodeId === dag.entry.id) {
+            return `Error in delete_node: Cannot delete the entry node "${nodeId}". The entry node is required.`;
+          }
+
+          const targetNode = findNode(dag, nodeId);
+          if (!targetNode) {
+            return `Error in delete_node: Node "${nodeId}" not found in DAG.`;
+          }
+
+          // Find and detach from parent
+          function detach(node: DagNode): boolean {
+            if (Array.isArray(node.next)) {
+              const branches = node.next as BranchOption[];
+              const idx = branches.findIndex(b => b.node.id === nodeId);
+              if (idx !== -1) {
+                branches.splice(idx, 1);
+                if (branches.length === 0) {
+                  node.next = undefined;
+                }
+                return true;
+              }
+              for (const branch of branches) {
+                if (detach(branch.node)) return true;
+              }
+            } else if (node.next && typeof node.next === 'object') {
+              if ((node.next as DagNode).id === nodeId) {
+                node.next = undefined;
+                return true;
+              }
+              return detach(node.next as DagNode);
+            }
+            return false;
+          }
+
+          const detached = detach(dag.entry);
+          if (!detached) {
+            return `Error in delete_node: Could not detach node "${nodeId}" from parent.`;
+          }
+
+          // Post-delete validation (may fail if branch now has 1 item)
+          try {
+            validateDagTree(dag);
+          } catch (validErr) {
+            const msg = validErr instanceof Error ? validErr.message : String(validErr);
+            return `Error in delete_node: Deletion would produce an invalid DAG: ${msg}. No changes written.`;
+          }
+
+          writeDag(planPath, dag);
+          const afterAscii = await renderMermaidASCII(dagToMermaid(dag), { colorMode: 'none' });
+          return `## delete_node: Deleted "${nodeId}" and its subtree\n\n### Before\n\n${beforeAscii}\n\n### After\n\n${afterAscii}`;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          return `Error in delete_node: ${msg}`;
+        }
+      },
+    }),
+
+    modify_node: tool({
+      description: "Modify an existing DAG node's prompt file, todo array, or branch 'when' label. Does NOT change the node's next/children.",
+      args: {
+        target: tool.schema.string().describe(
+          "Session plan name or raw path to plan.json."
+        ),
+        nodeId: tool.schema.string().describe(
+          "ID of the node to modify."
+        ),
+        promptFile: tool.schema.string().optional().describe(
+          "New prompt filename. If omitted, the existing value is unchanged."
+        ),
+        todo: tool.schema.array(tool.schema.string()).optional().describe(
+          "New todo array. If omitted, the existing value is unchanged."
+        ),
+        when: tool.schema.string().optional().describe(
+          "New branch 'when' label. Updates the parent's branch condition that routes to this node. Only valid if this node is a branch child. If omitted, no 'when' is updated."
+        ),
+      },
+      async execute({ target, nodeId, promptFile, todo, when }, context) {
+        try {
+          const worktree = resolveWorktree(context);
+          const planPath = resolveDagPath(target, worktree);
+          const dag = readDag(planPath);
+          validateDagTree(dag);
+
+          const node = findNode(dag, nodeId);
+          if (!node) {
+            return `Error in modify_node: Node "${nodeId}" not found in DAG.`;
+          }
+
+          if (promptFile === undefined && todo === undefined && when === undefined) {
+            return `Nothing to modify — provide at least one of promptFile, todo, or when.`;
+          }
+
+          if (when !== undefined) {
+            // Find the parent branch that points to this node
+            const allNodes = collectAllNodes(dag.entry);
+            let found = false;
+            for (const n of allNodes) {
+              if (Array.isArray(n.next)) {
+                const branch = (n.next as BranchOption[]).find(b => b.node.id === nodeId);
+                if (branch) {
+                  branch.when = when;
+                  found = true;
+                  break;
+                }
+              }
+            }
+            if (!found) {
+              return `Error in modify_node: Node "${nodeId}" is not a branch child of any node. Cannot update "when".`;
+            }
+          }
+
+          if (promptFile !== undefined) node.prompt = promptFile;
+          if (todo !== undefined) node.todo = todo;
+
+          validateDagTree(dag);
+          writeDag(planPath, dag);
+          const ascii = await renderMermaidASCII(dagToMermaid(dag), { colorMode: 'none' });
+          return `## modify_node: Modified "${nodeId}"\n\n${ascii}`;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          return `Error in modify_node: ${msg}`;
+        }
+      },
+    }),
+      },
 
     // ── Hooks ────────────────────────────────────────────────────────────────
 

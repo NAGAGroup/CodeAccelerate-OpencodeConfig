@@ -1,11 +1,9 @@
 # Scout Node Library
 
-Read the node library to understand available building blocks for composing DAGs. This is pure information gathering — the findings feed into pre-research-thinking and sequential-thinking, where the node knowledge will be applied to design the complete plan.
+Read the node library CATALOGUE.md directly into your context window. This is pure information gathering — exact node type names and todo arrays are needed for planning.
 
 ## Todo
 
-1. `read` — Use the read tool directly (not delegating to @ContextScout). Read `{{SESSION_PATH}}/node-library/CATALOGUE.md` into your own context window. This ensures exact node type names and todo arrays are available without summarization loss.
-
-**Rationale:** Direct read is more reliable than delegation — scouts summarize, which destroys precise node names and todo arrays needed for planning. Node READMEs will be consulted by the write-DAG subagent during DAG file construction.
+1. `read` — Call `read` with `filePath: "{{SESSION_PATH}}/node-library/CATALOGUE.md"`. Read the file directly — do NOT list the directory first. One `read` call only.
 
 After reading CATALOGUE.md, call `next_step()` to advance to pre-research-thinking.
