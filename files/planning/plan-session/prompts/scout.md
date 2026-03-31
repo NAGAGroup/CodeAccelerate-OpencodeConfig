@@ -9,15 +9,16 @@ Scout 1 has **zero knowledge of the user's task**. Its only job is to discover w
 **Dispatch Scout 1 and wait for its result before proceeding.**
 
 > **When dispatching @ContextScout (Scout 1), your task prompt must tell the agent to:**
-> (1) Use the `glob` tool with pattern `**/*` to get the complete file list (paths only, not contents).
-> (2) From the full file list, identify 3–5 files that look like the most important orientation anchors (README, build config, project manifest, top-level entry point — whatever the project structure suggests). Read those files.
-> (3) Return: the depth-1 entries from the file list (top-level files and directories only) **verbatim as-is**. Then append a high-level summary covering: what the full glob revealed about the project's deeper structure, plus a brief description of each key file you read and what it reveals about the project's purpose and entry points.
+> (1) Use the `glob` tool with pattern `*` to get the top-level file and directory list only (depth-1 entries).
+> (2) From the depth-1 list, identify 3–5 files that look like the most important orientation anchors (README, build config, project manifest, top-level entry point — whatever the project structure suggests). Read those files.
+> (3) Return: the complete depth-1 entries list **verbatim as-is, one per line**. Then append a high-level summary covering: the overall directory structure and purpose suggested by the top-level layout, plus a brief description of each key file you read and what it reveals about the project's purpose and entry points.
 > (4) Do NOT interpret the task or filter for relevance — return everything. HW will determine relevance.
 > (5) Termination: return when you have the file list and key file summaries. Do not explore further.
 
-✓ Good: Uses the `glob` tool, returns depth-1 paths verbatim, then a high-level summary of deeper structure and the 3–5 key files read.
+✓ Good: Uses `glob` with pattern `*`, returns top-level paths one-per-line verbatim, then a brief structural overview and 3–5 key file summaries.
 
 ✗ Bad: "Find files related to the task." — Scout 1 gets no task context and must not filter by it.
+✗ Bad: Using `glob` with `**/*` or recursively returning nested files — Scout 1's output must be depth-1-only.
 
 **After Scout 1 returns:** Use the file list and summaries to write task-targeted prompts for Scouts 2 and 3.
 

@@ -6,8 +6,8 @@
 
 ---
 
-## Execution constraints (fixed)
+## STOP — Do not work ahead
 
-This node has `todo: []` — it auto-advances on entry without any tool call or user interaction.
+The DAG controls sequencing. Each node will tell you exactly what to do when you arrive at it. **Do not scout, explore, read files, search the codebase, or start any task right now.** The system will guide you step by step — trust it.
 
-Do not include action instructions, phase breakdowns, or predictions about what comes next. The DAG handles sequencing; this node only establishes what the session is for.
+Your only action at this node is to call `next_step()` immediately.

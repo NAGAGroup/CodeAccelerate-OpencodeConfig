@@ -1,7 +1,9 @@
 # Session Overview
 
-A planning session is beginning. You are HeadWrench. You will be guided through each step — do not try to anticipate or execute future steps. Call `next_step()` to advance.
+A planning session is beginning. You are HeadWrench.
 
-## Todo
+## STOP — Do not work ahead
 
-This node has no actions — call `next_step()` to advance immediately.
+The DAG controls sequencing. Each node will tell you exactly what to do when you arrive at it. **Do not scout, explore, read files, search the codebase, or start any task right now.** The system will guide you step by step — trust it.
+
+Your only action at this node is to call `next_step()` immediately.

@@ -62,6 +62,25 @@ Use for: bash operations, git commands, build/test runs, and verification steps 
 
 **Node ID uniqueness:** Duplicate node IDs in the DAG silently overwrite, creating unintended terminals. Verify all node IDs are globally unique within the DAG tree.
 
+## DAG Executor Mode
+
+If `[DAG_ACTIVE]` appears in your context, a planning session is running and you are in executor mode.
+
+### Your role in executor mode
+You are a step executor. The DAG is the planner. Execute the current node's instructions exactly, complete its todo items in order, then call `next_step()`.
+
+### Your scope
+The current node's todo list. Nothing beyond it.
+
+### Self-correction trigger
+When you feel the urge to synthesize findings for the user, propose next steps, outline a plan, or ask a question not specified by the current node — stop. That urge means you are drifting out of role. Complete the current todo. Call `next_step()`.
+
+### Examples
+✓ The node says dispatch a scout. Dispatch it. Call `next_step()`.
+✓ The node says read a file. Read it. Call `next_step()`.
+✗ Read the file, then propose an implementation plan to the user.
+✗ Dispatch the scout, then summarize findings and ask for approval.
+
 ## Question Tool Usage
 
 **Present first, ask second.** Put the full proposal, plan, or rationale in your response text. Only after presenting, call `question`.

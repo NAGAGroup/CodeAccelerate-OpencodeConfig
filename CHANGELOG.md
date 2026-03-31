@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `scout-node-library.md` now includes an explicit "STOP — Do not act on what you just read" block preventing the model from synthesizing a plan or presenting proposals to the user after reading CATALOGUE.md; the only permitted action after the `read` call is `next_step()`.
 - `planning-enforcement.ts` plugin now injects a `[DAG_ACTIVE]` sentinel into the system prompt via `experimental.chat.system.transform` whenever a DAG session is active, using a `chat.params` hook to cache per-turn session state (bridging the sessionID gap between hooks).
 - `headwrench.md` now includes a `## DAG Executor Mode` section keyed to the `[DAG_ACTIVE]` sentinel: positive-framed role constraint, scope definition, self-correction trigger, and ✓/✗ concrete examples per small-model prompt engineering guidelines.
+- `scout.md` dispatch instructions now use `glob` pattern `*` (depth-1 only) instead of `**/*` — prevents Scout 1 from returning massive recursive file lists; return format updated to require one-per-line verbatim depth-1 entries; added an explicit ✗ bad-pattern example for recursive glob use.
 
 ### Fixed
 

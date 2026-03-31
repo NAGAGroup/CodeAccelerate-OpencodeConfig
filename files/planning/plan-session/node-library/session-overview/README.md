@@ -17,3 +17,4 @@
 - **Empty todo means auto-advance.** No tool calls, no user interaction, no action instructions. HW reads the goal and the DAG moves on.
 - **Do not describe what comes next.** The DAG handles flow. Writing "Next, scouts will explore the codebase" is dead weight — it will never be acted on and may cause HW to try to predict or skip ahead.
 - **One sentence only.** This is not a briefing document. Save detail for `propose-plan`.
+- **The "STOP — Do not work ahead" block is fixed text.** It must appear verbatim in every generated session-overview prompt, below the `{{SESSION_GOAL}}` slot. Do not paraphrase, remove, or move it. This block is the primary guard against models working ahead before the DAG has a chance to sequence them.
