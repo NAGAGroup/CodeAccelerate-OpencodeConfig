@@ -4,7 +4,7 @@ Before presenting the full plan for approval, take a moment to surface any clari
 
 **Note:** Both the `question` tool and `sequential-thinking_sequentialthinking` are exempt from DAG blocking in this node. You may call `question` as many times as needed. You may also call `sequential-thinking_sequentialthinking` once if user answers introduce new information that materially affects the plan.
 
-## Steps
+## Todo
 
 ### 1. Summarize your understanding
 

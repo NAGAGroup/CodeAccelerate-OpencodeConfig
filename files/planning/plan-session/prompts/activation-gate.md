@@ -1,27 +1,27 @@
-# Activation Gate
+# activation-gate
 
-The project DAG has been written and validated. Ask the user if they want to activate and begin executing the plan immediately.
-
-## Decision
-
-Present the following choice using the `question` tool.
-
-**"Do you want to activate and begin executing this plan now?"**
-
-Options:
-- **"Yes, activate now"** — Activate the plan and start executing immediately
-- **"No, I'll activate later"** — End the planning session; the user will activate manually when ready
-
-Use these option labels exactly in your `question` call so the user sees consistent options. After the user answers, route by calling next_step with the correct node ID (see routing below). The `when` field in plan.json is human-readable only — routing is controlled by your explicit next_step call.
+Ask the user whether to activate and execute the plan immediately or defer activation. Route based on their response.
 
 ## Todo
 
-1. `question` — Ask: "Do you want to activate and begin executing this plan now?" with options "Yes, activate now" and "No, I'll activate later".
+1. `question` — Ask the user for their activation preference
 
-You MUST call the `question` tool. Do not present the choice as plain text.
+---
 
-**Before advancing:** Confirm you know the plan name (the directory name under `.opencode/session-plans/`) — the next node needs it immediately. If you are uncertain of the plan name, look back at the write-dag summary or ask the user: "What name did we use for this plan?" before calling next_step.
+## Decision Flow
 
-**After the user answers:**
-- "Yes, activate now" → call `next_step({ next: "activate-now" })`
-- "No, I'll activate later" → call `next_step({ next: "plan-complete" })`
+The project DAG has been written and validated. Present the user with an activation choice using the `question` tool.
+
+Call the `question` tool with these exact options:
+- **"Yes, activate now"** — Activate the plan and begin executing immediately
+- **"No, I'll activate later"** — End the planning session; user will manually activate when ready
+
+Do not present this choice as plain text — use the `question` tool.
+
+**Before calling `question`:** Confirm you know the plan name (the directory name under `.opencode/session-plans/`). The next node needs it immediately. If uncertain, look back at the write-dag completion summary. If still unclear, ask the user: "What name did we use for this plan?" before proceeding.
+
+**After the user answers, route by node ID (not by label):**
+- User chose "Yes, activate now" → call `next_step({ next: "activate-now" })`
+- User chose "No, I'll activate later" → call `next_step({ next: "plan-complete" })`
+
+**Important:** Branch routing uses node IDs (the `id` field in plan.json), not the `when` labels. The `when` field is human-readable for display only.

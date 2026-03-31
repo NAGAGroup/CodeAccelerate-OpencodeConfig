@@ -1,20 +1,31 @@
-# Planning Session Complete
+# plan-complete
 
-The planning session is complete. The project DAG has been written and validated.
+Planning session complete. The project DAG has been written, validated, and is ready for manual activation.
 
-## What was accomplished
+---
 
-- The project plan was designed and written to `.opencode/session-plans/{task-name}/`
-- The DAG was written and validation was run — review any reported warnings before activating.
+## Summary
 
-## Next steps
-
-Activate the plan whenever you are ready. Replace `{task-name}` in the command below with the actual plan name before presenting it to the user:
+The project plan has been written and validated. The DAG files are located at:
 
 ```
-/activate-plan {task-name}
+.opencode/session-plans/{plan-name}/
+├── plan.json           (the executable DAG)
+└── prompts/            (node prompts)
 ```
 
-Or tell HeadWrench "activate the plan" and it will look up the most recently written plan — if multiple plans exist, specify the name: `/activate-plan {task-name}` where `{task-name}` is the directory name under `.opencode/session-plans/`.
+**Plan name:** {plan-name}
+**Location:** `.opencode/session-plans/{plan-name}/`
+**Structure:** [restate node count and phases, e.g., "8 nodes across 3 phases"]
 
-Briefly restate the plan name, its location under `.opencode/session-plans/`, and top-level structure (e.g., '8 nodes across 3 phases') so the user has a quick reference.
+---
+
+## Activation
+
+Activate the plan whenever you are ready:
+
+```
+/activate-plan {plan-name}
+```
+
+Replace `{plan-name}` with the actual directory name. If you have multiple plans in `.opencode/session-plans/`, specify the name explicitly so HeadWrench activates the correct one. Once activated, execution of the project DAG will begin automatically.
