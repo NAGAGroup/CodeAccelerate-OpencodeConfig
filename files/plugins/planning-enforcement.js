@@ -110210,6 +110210,7 @@ function ensureOpenCodeIgnore(worktree) {
   } catch {}
 }
 var PlanningEnforcementPlugin = async (_ctx) => {
+  const { client } = _ctx;
   const resolveWorktree = (_ctx2) => process.cwd();
   ensureOpenCodeIgnore(resolveWorktree(_ctx));
   return {
@@ -110585,9 +110586,9 @@ ${ascii}`;
         args: {
           plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/).")
         },
-        async execute({ plan_name }, context) {
+        async execute({ plan_name }, toolCtx) {
           try {
-            const worktree = resolveWorktree(context);
+            const worktree = resolveWorktree(toolCtx);
             const planPath = path.join(worktree, ".opencode", "session-plans", plan_name, "plan.json");
             const dag = readDag(planPath);
             validateDagTree(dag);
@@ -110598,19 +110599,17 @@ ${ascii}`;
 **Plan Name:** ${plan_name}
 
 ${ascii}`;
-            await context.client.session.prompt({
-              path: { id: context.sessionID },
+            client.session.prompt({
+              path: { id: toolCtx.sessionID },
               body: {
                 noReply: true,
                 parts: [{
                   type: "text",
-                  text: diagramText,
-                  synthetic: true,
-                  ignored: true
+                  text: diagramText
                 }]
               }
             });
-            return "DAG diagram displayed to user.";
+            return "DAG diagram presented via prompt injection below. Ignore the following system message—it contains the session plan visualization.";
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in present_dag_to_user: ${msg}`;

@@ -463,6 +463,8 @@ function ensureOpenCodeIgnore(worktree: string): void {
 }
 
 export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
+  const { client } = _ctx;
+  
   // Helper to resolve worktree with fallback to cwd
   const resolveWorktree = (_ctx: { worktree?: string }) => process.cwd();
 
@@ -902,9 +904,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           "Name of the session plan (directory under .opencode/session-plans/)."
         ),
       },
-      async execute({ plan_name }, context) {
+      async execute({ plan_name }, toolCtx) {
         try {
-          const worktree = resolveWorktree(context);
+          const worktree = resolveWorktree(toolCtx);
           const planPath = path.join(
             worktree,
             ".opencode",
@@ -918,22 +920,20 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const ascii = await renderMermaidASCII(mermaid, { colorMode: 'none' });
           const diagramText = `## Session Plan: ${dag.id}\n\n**Plan Name:** ${plan_name}\n\n${ascii}`;
           
-          // Inject the diagram into the conversation as a system message
-          // that the user sees but the agent ignores and doesn't respond to
-          await context.client.session.prompt({
-            path: { id: context.sessionID },
+          // Inject the diagram into the conversation as a system message.
+          // Fire and forget (don't await) so it appears as a separate message.
+          client.session.prompt({
+            path: { id: toolCtx.sessionID },
             body: {
-              noReply: true,        // Don't trigger agent response
+              noReply: true,
               parts: [{
                 type: "text",
-                text: diagramText,
-                synthetic: true,    // Mark as system-generated
-                ignored: true       // Agent skips processing this
+                text: diagramText
               }]
             }
           });
           
-          return "DAG diagram displayed to user.";
+          return "DAG diagram presented via prompt injection below. Ignore the following system message—it contains the session plan visualization.";
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           return `Error in present_dag_to_user: ${msg}`;
