@@ -104142,10 +104142,6 @@ function tool(input) {
   return input;
 }
 tool.schema = exports_external;
-// planning-enforcement.ts
-import * as fs from "fs";
-import * as path from "path";
-
 // node_modules/beautiful-mermaid/dist/index.js
 var import_elk_bundled = __toESM(require_elk_bundled(), 1);
 function normalizeBrTags(label) {
@@ -109887,13 +109883,22 @@ var MONO_FONT = "'JetBrains Mono'";
 var MONO_FONT_STACK = `${MONO_FONT}, 'SF Mono', 'Fira Code', ui-monospace, monospace`;
 
 // planning-enforcement.ts
+import * as fs6 from "fs";
+import * as path7 from "path";
+
+// constants.ts
+import * as path from "path";
 var CONFIG_ROOT = path.dirname(import.meta.dirname);
-var exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "todowrite", "sequential-thinking_sequentialthinking", "show_dag", "init_dag", "add_node", "delete_node", "modify_node"];
+var exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "todowrite", "sequential-thinking_sequentialthinking", "show_dag", "init_dag", "add_node", "delete_node", "modify_node", "present_dag_to_user"];
+
+// state-io.ts
+import * as fs from "fs";
+import * as path2 from "path";
 function dagStatePath(worktree, sessionId) {
-  return path.join(worktree, ".opencode", "dag-state", `${sessionId}.json`);
+  return path2.join(worktree, ".opencode", "dag-state", `${sessionId}.json`);
 }
 function writeState(statePath, state) {
-  fs.mkdirSync(path.dirname(statePath), { recursive: true });
+  fs.mkdirSync(path2.dirname(statePath), { recursive: true });
   fs.writeFileSync(statePath, JSON.stringify(state, null, 2), "utf-8");
 }
 function readState(statePath) {
@@ -109904,44 +109909,54 @@ function readState(statePath) {
 function now() {
   return new Date().toISOString();
 }
+
+// path-utils.ts
+import * as fs2 from "fs";
+import * as path3 from "path";
 function expandPath(p) {
   if (p.startsWith("~/")) {
     const home = process.env.HOME || process.env.USERPROFILE || "";
-    return path.join(home, p.slice(2));
+    return path3.join(home, p.slice(2));
   }
   return p;
 }
 function readPrompt(promptPath, worktree) {
   const expanded = expandPath(promptPath);
-  if (path.isAbsolute(expanded)) {
-    return fs.readFileSync(expanded, "utf-8");
+  if (path3.isAbsolute(expanded)) {
+    return fs2.readFileSync(expanded, "utf-8");
   }
-  return fs.readFileSync(path.join(worktree, expanded), "utf-8");
+  return fs2.readFileSync(path3.join(worktree, expanded), "utf-8");
 }
 function resolveDagPath(target, worktree) {
   if (target.includes("/") || target.includes("\\") || target.endsWith(".json")) {
     const expanded = expandPath(target);
-    const resolved = path.resolve(worktree, expanded);
-    if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-      return path.join(resolved, "plan.json");
+    const resolved = path3.resolve(worktree, expanded);
+    if (fs2.existsSync(resolved) && fs2.statSync(resolved).isDirectory()) {
+      return path3.join(resolved, "plan.json");
     }
     return resolved;
   }
-  return path.join(worktree, ".opencode", "session-plans", target, "plan.json");
+  return path3.join(worktree, ".opencode", "session-plans", target, "plan.json");
 }
+
+// dag-io.ts
+import * as fs3 from "fs";
 function readDag(planPath) {
-  if (!fs.existsSync(planPath)) {
+  if (!fs3.existsSync(planPath)) {
     throw new Error(`plan.json not found at ${planPath}`);
   }
   try {
-    return JSON.parse(fs.readFileSync(planPath, "utf-8"));
+    return JSON.parse(fs3.readFileSync(planPath, "utf-8"));
   } catch {
     throw new Error(`plan.json is not valid JSON at ${planPath}`);
   }
 }
 function writeDag(planPath, dag) {
-  fs.writeFileSync(planPath, JSON.stringify(dag, null, 2), "utf-8");
+  fs3.writeFileSync(planPath, JSON.stringify(dag, null, 2), "utf-8");
 }
+
+// dag-tree.ts
+import * as path4 from "path";
 function collectAllNodes(node, collected = []) {
   collected.push(node);
   if (Array.isArray(node.next)) {
@@ -109957,7 +109972,7 @@ function dagToMermaid(dag) {
   const lines = ["flowchart TD"];
   const nodes = collectAllNodes(dag.entry);
   for (const node of nodes) {
-    const promptFile = path.basename(node.prompt);
+    const promptFile = path4.basename(node.prompt);
     const todoStr = node.todo.length > 0 ? node.todo.join(", ") : "none";
     const label = `${node.id}["${node.id}<br/>${promptFile} | [${todoStr}]"]`;
     lines.push(`  ${label}`);
@@ -110060,53 +110075,57 @@ function rewritePromptPaths(node, prefix) {
     rewritePromptPaths(node.next, prefix);
   }
 }
+
+// dag-lifecycle.ts
+import * as fs4 from "fs";
+import * as path5 from "path";
 function copyPlanningDag(planType, sessionId, worktree, configRoot = CONFIG_ROOT) {
-  const srcDir = path.join(configRoot, "planning", planType);
+  const srcDir = path5.join(configRoot, "planning", planType);
   const destDirName = `${planType}-${sessionId}`;
-  const destDir = path.join(worktree, ".opencode", "session-plans", destDirName);
-  const srcPromptsDir = path.join(srcDir, "prompts");
-  const destPromptsDir = path.join(destDir, "prompts");
-  fs.mkdirSync(destPromptsDir, { recursive: true });
+  const destDir = path5.join(worktree, ".opencode", "session-plans", destDirName);
+  const srcPromptsDir = path5.join(srcDir, "prompts");
+  const destPromptsDir = path5.join(destDir, "prompts");
+  fs4.mkdirSync(destPromptsDir, { recursive: true });
   const sessionPath = `.opencode/session-plans/${destDirName}`;
   function copyDirRecursive(src, dest) {
-    fs.mkdirSync(dest, { recursive: true });
-    for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
-      const srcEntry = path.join(src, entry.name);
-      const destEntry = path.join(dest, entry.name);
+    fs4.mkdirSync(dest, { recursive: true });
+    for (const entry of fs4.readdirSync(src, { withFileTypes: true })) {
+      const srcEntry = path5.join(src, entry.name);
+      const destEntry = path5.join(dest, entry.name);
       if (entry.isDirectory()) {
         copyDirRecursive(srcEntry, destEntry);
       } else {
-        fs.copyFileSync(srcEntry, destEntry);
+        fs4.copyFileSync(srcEntry, destEntry);
       }
     }
   }
   function copyPromptFile(src, dest) {
-    const content = fs.readFileSync(src, "utf-8");
-    fs.writeFileSync(dest, content.replaceAll("{{SESSION_PATH}}", sessionPath), "utf-8");
+    const content = fs4.readFileSync(src, "utf-8");
+    fs4.writeFileSync(dest, content.replaceAll("{{SESSION_PATH}}", sessionPath), "utf-8");
   }
-  if (fs.existsSync(srcPromptsDir)) {
-    for (const file2 of fs.readdirSync(srcPromptsDir)) {
-      copyPromptFile(path.join(srcPromptsDir, file2), path.join(destPromptsDir, file2));
+  if (fs4.existsSync(srcPromptsDir)) {
+    for (const file2 of fs4.readdirSync(srcPromptsDir)) {
+      copyPromptFile(path5.join(srcPromptsDir, file2), path5.join(destPromptsDir, file2));
     }
   }
-  const refDir = path.join(configRoot, "planning", "reference");
-  if (fs.existsSync(refDir)) {
-    const destRefDir = path.join(destDir, "reference");
-    fs.mkdirSync(destRefDir, { recursive: true });
-    for (const file2 of fs.readdirSync(refDir)) {
-      copyPromptFile(path.join(refDir, file2), path.join(destRefDir, file2));
+  const refDir = path5.join(configRoot, "planning", "reference");
+  if (fs4.existsSync(refDir)) {
+    const destRefDir = path5.join(destDir, "reference");
+    fs4.mkdirSync(destRefDir, { recursive: true });
+    for (const file2 of fs4.readdirSync(refDir)) {
+      copyPromptFile(path5.join(refDir, file2), path5.join(destRefDir, file2));
     }
   }
-  const srcNodeLibDir = path.join(srcDir, "node-library");
-  if (fs.existsSync(srcNodeLibDir)) {
-    copyDirRecursive(srcNodeLibDir, path.join(destDir, "node-library"));
+  const srcNodeLibDir = path5.join(srcDir, "node-library");
+  if (fs4.existsSync(srcNodeLibDir)) {
+    copyDirRecursive(srcNodeLibDir, path5.join(destDir, "node-library"));
   }
-  const srcPlanPath = path.join(srcDir, "plan.json");
-  const dag = JSON.parse(fs.readFileSync(srcPlanPath, "utf-8"));
+  const srcPlanPath = path5.join(srcDir, "plan.json");
+  const dag = JSON.parse(fs4.readFileSync(srcPlanPath, "utf-8"));
   const localPrefix = `.opencode/session-plans/${destDirName}/prompts/`;
   rewritePromptPaths(dag.entry, localPrefix);
-  const localPlanPath = path.join(destDir, "plan.json");
-  fs.writeFileSync(localPlanPath, JSON.stringify(dag, null, 2), "utf-8");
+  const localPlanPath = path5.join(destDir, "plan.json");
+  fs4.writeFileSync(localPlanPath, JSON.stringify(dag, null, 2), "utf-8");
   return { localPlanPath, dag };
 }
 function activateDag(dag, planPath, sessionId, worktree) {
@@ -110188,30 +110207,37 @@ When you're ready, call \`next_step({ next: "<node-id>" })\` to continue.`;
 
 ` + `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` + `Present a summary of what was produced to the user. ` + `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`;
 }
+
+// plugin-utils.ts
+import * as fs5 from "fs";
+import * as path6 from "path";
 function ensureOpenCodeIgnore(worktree) {
   try {
-    const ignorePath = path.join(worktree, ".opencodeignore");
+    const ignorePath = path6.join(worktree, ".opencodeignore");
     const patterns = ["!.opencode/", "!.opencode/**"];
-    if (fs.existsSync(ignorePath)) {
-      const content = fs.readFileSync(ignorePath, "utf-8");
+    if (fs5.existsSync(ignorePath)) {
+      const content = fs5.readFileSync(ignorePath, "utf-8");
       const lines = content.split(`
 `).map((l) => l.trim());
       for (const pattern of patterns) {
         if (!lines.includes(pattern)) {
-          fs.appendFileSync(ignorePath, `${pattern}
+          fs5.appendFileSync(ignorePath, `${pattern}
 `);
         }
       }
     } else {
-      fs.writeFileSync(ignorePath, `${patterns.join(`
+      fs5.writeFileSync(ignorePath, `${patterns.join(`
 `)}
 `);
     }
   } catch {}
 }
+
+// planning-enforcement.ts
 var PlanningEnforcementPlugin = async (_ctx) => {
   const { client } = _ctx;
   const resolveWorktree = (_ctx2) => process.cwd();
+  let _dagActiveThisTurn = false;
   ensureOpenCodeIgnore(resolveWorktree(_ctx));
   return {
     tool: {
@@ -110234,9 +110260,9 @@ var PlanningEnforcementPlugin = async (_ctx) => {
           plan_name: tool.schema.string().describe("Name of the session plan to activate (matches directory under .opencode/session-plans/).")
         },
         async execute({ plan_name }, context) {
-          const planPath = path.join(resolveWorktree(context), ".opencode", "session-plans", plan_name, "plan.json");
+          const planPath = path7.join(resolveWorktree(context), ".opencode", "session-plans", plan_name, "plan.json");
           try {
-            const dag = JSON.parse(fs.readFileSync(planPath, "utf-8"));
+            const dag = JSON.parse(fs6.readFileSync(planPath, "utf-8"));
             const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
             rewritePromptPaths(dag.entry, promptsPrefix);
             return activateDag(dag, planPath, context.sessionID, resolveWorktree(context));
@@ -110478,15 +110504,15 @@ No todos for this node. When you're ready, call \`next_step()\` to advance.
               }
               return collected;
             };
-            const planPath = path.join(resolveWorktree(context), ".opencode", "session-plans", plan_name, "plan.json");
-            if (!fs.existsSync(planPath)) {
+            const planPath = path7.join(resolveWorktree(context), ".opencode", "session-plans", plan_name, "plan.json");
+            if (!fs6.existsSync(planPath)) {
               return `## validate_dag Report: ${plan_name}
 
 **Error:** plan.json not found at ${planPath}`;
             }
             let dag;
             try {
-              dag = JSON.parse(fs.readFileSync(planPath, "utf-8"));
+              dag = JSON.parse(fs6.readFileSync(planPath, "utf-8"));
             } catch {
               return `## validate_dag Report: ${plan_name}
 
@@ -110519,11 +110545,11 @@ No todos for this node. When you're ready, call \`next_step()\` to advance.
             } else {
               checksPassedCount++;
             }
-            const promptsDir = path.join(resolveWorktree(context), ".opencode", "session-plans", plan_name, "prompts");
+            const promptsDir = path7.join(resolveWorktree(context), ".opencode", "session-plans", plan_name, "prompts");
             for (const node of nodeCollected) {
-              const resolvedPrompt = node.prompt.includes("/") ? expandPath(node.prompt) : path.join(promptsDir, node.prompt);
-              const fullPromptPath = path.isAbsolute(resolvedPrompt) ? resolvedPrompt : path.join(resolveWorktree(context), resolvedPrompt);
-              if (!fs.existsSync(fullPromptPath)) {
+              const resolvedPrompt = node.prompt.includes("/") ? expandPath(node.prompt) : path7.join(promptsDir, node.prompt);
+              const fullPromptPath = path7.isAbsolute(resolvedPrompt) ? resolvedPrompt : path7.join(resolveWorktree(context), resolvedPrompt);
+              if (!fs6.existsSync(fullPromptPath)) {
                 issues.push(`- [${node.id}] check-prompt-exists: prompt file not found at ${node.prompt}`);
               } else {
                 checksPassedCount++;
@@ -110584,12 +110610,12 @@ ${ascii}`;
       present_dag_to_user: tool({
         description: "Display an ASCII Mermaid diagram of a session plan DAG to the user. Injects the diagram directly into the conversation as a system message that the agent ignores.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/).")
+          plan_name: tool.schema.string().describe("Session plan name (under .opencode/session-plans/) or raw file path to plan.json.")
         },
         async execute({ plan_name }, toolCtx) {
           try {
             const worktree = resolveWorktree(toolCtx);
-            const planPath = path.join(worktree, ".opencode", "session-plans", plan_name, "plan.json");
+            const planPath = resolveDagPath(plan_name, worktree);
             const dag = readDag(planPath);
             validateDagTree(dag);
             const mermaid = dagToMermaid(dag);
@@ -110628,14 +110654,14 @@ ${ascii}`;
         async execute({ plan_name, dag_id, entry_node_id, entry_prompt_file, entry_todo }, context) {
           try {
             const worktree = resolveWorktree(context);
-            const planDir = path.join(worktree, ".opencode", "session-plans", plan_name);
-            const planPath = path.join(planDir, "plan.json");
-            const promptsDir = path.join(planDir, "prompts");
-            if (fs.existsSync(planPath)) {
+            const planDir = path7.join(worktree, ".opencode", "session-plans", plan_name);
+            const planPath = path7.join(planDir, "plan.json");
+            const promptsDir = path7.join(planDir, "prompts");
+            if (fs6.existsSync(planPath)) {
               return `Error in init_dag: plan.json already exists at ${planPath}. Use add_node to extend the existing DAG, or delete the file manually to start fresh.`;
             }
-            fs.mkdirSync(planDir, { recursive: true });
-            fs.mkdirSync(promptsDir, { recursive: true });
+            fs6.mkdirSync(planDir, { recursive: true });
+            fs6.mkdirSync(promptsDir, { recursive: true });
             const dag = {
               schema_version: "2.0",
               id: dag_id,
@@ -110760,7 +110786,7 @@ ${ascii}`;
               return `Error in delete_node: Could not detach node "${nodeId}" from parent.`;
             }
             try {
-              validateDagTree(dag);
+              validateDagTreeIds(dag);
             } catch (validErr) {
               const msg = validErr instanceof Error ? validErr.message : String(validErr);
               return `Error in delete_node: Deletion would produce an invalid DAG: ${msg}. No changes written.`;
@@ -110850,14 +110876,12 @@ ${ascii}`;
         return;
       if (state.status === "complete" || state.status === "abandoned")
         return;
+      if (state.status === "waiting_step") {
+        throw new Error(`[DAG BLOCKED] All todos for node "${state.current_node}" are complete. ` + `Call \`next_step()\` to advance to the next node before calling any other tools.`);
+      }
       const node = state.node_map[state.current_node];
       if (!node || node.todo.length === 0)
         return;
-      if (state.status === "waiting_step") {
-        if (exemptTools.includes(input.tool))
-          return;
-        throw new Error(`[DAG BLOCKED] All todos for node "${state.current_node}" are complete. ` + `Call \`next_step()\` to advance to the next node before calling any other tools.`);
-      }
       const expectedTool = node.todo[state.todo_index];
       if (!expectedTool)
         return;
@@ -110910,6 +110934,17 @@ ${advanceResult}`;
 [DAG: ${remaining} todo(s) remaining. Next expected: ${nextExpected}]`;
         }
       }
+    },
+    "chat.params": async (input, _output) => {
+      const worktree = resolveWorktree(_ctx);
+      const statePath = dagStatePath(worktree, input.sessionID);
+      const state = readState(statePath);
+      _dagActiveThisTurn = state !== null && state.status !== "complete" && state.status !== "abandoned";
+    },
+    "experimental.chat.system.transform": async (_input, output) => {
+      if (!_dagActiveThisTurn)
+        return;
+      output.system.push("[DAG_ACTIVE]");
     },
     "experimental.session.compacting": async (input, output) => {
       const worktree = resolveWorktree(_ctx);

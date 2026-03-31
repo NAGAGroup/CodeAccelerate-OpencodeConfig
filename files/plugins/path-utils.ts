@@ -1,0 +1,31 @@
+import * as fs from "fs";
+import * as path from "path";
+
+export function expandPath(p: string): string {
+  if (p.startsWith("~/")) {
+    const home = process.env.HOME || process.env.USERPROFILE || "";
+    return path.join(home, p.slice(2));
+  }
+  return p;
+}
+
+export function readPrompt(promptPath: string, worktree: string): string {
+  const expanded = expandPath(promptPath);
+  if (path.isAbsolute(expanded)) {
+    return fs.readFileSync(expanded, "utf-8");
+  }
+  return fs.readFileSync(path.join(worktree, expanded), "utf-8");
+}
+
+export function resolveDagPath(target: string, worktree: string): string {
+  if (target.includes('/') || target.includes('\\') || target.endsWith('.json')) {
+    const expanded = expandPath(target);
+    const resolved = path.resolve(worktree, expanded);
+    // If the resolved path is a directory, append plan.json automatically
+    if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
+      return path.join(resolved, 'plan.json');
+    }
+    return resolved;
+  }
+  return path.join(worktree, '.opencode', 'session-plans', target, 'plan.json');
+}

@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Refactor `planning-enforcement.ts` plugin into focused TypeScript modules
+- `session-overview.md` (shipped prompt) and `node-library/session-overview/prompt-template.md` now include an explicit "STOP — Do not work ahead" block that prohibits scouting, file reads, and task execution before the DAG sequences the next step; the block is fixed verbatim in the template so every generated DAG inherits the constraint.
+- `node-library/session-overview/README.md` updated to document that the anti-work-ahead block is fixed text that must appear verbatim in every generated prompt.
+- `scout-node-library.md` now includes an explicit "STOP — Do not act on what you just read" block preventing the model from synthesizing a plan or presenting proposals to the user after reading CATALOGUE.md; the only permitted action after the `read` call is `next_step()`.
+- `planning-enforcement.ts` plugin now injects a `[DAG_ACTIVE]` sentinel into the system prompt via `experimental.chat.system.transform` whenever a DAG session is active, using a `chat.params` hook to cache per-turn session state (bridging the sessionID gap between hooks).
+- `headwrench.md` now includes a `## DAG Executor Mode` section keyed to the `[DAG_ACTIVE]` sentinel: positive-framed role constraint, scope definition, self-correction trigger, and ✓/✗ concrete examples per small-model prompt engineering guidelines.
+
+### Fixed
+
+- `tool.execute.before` hook now correctly blocks non-exempt tool calls when DAG node status is `waiting_step` with an empty todo array — previously the `todo.length === 0` early return was evaluated before the `waiting_step` check, allowing the model to make arbitrary tool calls after `plan_session()` activated a node (like `session-overview`) that has no todos.
+- `plan.json` `present-dag`, `present-dag-3`, `present-dag-5`, and `present-dag-6` nodes had `"task"` in their todo arrays instead of `"present_dag_to_user"`, causing the plugin to block the correct tool call at those nodes.
+
 ## [4.0.0] - 2026-03-31
 
 ### Added
