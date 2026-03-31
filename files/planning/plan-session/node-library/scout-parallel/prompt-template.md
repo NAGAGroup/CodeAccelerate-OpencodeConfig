@@ -96,7 +96,7 @@ Wait for Scout 1's result before writing and dispatching Scouts 2 and 3. Scout 1
 > 4. **Output constraint (verbatim)** — "Report findings as specific facts and file locations — not as generic section headers. List exact references: file paths, line numbers, cited strings."
 > 5. **Termination instruction** — "Return findings when complete. Do not ask clarifying questions or wait for confirmation."
 
-> **Task tool parameters:** `subagent_type: "context-scout"`, `description` (3–5 words), `prompt` (full scout instructions). **Omit `task_id` for new tasks.**
+> **Task tool parameters:** `subagent_type: "ContextScout"`, `description` (3–5 words), `prompt` (full scout instructions). **Omit `task_id` for new tasks.**
 
 ### Todo — the three task calls
 

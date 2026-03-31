@@ -37,7 +37,7 @@ Each node has four fields:
 
 | Tool | Use when |
 |------|----------|
-| `task` | Dispatching a subagent (scout, junior-dev, etc.) |
+| `task` | Dispatching a subagent (scout, JuniorDev, etc.) |
 | `question` | Asking the user for input or approval |
 | `bash` | Running a shell command (tests, builds) |
 | `sequential-thinking_sequentialthinking` | HW reasons through a decision directly |

@@ -55,7 +55,7 @@ This is a cursory research pass. Use Context7 first (`context7_resolve-library-i
 
 ## Todo
 
-> **Task tool:** Required params: `subagent_type` ("external-scout"), `description` (3–5 words), `prompt` (full instructions). Omit `task_id` for new tasks.
+> **Task tool:** Required params: `subagent_type` ("ExternalScout"), `description` (3–5 words), `prompt` (full instructions). Omit `task_id` for new tasks.
 
 1. `task` — Dispatch @ExternalScout with the research instructions from Zones 1–3 above.
 

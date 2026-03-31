@@ -124,7 +124,7 @@ Call all task tools before waiting for results. They execute concurrently. If yo
 
 ### Task Tool Parameters
 
-Required: `subagent_type` (one of: `context-scout`, `context-insurgent`, `junior-dev`, `quick-doc`, `external-scout`, `headwrench`), `description` (3–5 words), `prompt` (full instructions for the subagent).
+Required: `subagent_type` (one of: `ContextScout`, `ContextInsurgent`, `JuniorDev`, `QuickDoc`, `ExternalScout`, `HeadWrench`), `description` (3–5 words), `prompt` (full instructions for the subagent).
 
 Optional: `task_id` — omit for new tasks. Only include if resuming a prior session (must start with `ses_`); do not fabricate.
 
