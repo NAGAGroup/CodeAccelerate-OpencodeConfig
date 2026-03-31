@@ -2,7 +2,7 @@
 
 ## Todo
 
-1. **Call `sequential-thinking_sequentialthinking` explicitly** — Reason through all 8 questions below. Do NOT wait for user input between thoughts. Your native `_Thinking:_` monologue does not satisfy the tool requirement — you MUST call the tool explicitly via the function interface, not as prose reasoning. Call `next_step()` after the final thought to advance to the research gate.
+1. **Call `sequential-thinking_sequentialthinking` explicitly** — Reason through all 8 questions below. Do NOT wait for user input between thoughts. **Tool call required — reasoning chains don't count.** Your internal `_Thinking:_` monologue is separate from this tool — producing a reasoning chain in response text without calling the tool leaves this todo unsatisfied. Call `next_step()` after the final thought to advance to the research gate.
 
    *Tool note: `sequential-thinking_sequentialthinking` is exempt from DAG blocking — call it directly.*
 
