@@ -19,4 +19,4 @@ This node runs after the scout phase and before the node library scout. It dispa
 > 9. Run only the listed commands. Do not read source files. Return all command output verbatim — do not summarize or paraphrase.
 > 10. End with: `**Outcome:** [PASS | FAIL | PARTIAL] — [one-sentence summary]`
 
-After the task returns, call `next_step()` to advance to the next node.
+After the task returns, MUST call `next_step()` to advance to the next node. Do NOT read files, summarize findings for the user, or add commentary — advance immediately.

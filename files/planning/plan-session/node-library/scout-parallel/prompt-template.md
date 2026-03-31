@@ -110,8 +110,8 @@ Wait for Scout 1's result before writing and dispatching Scouts 2 and 3. Scout 1
 
 After all scouts return:
 1. Review findings for specificity. If scouts produced vague summaries (e.g., "follows standard patterns"), flag as incomplete and re-dispatch with tighter output constraints.
-2. If findings surface unexpected gaps (e.g., missing expected files, unrecognized build system), briefly flag to user before calling `next_step()`.
-3. If findings are clear and specific, advance when ready.
+2. If findings surface unexpected gaps (e.g., missing expected files, surprising dependencies), briefly flag to user before calling `next_step()`.
+3. MUST call `next_step()` after scouts complete and any flags are surfaced. Do NOT explore further, read additional files, or start any implementation work.
 
 ---
 

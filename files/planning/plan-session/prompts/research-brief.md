@@ -2,6 +2,10 @@
 
 Conduct a quick, targeted external research pass to inform plan design. Based on the task description and scout findings already in context, dispatch @ExternalScout directly — no user question needed.
 
+## STOP — Do not work ahead
+
+Your only job in this node is to dispatch @ExternalScout once and then call `next_step()`. Do NOT read files, explore the codebase, perform research yourself, or ask the user anything.
+
 ## Todo
 
 1. `task` — Dispatch @ExternalScout to retrieve findings.
@@ -27,7 +31,7 @@ Identify the single most valuable research topic from prior context (task descri
 > 3. Return a brief structured summary with sections: **Key Findings**, **Relevant APIs or Patterns**, **Caveats**. Cite specific versions. Include code examples where they exist. Synthesize into direct answers — do NOT return a list of links. If nothing useful is found, state that explicitly.
 > 4. This is a quick pass only — one round of research, maximum two tool calls total. No iteration, no deep multi-source investigation.
 
-After ExternalScout reports back, call `next_step()` with no arguments to advance.
+MUST call `next_step()` with no arguments immediately after ExternalScout reports back. Do NOT summarize findings for the user, propose plan changes, or add commentary — advance immediately.
 
 ## Important Notes
 

@@ -2,6 +2,10 @@
 
 Before presenting the full plan for approval, take a moment to surface any clarifying questions you have for the user — and to share your current understanding of the problem.
 
+## STOP — Do not work ahead
+
+Your only jobs in this node are: (1) write a brief understanding summary, (2) ask clarifying questions, (3) optionally run sequential thinking if answers change the plan, (4) call `next_step()`. Do NOT design the full plan, write DAG nodes, or perform any implementation work here.
+
 **Note:** Both the `question` tool and `sequential-thinking_sequentialthinking` are exempt from DAG blocking in this node. You may call `question` as many times as needed. You may also call `sequential-thinking_sequentialthinking` once if user answers introduce new information that materially affects the plan.
 
 ## Todo
@@ -29,4 +33,4 @@ To trigger: call the `sequential-thinking_sequentialthinking` tool directly — 
 
 ### 4. Advance
 
-Call `next_step()` when done with questions and any follow-up reasoning.
+MUST call `next_step()` when done with questions and any follow-up reasoning. Do NOT present the plan here — that happens at the propose-plan node.

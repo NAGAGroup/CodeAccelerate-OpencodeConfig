@@ -2,6 +2,10 @@
 
 Planning session complete. The project DAG has been written, validated, and is ready for manual activation.
 
+## Terminal node
+
+This node has no Todo items. Read the template below and deliver it as a message to the user. Fill `{plan-name}` with the actual plan directory name from this session. Do NOT call `next_step()` — this is a terminal node; the session ends after this message is delivered.
+
 ---
 
 ## Summary

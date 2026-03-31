@@ -65,3 +65,7 @@ Do not read any files under `.opencode/` session directories — they contain st
 ## Todo
 
 1. `task` — Dispatch @ContextInsurgent to answer: {{ANALYSIS_QUESTION}}. Provide these files: {{CONTEXT_TO_PROVIDE}}. Follow the dispatch blockquote above.
+
+## After ContextInsurgent Reports Back
+
+MUST call `next_step()` immediately after @ContextInsurgent returns findings. Do NOT add your own analysis, summarize for the user, or propose next steps — advance immediately.

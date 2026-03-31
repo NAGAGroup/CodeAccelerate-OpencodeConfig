@@ -130,7 +130,7 @@ Optional: `task_id` — omit for new tasks. Only include if resuming a prior ses
 
 ### Before Advancing
 
-If agent results are unexpected, conflicting, or raise questions, optionally check in with the user before calling `next_step()`. If results are as expected, advance when ready.
+After all agent tasks return: if results are unexpected or raise questions, optionally check in with the user before calling `next_step()`. MUST call `next_step()` when done — do NOT proceed with additional work or start the next phase yourself.
 
 ---
 

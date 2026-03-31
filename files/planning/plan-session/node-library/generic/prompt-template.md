@@ -94,3 +94,7 @@ A node with `"id": "generic"` in a project DAG will be confusing to future reade
 ### Scope reminder
 
 Keep this node's todo sequence short — ideally 3–4 items max. Longer sequences should be split into multiple nodes connected by explicit branching. This keeps each node's purpose clear and failure recovery straightforward.
+
+### Completion
+
+After completing the last todo item in the sequence, MUST call `next_step()`. Do NOT add commentary, summarize results for the user, or start work from the next phase — `next_step()` transfers control to the next node.

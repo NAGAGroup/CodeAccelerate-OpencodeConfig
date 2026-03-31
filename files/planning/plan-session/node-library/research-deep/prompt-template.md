@@ -74,7 +74,7 @@ Explicitly direct @ExternalScout to pursue these research directions:
 
 ## After the Research
 
-After @ExternalScout reports findings, call `next_step()` to advance. If the research returned no useful findings, note the gap and proceed — the absence is itself actionable information.
+MUST call `next_step()` immediately after @ExternalScout reports findings. Do NOT summarize findings for the user, propose next steps, or ask questions — advance immediately. If the research returned no useful findings, note the gap and proceed — the absence is itself actionable information.
 
 ---
 

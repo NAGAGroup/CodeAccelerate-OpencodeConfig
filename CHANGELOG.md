@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `files/planning/plan-session/prompts/present-dag.md`: Replaced single-line todo with proper `## Todo` section, added explicit `next_step()` MUST rule and action block.
+- `files/planning/plan-session/prompts/research-brief.md`: Added work-ahead prevention block at top; hardened "After ExternalScout reports back" from advisory to MUST rule.
+- `files/planning/plan-session/prompts/sequential-thinking.md`: Hardened final `next_step()` call from advisory to MUST, added prohibition on presenting the plan at this node.
+- `files/planning/plan-session/prompts/write-dag.md`: Hardened Completion section — replaced advisory "ready to proceed" with explicit MUST `next_step()` call and prohibition on user-facing proposals.
+- `files/planning/plan-session/prompts/git-context.md`: Hardened "After the task returns" from advisory to MUST rule with no-summarization prohibition.
+- `files/planning/plan-session/prompts/clarifying-questions.md`: Added work-ahead prevention block at top; hardened advance step from advisory to MUST.
+- `files/planning/plan-session/prompts/plan-complete.md`: Added terminal-node declaration block with explicit no-`next_step()` rule and instruction to fill `{plan-name}` from session context.
+- `files/planning/plan-session/node-library/scout-parallel/prompt-template.md`: Hardened "advance when ready" in Before Advancing section to MUST `next_step()` with no-further-exploration prohibition.
+- `files/planning/plan-session/node-library/parallel-tasks/prompt-template.md`: Hardened Before Advancing section — replaced advisory "advance when ready" with MUST `next_step()` rule.
+- `files/planning/plan-session/node-library/generic/prompt-template.md`: Added Completion section with MUST `next_step()` rule after last todo item.
+- `files/planning/plan-session/node-library/research-basic/prompt-template.md`: Added work-ahead prevention block in Zone 3; hardened After ExternalScout section from advisory to MUST.
+- `files/planning/plan-session/node-library/research-deep/prompt-template.md`: Hardened After the Research section from advisory to MUST `next_step()` call.
+- `files/planning/plan-session/node-library/analyze-deep/prompt-template.md`: Added After ContextInsurgent Reports Back section with MUST `next_step()` rule.
+
 - `files/agents/headwrench.md`: Added zero-todo node rule, blocked-tool-call handling rule, and sequential-thinking batch prohibition to tighten small-model behavioral compliance; added explicit "After todos complete → call `next_step()` immediately" rule with negative examples covering post-task reasoning and user-facing proposals; corrected blocked-tool-call rule to name `[DAG BLOCKED]` error format and read the error message for next expected tool.
 - `files/planning/plan-session/prompts/session-overview.md`: Added Permitted Actions section (tool restrictions) and Todo section.
 - `files/planning/plan-session/prompts/scout.md`: Added same-turn parallel dispatch enforcement for Scouts 2 & 3, and Scout 1 acceptance gate; Scout 2 & 3 dispatch prompts now require verbatim embedding of both user task description and Scout 1's complete output (not paraphrase); added negative example for reference-without-embedding failure.

@@ -47,4 +47,4 @@ End with a complete plan ready to present:
 
 This complete plan is what you will present in `propose-plan`. You do not show it to the user here — this is your internal reasoning step.
 
-After completing your final thought, call `next_step()` to advance to propose-plan.
+After completing your final thought, MUST call `next_step()` to advance to propose-plan. Do NOT present the plan to the user here — that happens at the propose-plan node.

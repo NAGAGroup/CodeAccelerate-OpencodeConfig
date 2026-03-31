@@ -69,4 +69,4 @@ After validate_dag completes (successfully or with errors), dispatch @HeadWrench
 
 ## Completion
 
-When Step 3 reports "DAG is ready for activation," the plan.json and all prompt files are written, validated, and verified. The DAG is ready to proceed to the activation-gate node.
+When Step 3 reports "DAG is ready for activation," the plan.json and all prompt files are written, validated, and verified. MUST call `next_step()` immediately — do NOT ask the user anything or present the DAG here. The activation-gate node handles the next user interaction.
