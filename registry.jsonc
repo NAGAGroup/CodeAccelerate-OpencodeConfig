@@ -33,6 +33,7 @@
         "planning/plan-session/plan.json",
         "planning/plan-session/prompts/session-overview.md",
         "planning/plan-session/prompts/scout.md",
+        "planning/plan-session/prompts/scout-parallel.md",
         "planning/plan-session/prompts/sequential-thinking.md",
         "planning/plan-session/prompts/clarifying-questions.md",
         "planning/plan-session/prompts/research-gate.md",

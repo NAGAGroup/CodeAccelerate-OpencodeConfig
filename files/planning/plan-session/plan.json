@@ -8,62 +8,218 @@
     "next": {
       "id": "scout",
       "prompt": "scout.md",
-      "todo": ["task", "task", "task"],
+      "todo": ["task"],
       "next": {
-        "id": "git-context",
-        "prompt": "git-context.md",
-        "todo": ["task"],
+        "id": "scout-parallel",
+        "prompt": "scout-parallel.md",
+        "todo": ["task", "task"],
         "next": {
-          "id": "scout-node-library",
-          "prompt": "scout-node-library.md",
-          "todo": ["read"],
+          "id": "git-context",
+          "prompt": "git-context.md",
+          "todo": ["task"],
           "next": {
-            "id": "pre-research-thinking",
-            "prompt": "pre-research-thinking.md",
-            "todo": ["sequential-thinking_sequentialthinking"],
+            "id": "scout-node-library",
+            "prompt": "scout-node-library.md",
+            "todo": ["read"],
             "next": {
-              "id": "research-gate",
-              "prompt": "research-gate.md",
-              "todo": ["question", "question"],
-              "next": [
-                {
-                  "when": "Yes, research would help",
-                  "node": {
-                    "id": "research-brief",
-                    "prompt": "research-brief.md",
-                    "todo": ["task"],
-                    "next": {
-                      "id": "sequential-thinking",
+              "id": "pre-research-thinking",
+              "prompt": "pre-research-thinking.md",
+              "todo": ["sequential-thinking_sequentialthinking"],
+              "next": {
+                "id": "research-gate",
+                "prompt": "research-gate.md",
+                "todo": ["question", "question"],
+                "next": [
+                  {
+                    "when": "Yes, research would help",
+                    "node": {
+                      "id": "research-brief",
+                      "prompt": "research-brief.md",
+                      "todo": ["task"],
+                      "next": {
+                        "id": "sequential-thinking",
+                        "prompt": "sequential-thinking.md",
+                        "todo": ["sequential-thinking_sequentialthinking"],
+                        "next": {
+                          "id": "clarifying-questions",
+                          "prompt": "clarifying-questions.md",
+                          "todo": ["question"],
+                          "next": {
+                            "id": "propose-plan",
+                            "prompt": "propose-plan.md",
+                            "todo": ["question"],
+                            "next": [
+                              {
+                                "when": "Approve \u2014 write the DAG",
+                                "node": {
+                                  "id": "write-dag",
+                                  "prompt": "write-dag.md",
+                                  "todo": ["task", "validate_dag", "task"],
+                                  "next": {
+                                    "id": "present-dag",
+                                    "prompt": "present-dag.md",
+                                    "todo": ["present_dag_to_user"],
+                                    "next": {
+                                      "id": "activation-gate",
+                                      "prompt": "activation-gate.md",
+                                      "todo": ["question"],
+                                      "next": [
+                                        {
+                                          "when": "Yes, activate now",
+                                          "node": {
+                                            "id": "activate-now",
+                                            "prompt": "activate-now.md",
+                                            "todo": ["activate_plan"]
+                                          }
+                                        },
+                                        {
+                                          "when": "No, I'll activate later",
+                                          "node": {
+                                            "id": "plan-complete",
+                                            "prompt": "plan-complete.md",
+                                            "todo": []
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "when": "Rethink",
+                                "node": {
+                                  "id": "propose-plan-2",
+                                  "prompt": "propose-plan.md",
+                                  "todo": ["question"],
+                                  "next": [
+                                    {
+                                      "when": "Approve \u2014 write the DAG",
+                                      "node": {
+                                        "id": "write-dag-2",
+                                        "prompt": "write-dag.md",
+                                        "todo": [
+                                          "task",
+                                          "validate_dag",
+                                          "task"
+                                        ],
+                                        "next": {
+                                          "id": "present-dag-2",
+                                          "prompt": "present-dag.md",
+                                          "todo": ["present_dag_to_user"],
+                                          "next": {
+                                            "id": "activation-gate-2",
+                                            "prompt": "activation-gate.md",
+                                            "todo": ["question"],
+                                            "next": [
+                                              {
+                                                "when": "Yes, activate now",
+                                                "node": {
+                                                  "id": "activate-now-2",
+                                                  "prompt": "activate-now.md",
+                                                  "todo": ["activate_plan"]
+                                                }
+                                              },
+                                              {
+                                                "when": "No, I'll activate later",
+                                                "node": {
+                                                  "id": "plan-complete-2",
+                                                  "prompt": "plan-complete.md",
+                                                  "todo": []
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "when": "Rethink",
+                                      "node": {
+                                        "id": "propose-plan-3",
+                                        "prompt": "propose-plan.md",
+                                        "todo": ["question"],
+                                        "next": {
+                                          "id": "write-dag-3",
+                                          "prompt": "write-dag.md",
+                                          "todo": [
+                                            "task",
+                                            "validate_dag",
+                                            "task"
+                                          ],
+                                          "next": {
+                                            "id": "present-dag-3",
+                                            "prompt": "present-dag.md",
+                                            "todo": ["present_dag_to_user"],
+                                            "next": {
+                                              "id": "activation-gate-3",
+                                              "prompt": "activation-gate.md",
+                                              "todo": ["question"],
+                                              "next": [
+                                                {
+                                                  "when": "Yes, activate now",
+                                                  "node": {
+                                                    "id": "activate-now-3",
+                                                    "prompt": "activate-now.md",
+                                                    "todo": ["activate_plan"]
+                                                  }
+                                                },
+                                                {
+                                                  "when": "No, I'll activate later",
+                                                  "node": {
+                                                    "id": "plan-complete-3",
+                                                    "prompt": "plan-complete.md",
+                                                    "todo": []
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "when": "No, skip research",
+                    "node": {
+                      "id": "sequential-thinking-2",
                       "prompt": "sequential-thinking.md",
                       "todo": ["sequential-thinking_sequentialthinking"],
                       "next": {
-                        "id": "clarifying-questions",
+                        "id": "clarifying-questions-2",
                         "prompt": "clarifying-questions.md",
                         "todo": ["question"],
                         "next": {
-                          "id": "propose-plan",
+                          "id": "propose-plan-5",
                           "prompt": "propose-plan.md",
                           "todo": ["question"],
                           "next": [
                             {
                               "when": "Approve \u2014 write the DAG",
                               "node": {
-                                "id": "write-dag",
+                                "id": "write-dag-5",
                                 "prompt": "write-dag.md",
                                 "todo": ["task", "validate_dag", "task"],
                                 "next": {
-                                  "id": "present-dag",
+                                  "id": "present-dag-5",
                                   "prompt": "present-dag.md",
                                   "todo": ["present_dag_to_user"],
                                   "next": {
-                                    "id": "activation-gate",
+                                    "id": "activation-gate-5",
                                     "prompt": "activation-gate.md",
                                     "todo": ["question"],
                                     "next": [
                                       {
                                         "when": "Yes, activate now",
                                         "node": {
-                                          "id": "activate-now",
+                                          "id": "activate-now-5",
                                           "prompt": "activate-now.md",
                                           "todo": ["activate_plan"]
                                         }
@@ -71,7 +227,7 @@
                                       {
                                         "when": "No, I'll activate later",
                                         "node": {
-                                          "id": "plan-complete",
+                                          "id": "plan-complete-5",
                                           "prompt": "plan-complete.md",
                                           "todo": []
                                         }
@@ -84,92 +240,42 @@
                             {
                               "when": "Rethink",
                               "node": {
-                                "id": "propose-plan-2",
+                                "id": "propose-plan-6",
                                 "prompt": "propose-plan.md",
                                 "todo": ["question"],
-                                "next": [
-                                  {
-                                    "when": "Approve \u2014 write the DAG",
-                                    "node": {
-                                      "id": "write-dag-2",
-                                      "prompt": "write-dag.md",
-                                      "todo": ["task", "validate_dag", "task"],
-                                      "next": {
-                                        "id": "present-dag-2",
-                                        "prompt": "present-dag.md",
-                                        "todo": ["present_dag_to_user"],
-                                        "next": {
-                                          "id": "activation-gate-2",
-                                          "prompt": "activation-gate.md",
-                                          "todo": ["question"],
-                                          "next": [
-                                            {
-                                              "when": "Yes, activate now",
-                                              "node": {
-                                                "id": "activate-now-2",
-                                                "prompt": "activate-now.md",
-                                                "todo": ["activate_plan"]
-                                              }
-                                            },
-                                            {
-                                              "when": "No, I'll activate later",
-                                              "node": {
-                                                "id": "plan-complete-2",
-                                                "prompt": "plan-complete.md",
-                                                "todo": []
-                                              }
-                                            }
-                                          ]
-                                        }
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "when": "Rethink",
-                                    "node": {
-                                      "id": "propose-plan-3",
-                                      "prompt": "propose-plan.md",
+                                "next": {
+                                  "id": "write-dag-6",
+                                  "prompt": "write-dag.md",
+                                  "todo": ["task", "validate_dag", "task"],
+                                  "next": {
+                                    "id": "present-dag-6",
+                                    "prompt": "present-dag.md",
+                                    "todo": ["present_dag_to_user"],
+                                    "next": {
+                                      "id": "activation-gate-6",
+                                      "prompt": "activation-gate.md",
                                       "todo": ["question"],
-                                      "next": {
-                                        "id": "write-dag-3",
-                                        "prompt": "write-dag.md",
-                                        "todo": [
-                                          "task",
-                                          "validate_dag",
-                                          "task"
-                                        ],
-                                        "next": {
-                                          "id": "present-dag-3",
-                                          "prompt": "present-dag.md",
-                                          "todo": ["present_dag_to_user"],
-                                          "next": {
-                                            "id": "activation-gate-3",
-                                            "prompt": "activation-gate.md",
-                                            "todo": ["question"],
-                                            "next": [
-                                              {
-                                                "when": "Yes, activate now",
-                                                "node": {
-                                                  "id": "activate-now-3",
-                                                  "prompt": "activate-now.md",
-                                                  "todo": ["activate_plan"]
-                                                }
-                                              },
-                                              {
-                                                "when": "No, I'll activate later",
-                                                "node": {
-                                                  "id": "plan-complete-3",
-                                                  "prompt": "plan-complete.md",
-                                                  "todo": []
-                                                }
-                                              }
-                                            ]
+                                      "next": [
+                                        {
+                                          "when": "Yes, activate now",
+                                          "node": {
+                                            "id": "activate-now-6",
+                                            "prompt": "activate-now.md",
+                                            "todo": ["activate_plan"]
+                                          }
+                                        },
+                                        {
+                                          "when": "No, I'll activate later",
+                                          "node": {
+                                            "id": "plan-complete-6",
+                                            "prompt": "plan-complete.md",
+                                            "todo": []
                                           }
                                         }
-                                      }
+                                      ]
                                     }
                                   }
-                                ]
+                                }
                               }
                             }
                           ]
@@ -177,105 +283,8 @@
                       }
                     }
                   }
-                },
-                {
-                  "when": "No, skip research",
-                  "node": {
-                    "id": "sequential-thinking-2",
-                    "prompt": "sequential-thinking.md",
-                    "todo": ["sequential-thinking_sequentialthinking"],
-                    "next": {
-                      "id": "clarifying-questions-2",
-                      "prompt": "clarifying-questions.md",
-                      "todo": ["question"],
-                      "next": {
-                        "id": "propose-plan-5",
-                        "prompt": "propose-plan.md",
-                        "todo": ["question"],
-                        "next": [
-                          {
-                            "when": "Approve \u2014 write the DAG",
-                            "node": {
-                              "id": "write-dag-5",
-                              "prompt": "write-dag.md",
-                              "todo": ["task", "validate_dag", "task"],
-                              "next": {
-                                "id": "present-dag-5",
-                                "prompt": "present-dag.md",
-                                "todo": ["present_dag_to_user"],
-                                "next": {
-                                  "id": "activation-gate-5",
-                                  "prompt": "activation-gate.md",
-                                  "todo": ["question"],
-                                  "next": [
-                                    {
-                                      "when": "Yes, activate now",
-                                      "node": {
-                                        "id": "activate-now-5",
-                                        "prompt": "activate-now.md",
-                                        "todo": ["activate_plan"]
-                                      }
-                                    },
-                                    {
-                                      "when": "No, I'll activate later",
-                                      "node": {
-                                        "id": "plan-complete-5",
-                                        "prompt": "plan-complete.md",
-                                        "todo": []
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
-                            }
-                          },
-                          {
-                            "when": "Rethink",
-                            "node": {
-                              "id": "propose-plan-6",
-                              "prompt": "propose-plan.md",
-                              "todo": ["question"],
-                              "next": {
-                                "id": "write-dag-6",
-                                "prompt": "write-dag.md",
-                                "todo": ["task", "validate_dag", "task"],
-                                "next": {
-                                  "id": "present-dag-6",
-                                  "prompt": "present-dag.md",
-                                  "todo": ["present_dag_to_user"],
-                                  "next": {
-                                    "id": "activation-gate-6",
-                                    "prompt": "activation-gate.md",
-                                    "todo": ["question"],
-                                    "next": [
-                                      {
-                                        "when": "Yes, activate now",
-                                        "node": {
-                                          "id": "activate-now-6",
-                                          "prompt": "activate-now.md",
-                                          "todo": ["activate_plan"]
-                                        }
-                                      },
-                                      {
-                                        "when": "No, I'll activate later",
-                                        "node": {
-                                          "id": "plan-complete-6",
-                                          "prompt": "plan-complete.md",
-                                          "todo": []
-                                        }
-                                      }
-                                    ]
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  }
-                }
-              ]
+                ]
+              }
             }
           }
         }
@@ -283,4 +292,3 @@
     }
   }
 }
-
