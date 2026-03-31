@@ -17,6 +17,20 @@ Write the full plan as prose in your response text (do NOT embed this inside the
    The `Todo` column must contain the exact todo array for each node (e.g., `["task","task","task"]` for parallel scouts, `["question"]` for a decision gate). These exact values will be used when building the DAG.
 4. **Estimated dispatches** — Count the number of `task` entries across all nodes' todo arrays (each `task` = one agent dispatch). Do NOT count `question`, `bash`, `validate_dag`, `sequential-thinking_sequentialthinking`, or `compress` entries — those are HW's own actions, not dispatches.
 
+## Sequential Thinking Guidelines
+
+Each call to `sequential-thinking_sequentialthinking` MUST contain exactly one question or concept. Do NOT batch multiple questions into a single tool call. Do NOT output raw JSON thought content outside of tool calls. Set `thoughtNumber` and `totalThoughts` accurately on every call.
+
+Minimal example of a single tool call:
+```
+sequential-thinking_sequentialthinking({
+  thought: "One specific question or concept to reason through...",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
 ## Todo
 
 1. `question` — Call the `question` tool with a single-sentence question: "Does this plan look right?" Use option label `"Approve — write the DAG"` (description: "Write plan.json and prompt files; activate separately with /activate-plan") and `"Rethink"` (description: "Adjust the plan before writing").

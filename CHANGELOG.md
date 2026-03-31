@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `files/agents/headwrench.md`: Added zero-todo node rule, blocked-tool-call handling rule, and sequential-thinking batch prohibition to tighten small-model behavioral compliance.
+- `files/planning/plan-session/prompts/session-overview.md`: Added Permitted Actions section (tool restrictions) and Todo section.
+- `files/planning/plan-session/prompts/scout.md`: Added same-turn parallel dispatch enforcement for Scouts 2 & 3, and Scout 1 acceptance gate.
+- `files/planning/plan-session/prompts/pre-research-thinking.md`: Added CRITICAL tool call required warning and explicit numbered execution sequence with example.
+- `files/planning/plan-session/prompts/scout-node-library.md`: Strengthened advisory language to explicit prohibition, added Todo section.
+- `files/planning/plan-session/prompts/propose-plan.md`: Added one-concept-per-thought rule and sequential-thinking example.
 - Refactor `planning-enforcement.ts` plugin into focused TypeScript modules
 - `session-overview.md` (shipped prompt) and `node-library/session-overview/prompt-template.md` now include an explicit "STOP — Do not work ahead" block that prohibits scouting, file reads, and task execution before the DAG sequences the next step; the block is fixed verbatim in the template so every generated DAG inherits the constraint.
 - `node-library/session-overview/README.md` updated to document that the anti-work-ahead block is fixed text that must appear verbatim in every generated prompt.

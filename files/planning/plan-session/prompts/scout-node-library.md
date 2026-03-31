@@ -8,4 +8,9 @@ Read the node library CATALOGUE.md directly into your context window. This is pu
 
 ## STOP — Do not act on what you just read
 
-The CATALOGUE is context for later planning nodes — not a trigger to plan now. **Do not propose a plan, do not outline steps, do not present anything to the user.** Your only action after the `read` call is to call `next_step()` immediately.
+The CATALOGUE is context for later planning nodes — not a trigger to plan now. You MUST NOT perform any internal plan reasoning, design DAG nodes, or make planning decisions in this node. Do NOT call `question`, `task`, or any planning tool. Your ONLY actions are: read `files/planning/plan-session/node-library/CATALOGUE.md` and call `next_step()`.
+
+## Todo
+
+- [ ] Read `files/planning/plan-session/node-library/CATALOGUE.md`
+- [ ] Call `next_step()`

@@ -20,9 +20,16 @@ Scout 1 has **zero knowledge of the user's task**. Its only job is to discover w
 ✗ Bad: "Find files related to the task." — Scout 1 gets no task context and must not filter by it.
 ✗ Bad: Using `glob` with `**/*` or recursively returning nested files — Scout 1's output must be depth-1-only.
 
+Before dispatching Scouts 2 & 3, verify Scout 1's result: (a) it is not truncated mid-list; (b) it does not contain unexpectedly nested paths. If either condition fails, re-dispatch Scout 1 with stricter depth constraints before continuing.
+
 **After Scout 1 returns:** Use the file list and summaries to write task-targeted prompts for Scouts 2 and 3.
 
 ## Phase 2: Task-Targeted Scouts (Scouts 2 + 3, PARALLEL, BLOCKING)
+
+**You MUST dispatch Scouts 2 and 3 in the SAME response turn. Do NOT dispatch them in separate turns.**
+
+❌ Wrong: Dispatch Scout 2. Wait for result. Then dispatch Scout 3.
+✓ Correct: Include both Scout 2 and Scout 3 task tool calls in a single response.
 
 Both scouts receive the user's task description and Scout 1's file map. Write both prompts using that context, then **emit both `task` calls in a single response turn**.
 
