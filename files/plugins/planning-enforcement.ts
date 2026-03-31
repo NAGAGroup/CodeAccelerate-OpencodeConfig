@@ -921,8 +921,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const diagramText = `## Session Plan: ${dag.id}\n\n**Plan Name:** ${plan_name}\n\n${ascii}`;
           
           // Inject the diagram into the conversation as a system message.
-          // Fire and forget (don't await) so it appears as a separate message.
-          client.session.prompt({
+          // Must await so the prompt is written before the tool returns.
+          await client.session.prompt({
             path: { id: toolCtx.sessionID },
             body: {
               noReply: true,

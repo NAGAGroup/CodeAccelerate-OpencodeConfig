@@ -110599,7 +110599,7 @@ ${ascii}`;
 **Plan Name:** ${plan_name}
 
 ${ascii}`;
-            client.session.prompt({
+            await client.session.prompt({
               path: { id: toolCtx.sessionID },
               body: {
                 noReply: true,

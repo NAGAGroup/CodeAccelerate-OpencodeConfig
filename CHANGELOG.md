@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `init_dag` tool added to planning-enforcement plugin — creates a new project DAG's `plan.json` and session plan directory structure with the entry node as the tree root; must be called before `add_node` when starting a new plan.
 - DAG editing tools (`show_dag`, `add_node`, `delete_node`, `modify_node`) added to planning-enforcement plugin — tools guarantee valid DAGs on every call, accept session-plan name or raw file path, and return plain-text ASCII mermaid diagrams using `beautiful-mermaid` (ANSI color disabled via `colorMode: 'none'`).
 
+### Fixed
+
+- `present_dag_to_user` tool now correctly awaits `client.session.prompt()` — previously fired without `await`, causing the injected message to race and never appear in the TUI.
+
 ### Changed
 
 - **`write-dag.md` subagent instructions**: replaced hardcoded `files/planning/plan-session/node-library/` and `files/planning/reference/dag-design-guide.md` paths (which only exist in the CodeAccelerate source repo) with `{{SESSION_PATH}}/node-library/` — substituted at activation time to the exact session directory, giving the write-dag subagent the precise node library path with no glob or directory listing needed; added `init_dag` as the required first call before `add_node` when building a new DAG; added explicit instruction that `target` for all DAG tool calls is the plan name, never a file or directory path.
