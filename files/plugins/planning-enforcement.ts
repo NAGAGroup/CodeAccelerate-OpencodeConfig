@@ -895,6 +895,52 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       },
     }),
 
+    present_dag_to_user: tool({
+      description: "Display an ASCII Mermaid diagram of a session plan DAG to the user. Injects the diagram directly into the conversation as a system message that the agent ignores.",
+      args: {
+        plan_name: tool.schema.string().describe(
+          "Name of the session plan (directory under .opencode/session-plans/)."
+        ),
+      },
+      async execute({ plan_name }, context) {
+        try {
+          const worktree = resolveWorktree(context);
+          const planPath = path.join(
+            worktree,
+            ".opencode",
+            "session-plans",
+            plan_name,
+            "plan.json"
+          );
+          const dag = readDag(planPath);
+          validateDagTree(dag);
+          const mermaid = dagToMermaid(dag);
+          const ascii = await renderMermaidASCII(mermaid, { colorMode: 'none' });
+          const diagramText = `## Session Plan: ${dag.id}\n\n**Plan Name:** ${plan_name}\n\n${ascii}`;
+          
+          // Inject the diagram into the conversation as a system message
+          // that the user sees but the agent ignores and doesn't respond to
+          await context.client.session.prompt({
+            path: { id: context.sessionID },
+            body: {
+              noReply: true,        // Don't trigger agent response
+              parts: [{
+                type: "text",
+                text: diagramText,
+                synthetic: true,    // Mark as system-generated
+                ignored: true       // Agent skips processing this
+              }]
+            }
+          });
+          
+          return "DAG diagram displayed to user.";
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          return `Error in present_dag_to_user: ${msg}`;
+        }
+      },
+    }),
+
     init_dag: tool({
       description: "Initialize a new project DAG plan.json with a single entry node. Call this first before using add_node. Creates the session plan directory and plan.json with the entry node as the root.",
       args: {
@@ -975,7 +1021,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const worktree = resolveWorktree(context);
           const planPath = resolveDagPath(target, worktree);
           const dag = readDag(planPath);
-          validateDagTree(dag);
+          validateDagTreeIds(dag);
 
           const parent = findNode(dag, parentId);
           if (!parent) {
@@ -1028,12 +1074,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           "ID of the node to delete. The node and its entire subtree are removed."
         ),
       },
-      async execute({ target, nodeId }, context) {
+       async execute({ target, nodeId }, context) {
         try {
           const worktree = resolveWorktree(context);
           const planPath = resolveDagPath(target, worktree);
           const dag = readDag(planPath);
-          validateDagTree(dag);
+          validateDagTreeIds(dag);
 
           const beforeAscii = await renderMermaidASCII(dagToMermaid(dag), { colorMode: 'none' });
 
@@ -1118,7 +1164,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const worktree = resolveWorktree(context);
           const planPath = resolveDagPath(target, worktree);
           const dag = readDag(planPath);
-          validateDagTree(dag);
+          validateDagTreeIds(dag);
 
           const node = findNode(dag, nodeId);
           if (!node) {
