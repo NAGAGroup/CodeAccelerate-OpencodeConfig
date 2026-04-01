@@ -18,7 +18,7 @@ Run these git commands and return their output verbatim:
 - git status
 - git diff --stat HEAD~3..HEAD
 
-Return raw command output only. No summarizing, no interpretation, no commentary.
+Return the raw output of all three commands in your response. No summarizing, no interpretation, no commentary.
 
-Outcome: PASS — git context collected.
+**Outcome:** PASS — include full command output above this line.
 ```
