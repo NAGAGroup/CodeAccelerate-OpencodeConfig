@@ -9,9 +9,14 @@ Call `task` to dispatch @ContextScout to build a zero-assumption project map of 
 > (3) After task returns, call `next_step()`.
 
 ```
-Read the repository structure starting from the root. Use `read .` to get the top-level directory listing, then read key files (CMakeLists.txt, package.json, pixi.toml, Cargo.toml, pyproject.toml, Makefile, or any build/manifest file present). Identify entry points, build configs, and directory purposes.
+Read the repository structure starting from the root:
+1. Call `read .` to get the top-level directory listing — return this verbatim.
+2. Read 3–5 core files: prioritize build/manifest files (CMakeLists.txt, package.json, pixi.toml, Cargo.toml, pyproject.toml, Makefile) and any top-level config files present.
+3. From those reads, write a short summary (3–6 bullet points) covering: build system, language/runtime, key directories and their purpose, and entry points.
 
 Do NOT read .opencode/ directory.
 
-Return a flat bulleted list of file paths verbatim. No interpretation, no section headers, no prose.
+Return:
+- The verbatim top-level directory listing from `read .`
+- A 3–6 bullet summary of what the project is and how it is structured
 ```
