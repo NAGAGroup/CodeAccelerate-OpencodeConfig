@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-- `files/profiles/ollama/opencode.jsonc` — added `think: false` via `extraBody` to disable Qwen3 thinking mode; prevents ~60% tool-execution failure rate caused by reasoning models satisfying tool calls internally without emitting them; non-thinking-capable models silently ignore this setting
+- `files/profiles/ollama/opencode.jsonc` — added `reasoningEffort: "none"` to disable Qwen3 thinking mode on Ollama's OpenAI-compatible `/v1/chat/completions` endpoint (the native `think: false` field is silently ignored on `/v1`); prevents ~60% tool-execution failure rate caused by reasoning models satisfying tool calls internally without emitting them; non-thinking-capable models silently ignore this setting
 - `README.md` — updated local model guidance to reflect Qwen3 14B as minimum-supported target and document the thinking-mode fix
 - `files/planning/plan-session/prompts/sequential-thinking.md` — restructured to place `sequential-thinking_sequentialthinking` tool call first; reduced reasoning framework from 8 to 6 items; removed stale node reference; converted STOP opening to positive framing
 - `files/planning/plan-session/prompts/pre-research-thinking.md` — integrated CRITICAL tool call constraint inline with Todo; moved Goal section after core instructions; made `sequential-thinking_sequentialthinking` Todo item most prominent

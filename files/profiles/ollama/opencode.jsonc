@@ -15,13 +15,14 @@
         "opencode-model": {
           "name": "Default Ollama",
           // Disable thinking mode for Qwen3 and other reasoning models.
-          // think: false prevents the ~60% tool-execution failure rate caused by
-          // the model reasoning about tool calls internally without emitting them.
+          // reasoning_effort: "none" maps to think=false on Ollama's OpenAI-compatible
+          // /v1/chat/completions endpoint (the native think:false field is silently ignored
+          // on /v1 — only reasoning_effort works there).
+          // Prevents the ~60% tool-execution failure rate caused by reasoning models
+          // satisfying tool calls internally without emitting them.
           // Non-thinking-capable models (Llama, Mistral, Phi, etc.) silently ignore this.
           "options": {
-            "extraBody": {
-              "think": false
-            }
+            "reasoningEffort": "none"
           }
         }
       }
