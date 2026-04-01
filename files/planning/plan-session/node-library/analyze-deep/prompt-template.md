@@ -28,7 +28,7 @@ One specific question that requires evidence (file paths, line numbers, code str
 
 **{{FILE_LIST}}**
 Exact repo-relative file paths, comma-separated.
-✓ Good: `src/kernels/matmul.cpp, src/pipeline/executor.cpp, include/kernels/common.hpp`
+✓ Good: `src/auth/login.py, src/auth/session.py, include/auth/types.h`
 ✗ Bad: "all kernel files" or "the compute module"
 
 ## Zone 3 — Fixed constraints

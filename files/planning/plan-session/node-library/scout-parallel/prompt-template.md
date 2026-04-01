@@ -40,18 +40,18 @@ Specific discovery question for the first scout.
 
 **{{SCOUT_1_FILES}}**
 Glob patterns for Scout 1's file search.
-✓ Good: `glob("src/api/**/*.ts")`
+✓ Good: `glob("src/api/**/*")`
 ✗ Bad: `glob("src/api/index.ts,src/api/routes.ts")`
 
 **{{SCOUT_2_QUESTION}}**
 Specific discovery question for the second scout.
-✓ Good: "What naming conventions do kernel functions follow in src/kernels/?"
+✓ Good: "What naming conventions do functions follow in src/core/?"
 ✗ Bad: "Find the patterns"
 
 **{{SCOUT_2_FILES}}**
 Glob patterns for Scout 2's file search.
-✓ Good: `glob("src/kernels/**/*.cpp")`
-✗ Bad: "the kernel directory"
+✓ Good: `glob("src/core/**/*")`
+✗ Bad: "the core directory"
 
 ## Zone 3 — Fixed constraints
 

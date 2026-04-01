@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Replaced all language/framework/domain-specific examples in node-library prompt-templates with stack-agnostic equivalents; affected files: `analyze-deep/prompt-template.md`, `compression-node/prompt-template.md`, `generic/prompt-template.md`, `parallel-tasks/prompt-template.md`, `research-basic/prompt-template.md`, `scout-parallel/prompt-template.md`, `sequential-thinking/prompt-template.md`, `verification-check/prompt-template.md` (replaced C++/TypeScript/npm/bun references with generic Python/Go/make examples that work across any stack)
 - All 14 planning session prompts rewritten from first principles for non-thinking Qwen3-14B compliance: action-first openers (R1), no numbered prose steps (R2), `next_step()` last line only (R3), no H2/H3 section headers (R4), dispatch blockquote immediately after todo (R5), output constraint last in every blockquote (R6), ≤6 items per list (R7), glob examples in all scout dispatches (R8), routing by exact node IDs (R9), scope restrictions in blockquote (R10), no "After X returns" sections (R12), no `task_id` in blockquotes (R13), plain reasoning instructions for sequential-thinking nodes (R16/R16b)
 - All 14 node-library prompt-templates rewritten from first principles applying the same 16-rule set; reduced combined line count by ~1000 lines; two-audience Zone 1/2/3 structure preserved with `{{PLACEHOLDER}}` + adjacent `✓`/`✗` examples (R14)
 

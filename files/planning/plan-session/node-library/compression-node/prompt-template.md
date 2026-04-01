@@ -20,7 +20,7 @@ Specific phase that just ended, not "everything so far".
 
 {{PRESERVE}}
 Exact file paths, decisions with outcomes, and constraints that must survive.
-✓ Good: "Matmul kernel at `src/kernels/matmul.cpp`, dispatched via `src/pipeline/executor.cpp:87`. Constraint: public API in `include/kernels/matmul.hpp` must not change."
+✓ Good: "Auth module at `src/auth/login.py`, called via `src/api/routes.py:87`. Constraint: public interface in `include/auth/types.h` must not change."
 ✗ Bad: "important findings" or "key results"
 
 {{DISCARD}}

@@ -26,7 +26,7 @@ Outcome: PASS or FAIL + exact command output.
 
 **{{COMMANDS}}**
 Exact shell commands to run, sequenced as required.
-✓ Good: `bun run build && bun test`
+✓ Good: `make build && make test`
 ✗ Bad: "run the build"
 
 **{{WORKDIR}}**

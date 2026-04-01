@@ -29,7 +29,7 @@ Exact agent name from the registry.
 
 **{{TASK_1_PROMPT}}**
 The complete prompt for Task 1 — write it as a self-contained instruction block with specific file list, specific goal, and explicit return format.
-✓ Good: "Edit src/kernels/matmul.cpp and add `computeL2Norm()` function. Declare it in include/kernels/matmul.hpp. Match error handling in src/kernels/reduction.cpp. Return DONE when project compiles without errors."
+✓ Good: "Edit src/auth/login.py and add `validate_token()` function. Register it in src/api/routes.py. Match error handling in src/auth/session.py. Return DONE when all tests pass."
 ✗ Bad: "Analyze the auth system"
 
 **{{TASK_2_AGENT}}**
@@ -39,7 +39,7 @@ Exact agent name from the registry.
 
 **{{TASK_2_PROMPT}}**
 The complete prompt for Task 2 — write it as a self-contained instruction block with specific file list, specific goal, and explicit return format.
-✓ Good: "Update documentation in docs/api.md to describe the new L2Norm function. Include signature, parameters, return type, and one example. Return DONE when file is saved."
+✓ Good: "Update docs/api.md to document the new `validate_token()` function. Include signature, parameters, return type, and one example. Return DONE when file is saved."
 ✗ Bad: "Fix the docs"
 
 ## Zone 3 — Fixed constraints

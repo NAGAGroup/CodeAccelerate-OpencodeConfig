@@ -15,12 +15,12 @@ Call `sequential-thinking_sequentialthinking` repeatedly until your conclusion i
 
 {{REASONING_TOPIC}}
 Specific decision question with a clear yes/no, either/or, or ranked-choice answer.
-✓ "Should we refactor the reduction kernel before adding work-group tiling, or add tiling first?"
-✗ "How should we approach the compute pipeline?"
+✓ "Should we add input validation to the existing handler or extract a new validation layer first?"
+✗ "How should we approach the auth system?"
 
 {{REASONING_CONTEXT}}
 Specific information available from prior analysis — name exact items, not themes.
-✓ "Scout found matmul.cpp has 3 tightly coupled dispatch paths (lines 12–45, 67–120, 140–180); tiling pattern in src/kernels/reduction.cpp (lines 200–250)"
+✓ "Scout found auth/login.py has 3 tightly coupled validation paths (lines 12–45, 67–120, 140–180); token logic in src/auth/session.py (lines 200–250)"
 ✗ "Various context from prior nodes"
 
 **Zone 3 — Fixed constraints:**

@@ -23,7 +23,7 @@ Return a flat bulleted list of findings with source citations. No prose narrativ
 
 **{{RESEARCH_TOPIC}}**
 Specific question or API lookup target.
-✓ Good: "What is the exact syntax for configuring TLS client certificates in the Python requests library?"
+✓ Good: "What is the exact API for configuring TLS client certificates in the Go net/http package?"
 ✗ Bad: "Python HTTP libraries"
 
 ## Zone 3 — Fixed constraints

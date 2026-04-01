@@ -32,7 +32,7 @@ What this node must NOT touch.
 
 {{RATIONALE}}
 Why no standard template fits.
-✓ Good: "Needs bash check, confirmation question, then another bash — no standard template chains bash-question-bash"
+✓ Good: "Needs bash build check, confirmation question, then another bash deploy — no standard template chains bash-question-bash"
 ✗ Bad: "custom behavior required"
 
 {{STEP_INSTRUCTIONS}}
@@ -42,14 +42,14 @@ For each todo item, describe the action and success outcome.
 **Step [N] — [tool name]:** [specific action] — success when [observable outcome].
 
 **Examples:**
-- **Step 1 — bash:** Run `npm run test` — success when exit code is 0
+- **Step 1 — bash:** Run `make test` — success when exit code is 0
 - **Step 2 — task:** Dispatch @JuniorDev to fix errors (see blockquote below) — success when return specifies which files changed
 - **Step 3 — question:** Ask "Ready to deploy?" — success when user selects yes or no
 
 **If dispatching agents (task items), include a dispatch blockquote for each:**
 
 > **Dispatch [agent name]:** When executing this step, dispatch the named agent with:
-> (1) Target files: [exact paths or glob patterns — e.g., `src/kernels/*.cpp`, not "the kernel module"]
+> (1) Target files: [exact paths or glob patterns — e.g., `src/auth/login.py`, not "the auth module"]
 > (2) Goal: [specific change or question — not a vague theme]
 > (3) Return format: [expected output structure — e.g., "a file-by-file list of changes with line numbers"]
 > (4) Scope: [files the agent must NOT touch — e.g., "Do NOT modify .opencode/ or test files"]
