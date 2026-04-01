@@ -6,62 +6,51 @@ Call `task` to dispatch @ContextScout to answer a fixed set of project orientati
 
 **Todo:** `["task"]`
 
-> (1) The code block below is the exact string to pass as the `prompt` argument in the `task` tool call. The subagent receives this string character-for-character — any reformatting, paraphrasing, or newline collapsing produces a broken prompt the subagent cannot follow. Copy it exactly.
+> (1) Call `task` with these exact fields:
+> - `subagent_type`: `"context-scout"`
+> - `description`: `"Project Orientation Scout"`
+> - `prompt`: the exact multi-line content of the code block below — character-for-character, no paraphrasing, no newline collapsing
 >
-> ✗ Bad task call: prompt is paraphrased, collapsed to one line, or has `\n` literals instead of real newlines — subagent loses all step structure
-> ✓ Good task call: prompt argument is the exact multi-line content of the code block below, unchanged
+> ✗ Bad task call: `subagent_type` omitted or wrong, prompt paraphrased, collapsed to one line, or has `\n` literals instead of real newlines
+> ✓ Good task call: `task({ subagent_type: "context-scout", description: "Project Orientation Scout", prompt: "<exact code block content>" })`
 >
 > Dispatch @ContextScout with that prompt:
 
 ```
 You are a subagent building a project orientation summary. Do not ask the user questions. Do NOT read .opencode/, .git/, or node_modules/.
 
-First, call `todowrite` to create a todo list for all 7 steps below — mark each as pending. This keeps your work queue visible as you proceed. Complete each todo in order and mark it done when finished.
+**Do now:** call `read` on `.` (the project root) to get a flat directory listing.
 
-✗ Bad todowrite: skips steps, collapses multiple steps into one, or omits the todowrite call entirely
-✓ Good todowrite: one todo per step, all 7 steps listed, all marked pending
+Then use `sequential-thinking_sequentialthinking` to reason through your search plan and execute the 3 steps below. Call it once per thought — do not batch. Work through these questions before touching any more files:
 
-Complete all 7 steps below in order. The step (2), (4), and (6) write-outs are required mid-step checkpoints — write them, then continue to the next step. Do not write your final answers (the 8 questions) until all 7 steps are complete.
+Thought 1 — What signals answer each question?
+For each of the 8 output questions, name the specific file names, config keys, import patterns, or directory names that would confirm the answer. Be concrete — name actual artifacts (e.g. "CMakeLists.txt confirms Q4 build system", ".github/workflows/ confirms Q7 CI").
 
-(1) Use `read` on `.` (the project root) to get a flat directory listing.
-(2) From the step (1) listing, identify directories AND files to exclude before reading or globbing anything. These are generated/build output dirs, package cache dirs, lock files, and binary files — you will not read or glob them in any later step.
+Thought 2 — What to exclude, and what tools to use?
+From the `read .` listing:
+- Exclude: name every dir and file that is build output, a package cache, a lock file, or a binary. Do NOT exclude source dirs (libs/, src/, packages/, vendor/).
+- Tools: for step (1), you will use `read` for each top-level file. For step (2), name which dirs you will `glob` and which patterns you will `grep` based on thought 1 signals.
 
-✗ Do NOT exclude: `libs/`, `src/`, `packages/`, `vendor/` — these are source dirs owned by the project; read and glob them normally
-✓ Exclude dirs: `<build-output-dir>/`, `<package-cache-dir>/` — generated or fetched content, not project source
-✓ Exclude files: `<lock-file>`, `<binary-file>` — machine-generated or non-text
+Thought 3 — Any unfamiliar entries?
+From the `read .` listing, are there any dirs or files you don't recognize that might be relevant to any of the 8 questions? Name them and state whether you will read/glob them or skip them and why.
 
-Write your exclusion list before continuing to step (3):
-- Excluded dirs: <list every dir you are excluding>
-- Excluded files: <list every file you are excluding>
+✓ Call sequence:
+`sequential-thinking_sequentialthinking({ thought: "Signals per question:\nQ1 language/runtime — <file that declares language version, e.g. pixi.toml, package.json, Cargo.toml>.\nQ2 directory structure — read from root listing directly.\nQ3 entry points — <file pattern, e.g. main.cpp, index.ts, src/main.py>.\nQ4 build system — <config file, e.g. CMakeLists.txt, Makefile, webpack.config.js>.\nQ5 package manager — <manifest file, e.g. pixi.toml, package.json, pyproject.toml>.\nQ6 test framework — <test dir pattern or import, e.g. tests/, spec/, #include <catch2/catch.hpp>>.\nQ7 CI/CD — <config path, e.g. .github/workflows/, .gitlab-ci.yml>.\nQ8 deployment — <config file, e.g. Dockerfile, release scripts>.", thoughtNumber: 1, totalThoughts: 3, nextThoughtNeeded: true })`
+`sequential-thinking_sequentialthinking({ thought: "Exclude: <lock-file> (lock file), <build-output-dir>/ (build output), <cache-dir>/ (package cache). Do NOT exclude: <source-dir>/ (project source).\nStep (1): read each top-level file not excluded.\nStep (2): glob <core-dir-a>/**, glob <core-dir-b>/**. Grep for <signal-pattern-a> in <dir>, <signal-pattern-b> in <dir>.", thoughtNumber: 2, totalThoughts: 3, nextThoughtNeeded: true })`
+`sequential-thinking_sequentialthinking({ thought: "Unfamiliar entries: <unfamiliar-dir>/ — <why it might or might not be relevant; will read/glob or skip and why>. No other unrecognized entries.", thoughtNumber: 3, totalThoughts: 3, nextThoughtNeeded: false })`
 
-(3) For each top-level FILE in the step (1) listing: first check whether it appears on your step (2) exclusion list — if it does, skip it; if it does not, read it. Do not read directories here; directories are handled in steps (4) and (5). Do not skip a non-excluded file because you assume you know what it contains.
+✗ `sequential-thinking_sequentialthinking({ thought: "I'll read the top-level files and then glob the directories to find relevant configs.", thoughtNumber: 1, totalThoughts: 3, nextThoughtNeeded: true })` — no per-question signal mapping, no exclusion decisions, no tool plan; could have been written without reading the root listing
 
-✗ Reading `<lock-file>` — it is on the step (2) exclusion list; skip it
-✓ Skip `<lock-file>` (on exclusion list). Read `<manifest>`, `<config-file>`, `<readme>`.
-(4) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Do not include any directory already excluded in step (2).
+Now execute the 3 steps using the plan from your thinking:
 
-✓ Core: `<source-dir>/`, `<test-dir>/`, `<ci-dir>/`, `<config-dir>/` — structural, serve the project directly
-✗ Not core: already in the step (2) exclude list
+(1) For each top-level FILE in the root listing: check whether it is on your thought 2 exclusion list — if it is, skip it; if it is not, read it. Do not read directories here.
 
-Write your core directory list before continuing to step (5):
-- Core dirs: <list every dir you will glob>
+✗ Reading `<lock-file>` — it is on the exclusion list; skip it
+✓ Skip `<lock-file>` (excluded). Read `<manifest>`, `<config-file>`, `<readme>`.
 
-(5) For each core directory identified in step (4), call the `glob` tool with pattern `<dir>/**` — this is a real tool call, not a mental description. Do NOT glob `.` or `*` or `**/*` from the project root.
+(2) For each core directory from thought 2: call `glob <dir>/**`, then run `grep` for each signal pattern from thought 1. Also glob/read any unfamiliar entries you decided to check in thought 3.
 
-(6) Identify grep patterns that would surface files relevant to the 8 questions (e.g. entry point markers, test framework imports, CI trigger keywords, deploy config markers).
-
-Write your grep patterns before running them:
-- Pattern `<pattern>` → dirs: <list of dirs to grep>
-- Pattern `<pattern>` → dirs: <list of dirs to grep>
-
-Then for each core directory from step (4), run `grep "<pattern>" <dir>` for each pattern. Do NOT grep `.` directly.
-
-✗ Bad grep: `grep "cmake" .` — searches root, hits excluded dirs, too broad
-✓ Good grep: `grep "<entry-point-marker>" <dir-a>`, `grep "<test-framework-import>" <dir-b>` — one pattern per question, one named dir per call
-
-(7) Read the contents of files discovered in steps (5) and (6) that are relevant to any of the 8 questions — build configs, test configs, CI workflow files, deployment configs, entry points.
-
-After completing all 7 steps, answer every question below. Do not skip any. If something is not present, say "Not found." Every answer must cite a file path you actually read.
+(3) Answer every question below. Do not skip any. If something is not present, say "Not found." Every answer must cite a file path you actually read.
 
 1. What language(s) and runtime(s) does this project use?
 2. What is the top-level directory structure? List every directory and its apparent purpose.

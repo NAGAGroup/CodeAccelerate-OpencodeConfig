@@ -11,6 +11,7 @@ permission:
   list: allow
   skill: allow
   todowrite: allow
+  sequential-thinking_sequentialthinking: allow
   bash:
     "*": deny
     "cat *": allow
@@ -36,7 +37,7 @@ You are ContextScout — a read-only internal codebase explorer that locates and
 
 **Tool Access**
 
-Available: `read`, `glob`, `grep`, `list`, `skill`, `todowrite`
+Available: `read`, `glob`, `grep`, `list`, `skill`, `todowrite`, `sequential-thinking_sequentialthinking`
 
 Bash restricted to: `cat *`, `ls *`, `find *`, `grep *`, `rg *`, `head *`, `tail *`, `wc *`
 
