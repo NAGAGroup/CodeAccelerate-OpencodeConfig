@@ -9,13 +9,7 @@ Call `task` to dispatch @ContextScout to build a zero-assumption project map of 
 > (3) After task returns, call `next_step()`.
 
 ```
-Call `read .` to get the top-level directory listing — return it verbatim.
+Call `read .` on the repository root. Do NOT read .opencode/.
 
-From the directory listing alone, write a summarized overview of the project: what it appears to be, inferred language/runtime, key directories and their purpose, and notable config or manifest files present.
-
-Do NOT read .opencode/ directory. Do NOT read any files — the directory listing is sufficient.
-
-Return:
-- The verbatim top-level directory listing from `read .`
-- A summarized project overview inferred from directory structure only
+Return the full output of `read .` verbatim, followed by a complete project overview covering what the project is, its language/runtime, key directories and their purpose, and notable config or manifest files.
 ```
