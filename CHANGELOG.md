@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `files/planning/plan-session/prompts/research-brief.md` — added explicit research-plan write-out step (new step 2): before making any tool calls ExternalScout must write its research plan listing which tool(s) and how many calls it expects per gap; turns silent tool-selection into an observable commitment; renumbered execute, accumulate, and output steps to 3–5
+
 - `files/planning/plan-session/prompts/scout.md`, `files/planning/plan-session/prompts/scout-parallel.md`, `files/planning/plan-session/node-library/scout-parallel/prompt-template.md` — added explicit write-out instructions at every classification decision point: after step (2) the model must write its exclusion list, after step (4) it must write its core directory list, and after identifying grep patterns in step (6) it must write them before running; forces the model to commit to each decision in text before acting on it, making silent misclassification impossible
 
 - `files/planning/plan-session/prompts/scout.md`, `files/planning/plan-session/prompts/scout-parallel.md`, `files/planning/plan-session/node-library/scout-parallel/prompt-template.md` — added a dedicated exclusion-identification step (new step 2) immediately after `read .`; the model now explicitly names which directories (build output, package caches) and files (lock files, binary files) to exclude before reading or globbing anything; subsequent classify-core and glob steps reference this exclusion list directly, preventing scouts from globbing excluded dirs like `build/` that the previous abstract `<build-output-dir>/` placeholder was not concrete enough to catch; total step count increased from 6 to 7 in all three templates
