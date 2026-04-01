@@ -91,32 +91,6 @@ Three hops: planning agent fills the template → filled template becomes a proj
 
 **When working on prompting source, always identify the category first.** The category determines which technique set applies, which agent does the analysis, and what "correct" output looks like. Misidentifying Category C templates as Category A agent prompts (a common error) produces structurally sound but functionally incorrect changes.
 
-## Planning Prompt Engineering Rules
-
-These 16 rules are derived from Qwen3-14B failure analysis and apply to all Category B (planning session prompts) and Category C (node-library templates). Violations cause small-model compliance failures even when the prompt reads correctly to a larger model.
-
-| Rule | Constraint |
-|------|-----------|
-| R1 | Opening sentence IS the action — "Call `X`" not "Your job is to call `X`" |
-| R2 | No numbered steps in prose — todo array sequences; prose does not |
-| R3 | `next_step()` mentioned once, last line only — never mid-prompt |
-| R4 | No H2/H3 section headers inside prompt body — H1 title + blockquote only |
-| R5 | Dispatch blockquote immediately after todo — zero prose between |
-| R6 | Output constraint is the last item in every dispatch blockquote |
-| R7 | ≤6 items in any numbered list or blockquote |
-| R8 | Glob examples in every scout dispatch: `✓ glob("**/*.ext")` / `✗ glob("a.ext,b.ext")` |
-| R9 | Routing instruction is last in prompt, exact node IDs, never `when`-strings |
-| R10 | Scope restrictions inside blockquote, second-to-last position |
-| R11 | Parallel dispatch: one prose sentence max; rely on todo array count |
-| R12 | No "After X returns" sections — only post-action text is R3 |
-| R13 | No `task_id` in blockquotes unless a specific `ses_` string is provided |
-| R14 | Each `{{PLACEHOLDER}}`: one instruction sentence + `✓`/`✗` example, adjacent |
-| R15 | Sequential-thinking: "Call repeatedly until conclusion clear, then `next_step()`" |
-| R16 | Delete ALL code-block syntax examples of `sequential-thinking_sequentialthinking` |
-| R16b | Don't name sequential-thinking questions with bold headers — use plain reasoning instructions |
-
-**Dispatch prompt slot-fill pattern (Category B).** Planning session prompts that dispatch subagents use fenced prompt templates with `{{SLOT}}` markers. HW fills each slot from a named context source (e.g., Scout 1 output, user task description) and pastes the filled template verbatim into the `prompt` field. HW must never author the `prompt` field from scratch — this causes context-free dispatch where subagents receive no project-specific information.
-
 ## Path and Visibility Constraints
 
 **`files/` is invisible to user agents.** The `files/` directory exists only in this registry source repo. After `ocx install`, components land in the user's OpenCode config — agents in user projects have no `files/` path. Any path starting with `files/` hardcoded inside a shipped file is broken for users.

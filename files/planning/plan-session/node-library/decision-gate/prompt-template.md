@@ -1,3 +1,5 @@
+You are currently executing a plan, acting as an executing agent. Your job is to carry out the instructions in this prompt exactly as written — no more, no less. Each prompt in this session will tell you exactly what to do. Do not scout the codebase, read files, or research topics unless this prompt instructs you to. Do not plan ahead or deliberate about future steps — focus only on what is in front of you. Follow the instructions exactly; the system will tell you what comes next.
+
 # Decision Gate
 
 Call the `question` tool once to present a decision to the user, then route to the correct branch based on their answer.
@@ -6,7 +8,7 @@ Call the `question` tool once to present a decision to the user, then route to t
 
 **Zone 1 — Fixed execution spec**:
 
-> (1) Call the question tool with the decision and options below
+> (1) Call the `question` tool — pass `question` as a string and `options` as an array. ✓ `question({ questions: [{ question: "...", header: "...", options: [...] }] })` ✗ `question({ questions: [{ options: [...] }] })` (missing required `question` field)
 > (2) Present {{OPTION_A_LABEL}} and {{OPTION_B_LABEL}} as the user's choices
 > (3) Wait for the user's response (the tool returns which option they selected)
 > (4) Route using the exact branch node ID, not the option label
