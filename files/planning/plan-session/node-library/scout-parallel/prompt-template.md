@@ -19,13 +19,22 @@ Area to investigate: {{SCOUT_1_AREA}}
 
 Investigation question: {{SCOUT_1_QUESTION}}
 
-Follow these steps in order:
+Answer the investigation question above with file:line citations from what you actually read. Do not answer from memory.
 
-(1) Read `.` to see the top-level contents.
-(2) For every directory listed, read it. For every subdirectory that reveals, read that too. Recurse fully until no new directories remain. Skip .opencode/, .git/, and node_modules/.
-(3) Write out the complete file inventory — every file you saw during traversal, with its path. Do not filter anything out yet.
-(4) From that inventory, cast a wide net: mark every file that could plausibly configure, constrain, declare, or affect anything related to the area — configs, lock files, manifests, preset files, environment files, CI configs, dotfiles, and any file whose extension or name suggests tooling. When in doubt, include it. Do not exclude a file because you assume you already know what it contains.
-(5) Read every file you marked in step (4). Then return your findings using the format below.
+To answer you MUST follow these steps in order:
+
+(1) Use `read` on `.` (the project root) to get a flat directory listing.
+(2) Read the contents of every top-level file relevant to the area — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
+(3) Run targeted globs and greps on named source directories relevant to the area (e.g. `glob src/**`, `glob .github/**`). Do NOT glob `.` or `*` or `**/*` from the project root. Do NOT run any glob or search inside: `.git/`, `.pixi/`, `.conda/`, `.cache/`, `build/`, `dist/`, `node_modules/`, `__pycache__/`, `.venv/`.
+(4) Read the contents of files discovered in step (3) that are relevant to the investigation question.
+
+✗ Bad output (do not do this):
+
+Here are the files I found: `<file-a>`, `<file-b>`, `<file-c>`.
+
+`<file-a>` might be relevant to the area. `<file-b>` could affect things. The area seems to work fine.
+
+— no sections, no line citations, no quotes, just a file dump with vague speculation
 
 ✓ Good output:
 
@@ -46,14 +55,6 @@ Follow these steps in order:
 
 ## Notable risks or gaps
 - <Concrete risk found while reading — version constraint, missing config, platform issue, absent test coverage.>
-
-✗ Bad output (do not do this):
-
-Here are the files I found: `<file-a>`, `<file-b>`, `<file-c>`.
-
-`<file-a>` might be relevant to the area. `<file-b>` could affect things. The area seems to work fine.
-
-— no sections, no line citations, no quotes, just a file dump with vague speculation
 
 **Outcome:** PASS — findings above. FAIL if unable to read files.
 ```
@@ -66,13 +67,22 @@ Area to investigate: {{SCOUT_2_AREA}}
 
 Investigation question: {{SCOUT_2_QUESTION}}
 
-Follow these steps in order:
+Answer the investigation question above with file:line citations from what you actually read. Do not answer from memory.
 
-(1) Read `.` to see the top-level contents.
-(2) For every directory listed, read it. For every subdirectory that reveals, read that too. Recurse fully until no new directories remain. Skip .opencode/, .git/, and node_modules/.
-(3) Write out the complete file inventory — every file you saw during traversal, with its path. Do not filter anything out yet.
-(4) From that inventory, cast a wide net: mark every file that could plausibly configure, constrain, declare, or affect anything related to the area — configs, lock files, manifests, preset files, environment files, CI configs, dotfiles, and any file whose extension or name suggests tooling. When in doubt, include it. Do not exclude a file because you assume you already know what it contains.
-(5) Read every file you marked in step (4). Then return your findings using the format below.
+To answer you MUST follow these steps in order:
+
+(1) Use `read` on `.` (the project root) to get a flat directory listing.
+(2) Read the contents of every top-level file relevant to the area — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
+(3) Run targeted globs and greps on named source directories relevant to the area (e.g. `glob src/**`, `glob .github/**`). Do NOT glob `.` or `*` or `**/*` from the project root. Do NOT run any glob or search inside: `.git/`, `.pixi/`, `.conda/`, `.cache/`, `build/`, `dist/`, `node_modules/`, `__pycache__/`, `.venv/`.
+(4) Read the contents of files discovered in step (3) that are relevant to the investigation question.
+
+✗ Bad output (do not do this):
+
+Here are the files I found: `<file-a>`, `<file-b>`, `<file-c>`.
+
+`<file-a>` might be relevant to the area. `<file-b>` could affect things. The area seems to work fine.
+
+— no sections, no line citations, no quotes, just a file dump with vague speculation
 
 ✓ Good output:
 
@@ -94,14 +104,6 @@ Follow these steps in order:
 ## Notable risks or gaps
 - <Concrete risk found while reading — version constraint, missing config, platform issue, absent test coverage.>
 
-✗ Bad output (do not do this):
-
-Here are the files I found: `<file-a>`, `<file-b>`, `<file-c>`.
-
-`<file-a>` might be relevant to the area. `<file-b>` could affect things. The area seems to work fine.
-
-— no sections, no line citations, no quotes, just a file dump with vague speculation
-
 **Outcome:** PASS — findings above. FAIL if unable to read files.
 ```
 
@@ -113,9 +115,9 @@ The conceptual area Scout 1 investigates (e.g., "build system", "auth/security s
 ✗ Bad: `"pixi.toml"` — name the area, not a specific file
 
 **{{SCOUT_1_QUESTION}}**
-What would a planner need to know about this area to design the implementation steps correctly?
-✓ Good: `"What system manages dependencies and platform targeting, and how is it configured?"`
-✗ Bad: `"What is in the project?"` — too broad; scouts should return specific findings that unlock a planning decision
+An implication question: what does the current state of this area constrain or enable for the specific change? Not an inventory question.
+✓ Good: `"What platforms does the dependency manager currently declare as supported, and what exactly must be added or verified to extend support to the new platform — which config keys, which package availability checks?"`
+✗ Bad: `"What dependency management files does this project use?"` — asks only what exists; does not ask what constraint it imposes or what change is needed
 
 **{{SCOUT_2_AREA}}**
 The conceptual area Scout 2 investigates.
@@ -123,9 +125,9 @@ The conceptual area Scout 2 investigates.
 ✗ Bad: `".github/workflows/"` — name the area, not a path
 
 **{{SCOUT_2_QUESTION}}**
-What would a planner need to know about this area to design the implementation steps correctly?
-✓ Good: `"Does a CI pipeline exist, what does it test, and what would need to change to support a new platform?"`
-✗ Bad: `"Find CI files"` — not a planning question
+An implication question: what does the current state of this area constrain or enable for the specific change? Not an inventory question.
+✓ Good: `"Which CI jobs currently run, on what platforms, and what exactly must be added to run those same jobs on the new platform — new matrix entry, new runner image, new environment setup?"`
+✗ Bad: `"What CI files exist in the project?"` — asks only what exists; does not ask what must change
 
 ## Zone 3 — Fixed constraints
 

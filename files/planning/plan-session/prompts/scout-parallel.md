@@ -6,7 +6,11 @@ Using the two areas and investigation questions identified in the previous node,
 
 **Todo:** `["task", "task"]`
 
-> (1) For each area and investigation question from the sequential-thinking step, dispatch one scout using the template below — fill `{{USER_TASK}}`, `{{AREA}}`, and `{{QUESTION}}`:
+> (1) For each area and investigation question from the sequential-thinking step, dispatch one scout using the template below — fill `{{USER_TASK}}`, `{{AREA}}`, and `{{QUESTION}}`.
+>
+> `{{QUESTION}}` must be an implication question — not an inventory question. An inventory question asks what exists ("what configs exist, how is it set up"). An implication question asks what the current state means for the change:
+> ✓ Good `{{QUESTION}}`: "What platforms does the dependency manager currently declare as supported, and what exactly must be added or verified to extend support to win-64 — which config keys, which package availability?"
+> ✗ Bad `{{QUESTION}}`: "What is the current structure of dependency management and how is it configured?" — asks only what exists, not what it means for the change
 
 ```
 You are a subagent investigating one area of a codebase to inform planning. Do not ask the user questions. Do NOT read .opencode/, .git/, or node_modules/.
@@ -17,13 +21,24 @@ Area to investigate: {{AREA}}
 
 Investigation question: {{QUESTION}}
 
-Follow these steps in order:
+Answer the investigation question above with file:line citations from what you actually read. Do not answer from memory.
 
-(1) Read `.` to see the top-level contents.
-(2) For every directory listed, read it. For every subdirectory that reveals, read that too. Recurse fully until no new directories remain. Skip .opencode/, .git/, and node_modules/.
-(3) Write out the complete file inventory — every file you saw during traversal, with its path. Do not filter anything out yet.
-(4) From that inventory, cast a wide net: mark every file that could plausibly configure, constrain, declare, or affect anything related to the area — configs, lock files, manifests, preset files, environment files, CI configs, dotfiles, and any file whose extension or name suggests tooling. When in doubt, include it. Do not exclude a file because you assume you already know what it contains.
-(5) Read every file you marked in step (4). Then return your findings using the format below.
+To answer you MUST follow these steps in order:
+
+(1) Use `read` on `.` (the project root) to get a flat directory listing.
+(2) Read the contents of every top-level file relevant to the area — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
+(3) Run targeted globs and greps on named source directories relevant to the area (e.g. `glob src/**`, `glob .github/**`). Do NOT glob `.` or `*` or `**/*` from the project root. Do NOT run any glob or search inside: `.git/`, `.pixi/`, `.conda/`, `.cache/`, `build/`, `dist/`, `node_modules/`, `__pycache__/`, `.venv/`.
+(4) Read the contents of files discovered in step (3) that are relevant to the investigation question.
+
+✗ Bad output (do not do this):
+
+Here are the files I found: `<file-a>`, `<file-b>`, `<file-c>`.
+
+`<file-a>` might be relevant to the area. `<file-b>` could affect things. The area seems to work fine.
+
+Changes might be needed in `<file-a>`. Risks are unclear.
+
+— no sections, no line citations, no quotes, just a file dump with vague speculation
 
 ✓ Good output:
 
@@ -47,16 +62,6 @@ Follow these steps in order:
 ## Notable risks or gaps
 - <Concrete risk found while reading — version constraint, missing config, platform issue, absent test coverage.>
 - <Another risk if present. Write "None identified." if none.>
-
-✗ Bad output (do not do this):
-
-Here are the files I found: `<file-a>`, `<file-b>`, `<file-c>`.
-
-`<file-a>` might be relevant to the area. `<file-b>` could affect things. The area seems to work fine.
-
-Changes might be needed in `<file-a>`. Risks are unclear.
-
-— no sections, no line citations, no quotes, just a file dump with vague speculation
 ```
 
 Call `next_step()` after both tasks complete.

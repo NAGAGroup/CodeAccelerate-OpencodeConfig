@@ -11,12 +11,7 @@ Call `task` to dispatch @ContextScout to answer a fixed set of project orientati
 ```
 You are a subagent building a project orientation summary. Do not ask the user questions. Do NOT read .opencode/, .git/, or node_modules/.
 
-Follow these steps in order:
-
-(1) Read `.` to see the top-level contents.
-(2) Read every file listed at the top level — not just directories. Top-level files like package manifests, lock files, config files, and READMEs are always relevant and must be read before recursing into directories.
-(3) For every directory listed, read it. For every subdirectory that reveals, read that too. Recurse fully until no new directories remain. Skip .opencode/, .git/, and node_modules/.
-(4) From everything you have read, answer all 8 questions below. Answer every question — do not skip any. If something is not present, say "Not found." Do not answer from memory — every answer must cite a file path you actually read.
+Answer all 8 questions below. Answer every question — do not skip any. If something is not present, say "Not found." Do not answer from memory — every answer must cite a file path you actually read.
 
 1. What language(s) and runtime(s) does this project use?
 2. What is the top-level directory structure? List every directory and its apparent purpose.
@@ -26,6 +21,27 @@ Follow these steps in order:
 6. What test framework is in use? Where are tests located?
 7. Is there a CI/CD config present? Which platform (e.g. GitHub Actions, GitLab CI, CircleCI)?
 8. What deployment or distribution mechanism is apparent (e.g. Docker, cloud deploy config, release scripts)?
+
+To answer the above you MUST follow these steps in order:
+
+(1) Use `read` on `.` (the project root) to get a flat directory listing.
+(2) Read the contents of every top-level file — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
+(3) Run targeted globs and greps on each named source directory (e.g. `glob src/**`, `glob .github/**`). Do NOT glob `.` or `*` or `**/*` from the project root. Do NOT run any glob or search inside: `.git/`, `.pixi/`, `.conda/`, `.cache/`, `build/`, `dist/`, `node_modules/`, `__pycache__/`, `.venv/`.
+(4) Read the contents of files discovered in step (3) that are relevant to any of the 8 questions — build configs, test configs, CI workflow files, deployment configs, entry points.
+
+✗ Bad output (do not do this):
+
+I found these files: `<file-a>`, `<file-b>`, `<file-c>`.
+
+`<file-a>` might be relevant. `<file-b>` could be important. The build system is probably `<tool>`.
+
+— no sections, no line citations, no direct answers, just a file dump with guesses
+
+✗ Also bad:
+
+**Interpretation** - The task is to locate `<some-file>`. **Findings** - `<some-file>` was not found. **Sources** - Scanned directories.
+
+— abandons the 8-question format entirely because a single file read failed; answer from what you successfully read
 
 ✓ Good output:
 
@@ -56,14 +72,6 @@ Follow these steps in order:
 <Mechanism>. Config: `<file>` at project root (<key detail from reading it>). Not found: <anything absent>.
 
 **Outcome:** PASS — all 8 questions answered above.
-
-✗ Bad output (do not do this):
-
-I found these files: `<file-a>`, `<file-b>`, `<file-c>`.
-
-`<file-a>` might be relevant. `<file-b>` could be important. The build system is probably `<tool>`.
-
-— no sections, no line citations, no direct answers, just a file dump with guesses
 ```
 
 > (2) Output constraint: call `next_step()` when done.
