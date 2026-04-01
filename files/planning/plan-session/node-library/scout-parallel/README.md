@@ -4,7 +4,7 @@
 
 Use this node type near the start of a DAG when you need broad situational awareness before acting — to understand which files a task will affect, where conventions and architecture rules live, and what external systems your changes might integrate with.
 
-Default configuration covers **three parallel scopes** via three sequential task calls. OpenCode dispatches them concurrently; the plugin enforces todo ordering. Each scout runs independently with a 12-step budget.
+Default configuration covers **three parallel scopes** via three sequential task calls. OpenCode dispatches them concurrently; the plugin enforces todo ordering. Each scout runs independently with a 50-step budget.
 
 **Do NOT use scout-parallel if:**
 - Target files are already known from context or a prior scouting step
@@ -49,7 +49,7 @@ Before writing this node, determine and fill in these three scout scopes. Each s
 Before writing the node prompt, confirm you have:
 
 - [ ] **Scout 1 paths determined** — specific file paths or globs, not a theme
-- [ ] **Scout 1 goal determined** — restate the decision as a question answerable in 12 steps
+- [ ] **Scout 1 goal determined** — restate the decision as a question answerable in a single focused pass
 - [ ] **Scout 2 paths determined** — directories/files containing patterns and conventions
 - [ ] **Scout 2 goal determined** — restate as a specific structural/patterns question
 - [ ] **Scout 3 paths determined** — files declaring external dependencies and APIs
@@ -69,13 +69,13 @@ This constraint must appear in THREE places in your filled node prompt:
 **Constraint text (copy verbatim into all three locations):**
 > Report findings as specific facts and file locations — not as generic section headers like 'Codebase Overview', 'Key Decisions', or 'Patterns'.
 
-**Why three places:** ContextScout has only 12 steps per task. Without the constraint appearing in the fixed template sections AND the dispatch blockquote, the planning agent may weaken or omit it, causing scouts to produce vague thematic summaries instead of actionable facts.
+**Why three places:** ContextScout runs with a 50-step budget per task. Without the constraint appearing in the fixed template sections AND the dispatch blockquote, the planning agent may weaken or omit it, causing scouts to produce vague thematic summaries instead of actionable facts.
 
 ## Notes — failure modes and mechanisms
 
 ### Failure mode 1: Thematic scout goals without path anchors
 
-**Mechanism:** Planning agent writes `"Scout 1 goal: Understand the authentication system"` instead of anchoring to specific files. Scout tries to interpret a theme, reads scattered modules, consumes the 12-step budget, and produces generic "Overview" sections instead of specific findings.
+**Mechanism:** Planning agent writes `"Scout 1 goal: Understand the authentication system"` instead of anchoring to specific files. Scout tries to interpret a theme, reads scattered modules, consumes its step budget, and produces generic "Overview" sections instead of specific findings.
 
 **Root cause:** Planning agent confused node type name ("scout-parallel") with the goal-setting requirement. Named the area, not the paths or question.
 
@@ -122,7 +122,7 @@ If constraint is missing from ANY of these locations, the filled prompt is incom
 
 - **Do NOT** send scouts into `.opencode/` session directories — they contain stale planning artifacts that conflict with the actual codebase
 - **Exception:** Planning infrastructure files are permitted if explicitly named in scout paths (e.g., `.opencode/session-plans/plan-session-ses_{id}/node-library/`)
-- **Step budget:** ContextScout has 12 steps per scout task. Keep questions answerable within that budget. If a scout scope requires more than 12 steps, move it to an `analyze-deep` node instead.
+- **Step budget:** ContextScout has a 50-step budget per scout task. Keep questions focused on specific files and concrete facts. If a scout scope requires deep multi-file reasoning or synthesis, move it to an `analyze-deep` node instead.
 
 ## Customization — fewer than 3 scouts
 

@@ -10,6 +10,8 @@ Dispatch @ExternalScout to conduct investigative research with full authority to
 2. Fill `{{RESEARCH_TOPIC}}` and `{{RESEARCH_DEPTH}}` in the template below, then use it verbatim as the `prompt` field
 
 ```
+You are a subagent. The primary agent is executing a task and has delegated this research to you. Do not ask the user questions.
+
 Research topic: {{RESEARCH_TOPIC}}
 
 Depth requirement: {{RESEARCH_DEPTH}}

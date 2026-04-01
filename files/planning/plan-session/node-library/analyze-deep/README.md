@@ -7,7 +7,7 @@ Select `analyze-deep` when:
 - Prior scout reports have surfaced conflicting information or incomplete coverage that requires synthesis across multiple files
 - The question requires tracing execution flow, dependency chains, or state transitions across 3+ files
 - You need to reason about cross-cutting concerns (e.g., concurrency safety, data consistency) that no single file reveals
-- The scope is tightly defined and achievable within 8–10 files of sonnet-tier reading (ContextInsurgent, 20-step budget)
+- The scope is tightly defined and achievable within 8–10 files of focused reading (ContextInsurgent runs without a fixed step cap)
 
 **Do NOT use analyze-deep for:**
 - Single-file clarifications (route to scout instead)
@@ -41,7 +41,7 @@ Before writing this node's prompt, determine and fill in:
 5. **Output constraint (cascade verbatim into the prompt)** — "Do not produce a generic 'Architecture Overview' or 'Key Decisions' section — report specific file paths, line numbers, and exact strings."
    - This must appear in the dispatched prompt exactly as stated.
 
-6. **Budget scope check** — If the file list exceeds 10 files or the question requires 8+ independent reasoning steps, split into two `analyze-deep` nodes instead. This node carries a 20-step budget; dense synthesis with >10 files risks hitting the limit.
+6. **Budget scope check** — If the file list exceeds 10 files or the question requires 8+ independent reasoning steps, split into two `analyze-deep` nodes instead. Dense synthesis with >10 files risks shallow or incomplete output — split into two `analyze-deep` nodes for better quality.
 
 ## Notes
 
@@ -53,7 +53,7 @@ Before writing this node's prompt, determine and fill in:
 
 ### Failure Mode: Exceeding budget with file scope
 
-**Mechanism:** The node carries a 20-step budget. Reading 12+ files with cross-file reasoning consumes ~15–18 steps alone, leaving minimal margin for synthesis output. Planning agents who list "all files in the auth/ directory" or "everything related to session handling" will exceed the budget.
+**Mechanism:** Reading 12+ files with cross-file reasoning leaves minimal margin for quality synthesis output — the findings become shallow and surface-level. Planning agents who list "all files in the auth/ directory" or "everything related to session handling" will exceed the budget.
 
 **Prevention:** Before filling the `{{CONTEXT_TO_PROVIDE}}` placeholder, count files. If the list exceeds 10, split the analysis: create two `analyze-deep` nodes, one for each subset (e.g., "token validation chain" vs. "session store mutations"). Each node answers a narrower synthesis question.
 

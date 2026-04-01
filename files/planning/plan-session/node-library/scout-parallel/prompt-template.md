@@ -11,6 +11,8 @@ Dispatch two @ContextScout agents in parallel to gather context from specific fi
 
 **Scout 1 template:**
 ```
+You are a subagent. The primary agent is executing a task and has delegated this investigation to you. Do not ask the user questions.
+
 Discovery question: {{SCOUT_1_QUESTION}}
 
 Files/patterns to read: {{SCOUT_1_FILES}}
@@ -22,6 +24,8 @@ Return: specific findings with file:line citations. State "Nothing found" if not
 
 **Scout 2 template:**
 ```
+You are a subagent. The primary agent is executing a task and has delegated this investigation to you. Do not ask the user questions.
+
 Discovery question: {{SCOUT_2_QUESTION}}
 
 Files/patterns to read: {{SCOUT_2_FILES}}

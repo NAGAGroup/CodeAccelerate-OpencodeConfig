@@ -26,9 +26,9 @@ Before writing this node's prompt, answer all of the following in sequence:
    - Bad: "Several tasks that need to happen in parallel" (no specific count)
 
 2. **Per-task agent assignment** — For each task, which haiku agent?
-   - @JuniorDev for code edits (10-step budget)
-   - @QuickDoc for documentation and config writes (8-step budget)
-   - @ExternalScout for external research (15-step budget)
+   - @JuniorDev for code edits (2–3 files max per dispatch)
+   - @QuickDoc for documentation and config writes (one file per dispatch)
+   - @ExternalScout for external research (one focused topic per dispatch)
    - (Never @ContextScout alone, never @ContextInsurgent, never @HeadWrench — use analyze-deep or scout-parallel nodes instead)
    - Good: "@JuniorDev for code edits, @QuickDoc for API documentation"
    - Bad: "@HeadWrench will orchestrate the tasks" (violates haiku-tier scope)
@@ -81,10 +81,10 @@ Before writing this node's prompt, answer all of the following in sequence:
 - **Prevention:** During independence verification (item #7 above), check whether the tasks share any data flow, even indirectly. If task B needs the state changes from Task A, mark them as dependent.
 - **Fix:** Use sequential `task` nodes in separate plan nodes: create node-1 (Task A), wait for result, then create node-2 (Task B). Task A's completion becomes the trigger for Task B's dispatch.
 
-**Haiku agent step budget constraints:**
-- @JuniorDev: 10 steps per dispatch. Complex edits (multi-file refactors, large rewrites, multiple unrelated changes) exceed this. Use analyze-deep + verify-check + sequential task chains instead.
-- @QuickDoc: 8 steps per dispatch. Long documents or complex templates exceed this. Split into separate sequential nodes.
-- @ExternalScout: 15 steps per dispatch. One-shot research tasks are safe; multi-phase investigations that require follow-up lookups exceed budget.
+**Scope constraints per agent:**
+- @JuniorDev: 2–3 files max per dispatch. Complex edits (multi-file refactors, large rewrites, multiple unrelated changes) should use analyze-deep + verify-check + sequential task chains instead.
+- @QuickDoc: One file per dispatch. Long documents or complex templates should be split into separate sequential nodes.
+- @ExternalScout: One focused topic per dispatch. Multi-phase investigations that require follow-up lookups should use sequential research-deep nodes instead.
 
 If a task is too complex for a single haiku dispatch, refactor into a sequential sub-DAG (scout → analyze → implement pattern).
 

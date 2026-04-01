@@ -63,7 +63,7 @@ This is a cursory research pass. Use Context7 first, then `get_code_context_exa`
 **Prevention:** In the "Research Topic" checklist item, the planning agent must write a question, not a subject. Test: if the topic ends with a question mark, it is usually specific enough. If it is a noun phrase ("API documentation", "configuration options"), it is too broad — push back and ask for the specific question.
 
 ### Failure Mode 2: Exhausted Step Budget (Scope Guard Omitted)
-**Mechanism:** Planning agent writes the prompt but omits or weakens the scope guard. ExternalScout pursues multiple research threads — "if the first source doesn't have X, search for Y; if Y doesn't cover Z, try Z"—and runs out of steps before producing an answer. The 15-step budget is consumed in unguided exploration.
+**Mechanism:** Planning agent writes the prompt but omits or weakens the scope guard. ExternalScout pursues multiple research threads — "if the first source doesn't have X, search for Y; if Y doesn't cover Z, try Z"—and produces shallow or incomplete findings from unguided exploration.
 
 **Prevention:** The scope guard must be copied into the prompt verbatim (see "Scope Guard" under "What the Planning Agent Must Resolve"). It is non-negotiable. When writing this node's prompt, the planning agent must include the exact constraint: "This is a cursory research pass. Use Context7 first, then `get_code_context_exa` if needed. Do NOT perform multiple search iterations — report what you find and stop."
 

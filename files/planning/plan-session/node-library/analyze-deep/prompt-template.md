@@ -10,11 +10,13 @@ Dispatch @ContextInsurgent to answer a specific analysis question across multipl
 2. Fill `{{ANALYSIS_QUESTION}}` and `{{FILE_LIST}}` in the template below, then use it verbatim as the `prompt` field
 
 ```
+You are a subagent. The primary agent is executing a task and has delegated this analysis to you. Do not ask the user questions.
+
 Analysis question: {{ANALYSIS_QUESTION}}
 
 Files to read: {{FILE_LIST}}
 
-Your job: read only the specified files and answer the analysis question above. Trace the exact code paths. Do not read .opencode/ or any files not listed.
+Read only the specified files and answer the analysis question above. Trace the exact code paths. Do not read .opencode/ or any files not listed.
 
 Return a structured report with file:line citations. No thematic summaries — specific findings only.
 ```

@@ -8,7 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-- `files/planning/plan-session/prompts/git-context.md` — added explicit subagent-mode declaration to dispatch template; the task context slot is now labeled "reference only" to prevent the subagent from treating it as an active directive and asking the user questions
+- `files/planning/plan-session/node-library/scout-parallel/prompt-template.md`, `analyze-deep/prompt-template.md`, `research-basic/prompt-template.md`, `research-deep/prompt-template.md` — added subagent declaration to all dispatch templates: "You are a subagent. The primary agent is executing a task and has delegated this work to you. Do not ask the user questions."
+- `files/planning/plan-session/node-library/parallel-tasks/prompt-template.md` — added Zone 3 constraint requiring every freeform task prompt to open with the subagent declaration
+- `files/planning/plan-session/prompts/scout-parallel.md`, `research-brief.md` — added subagent declaration to dispatch templates with planning-context framing ("primary agent is planning a solution")
+- `files/planning/plan-session/prompts/scout-parallel.md` — removed domain-specific "source files / build files" framing and replaced with fully generalized two-angle investigation; HW now decides what angles are relevant for the actual task and project, derives specific file paths from Scout 1 output, and writes targeted prompts — scouts receive concrete file lists and specific questions rather than raw directory dumps to re-interpret
+- `files/planning/plan-session/prompts/sequential-thinking.md` — removed forward reference to propose-plan node; item (6) now states "do not output anything to the user — this step is purely internal reasoning"
+- `files/planning/plan-session/prompts/clarifying-questions.md` — removed forward reference to propose-plan node; reframed to ask only about gaps in understanding the user's goal, not plan decisions; enforces `question` tool usage; removed trailing prose instruction referencing next steps
+- `files/planning/plan-session/prompts/propose-plan.md` — fixed plan presentation order: HW now outputs the full plan as raw prose (scope, constraints, ASCII diagram, node decomposition table, open questions) before calling `question`; previously HW was embedding plan content inside the question field which produced degraded output
+- `files/planning/plan-session/prompts/write-dag.md` — added explicit subagent-mode declaration and hard prohibition on `plan_session`, `activate_plan`, and `next_step` calls; added concrete plan.json schema example and Write-tool-only instruction to prevent the subagent from activating a new planning session instead of writing files directly
+- `files/planning/plan-session/prompts/git-context.md` — added explicit subagent-mode declaration to dispatch template; the task context slot is now labeled "reference only" to prevent the subagent from treating it as an active directive and asking the user questions; added forbidden-tools list (`plan_session`, `activate_plan`, `next_step`)
+- `files/planning/plan-session/node-library/verification-check/prompt-template.md` — added subagent-mode declaration and forbidden-tools list to dispatch template to prevent HW subagent from activating a new planning session or advancing the DAG
 
 
 ### Changed

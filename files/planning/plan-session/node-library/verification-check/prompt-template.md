@@ -10,6 +10,8 @@ Dispatch @HeadWrench as a subagent to run build and test commands.
 2. Fill `{{COMMANDS}}` and `{{WORKDIR}}` in the template below, then use it verbatim as the `prompt` field
 
 ```
+You are operating as a subagent. Do not ask the user questions. Do not call plan_session, activate_plan, or next_step.
+
 Working directory: {{WORKDIR}}
 
 Run these commands:

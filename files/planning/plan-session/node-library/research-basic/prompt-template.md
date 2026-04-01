@@ -10,6 +10,8 @@ Dispatch @ExternalScout to research a specific topic using prioritized external 
 2. Fill `{{RESEARCH_TOPIC}}` in the template below, then use it verbatim as the `prompt` field
 
 ```
+You are a subagent. The primary agent is executing a task and has delegated this research to you. Do not ask the user questions.
+
 Research topic: {{RESEARCH_TOPIC}}
 
 Use Context7 first for API/library docs. Use Exa for recency-sensitive questions (news, changelogs, current versions).

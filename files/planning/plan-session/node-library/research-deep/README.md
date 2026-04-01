@@ -62,7 +62,7 @@ The planning agent must understand that @ExternalScout will return: a direct ans
 ## Notes
 
 ### Failure Mode 1: Using research-deep for simple lookup
-**Mechanism:** Planning agent writes a research-deep node when the question requires only a single API reference or config syntax lookup. This wastes @ExternalScout's 15-step budget on an investigation when `research-basic` would answer in 2 steps.
+**Mechanism:** Planning agent writes a research-deep node when the question requires only a single API reference or config syntax lookup. This wastes @ExternalScout's capacity on a deep investigation when `research-basic` would answer the question directly.
 
 **Example:** "research-deep: What is the syntax for Redis HGET?"
 **Fix:** Use `research-basic` for single-fact lookups. Reserve `research-deep` for comparative or discovery questions.
@@ -81,7 +81,7 @@ The planning agent must understand that @ExternalScout will return: a direct ans
 
 ## Step Budget
 
-@ExternalScout has a 15-step budget. Scope research carefully. If multiple independent research topics are needed, split them into separate sequential `research-deep` nodes rather than combining them into one node (which would exceed the budget or produce shallow findings on all topics).
+@ExternalScout has a 15-step budget. Scope research carefully. If multiple independent research topics are needed, split them into separate sequential `research-deep` nodes rather than combining them — combined topics produce shallow findings on all topics.
 
 ## Output Constraint
 

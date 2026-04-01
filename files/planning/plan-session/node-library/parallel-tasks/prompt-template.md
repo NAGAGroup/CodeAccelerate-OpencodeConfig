@@ -44,4 +44,4 @@ The complete prompt for Task 2 — write it as a self-contained instruction bloc
 
 ## Zone 3 — Fixed constraints
 
-Tasks must not share state or read output from each other. Update the `todo` array via `modify_node` if you add or remove tasks. Do not include `task_id` in dispatch prompts unless resuming a prior session.
+Tasks must not share state or read output from each other. Update the `todo` array via `modify_node` if you add or remove tasks. Do not include `task_id` in dispatch prompts unless resuming a prior session. Every task prompt must open with: "You are a subagent. The primary agent is executing a task and has delegated this work to you. Do not ask the user questions."
