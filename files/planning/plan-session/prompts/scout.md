@@ -34,7 +34,10 @@ Write your exclusion list before continuing to step (3):
 - Excluded dirs: <list every dir you are excluding>
 - Excluded files: <list every file you are excluding>
 
-(3) Read the contents of every top-level FILE not excluded in step (2) — manifests, config files, READMEs, dotfiles. Do not read directories here; directories are handled in steps (4) and (5). Do not skip a file because you assume you know what it contains.
+(3) For each top-level FILE in the step (1) listing: first check whether it appears on your step (2) exclusion list — if it does, skip it; if it does not, read it. Do not read directories here; directories are handled in steps (4) and (5). Do not skip a non-excluded file because you assume you know what it contains.
+
+✗ Reading `<lock-file>` — it is on the step (2) exclusion list; skip it
+✓ Skip `<lock-file>` (on exclusion list). Read `<manifest>`, `<config-file>`, `<readme>`.
 (4) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Do not include any directory already excluded in step (2).
 
 ✓ Core: `<source-dir>/`, `<test-dir>/`, `<ci-dir>/`, `<config-dir>/` — structural, serve the project directly
