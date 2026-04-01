@@ -28,9 +28,9 @@ Area to investigate: {{AREA}}
 
 Investigation question: {{QUESTION}}
 
-Find the files responsible for this area — use glob to search broadly, then read the most relevant ones. Do not assume which files are relevant based on the area name alone; discover them.
+Start by reading the repository root with `read .` to understand what exists. Use what you find there to decide where to look — do not search by area name or keyword. Read the files that look relevant to the investigation question based on what the project actually contains.
 
-Return: the files you found (with paths), key facts from their contents relevant to the investigation question, and a direct answer to the question. State "Nothing found" if nothing is relevant.
+Return: the files you read (with paths), key facts from their contents relevant to the investigation question, and a direct answer to the question. State "Nothing found" if nothing is relevant.
 ```
 
 Call `next_step()` after both tasks complete.
