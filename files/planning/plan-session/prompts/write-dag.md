@@ -56,6 +56,18 @@ Verify the written DAG:
 3. For each prompt file: confirm no unresolved {{PLACEHOLDER}} text remains; if todo includes "task", confirm the prompt dispatches a subagent with a specific prompt; if todo includes "question", confirm the prompt instructs the question tool call.
 4. Fix any issues found in place — correct JSON errors, create missing prompt files with a minimal scaffold, fill any remaining {{PLACEHOLDER}} slots.
 
+✓ Good output:
+- plan.json: 6 nodes, all IDs unique. Node "write-feature" branches to "verify-pass" and "verify-fail" — both IDs present in plan.json. ✓
+- Prompt files: all 6 present and filenames match node IDs. ✓
+- Placeholders: "scout.md" had unresolved `{{USER_TASK}}` — filled with task description from plan summary. Fixed. ✓
+- "write-feature.md" has todo ["task"] and dispatches @JuniorDev with a specific file-edit prompt. ✓
+
+✗ Bad output:
+- Checked plan.json — looks correct.
+- Prompt files seem to be present.
+- No obvious issues found.
+— no specific node IDs checked, no confirmation of file existence, no placeholder scan, no actionable findings
+
 Return: checklist status for each check, issues found and fixed, final confirmation "DAG is ready for activation."
 
 Outcome: PASS or FAIL.

@@ -22,7 +22,29 @@ Use Context7 first for official docs. Use Exa for current news, changelogs, and 
 
 External sources only — do not read project files.
 
-Return a structured report with sections: Summary, Key Findings, Sources. Cite versions. No prose filler.
+Return your findings using the format below.
+
+✓ Good output:
+
+## Topic
+<Restate the research topic exactly.>
+
+## Key findings
+| Approach | Version | Tradeoff | Confidence |
+|---|---|---|---|
+| `<approach-a>` | `<version>` | `<concrete tradeoff>` | High / Medium / Low |
+
+## Sources
+- `<URL or doc title>` — `<one-sentence description of what this source confirms>`.
+
+## Recommendation
+<One paragraph synthesizing the findings into a direct recommendation for the task — not a restatement, but what to do and why.>
+
+✗ Bad output (do not do this):
+
+`<Approach A>` is a good option. `<Approach B>` also exists. Both have tradeoffs. Check the documentation for more details.
+
+— no table, no versions, no sources, no actionable recommendation
 ```
 
 ## Zone 2 — Planning agent fills

@@ -30,9 +30,34 @@ User task: {{USER_TASK}}
 Research gaps identified:
 {{RESEARCH_GAPS}}
 
-Research the gaps listed above using external sources. Use Context7 first for API/library docs; use Exa for recency-sensitive questions.
+Research each gap using external sources. Use Context7 first for API/library docs; use Exa for recency-sensitive questions. Do not read project files — external sources only.
 
-Do not read project files — external sources only.
+For each gap, use these sections:
 
-Return a flat bulleted list of findings with source citations. No prose narrative.
+## Gap
+## Finding
+## Source
+## Implication
+
+✓ Good output:
+
+## Gap
+<Restate the research question exactly.>
+
+## Finding
+<What the research determined — specific syntax, version, constraint, or behavior. Quote the relevant doc text or config example if applicable.>
+
+## Source
+<URL or doc name + section name.>
+
+## Implication
+<One sentence: what this means for the implementation plan.>
+
+✗ Bad output (do not do this):
+
+`<Tool>` supports this. See the documentation for details.
+
+— no gap restatement, no source, no implication, finding is a single vague sentence that could have been written without looking anything up
+
+**Outcome:** PASS — findings for all gaps returned above. If a gap could not be researched, write FAIL and state which gap and why.
 ```

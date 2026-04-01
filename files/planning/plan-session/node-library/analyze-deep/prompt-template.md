@@ -20,7 +20,28 @@ Files to read: {{FILE_LIST}}
 
 Read only the specified files and answer the analysis question above. Trace the exact code paths. Do not read .opencode/ or any files not listed.
 
-Return a structured report with file:line citations. No thematic summaries — specific findings only.
+Return your findings using the format below.
+
+✓ Good output:
+
+## Analysis question
+<Restate the question exactly.>
+
+## Evidence
+- `<file-a>` line N: `<exact quoted content>`. <one-sentence observation derived from those lines>.
+- `<file-b>` line N: `<exact quoted content>`. <one-sentence observation>.
+
+## Answer
+<One paragraph directly answering the analysis question, grounded in the evidence above — not a restatement of findings, but what they mean for the task.>
+
+## Implications
+- <One concrete implication for the implementation or design — derived from the evidence, not generic.>
+
+✗ Bad output (do not do this):
+
+I read the files. `<file-a>` contains some relevant code. The system appears to work as expected. There may be some edge cases to consider.
+
+— no sections, no line citations, no quotes, just vague prose with no grounding
 ```
 
 ## Zone 2 — Planning agent fills

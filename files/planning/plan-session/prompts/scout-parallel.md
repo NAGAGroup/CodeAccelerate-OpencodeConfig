@@ -2,25 +2,14 @@ You are currently in a planning session, acting as a planning agent. Your job is
 
 # Scouts 2 + 3 — Targeted Area Investigation
 
-Call `sequential-thinking_sequentialthinking` to identify the two most task-relevant conceptual areas, then call `task` twice to dispatch Scout 2 and Scout 3 in parallel.
+Using the two areas and investigation questions identified in the previous node, call `task` twice to dispatch Scout 2 and Scout 3 in parallel.
 
-**Todo:** `["sequential-thinking_sequentialthinking", "task", "task"]`
+**Todo:** `["task", "task"]`
 
-> (1) Call `sequential-thinking_sequentialthinking` to reason from the user's task — not from Scout 1's file list. Ask: what does this task require to change or be built? Which conceptual areas of a codebase would need to be understood to plan that work? Pick the two most relevant areas from this list: build system, dependency management, platform/environment targeting, CI/CD pipeline, test infrastructure, configuration system, data layer, API surface, auth/security surface, deployment config. Do not name files — name areas.
-> (2) For each area, write one investigation question: what would a planner need to know about that area to design the implementation steps correctly?
-> (3) Dispatch one scout per area using the template below — fill `{{USER_TASK}}` and `{{AREA}}` and `{{QUESTION}}`:
-
-Estimate 3–5 thoughts. Use only the required fields — omit `isRevision`, `revisesThought`, `branchFromThought`, and `branchId` unless explicitly revising or branching.
-
-✓ Call sequence:
-`sequential-thinking_sequentialthinking({ thought: "Task is: add user login. This requires something to handle credentials, something to manage sessions or tokens, and something to protect routes. The areas that control these things are: auth/security surface (does any auth mechanism already exist?) and configuration system (how does the app configure middleware or route guards?). Those two areas together tell me whether I'm adding from scratch or extending something existing.", thoughtNumber: 1, totalThoughts: 3, nextThoughtNeeded: true })`
-`sequential-thinking_sequentialthinking({ thought: "Area 1 — auth/security surface. Question: does any authentication or session handling already exist in this codebase, and if so, how is it structured? Area 2 — configuration system. Question: how does this project configure middleware or access control, and where would new auth behavior plug in?", thoughtNumber: 2, totalThoughts: 3, nextThoughtNeeded: true })`
-`sequential-thinking_sequentialthinking({ thought: "Both questions are answerable by reading the relevant files — scouts will discover them. The answers together tell me whether I'm building auth from scratch or wiring into an existing system.", thoughtNumber: 3, totalThoughts: 3, nextThoughtNeeded: false })`
-
-✗ `sequential-thinking_sequentialthinking({ thought: "The two most important areas are auth.py and middleware.py because those are the files Scout 1 found.", thoughtNumber: 1, totalThoughts: 1, nextThoughtNeeded: false })` — names specific files from Scout 1 instead of reasoning from the task about what conceptual areas are implicated
+> (1) For each area and investigation question from the sequential-thinking step, dispatch one scout using the template below — fill `{{USER_TASK}}`, `{{AREA}}`, and `{{QUESTION}}`:
 
 ```
-You are a subagent investigating one area of a codebase to inform planning. Do not ask the user questions. Do NOT read .opencode/.
+You are a subagent investigating one area of a codebase to inform planning. Do not ask the user questions. Do NOT read .opencode/, .git/, or node_modules/.
 
 User task: {{USER_TASK}}
 
@@ -30,19 +19,44 @@ Investigation question: {{QUESTION}}
 
 Follow these steps in order:
 
-(1) Read `.` to see what the project contains.
-(2) From that listing, name the files most likely to answer the investigation question.
-(3) Read each of those files.
-(4) Return your findings.
+(1) Read `.` to see the top-level contents.
+(2) For every directory listed, read it. For every subdirectory that reveals, read that too. Recurse fully until no new directories remain. Skip .opencode/, .git/, and node_modules/.
+(3) Write out the complete file inventory — every file you saw during traversal, with its path. Do not filter anything out yet.
+(4) From that inventory, cast a wide net: mark every file that could plausibly configure, constrain, declare, or affect anything related to the area — configs, lock files, manifests, preset files, environment files, CI configs, dotfiles, and any file whose extension or name suggests tooling. When in doubt, include it. Do not exclude a file because you assume you already know what it contains.
+(5) Read every file you marked in step (4). Then return your findings using the format below.
 
-Return format:
-- Files opened: list every file you called `read` on, with its path
-- Findings: for each file, quote or paraphrase the specific lines that answer the investigation question — include line numbers
-- Direct answer: answer the investigation question based on what you read
+✓ Good output:
 
-✓ read(.) → identifies 3 relevant files → reads all 3 → returns specific line citations answering the question: "file-a.ext line 12: [exact value]. file-b.ext: [exact relevant section]. file-c.ext: no relevant content found."
+## Files opened
+`<file-a>`, `<file-b>`, `<file-c>`, `<file-d>`, `<file-e>`
 
-✗ read(.) → identifies 3 relevant files → returns: "file-a.ext contains [area] configuration. file-b.ext contains [area] settings." — describes what files probably contain without reading them
+## Findings
+- `<file-a>` line N: `<exact quoted content>`. Line M: `<exact quoted content>`. <one-sentence observation derived from those lines>.
+- `<file-b>` line N: `<exact quoted content>`. <one-sentence observation>.
+- `<file-c>` lines N–M: <exact quoted content>. <one-sentence observation>.
+
+## Direct answer
+<One paragraph synthesizing what the area looks like and what it means for the task — not a restatement of findings, but what they imply for implementation.>
+
+## Changes required
+| File | Change | Why |
+|---|---|---|
+| `<file-a>` | <specific change> | <why it is needed> |
+| `<file-b>` | <specific change> | <why it is needed> |
+
+## Notable risks or gaps
+- <Concrete risk found while reading — version constraint, missing config, platform issue, absent test coverage.>
+- <Another risk if present. Write "None identified." if none.>
+
+✗ Bad output (do not do this):
+
+Here are the files I found: `<file-a>`, `<file-b>`, `<file-c>`.
+
+`<file-a>` might be relevant to the area. `<file-b>` could affect things. The area seems to work fine.
+
+Changes might be needed in `<file-a>`. Risks are unclear.
+
+— no sections, no line citations, no quotes, just a file dump with vague speculation
 ```
 
 Call `next_step()` after both tasks complete.

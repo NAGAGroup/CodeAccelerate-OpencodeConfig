@@ -20,7 +20,25 @@ Use Context7 first for API/library docs. Use Exa for recency-sensitive questions
 
 External sources only — do not read project files.
 
-Return a flat bulleted list of findings with source citations. No prose narrative.
+Return your findings using the format below.
+
+✓ Good output:
+
+## Question
+<Restate the research topic exactly.>
+
+## Findings
+- `<finding-a>`: `<exact API name / version / value>`. Source: `<URL or doc title>`.
+- `<finding-b>`: `<exact quoted text from source>`. Source: `<URL or doc title>`.
+
+## Direct answer
+<One paragraph directly answering the question — not a restatement of findings, but what they mean for the task.>
+
+✗ Bad output (do not do this):
+
+`<Tool>` supports this. You can use it in your project. See the documentation for details.
+
+— no sections, no exact values, no sources, just vague prose with nothing actionable
 ```
 
 ## Zone 2 — Planning agent fills
