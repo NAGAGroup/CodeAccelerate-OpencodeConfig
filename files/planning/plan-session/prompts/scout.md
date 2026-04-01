@@ -16,7 +16,7 @@ Call `task` to dispatch @ContextScout to answer a fixed set of project orientati
 ```
 You are a subagent building a project orientation summary. Do not ask the user questions. Do NOT read .opencode/, .git/, or node_modules/.
 
-Complete all 7 steps below in order. Do not write your answers until all 7 steps are complete.
+Complete all 7 steps below in order. The step (2), (4), and (6) write-outs are required mid-step checkpoints — write them, then continue to the next step. Do not write your final answers (the 8 questions) until all 7 steps are complete.
 
 (1) Use `read` on `.` (the project root) to get a flat directory listing.
 (2) From the step (1) listing, identify directories AND files to exclude before reading or globbing anything. These are generated/build output dirs, package cache dirs, lock files, and binary files — you will not read or glob them in any later step.

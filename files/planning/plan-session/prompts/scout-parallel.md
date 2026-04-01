@@ -24,7 +24,7 @@ Area to investigate: {{AREA}}
 
 Investigation question: {{QUESTION}}
 
-Complete all 7 steps below in order. Do not write your answer until all 7 steps are complete. Every answer must cite file:line from what you actually read — not from memory.
+Complete all 7 steps below in order. The step (2), (4), and (6) write-outs are required mid-step checkpoints — write them, then continue to the next step. Do not write your final answer until all 7 steps are complete. Every answer must cite file:line from what you actually read — not from memory.
 
 To answer you MUST follow these steps in order:
 
