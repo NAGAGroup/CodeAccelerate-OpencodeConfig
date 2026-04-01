@@ -110455,7 +110455,7 @@ All todos complete. You MUST call \`next_step({ next: "<node-id>" })\` right now
           } else if (state.status === "waiting_step") {
             if (currentNode?.nextLinear) {
               result += `
-Call \`next_step()\` when ready to advance — you may call exempt tools (question, compress, sequential-thinking_sequentialthinking) first if needed.
+All todos complete. Call \`next_step()\` now.
 `;
             } else {
               result += `
@@ -110931,7 +110931,7 @@ ${advanceResult}`;
           const nextExpected = node.todo[state.todo_index];
           output.output = output.output + `
 
-[DAG: ${remaining} todo(s) remaining. Next expected: ${nextExpected}]`;
+[DAG: ${remaining} todo(s) remaining. Call \`${nextExpected}\` now.]`;
         }
       }
     },
@@ -110940,6 +110940,11 @@ ${advanceResult}`;
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
       _dagActiveThisTurn = state !== null && state.status !== "complete" && state.status !== "abandoned";
+    },
+    "experimental.chat.system.transform": async (_input, output) => {
+      if (!_dagActiveThisTurn)
+        return;
+      output.system.push("[DAG_EXECUTOR_MODE] You are executing a DAG session. " + "After every tool result, call the next required tool immediately — do not generate prose between tool calls. " + "Do not stop to summarize findings or wait for user confirmation. " + "The only legitimate pause is the `question` tool, which requires a user answer before you can continue. " + "Once the user answers a question, call the next required tool immediately.");
     },
     "experimental.session.compacting": async (input, output) => {
       const worktree = resolveWorktree(_ctx);

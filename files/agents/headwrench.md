@@ -36,7 +36,7 @@ HeadWrench is the primary orchestrator — it plans sessions, delegates to speci
 
 **DAG Executor Mode**
 
-When a DAG session is running, execute the current node's todo items in order and call `next_step()` when complete. Self-correction triggers — synthesizing findings for the user, proposing next steps, asking unprompted questions, reasoning about "what comes next" — signal executor drift; call `next_step()` instead. When the DAG reports "All todos complete", call `next_step()` immediately without further reasoning.
+When a DAG session is running, every tool result is a trigger for the next tool call — not a prompt to generate prose or wait for user input. Execute the current node's todo items in order and call `next_step()` when complete. Do not summarize findings, propose next steps, or generate any user-facing text between tool calls. The only legitimate pause is the `question` tool, which requires a user answer — once the user answers, call the next required tool immediately. When the DAG reports "All todos complete", call `next_step()` now.
 
 **Question Tool**
 

@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `files/plugins/planning-enforcement.ts`: re-added `experimental.chat.system.transform` hook to inject DAG executor continuation instructions into the system prompt when a session is active; hardened "todos complete" message to imperative "Call `next_step()` now."; hardened mid-sequence remaining-todos message from "Next expected: X" to "Call `X` now." — addresses small-model stalling at node boundaries and between sequential tool calls
+- `files/agents/headwrench.md`: hardened DAG Executor Mode section — every tool result is now described as a trigger for the next tool call; explicit statement that the `question` tool is the only legitimate pause; removed permissive language
 - Rewrite of all 6 agent files from first principles targeting Qwen3-14B as minimum-capability model: `files/agents/headwrench.md`, `files/agents/context-scout.md`, `files/agents/context-insurgent.md`, `files/agents/junior-dev.md`, `files/agents/external-scout.md`, `files/agents/quick-doc.md` — removed H2/H3 section headers, capped lists at ≤6 items, removed code-block tool call syntax examples, reframed constraints to positive framing; removed `steps` field from all agents except `context-scout.md` (updated to `steps: 50`)
 - `files/plugins/planning-enforcement.ts`: removed `experimental.chat.system.transform` hook that injected `[DAG_ACTIVE]` marker into system prompt
 - `files/plugins/planning-enforcement.ts`: softened `next_step` enforcement message to allow exempt tools (question, compress, sequential-thinking_sequentialthinking) before advancing

@@ -265,11 +265,11 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                result += `\n## Pending Branch Choice\n${choices}\n`;
                result += `\nAll todos complete. You MUST call \`next_step({ next: "<node-id>" })\` right now to choose a branch.\n`;
              } else if (state.status === "waiting_step") {
-               if (currentNode?.nextLinear) {
-                  result += `\nCall \`next_step()\` when ready to advance — you may call exempt tools (question, compress, sequential-thinking_sequentialthinking) first if needed.\n`;
-               } else {
-                 result += `\nNo todos for this node. Call \`next_step()\` now to advance.\n`;
-              }
+                if (currentNode?.nextLinear) {
+                   result += `\nAll todos complete. Call \`next_step()\` now.\n`;
+                } else {
+                  result += `\nNo todos for this node. Call \`next_step()\` now to advance.\n`;
+               }
             }
 
             return result;
@@ -845,7 +845,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const nextExpected = node.todo[state.todo_index];
           output.output =
             output.output +
-            `\n\n[DAG: ${remaining} todo(s) remaining. Next expected: ${nextExpected}]`;
+            `\n\n[DAG: ${remaining} todo(s) remaining. Call \`${nextExpected}\` now.]`;
         }
       }
     },
@@ -862,7 +862,19 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         state.status !== "abandoned";
     },
 
-
+    // Inject continuation instructions into the system prompt when a DAG session is active.
+    // These instructions condition the model before it begins generating, making them more
+    // durable than inline tool-result suffixes for small models.
+    "experimental.chat.system.transform": async (_input, output) => {
+      if (!_dagActiveThisTurn) return;
+      output.system.push(
+        "[DAG_EXECUTOR_MODE] You are executing a DAG session. " +
+        "After every tool result, call the next required tool immediately — do not generate prose between tool calls. " +
+        "Do not stop to summarize findings or wait for user confirmation. " +
+        "The only legitimate pause is the `question` tool, which requires a user answer before you can continue. " +
+        "Once the user answers a question, call the next required tool immediately."
+      );
+    },
 
     // Inject DAG state into compaction context for recovery.
     "experimental.session.compacting": async (input, output) => {
