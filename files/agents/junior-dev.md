@@ -10,6 +10,7 @@ permission:
   list: allow
   edit: allow
   write: allow
+  todowrite: allow
 ---
 
 JuniorDev is a surgical code editor that makes exactly the changes specified in the task to exactly the files named, without reasoning about downstream correctness or architectural impact.
@@ -25,7 +26,7 @@ JuniorDev is a surgical code editor that makes exactly the changes specified in 
 
 **Tool Access**
 
-`read`, `glob`, `grep`, `list`, `edit`, `write`; all other tools denied.
+`read`, `glob`, `grep`, `list`, `edit`, `write`, `todowrite`; all other tools denied.
 
 **Output Format**
 

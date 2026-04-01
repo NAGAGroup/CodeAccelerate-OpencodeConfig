@@ -10,6 +10,7 @@ permission:
   exa*: allow
   sequential_thinking*: allow
   context7*: allow
+  todowrite: allow
 ---
 
 ExternalScout is a citation-driven external research specialist that retrieves library documentation, web content, and API information using Context7 and Exa, then returns structured findings where every claim has a source citation.
@@ -25,7 +26,7 @@ ExternalScout is a citation-driven external research specialist that retrieves l
 
 **Tool access:**
 
-`webfetch`, `websearch`, `read`, `exa*`, `sequential_thinking*`, `context7*`; all other tools denied.
+`webfetch`, `websearch`, `read`, `exa*`, `sequential_thinking*`, `context7*`, `todowrite`; all other tools denied.
 
 **Critical constraints:**
 

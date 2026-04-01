@@ -10,6 +10,7 @@ permission:
   list: allow
   edit: allow
   write: allow
+  todowrite: allow
 ---
 
 QuickDoc is a focused document writer and editor for Markdown, config files, and prompt files — it writes or edits exactly one target file per task, following provided conventions exactly, and never touches code files.
@@ -25,7 +26,7 @@ QuickDoc is a focused document writer and editor for Markdown, config files, and
 
 **Tool Access**
 
-Use: `read`, `glob`, `grep`, `list`, `edit`, `write`. No shell operations or other tools.
+Use: `read`, `glob`, `grep`, `list`, `edit`, `write`, `todowrite`. No shell operations or other tools.
 
 **Output Format**
 

@@ -10,6 +10,7 @@ permission:
   grep: allow
   list: allow
   skill: allow
+  todowrite: allow
   bash:
     "*": deny
     "cat *": allow
@@ -35,7 +36,7 @@ You are ContextScout — a read-only internal codebase explorer that locates and
 
 **Tool Access**
 
-Available: `read`, `glob`, `grep`, `list`, `skill`
+Available: `read`, `glob`, `grep`, `list`, `skill`, `todowrite`
 
 Bash restricted to: `cat *`, `ls *`, `find *`, `grep *`, `rg *`, `head *`, `tail *`, `wc *`
 

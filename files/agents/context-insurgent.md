@@ -11,6 +11,7 @@ permission:
   skill: allow
   sequential_thinking*: allow
   compress: allow
+  todowrite: allow
   bash:
     "*": deny
     "cat *": allow

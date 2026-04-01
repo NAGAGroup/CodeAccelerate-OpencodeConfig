@@ -16,27 +16,49 @@ Call `task` to dispatch @ContextScout to answer a fixed set of project orientati
 ```
 You are a subagent building a project orientation summary. Do not ask the user questions. Do NOT read .opencode/, .git/, or node_modules/.
 
-Complete steps (1)–(3) now, before reading anything else below.
+First, call `todowrite` to create a todo list for all 7 steps below — mark each as pending. This keeps your work queue visible as you proceed. Complete each todo in order and mark it done when finished.
+
+✗ Bad todowrite: skips steps, collapses multiple steps into one, or omits the todowrite call entirely
+✓ Good todowrite: one todo per step, all 7 steps listed, all marked pending
+
+Complete all 7 steps below in order. The step (2), (4), and (6) write-outs are required mid-step checkpoints — write them, then continue to the next step. Do not write your final answers (the 8 questions) until all 7 steps are complete.
 
 (1) Use `read` on `.` (the project root) to get a flat directory listing.
+(2) From the step (1) listing, identify directories AND files to exclude before reading or globbing anything. These are generated/build output dirs, package cache dirs, lock files, and binary files — you will not read or glob them in any later step.
 
-(2) Write your exclusion list — dirs and files you will NOT read or glob in any later step. These are generated/build output and fetched package caches only.
-
-✗ Do NOT exclude: `libs/`, `src/`, `packages/`, `vendor/` — these are source dirs owned by the project
-✓ Exclude dirs: `<build-output-dir>/`, `<package-cache-dir>/` — generated or fetched content
+✗ Do NOT exclude: `libs/`, `src/`, `packages/`, `vendor/` — these are source dirs owned by the project; read and glob them normally
+✓ Exclude dirs: `<build-output-dir>/`, `<package-cache-dir>/` — generated or fetched content, not project source
 ✓ Exclude files: `<lock-file>`, `<binary-file>` — machine-generated or non-text
 
-- Excluded dirs: <list>
-- Excluded files: <list>
+Write your exclusion list before continuing to step (3):
+- Excluded dirs: <list every dir you are excluding>
+- Excluded files: <list every file you are excluding>
 
-(3) Write generic discovery grep patterns — patterns that surface structural files regardless of the specific task (entry point markers, build target keywords, platform declarations, CI triggers, test framework imports):
+(3) Read the contents of every top-level FILE not excluded in step (2) — manifests, config files, READMEs, dotfiles. Do not read directories here; directories are handled in steps (4) and (5). Do not skip a file because you assume you know what it contains.
+(4) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Do not include any directory already excluded in step (2).
 
-- Pattern `<pattern>` → dirs to grep: <list>
-- Pattern `<pattern>` → dirs to grep: <list>
+✓ Core: `<source-dir>/`, `<test-dir>/`, `<ci-dir>/`, `<config-dir>/` — structural, serve the project directly
+✗ Not core: already in the step (2) exclude list
 
----
+Write your core directory list before continuing to step (5):
+- Core dirs: <list every dir you will glob>
 
-Answer these 8 questions about the project:
+(5) For each core directory identified in step (4), call the `glob` tool with pattern `<dir>/**` — this is a real tool call, not a mental description. Do NOT glob `.` or `*` or `**/*` from the project root.
+
+(6) Identify grep patterns that would surface files relevant to the 8 questions (e.g. entry point markers, test framework imports, CI trigger keywords, deploy config markers).
+
+Write your grep patterns before running them:
+- Pattern `<pattern>` → dirs: <list of dirs to grep>
+- Pattern `<pattern>` → dirs: <list of dirs to grep>
+
+Then for each core directory from step (4), run `grep "<pattern>" <dir>` for each pattern. Do NOT grep `.` directly.
+
+✗ Bad grep: `grep "cmake" .` — searches root, hits excluded dirs, too broad
+✓ Good grep: `grep "<entry-point-marker>" <dir-a>`, `grep "<test-framework-import>" <dir-b>` — one pattern per question, one named dir per call
+
+(7) Read the contents of files discovered in steps (5) and (6) that are relevant to any of the 8 questions — build configs, test configs, CI workflow files, deployment configs, entry points.
+
+After completing all 7 steps, answer every question below. Do not skip any. If something is not present, say "Not found." Every answer must cite a file path you actually read.
 
 1. What language(s) and runtime(s) does this project use?
 2. What is the top-level directory structure? List every directory and its apparent purpose.
@@ -46,21 +68,6 @@ Answer these 8 questions about the project:
 6. What test framework is in use? Where are tests located?
 7. Is there a CI/CD config present? Which platform (e.g. GitHub Actions, GitLab CI, CircleCI)?
 8. What deployment or distribution mechanism is apparent (e.g. Docker, cloud deploy config, release scripts)?
-
----
-
-Now complete steps (4)–(7):
-
-(4) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Do not include any directory excluded in step (2). Write the list:
-- Core dirs: <list>
-
-(5) For each core directory from step (4), call the `glob` tool with pattern `<dir>/**` — this is a real tool call, not a mental description.
-
-(6) Run every grep pattern from step (3) against each relevant core directory. Do NOT grep `.` directly.
-
-(7) Read top-level files and any files from steps (5)–(6) relevant to any of the 8 questions. Do not skip a top-level file because you assume you know what it contains.
-
-After completing all 7 steps, answer every question. Do not skip any. If something is not present, say "Not found." Every answer must cite a file path you actually read.
 
 ✗ Bad output (do not do this):
 

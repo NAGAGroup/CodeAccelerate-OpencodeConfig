@@ -49,6 +49,11 @@ Research gaps identified:
 
 Research each gap using external sources. Use Context7 first for API/library docs; use Exa for recency-sensitive questions. Do not read project files — external sources only.
 
+First, call `todowrite` to create a todo list for all 5 steps below — mark each as pending. This keeps your work queue visible as you proceed. Complete each todo in order and mark it done when finished.
+
+✗ Bad todowrite: skips steps, collapses multiple steps into one, or omits the todowrite call entirely
+✓ Good todowrite: one todo per step, all 5 steps listed, all marked pending
+
 To research the above you MUST follow these steps in order:
 
 (1) Tool guidance: Context7 is for searching docs and APIs. The Exa tools are for generalized web search. For each gap determine which tools are relevant — you can and often should run multiple calls per gap, leveraging results from each call to inform the next.
