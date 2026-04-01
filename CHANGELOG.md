@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `files/planning/plan-session/prompts/scout.md`, `files/planning/plan-session/prompts/scout-parallel.md`, `files/planning/plan-session/node-library/scout-parallel/prompt-template.md` — added a dedicated exclusion-identification step (new step 2) immediately after `read .`; the model now explicitly names which directories (build output, package caches) and files (lock files, binary files) to exclude before reading or globbing anything; subsequent classify-core and glob steps reference this exclusion list directly, preventing scouts from globbing excluded dirs like `build/` that the previous abstract `<build-output-dir>/` placeholder was not concrete enough to catch; total step count increased from 6 to 7 in all three templates
+
 - `files/agents/context-scout.md` — removed hardcoded Output Format section (Interpretation/Findings/Sources); the agent-level format overrode dispatch prompt output instructions, causing scouts to fall back to the wrong structure regardless of what the dispatch prompt specified
 - `files/agents/external-scout.md` — removed hardcoded Output Format section (Interpretation → Key findings → Relevant APIs → Caveats → Next-step pointers); same override issue as ContextScout
 

@@ -24,25 +24,30 @@ Area to investigate: {{AREA}}
 
 Investigation question: {{QUESTION}}
 
-Complete all 6 steps below in order. Do not write your answer until all 6 steps are complete. Every answer must cite file:line from what you actually read — not from memory.
+Complete all 7 steps below in order. Do not write your answer until all 7 steps are complete. Every answer must cite file:line from what you actually read — not from memory.
 
 To answer you MUST follow these steps in order:
 
 (1) Use `read` on `.` (the project root) to get a flat directory listing.
-(2) Read the contents of every top-level FILE — manifests, lock files, config files, READMEs, dotfiles. Do not read directories here; directories are handled in steps (3) and (4). Do not skip a file because you assume you know what it contains.
-(3) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Exclude generated/build output and package cache dirs.
+(2) From the step (1) listing, identify directories AND files to exclude before reading or globbing anything. These are generated/build output dirs, package cache dirs, lock files, and binary files — you will not read or glob them in any later step.
+
+✓ Exclude dirs: `<build-output-dir>/`, `<package-cache-dir>/` — generated or fetched content
+✓ Exclude files: `<lock-file>`, `<binary-file>` — machine-generated or non-text
+
+(3) Read the contents of every top-level FILE not excluded in step (2) — manifests, config files, READMEs, dotfiles. Do not read directories here; directories are handled in steps (4) and (5). Do not skip a file because you assume you know what it contains.
+(4) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Do not include any directory already excluded in step (2).
 
 ✓ Core: `<source-dir>/`, `<test-dir>/`, `<ci-dir>/`, `<config-dir>/` — structural, serve the project directly
-✗ Not core: `<build-output-dir>/`, `<package-cache-dir>/` — generated or fetched content, not project source
+✗ Not core: already in the step (2) exclude list
 
-(4) For each core directory identified in step (3), run `glob <dir>/**` to list its contents. Do NOT glob `.` or `*` or `**/*` from the project root.
+(5) For each core directory identified in step (4), run `glob <dir>/**` to list its contents. Do NOT glob `.` or `*` or `**/*` from the project root.
 
-(5) Identify grep patterns that would surface files relevant to the investigation question (e.g. config keys, import statements, markers specific to the area). For each core directory from step (3), run `grep "<pattern>" <dir>` for each pattern. Do NOT grep `.` directly.
+(6) Identify grep patterns that would surface files relevant to the investigation question (e.g. config keys, import statements, markers specific to the area). For each core directory from step (4), run `grep "<pattern>" <dir>` for each pattern. Do NOT grep `.` directly.
 
 ✗ Bad grep: `grep "<keyword>" .` — searches root, hits excluded dirs, too broad
 ✓ Good grep: `grep "<area-specific-pattern>" <dir-a>`, `grep "<config-key>" <dir-b>` — one pattern per discovery need, one named dir per call
 
-(6) Read the contents of files discovered in steps (4) and (5) that are relevant to the investigation question.
+(7) Read the contents of files discovered in steps (5) and (6) that are relevant to the investigation question.
 
 ✗ Bad output (do not do this):
 
