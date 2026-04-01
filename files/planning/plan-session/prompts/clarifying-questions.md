@@ -1,34 +1,12 @@
 # Clarifying Questions
 
-## Your Role
+Summarize your current understanding of the task, ask clarifying questions, optionally call sequential-thinking if answers change the plan, then call `next_step()`.
 
-Your job in this node: summarize your understanding, ask clarifying questions, optionally run sequential thinking if answers change your plan, then call `next_step()`.
+**Todo:** `["question"]`
 
-**Note:** Both the `question` tool and `sequential-thinking_sequentialthinking` are exempt from DAG blocking in this node. You may call `question` as many times as needed. You may also call `sequential-thinking_sequentialthinking` once if user answers introduce new information that materially affects the plan.
-
-## Todo
-
-### 1. Summarize your understanding
-
-Before asking any questions, write a brief summary (2–4 short paragraphs) covering:
-- What the user is asking for — the goal and problem being solved
-- The planning design space as you currently see it: key decisions you've made, tradeoffs considered, approach chosen
-- Any constraints or assumptions you're working with
-
-This is NOT a full plan presentation — it is your current understanding as context so the user can see if you're on the right track before you ask questions.
-
-### 2. Ask clarifying questions
-
-Call the `question` tool for each question you have. You may call it multiple times — it is exempt from DAG blocking. Stop when you have no more genuine questions.
-
-**If you have no clarifying questions:** Still call `question` at least once. Ask something like: "Does my understanding of the task and approach look correct?" with options "Yes, proceed" and "Needs adjustment" (and let the user type a custom answer if needed).
-
-### 3. Reflect on the answers
-
-After the user answers your questions: if any answers introduce new information that materially affects your plan design, run a sequential-thinking pass now to update your thinking. Sequential-thinking is also exempt from DAG blocking — call `sequential-thinking_sequentialthinking` directly if needed. This step is optional — only do it if the answers genuinely change something.
-
-To trigger: call the `sequential-thinking_sequentialthinking` tool directly — it is exempt from DAG blocking in this node and can be called without a matching todo item. Limit to one sequential-thinking pass; do not loop.
-
-### 4. Advance
-
-MUST call `next_step()` when done with questions and any follow-up reasoning. Do NOT present the plan here — that happens at the propose-plan node.
+> (1) Write a 2–4 paragraph summary of what you understand: the goal being solved, the design space (key decisions, tradeoffs, chosen approach), constraints and assumptions.
+> (2) Ask 2–4 specific clarifying questions about scope, priorities, or constraints — not implementation details. If you have no questions, ask "Does my understanding look correct?" with options "Yes, proceed" and "Needs adjustment".
+> (3) If any answer introduces information that materially changes plan design, call `sequential-thinking_sequentialthinking` once to update your reasoning (this tool is exempt from DAG blocking).
+> (4) Do not present the full plan here — reserve that for propose-plan node.
+> (5) Do not ask about external library versions or API details — those belong in research nodes.
+> (6) Call `next_step()` when questions are complete and any follow-up reasoning is done.

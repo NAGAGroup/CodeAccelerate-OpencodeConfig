@@ -110320,7 +110320,7 @@ ${promptText}`;
 
 ---
 
-No todos for this node. When you're ready, call \`next_step()\` to advance.`;
+No todos for this node. Call \`next_step()\` now to advance.`;
               } else {
                 const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
                 if (advanceResult) {
@@ -110373,7 +110373,7 @@ ${promptText}`;
 
 ---
 
-No todos for this node. When you're ready, call \`next_step()\` to advance.`;
+No todos for this node. Call \`next_step()\` now to advance.`;
               } else {
                 const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
                 if (advanceResult) {
@@ -110450,16 +110450,16 @@ ${promptText}
 ${choices}
 `;
             result += `
-All todos complete. When you're ready, call \`next_step({ next: "<node-id>" })\` to choose a branch.
+All todos complete. You MUST call \`next_step({ next: "<node-id>" })\` right now to choose a branch.
 `;
           } else if (state.status === "waiting_step") {
             if (currentNode?.nextLinear) {
               result += `
-All todos complete. When you're ready, call \`next_step()\` to advance to the next node.
+All todos complete. You MUST call \`next_step()\` right now. Do not call any other tool — call \`next_step()\` immediately.
 `;
             } else {
               result += `
-No todos for this node. When you're ready, call \`next_step()\` to advance.
+No todos for this node. Call \`next_step()\` now to advance.
 `;
             }
           }

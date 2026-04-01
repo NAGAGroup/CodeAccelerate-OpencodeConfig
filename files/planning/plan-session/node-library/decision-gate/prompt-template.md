@@ -1,62 +1,56 @@
 # Decision Gate
 
-## STOP — Do not work ahead
+Call the `question` tool once to present a decision to the user, then route to the correct branch based on their answer.
 
-Your only job in this node is to call the `question` tool exactly once, wait for the user's response, then call `next_step()` with the correct branch node ID. Do NOT call `question` more than once, do NOT present the choice as plain text, and do NOT route before the user responds.
+**Todo:** `["question"]`
 
-## Todo
+**Zone 1 — Fixed execution spec**:
 
-1. `question` — Present {{DECISION_DESCRIPTION}} with options: {{OPTION_A_LABEL}}, {{OPTION_B_LABEL}}.
+> (1) Call the question tool with the decision and options below
+> (2) Present {{OPTION_A_LABEL}} and {{OPTION_B_LABEL}} as the user's choices
+> (3) Wait for the user's response (the tool returns which option they selected)
+> (4) Route using the exact branch node ID, not the option label
+> (5) Output: call `next_step({ next: "<node-id>" })` with the matching branch's ID
 
----
-
-**Zone 1 — Framing (Primacy):**
-
-You will call the `question` tool once, presenting the decision and options below. The user's choice maps to a branch in the plan. Your job: ask the question, wait for the response, then call `next_step()` with the branch's node ID.
-
----
-
-**Zone 2 — Content to Present (Middle — Placeholders with Authoring Guidance):**
-
-## The Decision
+**Zone 2 — Planning agent fills**:
 
 {{DECISION_DESCRIPTION}}
+One sentence describing the choice the user is making.
+✓ Good: "Should we optimize the database before adding the feature, or add the feature first?"
+✗ Bad: "What should we do next?"
 
-*What specific choice is the user making? One sentence, framed as a question or decision point. Example: "Should we optimize the database before adding the feature, or add the feature first?" Bad: "What should we do next?" (too vague for the user to decide)*
+{{OPTION_A_LABEL}}
+Short, unambiguous label for option A.
+✓ Good: "Optimize database first"
+✗ Bad: "Option A: Optimize the database before any new features (recommended)"
 
-## The Options
+{{OPTION_A_DESCRIPTION}}
+One sentence explaining option A.
+✓ Good: "Improves query performance but delays feature delivery by 2–3 sprints"
+✗ Bad: "benefits and tradeoffs"
 
-You will present these two options to the user in the `question` tool. **The option labels below must exactly match the `when` strings in this node's branch array in the DAG — character-for-character, including capitalization and punctuation.**
+{{BRANCH_A_NODE_ID}}
+Exact node id to route to if user picks option A.
+✓ Good: `optimize-db-phase`
+✗ Bad: `"Optimize database first"`
 
-- **Option A:** {{OPTION_A_LABEL}} — {{OPTION_A_DESCRIPTION}}
-- **Option B:** {{OPTION_B_LABEL}} — {{OPTION_B_DESCRIPTION}}
+{{OPTION_B_LABEL}}
+Short label for option B.
+✓ Good: "Add feature first, optimize later"
+✗ Bad: "Option B"
 
-*Option labels must be short and unambiguous. Example: "Optimize database first" (good) vs. "Option A: Optimize the database before any new features are added (recommended)" (bad — too long, uses "Option A" instead of clear action). These labels are what the user will see and select; they must match the DAG branch `when` strings exactly.*
+{{OPTION_B_DESCRIPTION}}
+One sentence explaining option B.
+✓ Good: "Delivers feature quickly but may face performance issues in production"
+✗ Bad: "tradeoffs of the other option"
 
-**For more than two options:** Add additional `{{OPTION_C_LABEL}}`, `{{OPTION_D_LABEL}}` etc. — each must have a matching `when` entry in the DAG branch array.
+{{BRANCH_B_NODE_ID}}
+Exact node id to route to if user picks option B.
+✓ Good: `feature-first-phase`
+✗ Bad: `"Add feature first"`
 
----
+**Zone 3 — Fixed constraints**:
 
-**Zone 3 — Execution Spec & Routing (Recency):**
+Routing uses node IDs. When the user selects an option, call `next_step({ next: "{{BRANCH_A_NODE_ID}}" })` or `next_step({ next: "{{BRANCH_B_NODE_ID}}" })` — use the exact node id from your DAG branch, not the option label.
 
-## Routing requirement
-
-**After the user responds, call `next_step({ next: '<node-id>' })` where `<node-id>` exactly matches the `id` field of the branch node in the DAG — NOT the `when` string.**
-
-The `when` field is human-readable display text. The routing key is the node's `id`.
-
-Example:
-- User selects "Optimize database first"
-- The DAG branch has: `{ "when": "Optimize database first", "node": { "id": "optimize-db", ... } }`
-- You call: `next_step({ next: 'optimize-db' })` — NOT `next_step({ next: 'Optimize database first' })`
-
-## Question tool constraint
-
-- Call `question` exactly once
-- Do not emit additional tool calls to this node
-- Do not present the choice as plain text — you must use the `question` tool
-- The `question` tool will return the user's selection; use that selection to call `next_step()`
-
----
-
-**Final Reminder:** Ensure the option labels you present in the `question` call exactly match the `when` strings in the DAG branch array. A mismatch prevents proper routing.
+Call `next_step()` after the user responds.

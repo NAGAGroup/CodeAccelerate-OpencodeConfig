@@ -1,42 +1,21 @@
-# Plan Complete — Success
+# Output Success
 
-This is the terminal node for a successful branch. Your task is to communicate results to the user in plain, conversational language.
+Report to the user that the session completed successfully with concrete results.
 
-## What to communicate
+**Todo:** `[]`
 
-Tell the user exactly what was accomplished:
+The session has completed as planned. You are communicating specific accomplishments to the user.
 
-### What was accomplished
+**Zone 1 — User-facing success summary:**
 
-{{ACCOMPLISHMENTS}}
+- {{SUCCESS_SUMMARY}}: one sentence describing the delivered result. ✓ "Implemented `computeL2Norm()` in src/kernels/matmul.cpp (87 lines), added 14 unit tests, and updated docs/benchmarks.md with performance metrics." ✗ "Task completed successfully."
+- {{ARTIFACTS_MODIFIED}}: files created or changed with their repo-relative paths and state. ✓ "src/kernels/matmul.cpp (modified, +87 lines), tests/kernels/matmul_test.cpp (created, 14 tests), docs/benchmarks.md (modified)." ✗ "Several files changed."
+- {{NEXT_STEPS}}: what the user should do now — exact commands or file paths. ✓ "Run `cmake --build build/ && ctest --output-on-failure` to verify. Then review docs/benchmarks.md and run `git merge feature/l2-norm-kernel`." ✗ "Everything is ready to go."
 
-*Planning agent — fill this with 1–3 specific, concrete results. Name exact files, functions, features, or changes. Example: "Implemented `computeL2Norm()` kernel in `src/kernels/matmul.cpp` (87 lines), added 14 unit tests in `tests/kernels/matmul_test.cpp`, and updated the README with performance benchmark results."*
+**Zone 2 — What users read:**
 
-### Artifacts produced
+This is a terminal node with `todo: []`. Write in second person ("you can now…", "your changes include…") as if speaking directly to the user. Do not reference DAG node IDs, todo arrays, planning plugins, or internal state. Deliver specific, actionable next steps the user can execute immediately.
 
-{{ARTIFACTS}}
+**Zone 3 — No actions beyond messaging:**
 
-*Planning agent — list every file created or modified with repo-relative paths. Include the file's new state (created, modified, deleted). Example: "Files: `src/kernels/matmul.cpp` (modified, 87 new lines), `include/kernels/matmul.hpp` (modified), `tests/kernels/matmul_test.cpp` (created, 14 new tests). Run `cmake --build build/ && ctest --output-on-failure` to verify."*
-
-### Next steps for the user
-
-{{NEXT_STEPS}}
-
-*Planning agent — what should the user do now? Be specific: exact commands, file paths, or review tasks. Example: "Run `cmake --build build/ && ctest --output-on-failure` to verify all tests pass. Then review the benchmark results in `docs/benchmarks.md` and merge: `git merge feature/l2-norm-kernel`."*
-
-## Communication constraint (fixed)
-
-This is a user-facing message. Write in plain, conversational English as if you (HeadWrench) are speaking directly to the user. Do not reference:
-- Node IDs, node names, or DAG structure (`output-success`, `plan.json`, branches)
-- Todo arrays, planning enforcement mechanics, or plugin behavior
-- HW-internal state or tool calls
-
-**Phrasing:** Use second person ("You can now…", "Your changes include…") or imperative ("Run this command…", "Review these files…"). Do not use first-person system state ("The system has completed…", "The plugin has advanced…").
-
-## Terminal constraint (fixed)
-
-This node has `todo: []` — it is a terminal node. All text in this prompt is read as a message to the user, not as instructions HW will execute. Do not write action items as if HW should perform them:
-- ✗ Bad: "Now run the tests." (reads as something HW will do)
-- ✓ Good: "Run `ctest --output-on-failure` to verify the changes." (reads as something the user should do)
-
-The session ends after this message is delivered. There is no `next_step()` call or subsequent node.
+No tool calls. No `next_step()`. The session terminates after this message is sent. This is the final communication — make it clear, concrete, and celebratory.

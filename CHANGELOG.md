@@ -6,71 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- All 14 planning session prompts rewritten from first principles for non-thinking Qwen3-14B compliance: action-first openers (R1), no numbered prose steps (R2), `next_step()` last line only (R3), no H2/H3 section headers (R4), dispatch blockquote immediately after todo (R5), output constraint last in every blockquote (R6), ≤6 items per list (R7), glob examples in all scout dispatches (R8), routing by exact node IDs (R9), scope restrictions in blockquote (R10), no "After X returns" sections (R12), no `task_id` in blockquotes (R13), plain reasoning instructions for sequential-thinking nodes (R16/R16b)
+- All 14 node-library prompt-templates rewritten from first principles applying the same 16-rule set; reduced combined line count by ~1000 lines; two-audience Zone 1/2/3 structure preserved with `{{PLACEHOLDER}}` + adjacent `✓`/`✗` examples (R14)
+
 ### Fixed
 
 - `files/profiles/ollama/opencode.jsonc` — added `reasoningEffort: "none"` to disable Qwen3 thinking mode on Ollama's OpenAI-compatible `/v1/chat/completions` endpoint (the native `think: false` field is silently ignored on `/v1`); prevents ~60% tool-execution failure rate caused by reasoning models satisfying tool calls internally without emitting them; non-thinking-capable models silently ignore this setting
 - `README.md` — updated local model guidance to reflect Qwen3 14B as minimum-supported target and document the thinking-mode fix
-- `files/planning/plan-session/prompts/sequential-thinking.md` — restructured to place `sequential-thinking_sequentialthinking` tool call first; reduced reasoning framework from 8 to 6 items; removed stale node reference; converted STOP opening to positive framing
-- `files/planning/plan-session/prompts/pre-research-thinking.md` — integrated CRITICAL tool call constraint inline with Todo; moved Goal section after core instructions; made `sequential-thinking_sequentialthinking` Todo item most prominent
-- `files/planning/plan-session/prompts/propose-plan.md` — extracted question tool call to first subsection; moved Sequential Thinking Guidelines before What to Present; converted STOP opening
-- `files/planning/plan-session/prompts/write-dag.md` — aligned Todo with exactly 3 tool calls; consolidated nested verification sub-items to ≤4 per section; removed duplicate schema reminders
-- `files/planning/plan-session/prompts/research-brief.md` — moved ExternalScout dispatch blockquote to immediately after Todo; converted STOP opening
-- `files/planning/plan-session/prompts/scout.md` — moved dispatch blockquote to immediately after Todo; converted STOP opening
-- `files/planning/plan-session/prompts/scout-parallel.md` — moved dispatch blockquotes to immediately after Todo; converted STOP opening
-- `files/planning/plan-session/prompts/session-overview.md` — moved Permitted Actions before Todo; converted STOP opening
-
-### Changed
-
-- `files/planning/plan-session/prompts/git-context.md` — converted STOP opening to positive role statement
-- `files/planning/plan-session/prompts/scout-node-library.md` — converted STOP opening to positive role statement
-- `files/planning/plan-session/prompts/research-gate.md` — converted STOP opening to positive role statement
-- `files/planning/plan-session/prompts/clarifying-questions.md` — converted STOP opening to positive role statement
-- `files/planning/plan-session/prompts/present-dag.md` — converted STOP opening to positive role statement
-- `files/planning/plan-session/prompts/activation-gate.md` — converted STOP opening to positive role statement
-- `files/planning/plan-session/node-library/analyze-deep/prompt-template.md` — converted STOP opening to positive role statement
-- `files/planning/plan-session/node-library/compression-node/prompt-template.md` — converted STOP opening to positive role statement
-- `files/planning/plan-session/node-library/generic/prompt-template.md` — converted STOP opening to positive role statement
-- `files/planning/plan-session/node-library/parallel-tasks/prompt-template.md` — converted STOP opening to positive role statement
-- `files/planning/plan-session/node-library/research-basic/prompt-template.md` — converted STOP opening to positive role statement
-- `files/planning/plan-session/node-library/verification-check/prompt-template.md` — converted STOP opening to positive role statement
+- `files/plugins/planning-enforcement.ts` — replaced all hedging language in injected messages with directive language; todo-completion message now reads "You MUST call `next_step()` right now"
 - `files/planning/plan-session/node-library/parallel-tasks/README.md` — added concrete-goals constraint to authoring guidance
 - `files/planning/plan-session/node-library/decision-gate/README.md` — fixed branch routing docs; added nodeId-vs-when-string example
-- `files/plugins/planning-enforcement.ts` — replaced all hedging language in injected messages with directive language; todo-completion message now reads "You MUST call next_step() right now"
 
-### Changed
 
-- Applied structural prompt engineering fix across all 22 planning DAG prompt files and node library templates: moved STOP/deviation constraint blocks and Todo sections to the top of each file (immediately after the title), with all detail/execution specs following a `---` separator. Affected files: `prompts/session-overview.md`, `prompts/scout.md`, `prompts/scout-parallel.md`, `prompts/git-context.md`, `prompts/pre-research-thinking.md`, `prompts/sequential-thinking.md`, `prompts/scout-node-library.md`, `prompts/research-gate.md`, `prompts/propose-plan.md`, `prompts/present-dag.md`, `prompts/activation-gate.md`, `prompts/activate-now.md`, `node-library/sequential-thinking/prompt-template.md`, `node-library/decision-gate/prompt-template.md`, `node-library/conditional-branch/prompt-template.md`, `node-library/verification-check/prompt-template.md`, `node-library/scout-parallel/prompt-template.md`, `node-library/parallel-tasks/prompt-template.md`, `node-library/generic/prompt-template.md`, `node-library/research-basic/prompt-template.md`, `node-library/research-deep/prompt-template.md`, `node-library/analyze-deep/prompt-template.md`, `node-library/compression-node/prompt-template.md`. Written STOP blocks for all 15 files that were missing them; merged duplicate Todo sections in `scout-node-library.md`; resolved title-before-content inversion in `pre-research-thinking.md` (removed duplicate Goal/intro paragraph, moved CRITICAL block to position 2); moved Todo from last position to top in `verification-check`, `analyze-deep`, and `research-deep` templates; added explicit Todo and STOP to `sequential-thinking` and `compression-node` templates which previously had no Todo section; added closing `MUST call next_step()` statement to `sequential-thinking` and `compression-node` templates.
-
-- `files/planning/plan-session/prompts/present-dag.md`: Replaced single-line todo with proper `## Todo` section, added explicit `next_step()` MUST rule and action block.
-- `files/planning/plan-session/prompts/research-brief.md`: Added work-ahead prevention block at top; hardened "After ExternalScout reports back" from advisory to MUST rule.
-- `files/planning/plan-session/prompts/sequential-thinking.md`: Hardened final `next_step()` call from advisory to MUST, added prohibition on presenting the plan at this node.
-- `files/planning/plan-session/prompts/write-dag.md`: Hardened Completion section — replaced advisory "ready to proceed" with explicit MUST `next_step()` call and prohibition on user-facing proposals.
-- `files/planning/plan-session/prompts/git-context.md`: Hardened "After the task returns" from advisory to MUST rule with no-summarization prohibition.
-- `files/planning/plan-session/prompts/clarifying-questions.md`: Added work-ahead prevention block at top; hardened advance step from advisory to MUST.
-- `files/planning/plan-session/prompts/plan-complete.md`: Added terminal-node declaration block with explicit no-`next_step()` rule and instruction to fill `{plan-name}` from session context.
-- `files/planning/plan-session/node-library/scout-parallel/prompt-template.md`: Hardened "advance when ready" in Before Advancing section to MUST `next_step()` with no-further-exploration prohibition.
-- `files/planning/plan-session/node-library/parallel-tasks/prompt-template.md`: Hardened Before Advancing section — replaced advisory "advance when ready" with MUST `next_step()` rule.
-- `files/planning/plan-session/node-library/generic/prompt-template.md`: Added Completion section with MUST `next_step()` rule after last todo item.
-- `files/planning/plan-session/node-library/research-basic/prompt-template.md`: Added work-ahead prevention block in Zone 3; hardened After ExternalScout section from advisory to MUST.
-- `files/planning/plan-session/node-library/research-deep/prompt-template.md`: Hardened After the Research section from advisory to MUST `next_step()` call.
-- `files/planning/plan-session/node-library/analyze-deep/prompt-template.md`: Added After ContextInsurgent Reports Back section with MUST `next_step()` rule.
-
-- `files/planning/plan-session/plan.json` + `files/planning/plan-session/prompts/scout.md` + `files/planning/plan-session/prompts/scout-parallel.md` (new): Split the single `scout` node (3 todos) into two nodes — `scout` (1 todo, Scout 1 blocking) and `scout-parallel` (2 todos, Scouts 2+3 parallel) — so the plugin node boundary enforces the Scout 1 wait rather than relying on behavioral instructions within a single node.
-- `files/agents/headwrench.md`: Added zero-todo node rule, blocked-tool-call handling rule, and sequential-thinking batch prohibition to tighten small-model behavioral compliance; added explicit "After todos complete → call `next_step()` immediately" rule with negative examples covering post-task reasoning and user-facing proposals; corrected blocked-tool-call rule to name `[DAG BLOCKED]` error format and read the error message for next expected tool.
-- `files/planning/plan-session/prompts/session-overview.md`: Added Permitted Actions section (tool restrictions) and Todo section.
-- `files/planning/plan-session/prompts/scout.md`: Added same-turn parallel dispatch enforcement for Scouts 2 & 3, and Scout 1 acceptance gate; Scout 2 & 3 dispatch prompts now require verbatim embedding of both user task description and Scout 1's complete output (not paraphrase); added negative example for reference-without-embedding failure.
-- `files/planning/plan-session/prompts/scout.md`, `scout-parallel.md`, `research-brief.md`: Added `VERBATIM COPY REQUIRED` header to all subagent dispatch blockquotes to prevent Category B indirection paraphrase failures; updated Scout 1 good/bad examples to explicitly name the paraphrase failure mode (converting `read .` to prose loses the tool name, causing the scout to use `glob` instead).
-- `files/planning/plan-session/prompts/pre-research-thinking.md`: Added CRITICAL tool call required warning and explicit numbered execution sequence with example.
-- `files/planning/plan-session/prompts/scout-node-library.md`: Strengthened advisory language to explicit prohibition, added Todo section.
-- `files/planning/plan-session/prompts/propose-plan.md`: Added one-concept-per-thought rule and sequential-thinking example.
-- Refactor `planning-enforcement.ts` plugin into focused TypeScript modules
-- `session-overview.md` (shipped prompt) and `node-library/session-overview/prompt-template.md` now include an explicit "STOP — Do not work ahead" block that prohibits scouting, file reads, and task execution before the DAG sequences the next step; the block is fixed verbatim in the template so every generated DAG inherits the constraint.
-- `node-library/session-overview/README.md` updated to document that the anti-work-ahead block is fixed text that must appear verbatim in every generated prompt.
-- `scout-node-library.md` now includes an explicit "STOP — Do not act on what you just read" block preventing the model from synthesizing a plan or presenting proposals to the user after reading CATALOGUE.md; the only permitted action after the `read` call is `next_step()`.
-- `planning-enforcement.ts` plugin now injects a `[DAG_ACTIVE]` sentinel into the system prompt via `experimental.chat.system.transform` whenever a DAG session is active, using a `chat.params` hook to cache per-turn session state (bridging the sessionID gap between hooks).
-- `headwrench.md` now includes a `## DAG Executor Mode` section keyed to the `[DAG_ACTIVE]` sentinel: positive-framed role constraint, scope definition, self-correction trigger, and ✓/✗ concrete examples per small-model prompt engineering guidelines.
-- `scout.md` dispatch instructions now use `glob` pattern `*` (depth-1 only) instead of `**/*` — prevents Scout 1 from returning massive recursive file lists; return format updated to require one-per-line verbatim depth-1 entries; added an explicit ✗ bad-pattern example for recursive glob use.
-- `files/planning/plan-session/prompts/scout.md`: Changed Scout 1 dispatch instructions to use `read .` instead of `glob *` for fetching top-level directory entries (avoids unintended recursive glob expansion).
 
 ### Fixed
 

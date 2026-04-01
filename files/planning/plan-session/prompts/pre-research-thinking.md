@@ -1,70 +1,14 @@
 # Pre-Research Thinking
 
-## Todo
+Call `sequential-thinking_sequentialthinking` repeatedly to reason through the scouts' findings and determine whether external research is needed, what gaps exist, and what execution path to take.
 
-1. **Call `sequential-thinking_sequentialthinking` explicitly** — Reason through all 8 questions below. Do NOT wait for user input between thoughts. **Tool call required — reasoning chains don't count.** Your internal `_Thinking:_` monologue is separate from this tool — producing a reasoning chain in response text without calling the tool leaves this todo unsatisfied. Call `next_step()` after the final thought to advance to the research gate.
+**Todo:** `["sequential-thinking_sequentialthinking"]`
 
-   *Tool note: `sequential-thinking_sequentialthinking` is exempt from DAG blocking — call it directly.*
+> (1) Consolidate scout findings: what does the codebase contain, what's ambiguous, and does it provide enough context for a complete plan?
+> (2) Identify knowledge gaps: what remains unknown that model training data might not cover well (e.g., recent library versions, fast-moving frameworks, environment-specific behavior)?
+> (3) Decide if planning-time research is necessary (would external docs/APIs change the plan?) or unnecessary (codebase + model knowledge suffice)?
+> (4) Determine if execution-time research is needed (e.g., runtime configuration, version-specific edge cases, or multi-source synthesis deferred to DAG implementation)?
+> (5) If execution research is needed, classify as `research-basic` (specific lookup) or `research-deep` (multi-source synthesis)?
+> (6) End with a 3-line block: Planning research: [NECESSARY|RECOMMENDED|NO] — [reason]. Execution research: [NECESSARY|RECOMMENDED|NO] — [reason]. Execution research type: [research-basic|research-deep|N/A] — [reason].
 
----
-
-## What to Reason Through
-
-Execute in this exact order:
-1. Call `sequential-thinking_sequentialthinking` (one thought per call — do NOT batch multiple questions into a single call)
-2. After all thoughts complete, output a three-line block summary
-3. Call `next_step()`
-
-Do NOT call `next_step()` before completing the sequential-thinking calls.
-
-Minimal example of a single tool call:
-```
-sequential-thinking_sequentialthinking({
-  thought: "First research question: ...",
-  thoughtNumber: 1,
-  totalThoughts: 8,
-  nextThoughtNeeded: true
-})
-```
-
-Work through these eight questions in sequence:
-
-1. **What is the task?** Summarize the session goal in one sentence.
-
-2. **Does the codebase provide sufficient context for planning?** Are all key implementation decisions answerable from internal scouts alone, or are there gaps that require external knowledge to write a complete plan?
-
-3. **Could model knowledge be stale for this task?** Is this a fast-moving domain? Are there recent library releases, API changes, or framework updates that may have occurred after the model's training cutoff? If yes, training data may be incorrect or incomplete.
-
-4. **Planning research verdict:** Based on questions 1–3, determine the planning research level:
-   - **NECESSARY** — external information is required to write a good plan; the approach cannot be determined without it.
-   - **RECOMMENDED** — would help avoid execution-time scouting or prevent hallucination risk, but a plan could be written without it.
-   - **NO** — the task is fully self-contained from codebase context and model knowledge.
-
-5. **Would cursory planning research be insufficient at execution time?** Even if planning research helps establish direction, are there decisions that can only be resolved during implementation — such as exact API behavior, runtime configuration, environment-specific behavior, or version-specific edge cases?
-
-6. **Is deep research implicitly required?** Does the task involve a direction uncertain enough that it requires multi-source synthesis, novel approaches, or academic sources — work that the DAG structure forbids during planning and must defer to execution-time research nodes?
-
-7. **Execution research verdict:** Determine the execution research level:
-   - **NECESSARY** — cursory planning search won't suffice for implementation, OR deep research is being deferred from planning to execution.
-   - **RECOMMENDED** — would augment planning research with just-in-time lookup; useful but not required.
-   - **NO** — deterministic edit or refactor with no external dependencies; planning research (if done) covered everything needed.
-
-8. **Execution research type (if execution research is NECESSARY or RECOMMENDED):** Is the implementation question specific with a known answer to look up (→ `research-basic`), or is the direction itself uncertain and requires multi-source synthesis across many sources (→ `research-deep`)?
-
-## Goal
-
-HeadWrench uses sequential-thinking to reason across three dimensions before reaching the research gate, producing a structured 3-line output block that the research-gate node consumes.
-
-## Output Format
-
-End your final thought with this exact 3-line block:
-
-```
-Planning research: [NECESSARY|RECOMMENDED|NO] — [one-sentence reason]
-Execution research: [NECESSARY|RECOMMENDED|NO] — [one-sentence reason]
-Execution research type: [research-basic|research-deep|N/A] — [one-sentence reason]
-```
-
-Use `N/A` for execution research type when execution research is NO.
-
-After completing your final thought, call `next_step()` to advance to the research gate.
+Call this tool repeatedly until your conclusion is clear, then call `next_step()`.

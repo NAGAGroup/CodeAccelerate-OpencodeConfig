@@ -1,14 +1,11 @@
 # Scout Node Library
 
-## Your Role
+Read the node library CATALOGUE to understand available node types for planning — this is context only, do not act on it here.
 
-Your job in this node: read the node library CATALOGUE, then call `next_step()`. The CATALOGUE is context for later planning nodes — you will not act on it here.
+**Todo:** `["read"]`
 
-## Todo
+> (1) Read `files/planning/plan-session/node-library/CATALOGUE.md` directly — do NOT list the directory first.
+> (2) Store the exact node type names and todo array formats for use in later planning nodes.
+> (3) Output: return the file content as-is — no summarization.
 
-1. `read` — Call `read` with `filePath: "{{SESSION_PATH}}/node-library/CATALOGUE.md"`. Read the file directly — do NOT list the directory first. One `read` call only.
-2. Call `next_step()` to advance.
-
----
-
-Read the node library CATALOGUE.md directly into your context window. This is pure information gathering — exact node type names and todo arrays are needed for planning.
+Call `next_step()` after reading completes.

@@ -1,13 +1,22 @@
 # Session Overview
 
-{{SESSION_GOAL}}
+Orient on this session's concrete objective, then call `next_step()` immediately.
 
-*One sentence stating what this DAG session will accomplish — the concrete objective. This orients HeadWrench at session entry. Good: "Migrate the billing module from Stripe to Square with no breaking API changes." Bad: "Update the billing system." Keep it to one sentence; do not describe phases or steps.*
+**Todo:** `[]`
 
----
+**Zone 1 — Fixed execution spec:**
+> (1) Read the session context below.
+> (2) Call `next_step()` immediately — do not read files, scout, or explore yet.
 
-## STOP — Do not work ahead
+**Zone 2 — Planning agent fills:**
 
-The DAG controls sequencing. Each node will tell you exactly what to do when you arrive at it. **Do not scout, explore, read files, search the codebase, or start any task right now.** The system will guide you step by step — trust it.
+{{SESSION_CONTEXT}}
+One sentence stating what this planning session accomplishes — concrete objective.
+✓ "Migrate the billing module from Stripe to Square with no breaking API changes"
+✗ "Update the billing system"
 
-Your only action at this node is to call `next_step()` immediately.
+**Zone 3 — Fixed constraints:**
+
+The DAG controls sequencing. Each node will specify exactly what to do when you arrive. Do not scout, read files, search the codebase, or start any task until directed. Trust the system.
+
+Call `next_step()` now.
