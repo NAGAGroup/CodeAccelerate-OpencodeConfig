@@ -7,7 +7,11 @@ Call `task` to dispatch @HeadWrench to investigate git history relevant to the t
 **Todo:** `["task"]`
 
 > (1) Fill `{{USER_TASK}}` from the user's original task description.
-> (2) Use this prompt template verbatim as the `prompt` field.
+> (2) The code block below is the exact string to pass as the `prompt` argument in the `task` tool call. The subagent receives it character-for-character — any reformatting, paraphrasing, or newline collapsing produces a broken prompt the subagent cannot follow. Fill `{{USER_TASK}}` then copy it exactly.
+>
+> ✗ Bad task call: prompt is paraphrased, collapsed to one line, or has `\n` literals instead of real newlines — subagent loses all step structure
+> ✓ Good task call: prompt argument is the exact multi-line content of the code block below with slot filled, unchanged otherwise
+>
 > (3) After task returns, call `next_step()`.
 
 ```

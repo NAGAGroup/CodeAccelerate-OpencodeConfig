@@ -19,7 +19,12 @@ Call `sequential-thinking_sequentialthinking` to sharpen the research scope, the
 > (3) (C) <specific toolchain> on <target platform> — <specific operational constraint, prerequisite, or licensing question>
 > ```
 > ✗ Bad: `"Research the <framework> configuration and known issues for the target platform."` — no specific tools named, one undifferentiated blob; ExternalScout cannot form a targeted search from this
-> (5) Use the prompt template below verbatim as the `prompt` field, then call `task`.
+> (5) The code block below is the exact string to pass as the `prompt` argument in the `task` tool call. The subagent receives it character-for-character — any reformatting, paraphrasing, or newline collapsing produces a broken prompt the subagent cannot follow. Fill all slots then copy it exactly.
+>
+> ✗ Bad task call: prompt is paraphrased, collapsed to one line, or has `\n` literals instead of real newlines — subagent loses all step structure
+> ✓ Good task call: prompt argument is the exact multi-line content of the code block below with slots filled, unchanged otherwise
+>
+> Then call `task`.
 > (6) After task returns, call `next_step()`.
 
 Estimate 3–5 thoughts. Use only the required fields — omit `isRevision`, `revisesThought`, `branchFromThought`, and `branchId` unless explicitly revising or branching.

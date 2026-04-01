@@ -8,7 +8,10 @@ Dispatch @HeadWrench to write plan.json and prompt files, then validate, then ve
 
 > (1) Fill `{{PLAN_NAME}}` from the session plan name and `{{PLAN_SUMMARY}}` from the sequential-thinking output — paste the full ASCII diagram and node decomposition table verbatim.
 > (2) Fill `{{NODE_TYPES}}` with a bullet list of every distinct node type used in the plan (e.g., `session-overview`, `scout-parallel`, `decision-gate`).
-> (3) Use this prompt template verbatim as the `prompt` field:
+> (3) The code block below is the exact string to pass as the `prompt` argument in the `task` tool call. The subagent receives it character-for-character — any reformatting, paraphrasing, or newline collapsing produces a broken prompt the subagent cannot follow. Fill all slots then copy it exactly.
+>
+> ✗ Bad task call: prompt is paraphrased, collapsed to one line, or has `\n` literals instead of real newlines — subagent loses all step structure
+> ✓ Good task call: prompt argument is the exact multi-line content of the code block below with slots filled, unchanged otherwise
 
 ```
 You are operating as a subagent. Do not ask the user questions. Do not call plan_session, activate_plan, or next_step — those tools are forbidden in this context.
@@ -42,7 +45,11 @@ Outcome: PASS or FAIL with specific error.
 > (2) If validation fails, dispatch a second @HeadWrench task to fix the specific errors before proceeding.
 > (3) Do not proceed until validation passes.
 
-> (1) Fill `{{PLAN_NAME}}` from the session plan name and use this prompt template verbatim as the `prompt` field.
+> (1) Fill `{{PLAN_NAME}}` from the session plan name. The code block below is the exact string to pass as the `prompt` argument in the `task` tool call. The subagent receives it character-for-character — any reformatting, paraphrasing, or newline collapsing produces a broken prompt the subagent cannot follow. Fill the slot then copy it exactly.
+>
+> ✗ Bad task call: prompt is paraphrased, collapsed to one line, or has `\n` literals instead of real newlines — subagent loses all step structure
+> ✓ Good task call: prompt argument is the exact multi-line content of the code block below with slot filled, unchanged otherwise
+>
 > (2) After task returns, call `next_step()`.
 
 ```
