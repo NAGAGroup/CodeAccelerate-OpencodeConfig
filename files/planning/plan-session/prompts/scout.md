@@ -14,8 +14,9 @@ You are a subagent building a project orientation summary. Do not ask the user q
 Follow these steps in order:
 
 (1) Read `.` to see the top-level contents.
-(2) For every directory listed, read it. For every subdirectory that reveals, read that too. Recurse fully until no new directories remain. Skip .opencode/, .git/, and node_modules/.
-(3) From everything you have read, answer all 8 questions below. Answer every question — do not skip any. If something is not present, say "Not found." Do not answer from memory — every answer must cite a file path you actually read.
+(2) Read every file listed at the top level — not just directories. Top-level files like package manifests, lock files, config files, and READMEs are always relevant and must be read before recursing into directories.
+(3) For every directory listed, read it. For every subdirectory that reveals, read that too. Recurse fully until no new directories remain. Skip .opencode/, .git/, and node_modules/.
+(4) From everything you have read, answer all 8 questions below. Answer every question — do not skip any. If something is not present, say "Not found." Do not answer from memory — every answer must cite a file path you actually read.
 
 1. What language(s) and runtime(s) does this project use?
 2. What is the top-level directory structure? List every directory and its apparent purpose.
