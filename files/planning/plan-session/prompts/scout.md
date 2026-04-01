@@ -26,8 +26,13 @@ To answer the above you MUST follow these steps in order:
 
 (1) Use `read` on `.` (the project root) to get a flat directory listing.
 (2) Read the contents of every top-level file — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
-(3) Run targeted globs and greps on each named source directory (e.g. `glob src/**`, `glob .github/**`). Do NOT glob `.` or `*` or `**/*` from the project root. Do NOT run any glob or search inside: `.git/`, `.pixi/`, `.conda/`, `.cache/`, `build/`, `dist/`, `node_modules/`, `__pycache__/`, `.venv/`.
-(4) Read the contents of files discovered in step (3) that are relevant to any of the 8 questions — build configs, test configs, CI workflow files, deployment configs, entry points.
+(3) For every directory listed in step (1) — except `.git/`, `.pixi/`, `.conda/`, `.cache/`, `build/`, `dist/`, `node_modules/`, `__pycache__/`, `.venv/` — run `glob <dir>/**` to list its contents. Do NOT glob `.` or `*` or `**/*` from the project root.
+(4) Identify grep patterns that would surface files relevant to the 8 questions (e.g. entry point markers, test framework imports, CI trigger keywords, deploy config markers). For every directory listed in step (1) — same skip list as step (3) — run `grep "<pattern>" <dir>` for each pattern. Do NOT grep `.` directly.
+
+✗ Bad grep: `grep "cmake" .` — searches root, hits excluded dirs, too broad
+✓ Good grep: `grep "<entry-point-marker>" <dir-a>`, `grep "<test-framework-import>" <dir-b>` — one pattern per question, one named dir per call
+
+(5) Read the contents of files discovered in steps (3) and (4) that are relevant to any of the 8 questions — build configs, test configs, CI workflow files, deployment configs, entry points.
 
 ✗ Bad output (do not do this):
 

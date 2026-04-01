@@ -8,9 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-- `files/planning/plan-session/prompts/scout.md` — fixed must-do steps: replaced 2-step "read top-level + deep search" with explicit 4-step procedure: (1) `read .` for flat root listing, (2) read all top-level files, (3) targeted `glob dir/**` / grep per named directory (root-level glob explicitly forbidden), (4) read relevant files found; skip list extended with `.cache/`
-- `files/planning/plan-session/prompts/scout-parallel.md` — same 4-step must-do procedure applied to subagent template
-- `files/planning/plan-session/node-library/scout-parallel/prompt-template.md` — same 4-step must-do procedure applied to both Scout 1 and Scout 2 templates
+- `files/planning/plan-session/prompts/scout.md` — fixed must-do steps: replaced 2-step "read top-level + deep search" with explicit 5-step procedure: (1) `read .` for flat root listing, (2) read all top-level files, (3) `glob <dir>/**` for every listed directory — mandatory for all non-excluded dirs, example dirs as `<dir-a>/**` placeholders to prevent anchoring on specific names, (4) identify grep patterns from the 8 questions and run per named directory — mandatory, not gap-filling, with ✗/✓ grep examples using placeholders, (5) read relevant files found in steps (3) and (4); skip list extended with `.cache/`
+- `files/planning/plan-session/prompts/scout-parallel.md` — same 5-step must-do procedure applied to subagent template (grep patterns derived from investigation question)
+- `files/planning/plan-session/node-library/scout-parallel/prompt-template.md` — same 5-step must-do procedure applied to both Scout 1 and Scout 2 templates
 
 - `files/planning/plan-session/prompts/scout.md` — replaced 5-step tool-micromanagement block with job-definition + must-dos (read top-level files, deep search structure); moved ✗ before ✓; added second ✗ for the specific failure mode of abandoning the 8-question format when a single file read 404s
 - `files/planning/plan-session/prompts/scout-parallel.md` — replaced 5-step tool-micromanagement block in subagent template with job-definition + must-dos; moved ✗ before ✓
