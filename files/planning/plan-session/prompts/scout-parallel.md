@@ -6,7 +6,10 @@ Using the two areas and investigation questions identified in the previous node,
 
 **Todo:** `["task", "task"]`
 
-> (1) For each area and investigation question from the sequential-thinking step, dispatch one scout using the template below — fill `{{USER_TASK}}`, `{{AREA}}`, and `{{QUESTION}}`.
+> (1) The code block below is the exact string to pass as the `prompt` argument in each `task` tool call — one call per scout. The subagent receives this string character-for-character — any reformatting, paraphrasing, or newline collapsing produces a broken prompt the subagent cannot follow. Fill `{{USER_TASK}}`, `{{AREA}}`, and `{{QUESTION}}` with the values from the sequential-thinking step, then copy the result exactly.
+>
+> ✗ Bad task call: prompt is paraphrased, collapsed to one line, or has `\n` literals instead of real newlines — subagent loses all step structure
+> ✓ Good task call: prompt argument is the exact multi-line content of the code block below with slots filled, unchanged otherwise
 >
 > `{{QUESTION}}` must be an implication question — not an inventory question. An inventory question asks what exists ("what configs exist, how is it set up"). An implication question asks what the current state means for the change:
 > ✓ Good `{{QUESTION}}`: "What does `<area>` currently declare about `<property relevant to the change>`, and what exactly must be added or verified to support `<target state>` — which `<config keys / package checks / schema fields>`?"

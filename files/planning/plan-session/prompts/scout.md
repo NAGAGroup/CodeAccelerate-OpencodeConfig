@@ -6,7 +6,12 @@ Call `task` to dispatch @ContextScout to answer a fixed set of project orientati
 
 **Todo:** `["task"]`
 
-> (1) Dispatch @ContextScout subagent using this prompt template verbatim as the `prompt` field:
+> (1) The code block below is the exact string to pass as the `prompt` argument in the `task` tool call. The subagent receives this string character-for-character — any reformatting, paraphrasing, or newline collapsing produces a broken prompt the subagent cannot follow. Copy it exactly.
+>
+> ✗ Bad task call: prompt is paraphrased, collapsed to one line, or has `\n` literals instead of real newlines — subagent loses all step structure
+> ✓ Good task call: prompt argument is the exact multi-line content of the code block below, unchanged
+>
+> Dispatch @ContextScout with that prompt:
 
 ```
 You are a subagent building a project orientation summary. Do not ask the user questions. Do NOT read .opencode/, .git/, or node_modules/.

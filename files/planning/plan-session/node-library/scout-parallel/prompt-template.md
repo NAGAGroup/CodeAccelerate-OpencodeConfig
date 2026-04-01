@@ -9,7 +9,12 @@ Dispatch two @ContextScout agents in parallel to investigate two areas of the co
 ## Zone 1 — Fixed execution spec
 
 1. Dispatch two @ContextScout subagents in a single response turn — one per template below
-2. Fill all `{{SCOUT_N_*}}` slots, then use each template verbatim as that scout's `prompt` field
+2. Fill all `{{SCOUT_N_*}}` slots, then pass the result as that scout's `prompt` argument
+
+The code block for each template is the exact string to pass as `prompt`. The subagent receives it character-for-character — reformatting, paraphrasing, or collapsing newlines produces a broken prompt the subagent cannot follow.
+
+✗ Bad task call: prompt is paraphrased, collapsed to one line, or has `\n` literals instead of real newlines — subagent loses all step structure
+✓ Good task call: prompt argument is the exact multi-line template content with slots filled, unchanged otherwise
 
 **Scout 1 template:**
 ```
