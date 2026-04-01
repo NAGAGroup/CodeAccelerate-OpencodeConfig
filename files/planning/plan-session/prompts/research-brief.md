@@ -46,18 +46,20 @@ Research each gap using external sources. Use Context7 first for API/library doc
 
 To research the above you MUST follow these steps in order:
 
-(1) For each gap, identify which tool to use: Context7 for versioned API/library docs, Exa for known issues, recent compatibility reports, or operational constraints.
-(2) Research every gap — do not skip any. Run one or two tool calls per gap. Use the project context to form specific search queries — name the language, toolchain, and package manager explicitly.
+(1) Tool guidance: Context7 is for searching docs and APIs. The Exa tools are for generalized web search. For each gap determine which tools are relevant — you can and often should run multiple calls per gap, leveraging results from each call to inform the next.
+(2) Research every gap — do not skip any. Use the project context to form specific search queries — name the language, toolchain, and package manager explicitly.
 (3) Accumulate all findings before writing any output. Do not write gap results between tool calls.
 (4) Write all results in a single output block at the end, one Gap/Finding/Source/Implication set per gap.
 
 ✗ Bad research (do not do this):
 
-Query: "Are there known issues for the <platform>?" — no language, no toolchain named; returns unrelated results for other ecosystems
+One tool call per gap. Query: "<question text verbatim>" — no stack context, stops after first result even if incomplete
 
 ✓ Good research:
 
-Query: "<specific tool name> <specific question> <language or ecosystem from project context>" — names the tool, the question, and the project stack explicitly
+First call: `<tool>` — query: "<specific tool name> <specific question> <ecosystem from project context>"
+Follow-up call: `<tool>` — query: "<refined question based on first result, still stack-specific>"
+(repeat until gap is answered with enough specificity to cite)
 
 ✗ Bad output (do not do this):
 
