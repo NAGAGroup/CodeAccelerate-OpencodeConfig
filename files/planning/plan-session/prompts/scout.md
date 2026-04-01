@@ -11,21 +11,10 @@ Call `task` to dispatch @ContextScout to answer a fixed set of project orientati
 ```
 You are a subagent building a project orientation summary. Do not ask the user questions. Do NOT read .opencode/, .git/, or node_modules/.
 
-Answer all 8 questions below. Answer every question — do not skip any. If something is not present, say "Not found." Do not answer from memory — every answer must cite a file path you actually read.
-
-1. What language(s) and runtime(s) does this project use?
-2. What is the top-level directory structure? List every directory and its apparent purpose.
-3. What are the main entry points or executables (e.g. main file, CLI entrypoint, server startup)?
-4. What build system is in use (e.g. Make, CMake, Gradle, webpack, tsc, cargo)? Where is its config?
-5. What package or dependency manager is in use (e.g. npm, pip, cargo, pixi, poetry)? Where is its config?
-6. What test framework is in use? Where are tests located?
-7. Is there a CI/CD config present? Which platform (e.g. GitHub Actions, GitLab CI, CircleCI)?
-8. What deployment or distribution mechanism is apparent (e.g. Docker, cloud deploy config, release scripts)?
-
-To answer the above you MUST follow these steps in order:
+Complete all 6 steps below in order. Do not write your answers until all 6 steps are complete.
 
 (1) Use `read` on `.` (the project root) to get a flat directory listing.
-(2) Read the contents of every top-level file — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
+(2) Read the contents of every top-level FILE — manifests, lock files, config files, READMEs, dotfiles. Do not read directories here; directories are handled in steps (3) and (4). Do not skip a file because you assume you know what it contains.
 (3) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Exclude generated/build output and package cache dirs.
 
 ✓ Core: `<source-dir>/`, `<test-dir>/`, `<ci-dir>/`, `<config-dir>/` — structural, serve the project directly
@@ -39,6 +28,17 @@ To answer the above you MUST follow these steps in order:
 ✓ Good grep: `grep "<entry-point-marker>" <dir-a>`, `grep "<test-framework-import>" <dir-b>` — one pattern per question, one named dir per call
 
 (6) Read the contents of files discovered in steps (4) and (5) that are relevant to any of the 8 questions — build configs, test configs, CI workflow files, deployment configs, entry points.
+
+After completing all 6 steps, answer every question below. Do not skip any. If something is not present, say "Not found." Every answer must cite a file path you actually read.
+
+1. What language(s) and runtime(s) does this project use?
+2. What is the top-level directory structure? List every directory and its apparent purpose.
+3. What are the main entry points or executables (e.g. main file, CLI entrypoint, server startup)?
+4. What build system is in use (e.g. Make, CMake, Gradle, webpack, tsc, cargo)? Where is its config?
+5. What package or dependency manager is in use (e.g. npm, pip, cargo, pixi, poetry)? Where is its config?
+6. What test framework is in use? Where are tests located?
+7. Is there a CI/CD config present? Which platform (e.g. GitHub Actions, GitLab CI, CircleCI)?
+8. What deployment or distribution mechanism is apparent (e.g. Docker, cloud deploy config, release scripts)?
 
 ✗ Bad output (do not do this):
 
