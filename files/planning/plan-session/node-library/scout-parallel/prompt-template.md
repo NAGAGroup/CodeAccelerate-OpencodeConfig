@@ -15,7 +15,7 @@ Discovery question: {{SCOUT_1_QUESTION}}
 
 Files/patterns to read: {{SCOUT_1_FILES}}
 
-Do NOT read .opencode/ directory. Use glob patterns like glob("src/**/*.ts").
+Do NOT read .opencode/ directory. Glob syntax: ✓ glob("**/*.cmake") ✗ glob("a.cmake,b.cmake")
 
 Return: specific findings with file:line citations. State "Nothing found" if nothing is relevant. No interpretation.
 ```
@@ -26,7 +26,7 @@ Discovery question: {{SCOUT_2_QUESTION}}
 
 Files/patterns to read: {{SCOUT_2_FILES}}
 
-Do NOT read .opencode/ directory. Use glob patterns like glob("src/**/*.ts").
+Do NOT read .opencode/ directory. Glob syntax: ✓ glob("**/*.cmake") ✗ glob("a.cmake,b.cmake")
 
 Return: specific findings with file:line citations. State "Nothing found" if nothing is relevant. No interpretation.
 ```

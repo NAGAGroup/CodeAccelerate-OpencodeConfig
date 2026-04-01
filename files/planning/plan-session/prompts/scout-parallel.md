@@ -4,7 +4,7 @@ Call `task` twice in a single response to dispatch Scout 2 and Scout 3 in parall
 
 **Todo:** `["task", "task"]`
 
-## Scout 2 — Code Patterns
+**Scout 2 — Code Patterns**
 
 > (1) Fill `{{USER_TASK}}` from the user's original task description.
 > (2) Fill `{{SCOUT_1_OUTPUT}}` from Scout 1's task result — paste verbatim, all lines.
@@ -16,14 +16,16 @@ Task: {{USER_TASK}}
 Project map (Scout 1 findings):
 {{SCOUT_1_OUTPUT}}
 
-Your job: identify naming conventions, structural patterns, and coding style in source files relevant to the task above. Read the files listed in the project map. Extract patterns with file:line citations.
+Your job: identify naming conventions, structural patterns, and coding style in source files relevant to the task above.
 
-Do NOT read .opencode/ directory. Use glob("src/**/*.ts") not glob("a.ts,b.ts").
+From the project map above, derive a concrete list of source files to read (pick the files most relevant to the task — typically 3–6 files). Call `read` on each file directly. Do NOT use grep. Do NOT read .opencode/.
 
-Return: specific patterns and file:line references only. State "Nothing found" if nothing is relevant.
+Glob syntax if needed: ✓ glob("**/*.cmake") ✗ glob("a.cmake,b.cmake")
+
+Return: specific patterns and file:line citations. State "Nothing found" if nothing is relevant.
 ```
 
-## Scout 3 — Dependencies & Integration
+**Scout 3 — Dependencies & Integration**
 
 > (1) Fill `{{USER_TASK}}` from the user's original task description.
 > (2) Fill `{{SCOUT_1_OUTPUT}}` from Scout 1's task result — paste verbatim, all lines.
@@ -35,11 +37,11 @@ Task: {{USER_TASK}}
 Project map (Scout 1 findings):
 {{SCOUT_1_OUTPUT}}
 
-Your job: identify build dependencies, external libraries, public interfaces, and integration boundaries relevant to the task above. Read build config files and dependency manifests listed in the project map.
+Your job: identify build dependencies, external libraries, public interfaces, and integration boundaries relevant to the task above.
 
-Do NOT read .opencode/ directory.
+From the project map above, derive a concrete list of build config and dependency manifest files to read (e.g. CMakeLists.txt, pixi.toml, Cargo.toml, package.json, Makefile — whichever are present). Call `read` on each file directly. Do NOT use grep. Do NOT read .opencode/.
 
-Return: dependency names, versions, and exact file references only. State "No relevant boundaries found" if nothing applies.
+Return: dependency names, versions, and exact file:line references. State "No relevant boundaries found" if nothing applies.
 ```
 
 Call `next_step()` after both tasks complete.
