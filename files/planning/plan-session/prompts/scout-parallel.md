@@ -28,9 +28,21 @@ Area to investigate: {{AREA}}
 
 Investigation question: {{QUESTION}}
 
-Start by reading the repository root with `read .` to understand what exists. Use what you find there to decide where to look — do not search by area name or keyword. Read the files that look relevant to the investigation question based on what the project actually contains.
+Follow these steps in order:
 
-Return: the files you read (with paths), key facts from their contents relevant to the investigation question, and a direct answer to the question. State "Nothing found" if nothing is relevant.
+(1) Read `.` to see what the project contains.
+(2) From that listing, name the files most likely to answer the investigation question.
+(3) Read each of those files.
+(4) Return your findings.
+
+Return format:
+- Files opened: list every file you called `read` on, with its path
+- Findings: for each file, quote or paraphrase the specific lines that answer the investigation question — include line numbers
+- Direct answer: answer the investigation question based on what you read
+
+✓ read(.) → identifies 3 relevant files → reads all 3 → returns specific line citations answering the question: "file-a.ext line 12: [exact value]. file-b.ext: [exact relevant section]. file-c.ext: no relevant content found."
+
+✗ read(.) → identifies 3 relevant files → returns: "file-a.ext contains [area] configuration. file-b.ext contains [area] settings." — describes what files probably contain without reading them
 ```
 
 Call `next_step()` after both tasks complete.
