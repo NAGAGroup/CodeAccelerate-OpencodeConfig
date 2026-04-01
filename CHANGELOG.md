@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `files/planning/plan-session/prompts/research-brief.md` — added `{{PROJECT_CONTEXT}}` slot to dispatch template (language, toolchain, package manager summary) with ✓/✗ fill examples; without it ExternalScout searches generically and returns results for the wrong ecosystem; added explicit 4-step research procedure inside the template (tool selection, run every gap, accumulate findings before writing, single output block at end); added ✗/✓ query examples showing stack-specific vs generic queries; moved ✗ output before ✓ output; added constraint that output must be written once at the end — not between tool calls
+
 - `files/planning/plan-session/prompts/scout.md` — fixed must-do steps: replaced 2-step "read top-level + deep search" with explicit 5-step procedure: (1) `read .` for flat root listing, (2) read all top-level files, (3) `glob <dir>/**` for every listed directory — mandatory for all non-excluded dirs, example dirs as `<dir-a>/**` placeholders to prevent anchoring on specific names, (4) identify grep patterns from the 8 questions and run per named directory — mandatory, not gap-filling, with ✗/✓ grep examples using placeholders, (5) read relevant files found in steps (3) and (4); skip list extended with `.cache/`
 - `files/planning/plan-session/prompts/scout-parallel.md` — same 5-step must-do procedure applied to subagent template (grep patterns derived from investigation question)
 - `files/planning/plan-session/node-library/scout-parallel/prompt-template.md` — same 5-step must-do procedure applied to both Scout 1 and Scout 2 templates

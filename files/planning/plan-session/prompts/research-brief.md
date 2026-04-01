@@ -8,9 +8,10 @@ Call `sequential-thinking_sequentialthinking` to sharpen the research scope, the
 
 > (1) Call `sequential-thinking_sequentialthinking` to reason: for every gap marked APPLIES in pre-research-thinking thought 2, map it to a question type — (A) syntax/API, (B) compatibility, (C) operational constraints — then formulate one concrete answerable question per gap. Do not drop any APPLIES gap. Output: one research question per gap, typed.
 > (2) Fill `{{USER_TASK}}` from the user's original task description.
-> (3) Fill `{{RESEARCH_GAPS}}` with the sharpened research questions from step (1) — not the original gaps verbatim.
-> (4) Use the prompt template below verbatim as the `prompt` field, then call `task`.
-> (5) After task returns, call `next_step()`.
+> (3) Fill `{{PROJECT_CONTEXT}}` with a one-paragraph summary of the project's language, build toolchain, package manager, and any other context ExternalScout needs to search accurately. This is the only project context ExternalScout receives — be specific.
+> (4) Fill `{{RESEARCH_GAPS}}` with the sharpened research questions from step (1) — not the original gaps verbatim.
+> (5) Use the prompt template below verbatim as the `prompt` field, then call `task`.
+> (6) After task returns, call `next_step()`.
 
 Estimate 3–5 thoughts. Use only the required fields — omit `isRevision`, `revisesThought`, `branchFromThought`, and `branchId` unless explicitly revising or branching.
 
@@ -20,14 +21,24 @@ Estimate 3–5 thoughts. Use only the required fields — omit `isRevision`, `re
 `sequential-thinking_sequentialthinking({ thought: "Sharpened questions — one per gap, typed: (1) <type-A: syntax/API question naming the specific tool and what format detail is needed>. (2) <type-B: compatibility question naming the tool and target platform>. (3) <type-C: operational constraints question naming the toolchain, target platform, and what system-level or licensing detail is needed>.", thoughtNumber: 3, totalThoughts: 4, nextThoughtNeeded: true })`
 `sequential-thinking_sequentialthinking({ thought: "<verify each question is answerable by external docs and unlocks a specific blocked implementation decision — not a general knowledge question>", thoughtNumber: 4, totalThoughts: 4, nextThoughtNeeded: false })`
 
-✓ Good `{{RESEARCH_GAPS}}` fill (what to write in step (3)):
+✓ Good `{{PROJECT_CONTEXT}}` fill:
+```
+C++23 project using CMake 4.x with Ninja as the build generator. Package and toolchain management via Pixi (conda-forge channel). Dependencies: cmake, cxx-compiler (GCC/Clang), catch2, ninja, clang-format, clang-tools, llvm-tools, doxygen. Currently supports linux-64 only.
+```
+✗ Bad `{{PROJECT_CONTEXT}}` fill:
+```
+A software project that needs win-64 support.
+```
+— no language, no toolchain, no package manager named; ExternalScout will search generically and return Python/JS results unrelated to the actual stack
+
+✓ Good `{{RESEARCH_GAPS}}` fill:
 ```
 (1) <specific tool name> — <specific syntax or config question>
 (2) <specific tool name> on <target platform> — <specific compatibility or availability question>
 (3) <specific toolchain> on <target platform> — <specific operational constraint, prerequisite, or licensing question>
 ```
 
-✗ Bad `{{RESEARCH_GAPS}}` fill (do not do this):
+✗ Bad `{{RESEARCH_GAPS}}` fill:
 ```
 Research the framework configuration and known issues for the target platform.
 ```
@@ -40,19 +51,35 @@ You are a subagent. The primary agent is planning a solution to this user task a
 
 User task: {{USER_TASK}}
 
+Project context: {{PROJECT_CONTEXT}}
+
 Research gaps identified:
 {{RESEARCH_GAPS}}
 
 Research each gap using external sources. Use Context7 first for API/library docs; use Exa for recency-sensitive questions. Do not read project files — external sources only.
 
-For each gap, use these sections:
+To research the above you MUST follow these steps in order:
 
-## Gap
-## Finding
-## Source
-## Implication
+(1) For each gap, identify which tool to use: Context7 for versioned API/library docs, Exa for known issues, recent compatibility reports, or operational constraints.
+(2) Research every gap — do not skip any. Run one or two tool calls per gap. Use the project context to form specific search queries — name the language, toolchain, and package manager explicitly.
+(3) Accumulate all findings before writing any output. Do not write gap results between tool calls.
+(4) Write all results in a single output block at the end, one Gap/Finding/Source/Implication set per gap.
 
-✓ Good output:
+✗ Bad research (do not do this):
+
+Query: "Are there known issues for the <platform>?" — no language, no toolchain named; returns unrelated results for other ecosystems
+
+✓ Good research:
+
+Query: "<specific tool name> <specific question> <language or ecosystem from project context>" — names the tool, the question, and the project stack explicitly
+
+✗ Bad output (do not do this):
+
+`<Tool>` supports this. See the documentation for details.
+
+— no gap restatement, no source, no implication; vague sentence written mid-session between tool calls instead of as a single final output block
+
+✓ Good output (write once at the end, after all research is complete):
 
 ## Gap
 <Restate the research question exactly.>
@@ -66,11 +93,7 @@ For each gap, use these sections:
 ## Implication
 <One sentence: what this means for the implementation plan.>
 
-✗ Bad output (do not do this):
-
-`<Tool>` supports this. See the documentation for details.
-
-— no gap restatement, no source, no implication, finding is a single vague sentence that could have been written without looking anything up
+(repeat for every gap)
 
 **Outcome:** PASS — findings for all gaps returned above. If a gap could not be researched, write FAIL and state which gap and why.
 ```
