@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- `files/planning/plan-session/prompts/scout-node-library.md` — restored `{{SESSION_PATH}}/node-library/CATALOGUE.md` path token (was hardcoded to `files/planning/plan-session/node-library/CATALOGUE.md` by a prior rewrite, causing "File not found" on every planning session because the path resolves against the user's project directory, not the registry install location)
+
 ### Changed
 
 - Replaced all language/framework/domain-specific examples in node-library prompt-templates with stack-agnostic equivalents; affected files: `analyze-deep/prompt-template.md`, `compression-node/prompt-template.md`, `generic/prompt-template.md`, `parallel-tasks/prompt-template.md`, `research-basic/prompt-template.md`, `scout-parallel/prompt-template.md`, `sequential-thinking/prompt-template.md`, `verification-check/prompt-template.md` (replaced C++/TypeScript/npm/bun references with generic Python/Go/make examples that work across any stack)
