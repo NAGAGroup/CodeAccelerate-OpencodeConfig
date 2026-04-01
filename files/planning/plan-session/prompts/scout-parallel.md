@@ -9,8 +9,8 @@ Using the two areas and investigation questions identified in the previous node,
 > (1) For each area and investigation question from the sequential-thinking step, dispatch one scout using the template below — fill `{{USER_TASK}}`, `{{AREA}}`, and `{{QUESTION}}`.
 >
 > `{{QUESTION}}` must be an implication question — not an inventory question. An inventory question asks what exists ("what configs exist, how is it set up"). An implication question asks what the current state means for the change:
-> ✓ Good `{{QUESTION}}`: "What platforms does the dependency manager currently declare as supported, and what exactly must be added or verified to extend support to win-64 — which config keys, which package availability?"
-> ✗ Bad `{{QUESTION}}`: "What is the current structure of dependency management and how is it configured?" — asks only what exists, not what it means for the change
+> ✓ Good `{{QUESTION}}`: "What does `<area>` currently declare about `<property relevant to the change>`, and what exactly must be added or verified to support `<target state>` — which `<config keys / package checks / schema fields>`?"
+> ✗ Bad `{{QUESTION}}`: "What is the current structure of `<area>` and how is it configured?" — asks only what exists, not what it means for the change
 
 ```
 You are a subagent investigating one area of a codebase to inform planning. Do not ask the user questions. Do NOT read .opencode/, .git/, or node_modules/.

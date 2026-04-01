@@ -126,8 +126,8 @@ The conceptual area Scout 1 investigates (e.g., "build system", "auth/security s
 
 **{{SCOUT_1_QUESTION}}**
 An implication question: what does the current state of this area constrain or enable for the specific change? Not an inventory question.
-✓ Good: `"What platforms does the dependency manager currently declare as supported, and what exactly must be added or verified to extend support to the new platform — which config keys, which package availability checks?"`
-✗ Bad: `"What dependency management files does this project use?"` — asks only what exists; does not ask what constraint it imposes or what change is needed
+✓ Good: `"What does <area> currently declare about <property relevant to the change>, and what exactly must be added or verified to support <target state> — which <config keys / schema fields / availability checks>?"`
+✗ Bad: `"What <area> files does this project use?"` — asks only what exists; does not ask what constraint it imposes or what change is needed
 
 **{{SCOUT_2_AREA}}**
 The conceptual area Scout 2 investigates.
@@ -136,8 +136,8 @@ The conceptual area Scout 2 investigates.
 
 **{{SCOUT_2_QUESTION}}**
 An implication question: what does the current state of this area constrain or enable for the specific change? Not an inventory question.
-✓ Good: `"Which CI jobs currently run, on what platforms, and what exactly must be added to run those same jobs on the new platform — new matrix entry, new runner image, new environment setup?"`
-✗ Bad: `"What CI files exist in the project?"` — asks only what exists; does not ask what must change
+✓ Good: `"What does <area> currently run on, and what exactly must be added to extend that to <target state> — which <matrix entries / runner images / environment steps>?"`
+✗ Bad: `"What <area> files exist in the project?"` — asks only what exists; does not ask what must change
 
 ## Zone 3 — Fixed constraints
 

@@ -23,24 +23,23 @@ Estimate 3–5 thoughts. Use only the required fields — omit `isRevision`, `re
 
 ✓ Good `{{PROJECT_CONTEXT}}` fill:
 ```
-C++23 project using CMake 4.x with Ninja as the build generator. Package and toolchain management via Pixi (conda-forge channel). Dependencies: cmake, cxx-compiler (GCC/Clang), catch2, ninja, clang-format, clang-tools, llvm-tools, doxygen. Currently supports linux-64 only.
+<language and version> project using <build tool> with <build generator>. Package and toolchain management via <package manager> (<channel>). Dependencies: <dep-1>, <dep-2>, <dep-3>. Currently supports <current-platform> only.
 ```
 ✗ Bad `{{PROJECT_CONTEXT}}` fill:
 ```
-A software project that needs win-64 support.
+A software project that needs <target> support.
 ```
-— no language, no toolchain, no package manager named; ExternalScout will search generically and return Python/JS results unrelated to the actual stack
+— no language, no toolchain, no package manager named; ExternalScout will search generically and return results for the wrong ecosystem
 
 ✓ Good `{{RESEARCH_GAPS}}` fill:
 ```
-(1) <specific tool name> — <specific syntax or config question>
-(2) <specific tool name> on <target platform> — <specific compatibility or availability question>
-(3) <specific toolchain> on <target platform> — <specific operational constraint, prerequisite, or licensing question>
+(1) (A) <specific tool name> — <specific syntax or config question>
+(2) (B) <specific tool name> on <target platform> — <specific compatibility or availability question>
+(3) (C) <specific toolchain> on <target platform> — <specific operational constraint, prerequisite, or licensing question>
 ```
-
 ✗ Bad `{{RESEARCH_GAPS}}` fill:
 ```
-Research the framework configuration and known issues for the target platform.
+Research the <framework> configuration and known issues for the target platform.
 ```
 — no specific tools named, one undifferentiated blob; ExternalScout cannot form a targeted search from this
 
