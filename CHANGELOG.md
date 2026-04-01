@@ -8,10 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-- `files/planning/plan-session/prompts/scout-node-library.md` — restored `{{SESSION_PATH}}/node-library/CATALOGUE.md` path token (was hardcoded to `files/planning/plan-session/node-library/CATALOGUE.md` by a prior rewrite, causing "File not found" on every planning session because the path resolves against the user's project directory, not the registry install location)
+- `files/planning/plan-session/prompts/git-context.md` — added explicit subagent-mode declaration to dispatch template; the task context slot is now labeled "reference only" to prevent the subagent from treating it as an active directive and asking the user questions
+
 
 ### Changed
 
+- Rewrite of all 6 agent files from first principles targeting Qwen3-14B as minimum-capability model: `files/agents/headwrench.md`, `files/agents/context-scout.md`, `files/agents/context-insurgent.md`, `files/agents/junior-dev.md`, `files/agents/external-scout.md`, `files/agents/quick-doc.md` — removed H2/H3 section headers, capped lists at ≤6 items, removed code-block tool call syntax examples, reframed constraints to positive framing; removed `steps` field from all agents except `context-scout.md` (updated to `steps: 50`)
+- `files/plugins/planning-enforcement.ts`: removed `experimental.chat.system.transform` hook that injected `[DAG_ACTIVE]` marker into system prompt
+- `files/plugins/planning-enforcement.ts`: softened `next_step` enforcement message to allow exempt tools (question, compress, sequential-thinking_sequentialthinking) before advancing
 - Replaced all language/framework/domain-specific examples in node-library prompt-templates with stack-agnostic equivalents; affected files: `analyze-deep/prompt-template.md`, `compression-node/prompt-template.md`, `generic/prompt-template.md`, `parallel-tasks/prompt-template.md`, `research-basic/prompt-template.md`, `scout-parallel/prompt-template.md`, `sequential-thinking/prompt-template.md`, `verification-check/prompt-template.md` (replaced C++/TypeScript/npm/bun references with generic Python/Go/make examples that work across any stack)
 - All 14 planning session prompts rewritten from first principles for non-thinking Qwen3-14B compliance: action-first openers (R1), no numbered prose steps (R2), `next_step()` last line only (R3), no H2/H3 section headers (R4), dispatch blockquote immediately after todo (R5), output constraint last in every blockquote (R6), ≤6 items per list (R7), glob examples in all scout dispatches (R8), routing by exact node IDs (R9), scope restrictions in blockquote (R10), no "After X returns" sections (R12), no `task_id` in blockquotes (R13), plain reasoning instructions for sequential-thinking nodes (R16/R16b)
 - All 14 node-library prompt-templates rewritten from first principles applying the same 16-rule set; reduced combined line count by ~1000 lines; two-audience Zone 1/2/3 structure preserved with `{{PLACEHOLDER}}` + adjacent `✓`/`✗` examples (R14)
