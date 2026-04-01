@@ -9,7 +9,16 @@ Call `sequential-thinking_sequentialthinking` to sharpen the research scope, the
 > (1) Call `sequential-thinking_sequentialthinking` to reason: for every gap marked APPLIES in pre-research-thinking thought 2, map it to a question type — (A) syntax/API, (B) compatibility, (C) operational constraints — then formulate one concrete answerable question per gap. Do not drop any APPLIES gap. Output: one research question per gap, typed.
 > (2) Fill `{{USER_TASK}}` from the user's original task description.
 > (3) Fill `{{PROJECT_CONTEXT}}` with a one-paragraph summary of the project's language, build toolchain, package manager, and any other context ExternalScout needs to search accurately. This is the only project context ExternalScout receives — be specific.
+> ✓ Good: `"<language and version> project using <build tool> with <build generator>. Package and toolchain management via <package manager> (<channel>). Dependencies: <dep-1>, <dep-2>, <dep-3>. Currently supports <current-platform> only."`
+> ✗ Bad: `"A software project that needs <target> support."` — no language, no toolchain, no package manager named; ExternalScout will search generically and return results for the wrong ecosystem
 > (4) Fill `{{RESEARCH_GAPS}}` with the sharpened research questions from step (1) — not the original gaps verbatim.
+> ✓ Good:
+> ```
+> (1) (A) <specific tool name> — <specific syntax or config question>
+> (2) (B) <specific tool name> on <target platform> — <specific compatibility or availability question>
+> (3) (C) <specific toolchain> on <target platform> — <specific operational constraint, prerequisite, or licensing question>
+> ```
+> ✗ Bad: `"Research the <framework> configuration and known issues for the target platform."` — no specific tools named, one undifferentiated blob; ExternalScout cannot form a targeted search from this
 > (5) Use the prompt template below verbatim as the `prompt` field, then call `task`.
 > (6) After task returns, call `next_step()`.
 
@@ -20,28 +29,6 @@ Estimate 3–5 thoughts. Use only the required fields — omit `isRevision`, `re
 `sequential-thinking_sequentialthinking({ thought: "Three question types: (A) syntax/API — current config format for a specific tool I don't know confidently. (B) compatibility — known issues or missing packages for the target platform. (C) operational constraints — system prerequisites, licensing restrictions, runtime requirements, or platform behavior differences that affect configuration and won't surface in docs unless asked explicitly. Gap-to-type mapping: (<gap-letter>) → type <A/B/C>. (<gap-letter>) → type <A/B/C>. (<gap-letter>) → type <A/B/C>. Type C gaps are the ones most likely to be missed — they require an explicit question.", thoughtNumber: 2, totalThoughts: 4, nextThoughtNeeded: true })`
 `sequential-thinking_sequentialthinking({ thought: "Sharpened questions — one per gap, typed: (1) <type-A: syntax/API question naming the specific tool and what format detail is needed>. (2) <type-B: compatibility question naming the tool and target platform>. (3) <type-C: operational constraints question naming the toolchain, target platform, and what system-level or licensing detail is needed>.", thoughtNumber: 3, totalThoughts: 4, nextThoughtNeeded: true })`
 `sequential-thinking_sequentialthinking({ thought: "<verify each question is answerable by external docs and unlocks a specific blocked implementation decision — not a general knowledge question>", thoughtNumber: 4, totalThoughts: 4, nextThoughtNeeded: false })`
-
-✓ Good `{{PROJECT_CONTEXT}}` fill:
-```
-<language and version> project using <build tool> with <build generator>. Package and toolchain management via <package manager> (<channel>). Dependencies: <dep-1>, <dep-2>, <dep-3>. Currently supports <current-platform> only.
-```
-✗ Bad `{{PROJECT_CONTEXT}}` fill:
-```
-A software project that needs <target> support.
-```
-— no language, no toolchain, no package manager named; ExternalScout will search generically and return results for the wrong ecosystem
-
-✓ Good `{{RESEARCH_GAPS}}` fill:
-```
-(1) (A) <specific tool name> — <specific syntax or config question>
-(2) (B) <specific tool name> on <target platform> — <specific compatibility or availability question>
-(3) (C) <specific toolchain> on <target platform> — <specific operational constraint, prerequisite, or licensing question>
-```
-✗ Bad `{{RESEARCH_GAPS}}` fill:
-```
-Research the <framework> configuration and known issues for the target platform.
-```
-— no specific tools named, one undifferentiated blob; ExternalScout cannot form a targeted search from this
 
 ✗ `sequential-thinking_sequentialthinking({ thought: "The gaps from pre-research-thinking seem important. I'll ask ExternalScout to research them.", thoughtNumber: 1, totalThoughts: 1, nextThoughtNeeded: false })` — no gap-to-type mapping, no question formulation, passes the original gaps straight through unchanged in a single thought
 
