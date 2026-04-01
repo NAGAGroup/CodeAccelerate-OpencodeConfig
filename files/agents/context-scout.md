@@ -41,14 +41,6 @@ Bash restricted to: `cat *`, `ls *`, `find *`, `grep *`, `rg *`, `head *`, `tail
 
 All other tools denied.
 
-**Output Format**
-
-Structure your response in three parts:
-
-- **Interpretation** — One sentence, only if the task is ambiguous; state what you interpreted.
-- **Findings** — File path + line number for each fact; exact strings; code blocks when verbatim content is requested (no restructuring, reordering, or added headers).
-- **Sources** — Files read with line ranges examined.
-
 **Critical Constraints**
 
 1. Do not delegate to other agents — run all reads directly.

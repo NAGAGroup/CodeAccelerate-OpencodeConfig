@@ -25,13 +25,19 @@ To answer you MUST follow these steps in order:
 
 (1) Use `read` on `.` (the project root) to get a flat directory listing.
 (2) Read the contents of every top-level file relevant to the area — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
-(3) For every directory listed in step (1) — except `.git/`, `.pixi/`, `.conda/`, `.cache/`, `build/`, `dist/`, `node_modules/`, `__pycache__/`, `.venv/` — run `glob <dir>/**` to list its contents. Do NOT glob `.` or `*` or `**/*` from the project root.
-(4) Identify grep patterns that would surface files relevant to the investigation question (e.g. config keys, import statements, markers specific to the area). For every directory listed in step (1) — same skip list as step (3) — run `grep "<pattern>" <dir>` for each pattern. Do NOT grep `.` directly.
+(3) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Exclude generated/build output and package cache dirs.
+
+✓ Core: `<source-dir>/`, `<test-dir>/`, `<ci-dir>/`, `<config-dir>/` — structural, serve the project directly
+✗ Not core: `<build-output-dir>/`, `<package-cache-dir>/` — generated or fetched content, not project source
+
+(4) For each core directory identified in step (3), run `glob <dir>/**` to list its contents. Do NOT glob `.` or `*` or `**/*` from the project root.
+
+(5) Identify grep patterns that would surface files relevant to the investigation question (e.g. config keys, import statements, markers specific to the area). For each core directory from step (3), run `grep "<pattern>" <dir>` for each pattern. Do NOT grep `.` directly.
 
 ✗ Bad grep: `grep "<keyword>" .` — searches root, hits excluded dirs, too broad
 ✓ Good grep: `grep "<area-specific-pattern>" <dir-a>`, `grep "<config-key>" <dir-b>` — one pattern per discovery need, one named dir per call
 
-(5) Read the contents of files discovered in steps (3) and (4) that are relevant to the investigation question.
+(6) Read the contents of files discovered in steps (4) and (5) that are relevant to the investigation question.
 
 ✗ Bad output (do not do this):
 
@@ -78,13 +84,19 @@ To answer you MUST follow these steps in order:
 
 (1) Use `read` on `.` (the project root) to get a flat directory listing.
 (2) Read the contents of every top-level file relevant to the area — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
-(3) For every directory listed in step (1) — except `.git/`, `.pixi/`, `.conda/`, `.cache/`, `build/`, `dist/`, `node_modules/`, `__pycache__/`, `.venv/` — run `glob <dir>/**` to list its contents. Do NOT glob `.` or `*` or `**/*` from the project root.
-(4) Identify grep patterns that would surface files relevant to the investigation question (e.g. config keys, import statements, markers specific to the area). For every directory listed in step (1) — same skip list as step (3) — run `grep "<pattern>" <dir>` for each pattern. Do NOT grep `.` directly.
+(3) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Exclude generated/build output and package cache dirs.
+
+✓ Core: `<source-dir>/`, `<test-dir>/`, `<ci-dir>/`, `<config-dir>/` — structural, serve the project directly
+✗ Not core: `<build-output-dir>/`, `<package-cache-dir>/` — generated or fetched content, not project source
+
+(4) For each core directory identified in step (3), run `glob <dir>/**` to list its contents. Do NOT glob `.` or `*` or `**/*` from the project root.
+
+(5) Identify grep patterns that would surface files relevant to the investigation question (e.g. config keys, import statements, markers specific to the area). For each core directory from step (3), run `grep "<pattern>" <dir>` for each pattern. Do NOT grep `.` directly.
 
 ✗ Bad grep: `grep "<keyword>" .` — searches root, hits excluded dirs, too broad
 ✓ Good grep: `grep "<area-specific-pattern>" <dir-a>`, `grep "<config-key>" <dir-b>` — one pattern per discovery need, one named dir per call
 
-(5) Read the contents of files discovered in steps (3) and (4) that are relevant to the investigation question.
+(6) Read the contents of files discovered in steps (4) and (5) that are relevant to the investigation question.
 
 ✗ Bad output (do not do this):
 
