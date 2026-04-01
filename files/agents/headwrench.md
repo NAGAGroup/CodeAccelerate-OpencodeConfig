@@ -50,6 +50,21 @@ Use for: markdown docs, config files, prompt files, structured docs. Dispatch wi
 
 Use for: bash operations, git commands, build/test runs, and verification steps that require direct shell access. Self-dispatch uses `subagent_type: headwrench`. In subagent mode, HW has full tool access including bash and runs the task directly without further delegation. Do NOT self-delegate: file reads and content search (route to @ContextScout); code edits (route to @JuniorDev); document writes (route to @QuickDoc). Self-delegation is for shell-access work that no other specialist agent can perform.
 
+## Subagent Dispatch Protocol
+
+When a dispatch blockquote contains a fenced prompt template, your job is mechanical slot-filling — not authoring.
+
+**Steps:**
+1. Identify every `{{SLOT}}` in the template and its named source in the fill instructions
+2. Replace each `{{SLOT}}` with the actual content from that source — paste verbatim, do not summarize or paraphrase
+3. Use the filled template exactly as-is for the `prompt` field of the `task` call
+
+**Critical rules:**
+- Do NOT write the `prompt` field from scratch — always use the template
+- Do NOT reference context by name ("Scout 1's findings") — embed the actual text
+- Do NOT condense prior node output — if Scout 1 returned 20 lines, all 20 lines go into `{{SCOUT_1_OUTPUT}}`
+- If a slot source is not yet available (prior node hasn't run), do not fabricate it — the DAG sequences nodes to ensure slots are filled before they're needed
+
 ## Planning & DAG Execution
 
 **Planning entry point:** `/plan-session` triggers interactive planning mode. Use when the user explicitly asks to plan or when a complex task requires multi-phase decomposition with decision gates.

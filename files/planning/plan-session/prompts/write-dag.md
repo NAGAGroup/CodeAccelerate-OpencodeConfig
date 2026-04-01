@@ -4,24 +4,49 @@ Dispatch @HeadWrench to write plan.json and prompt files, then validate, then ve
 
 **Todo:** `["task", "validate_dag", "task"]`
 
-> (1) Dispatch @HeadWrench: write `.opencode/session-plans/{name}/plan.json` and all prompt files
-> (2) Subagent must read `node-library/CATALOGUE.md` and each node type's README + prompt-template
-> (3) Subagent calls `init_dag` (entry node), then `add_node` for each subsequent node
-> (4) Write prompts to `.opencode/session-plans/{name}/prompts/{node-id}.md` — filename must match node ID
-> (5) Return: paths written, final `show_dag` output, confirmation that all prompt filenames exist
-> (6) Output constraint: confirm all files written successfully
+## Task 1 — Write DAG
 
-> (1) Call `validate_dag` with the plan name
-> (2) Report validation result: pass or specific errors (JSON syntax, duplicate node IDs, missing prompts)
-> (3) Do not proceed past this blockquote until validation passes
-> (4) If errors occur, include them in return so the next subagent can fix them
-> (5) Output constraint: validation result (pass/fail + errors if any)
+> (1) Fill `{{PLAN_NAME}}` from the session plan name.
+> (2) Fill `{{PLAN_SUMMARY}}` from the sequential-thinking node output — paste verbatim.
+> (3) Use this prompt template verbatim as the `prompt` field.
 
-> (1) Dispatch @HeadWrench: verify all prompt files exist, all node IDs are unique, all branches point to valid nodes
-> (2) Check: terminal nodes have no `next` field; every node has matching prompt file
-> (3) Fix any issues found in place (correct JSON, create missing prompts, fix branch routing)
-> (4) Verify: no unresolved `{{PLACEHOLDER}}` text in any prompt file
-> (5) Return: checklist status, issues found + fixed, confirmation "DAG is ready for activation"
-> (6) Output constraint: PASS or FAIL with specific issues if failed
+```
+Plan name: {{PLAN_NAME}}
+Plan summary:
+{{PLAN_SUMMARY}}
 
-Call `next_step()` after all three todos complete.
+Write the DAG:
+1. Write plan.json to .opencode/session-plans/{{PLAN_NAME}}/plan.json
+2. Write one prompt file per node to .opencode/session-plans/{{PLAN_NAME}}/prompts/
+3. Every node ID must be globally unique
+4. Branch routing uses node IDs (not when-strings): next_step({ next: "node-id" })
+
+Return: path written and node count.
+
+Outcome: PASS or FAIL with specific error.
+```
+
+## Validation
+
+> (1) Call `validate_dag` with plan name `{{PLAN_NAME}}`.
+> (2) Report validation result: pass or specific errors.
+> (3) Do not proceed until validation passes.
+
+## Task 2 — Verify
+
+> (1) Fill `{{PLAN_NAME}}` from the session plan name.
+> (2) Use this prompt template verbatim as the `prompt` field.
+> (3) After task returns, call `next_step()`.
+
+```
+Plan name: {{PLAN_NAME}}
+
+Verify the written DAG:
+1. Check every node ID has a corresponding prompt file in .opencode/session-plans/{{PLAN_NAME}}/prompts/
+2. Check terminal nodes have no next field
+3. Check branch nodes have all branch IDs present as nodes
+
+Return: PASS or FAIL with specific issues listed.
+
+Outcome: PASS or FAIL.
+```

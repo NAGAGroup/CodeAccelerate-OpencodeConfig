@@ -4,9 +4,20 @@ Dispatch @ExternalScout to gather targeted external research on topics identifie
 
 **Todo:** `["task"]`
 
-> (1) Identify the single most valuable research topic from task context and scout findings (library APIs, framework behavior, recent versions, community patterns).
-> (2) Dispatch @ExternalScout: instruct to use `context7_query-docs` first for library docs, then Exa for recency-sensitive questions. ✓ `context7_query-docs("React hooks API changes in v18")` / ✗ `context7_query-docs("a.ts, b.ts")`.
-> (3) Request a brief structured summary with sections: Key Findings, Relevant APIs or Patterns, Caveats. Include code examples where they exist. Synthesize direct answers, not links.
-> (4) Scope: one round of research only, maximum two tool calls total. This is cursory lookup, not deep multi-source investigation.
-> (5) Do not summarize findings or propose plan changes — @ExternalScout returns findings to your context window only.
-> (6) After @ExternalScout reports, call `next_step()` with no arguments.
+> (1) Fill `{{USER_TASK}}` from the user's original task description.
+> (2) Fill `{{RESEARCH_GAPS}}` from the pre-research-thinking node output — paste the identified gaps verbatim.
+> (3) Use this prompt template verbatim as the `prompt` field.
+> (4) After task returns, call `next_step()`.
+
+```
+Task: {{USER_TASK}}
+
+Research gaps identified:
+{{RESEARCH_GAPS}}
+
+Your job: research the gaps listed above using external sources. Use Context7 first for API/library docs; use Exa for recency-sensitive questions.
+
+Do not read project files — external sources only.
+
+Return a flat bulleted list of findings with source citations. No prose narrative.
+```

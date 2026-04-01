@@ -4,24 +4,28 @@ Dispatch @ExternalScout to research a specific topic using prioritized external 
 
 **Todo:** `["task"]`
 
-**Zone 1 — Fixed execution spec:**
+## Zone 1 — Fixed execution spec
 
-> (1) Dispatch @ExternalScout subagent to research the topic below. (2) Research topic: {{RESEARCH_TOPIC}}. (3) Tool priority: Context7 first for API/library documentation; `get_code_context_exa` second for code examples; web search only as last resort. (4) Scope: external sources only — ExternalScout must not read project files. (5) Output: direct answer with code examples, specific version numbers, and minimum version requirements — not a link list or survey. Return findings and call `next_step()` immediately.
+1. Dispatch @ExternalScout subagent
+2. Fill `{{RESEARCH_TOPIC}}` in the template below, then use it verbatim as the `prompt` field
 
-**Zone 2 — Planning agent fills:**
+```
+Research topic: {{RESEARCH_TOPIC}}
 
-{{RESEARCH_TOPIC}}: specific question or API lookup target.
+Use Context7 first for API/library docs. Use Exa for recency-sensitive questions (news, changelogs, current versions).
+
+External sources only — do not read project files.
+
+Return a flat bulleted list of findings with source citations. No prose narrative.
+```
+
+## Zone 2 — Planning agent fills
+
+**{{RESEARCH_TOPIC}}**
+Specific question or API lookup target.
 ✓ Good: "What is the exact syntax for configuring TLS client certificates in the Python requests library?"
 ✗ Bad: "Python HTTP libraries"
 
-{{CONTEXT}}: what ExternalScout should build on.
-✓ Good: "Our code uses urllib currently; we need TLS client cert auth, not system certificates."
-✗ Bad: "We need a better library"
+## Zone 3 — Fixed constraints
 
-{{EXPECTED_OUTPUT}}: what form the answer should take.
-✓ Good: "Function/method signature, parameter descriptions, one working example, and minimum library version."
-✗ Bad: "Whatever you find"
-
-**Zone 3 — Fixed constraints:**
-
-This is a cursory lookup — use at most 2–3 tool calls. Do not pursue multiple research threads or compare alternatives; stop after the first complete answer. ExternalScout must synthesize a direct answer, not return raw links. Call `next_step()` after task returns.
+Cursory lookup only — use at most 2–3 tool calls. ExternalScout must synthesize a direct answer, not return raw links. Do not read project files.

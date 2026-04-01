@@ -4,11 +4,19 @@ Call `task` to dispatch @HeadWrench to collect git history and branch state usin
 
 **Todo:** `["task"]`
 
-> (1) Dispatch @HeadWrench subagent to execute git commands: `git log --oneline -10`, `git status`, `git diff --stat HEAD~3..HEAD`.
-> (2) Return all output verbatim with no summarizing, no interpretation.
-> (3) If the repository is not a git repo, report this fact and return.
-> (4) Do NOT read source files or perform analysis.
-> (5) Scope: git commands only — no filesystem exploration.
-> (6) Output constraint: raw command output only, no commentary.
+> (1) Fill `{{USER_TASK}}` from the user's original task description.
+> (2) Use this prompt template verbatim as the `prompt` field.
+> (3) After task returns, call `next_step()`.
 
-Call `next_step()` after the task completes.
+```
+Task context: {{USER_TASK}}
+
+Run these git commands and return their output verbatim:
+- git log --oneline -10
+- git status
+- git diff --stat HEAD~3..HEAD
+
+Return raw command output only. No summarizing, no interpretation, no commentary.
+
+Outcome: PASS — git context collected.
+```
