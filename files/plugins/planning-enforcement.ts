@@ -266,7 +266,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                result += `\nAll todos complete. You MUST call \`next_step({ next: "<node-id>" })\` right now to choose a branch.\n`;
              } else if (state.status === "waiting_step") {
                if (currentNode?.nextLinear) {
-                 result += `\nAll todos complete. You MUST call \`next_step()\` right now. Do not call any other tool — call \`next_step()\` immediately.\n`;
+                  result += `\nCall \`next_step()\` when ready to advance — you may call exempt tools (question, compress, sequential-thinking_sequentialthinking) first if needed.\n`;
                } else {
                  result += `\nNo todos for this node. Call \`next_step()\` now to advance.\n`;
               }
@@ -862,12 +862,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         state.status !== "abandoned";
     },
 
-    // Signal to HeadWrench that a DAG session is active.
-    // headwrench.md checks for [DAG_ACTIVE] and switches to executor mode.
-    "experimental.chat.system.transform": async (_input, output) => {
-      if (!_dagActiveThisTurn) return;
-      output.system.push("[DAG_ACTIVE]");
-    },
+
 
     // Inject DAG state into compaction context for recovery.
     "experimental.session.compacting": async (input, output) => {

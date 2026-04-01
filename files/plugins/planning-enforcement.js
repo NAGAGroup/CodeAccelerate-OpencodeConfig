@@ -110455,7 +110455,7 @@ All todos complete. You MUST call \`next_step({ next: "<node-id>" })\` right now
           } else if (state.status === "waiting_step") {
             if (currentNode?.nextLinear) {
               result += `
-All todos complete. You MUST call \`next_step()\` right now. Do not call any other tool — call \`next_step()\` immediately.
+Call \`next_step()\` when ready to advance — you may call exempt tools (question, compress, sequential-thinking_sequentialthinking) first if needed.
 `;
             } else {
               result += `
@@ -110940,11 +110940,6 @@ ${advanceResult}`;
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
       _dagActiveThisTurn = state !== null && state.status !== "complete" && state.status !== "abandoned";
-    },
-    "experimental.chat.system.transform": async (_input, output) => {
-      if (!_dagActiveThisTurn)
-        return;
-      output.system.push("[DAG_ACTIVE]");
     },
     "experimental.session.compacting": async (input, output) => {
       const worktree = resolveWorktree(_ctx);
