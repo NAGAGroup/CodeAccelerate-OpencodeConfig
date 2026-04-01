@@ -31,7 +31,7 @@ Any agent working on this project is running a deployed instance of the system i
 
 **Project DAG nodes ≠ source node library entries.** When a planning session is working on this codebase, the planning agent writes DAG node prompts to `.opencode/session-plans/{name}/prompts/` — these are disposable execution artifacts. The shipped node library lives at `files/planning/plan-session/node-library/`. These are categorically different artifacts at different paths; confusing them is the single most common planning-session failure mode on this project.
 
-**Reading node library source during planning is expected.** The plan-session DAG's `scout-node-library` node reads `files/planning/plan-session/node-library/CATALOGUE.md` to orient the planning agent before DAG design. This is correct. The source is the deployed config — reading it is the right behavior. Don't shortcut this by reading node library files ad-hoc outside the designated DAG node.
+**Reading node library source during planning is expected.** The plan-session DAG's `scout-node-library` node reads the CATALOGUE.md (copied to `.opencode/session-plans/plan-session-ses_{id}/node-library/CATALOGUE.md` at session start) to orient the planning agent before DAG design. This is correct behavior — don't shortcut it by reading node library files ad-hoc outside the designated DAG node.
 
 ## Repository Structure
 
@@ -85,9 +85,45 @@ HeadWrench reads these to write dispatch prompts for subagents. Two hops: the pr
 **Category C — Node library templates** (`files/planning/plan-session/node-library/*/`)
 Three hops: planning agent fills the template → filled template becomes a project DAG node → HW reads it to dispatch a subagent. The template must serve two audiences simultaneously: the planning agent (who fills the `{{PLACEHOLDER}}` slots) and the executing agent (who reads the filled result at runtime). README.md is the authoring-layer contract; `prompt-template.md` is the execution-layer spec. Critical constraints must cascade through all three layers (README → fixed template section → dispatch blockquote) or they drop at an indirection hop.
 
+**Minimum supported model:** Qwen3-14B with thinking disabled. All planning prompts and node-library templates are calibrated to this baseline. Do not introduce patterns that require a stronger model to follow reliably (e.g., >6-item lists, negative-framing constraints, multi-section prose sequences, code-block syntax examples of tool calls).
+
 **Improvement methodology:** research → insurgent → write. This order is non-negotiable. ExternalScout establishes gold-standard criteria first; ContextInsurgent audits the source against those criteria and produces a per-file change list; JuniorDev/QuickDoc apply targeted edits. Ad-hoc editing without prior research produces changes that satisfy local conventions but violate external best practices.
 
 **When working on prompting source, always identify the category first.** The category determines which technique set applies, which agent does the analysis, and what "correct" output looks like. Misidentifying Category C templates as Category A agent prompts (a common error) produces structurally sound but functionally incorrect changes.
+
+## Planning Prompt Engineering Rules
+
+These 16 rules are derived from Qwen3-14B failure analysis and apply to all Category B (planning session prompts) and Category C (node-library templates). Violations cause small-model compliance failures even when the prompt reads correctly to a larger model.
+
+| Rule | Constraint |
+|------|-----------|
+| R1 | Opening sentence IS the action — "Call `X`" not "Your job is to call `X`" |
+| R2 | No numbered steps in prose — todo array sequences; prose does not |
+| R3 | `next_step()` mentioned once, last line only — never mid-prompt |
+| R4 | No H2/H3 section headers inside prompt body — H1 title + blockquote only |
+| R5 | Dispatch blockquote immediately after todo — zero prose between |
+| R6 | Output constraint is the last item in every dispatch blockquote |
+| R7 | ≤6 items in any numbered list or blockquote |
+| R8 | Glob examples in every scout dispatch: `✓ glob("**/*.ext")` / `✗ glob("a.ext,b.ext")` |
+| R9 | Routing instruction is last in prompt, exact node IDs, never `when`-strings |
+| R10 | Scope restrictions inside blockquote, second-to-last position |
+| R11 | Parallel dispatch: one prose sentence max; rely on todo array count |
+| R12 | No "After X returns" sections — only post-action text is R3 |
+| R13 | No `task_id` in blockquotes unless a specific `ses_` string is provided |
+| R14 | Each `{{PLACEHOLDER}}`: one instruction sentence + `✓`/`✗` example, adjacent |
+| R15 | Sequential-thinking: "Call repeatedly until conclusion clear, then `next_step()`" |
+| R16 | Delete ALL code-block syntax examples of `sequential-thinking_sequentialthinking` |
+| R16b | Don't name sequential-thinking questions with bold headers — use plain reasoning instructions |
+
+**Dispatch prompt slot-fill pattern (Category B).** Planning session prompts that dispatch subagents use fenced prompt templates with `{{SLOT}}` markers. HW fills each slot from a named context source (e.g., Scout 1 output, user task description) and pastes the filled template verbatim into the `prompt` field. HW must never author the `prompt` field from scratch — this causes context-free dispatch where subagents receive no project-specific information.
+
+## Path and Visibility Constraints
+
+**`files/` is invisible to user agents.** The `files/` directory exists only in this registry source repo. After `ocx install`, components land in the user's OpenCode config — agents in user projects have no `files/` path. Any path starting with `files/` hardcoded inside a shipped file is broken for users.
+
+**`{{SESSION_PATH}}` substitution applies only to planning session prompts.** The plugin substitutes `{{SESSION_PATH}}` → `.opencode/session-plans/{name}` at copy-time in files under `files/planning/plan-session/prompts/`. Node-library READMEs and prompt-templates are plain-copied without substitution — they must never use `{{SESSION_PATH}}` as a path token. Use concrete example paths instead (e.g., `.opencode/session-plans/plan-session-ses_{id}/node-library/`).
+
+**Node-library runtime location.** During a live planning session the node-library lives at `.opencode/session-plans/plan-session-ses_{id}/node-library/` in the user's project. The source at `files/planning/plan-session/node-library/` is never visible to user agents. Path references in shipped files must target the runtime location, not the source location.
 
 ## Source Code Constraints
 
