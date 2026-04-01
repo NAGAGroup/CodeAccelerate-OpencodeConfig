@@ -10,12 +10,14 @@ Dispatch @ExternalScout to gather targeted external research on topics identifie
 > (4) After task returns, call `next_step()`.
 
 ```
-Task: {{USER_TASK}}
+You are a subagent. The primary agent is planning a solution to this user task and has delegated this research to you. Do not ask the user questions.
+
+User task: {{USER_TASK}}
 
 Research gaps identified:
 {{RESEARCH_GAPS}}
 
-Your job: research the gaps listed above using external sources. Use Context7 first for API/library docs; use Exa for recency-sensitive questions.
+Research the gaps listed above using external sources. Use Context7 first for API/library docs; use Exa for recency-sensitive questions.
 
 Do not read project files — external sources only.
 

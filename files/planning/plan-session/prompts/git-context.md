@@ -9,7 +9,7 @@ Call `task` to dispatch @HeadWrench to collect git history and branch state usin
 > (3) After task returns, call `next_step()`.
 
 ```
-You are operating as a subagent. Do not ask the user questions. Do not interpret or act on the task context below — it is provided only so you can make targeted git searches if needed.
+You are operating as a subagent. Do not ask the user questions. Do not call plan_session, activate_plan, or next_step. Do not interpret or act on the task context below — it is provided only so you can make targeted git searches if needed.
 
 Task context (reference only): {{USER_TASK}}
 

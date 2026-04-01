@@ -4,44 +4,52 @@ Call `task` twice in a single response to dispatch Scout 2 and Scout 3 in parall
 
 **Todo:** `["task", "task"]`
 
-**Scout 2 — Code Patterns**
+From Scout 1's output and the user's task, decide what two distinct angles of investigation will best inform the plan. Write a targeted prompt for each scout — specific file paths, specific questions. Do not forward Scout 1's output verbatim; use it to make each prompt concrete.
 
-> (1) Fill `{{USER_TASK}}` from the user's original task description.
-> (2) Fill `{{SCOUT_1_OUTPUT}}` from Scout 1's task result — paste verbatim, all lines.
-> (3) Use this prompt template verbatim as the `prompt` field.
+**Scout 2**
 
-```
-Task: {{USER_TASK}}
-
-Project map (Scout 1 findings):
-{{SCOUT_1_OUTPUT}}
-
-Your job: identify naming conventions, structural patterns, and coding style in source files relevant to the task above.
-
-From the project map above, derive a concrete list of source files to read (pick the files most relevant to the task — typically 3–6 files). Call `read` on each file directly. Do NOT use grep. Do NOT read .opencode/.
-
-Glob syntax if needed: ✓ glob("**/*.cmake") ✗ glob("a.cmake,b.cmake")
-
-Return: specific patterns and file:line citations. State "Nothing found" if nothing is relevant.
-```
-
-**Scout 3 — Dependencies & Integration**
-
-> (1) Fill `{{USER_TASK}}` from the user's original task description.
-> (2) Fill `{{SCOUT_1_OUTPUT}}` from Scout 1's task result — paste verbatim, all lines.
-> (3) Use this prompt template verbatim as the `prompt` field.
+> (1) Write a focused prompt for the first investigation angle.
+> (2) Include specific file paths derived from Scout 1 output. Do not ask the scout to re-derive what to read.
+> (3) Use this structure as the `prompt` field:
 
 ```
-Task: {{USER_TASK}}
+You are a subagent. The primary agent is planning a solution to this user task and has delegated this investigation to you. Do not ask the user questions.
 
-Project map (Scout 1 findings):
-{{SCOUT_1_OUTPUT}}
+User task: {{USER_TASK}}
 
-Your job: identify build dependencies, external libraries, public interfaces, and integration boundaries relevant to the task above.
+Read these files:
+{{FILES}}
 
-From the project map above, derive a concrete list of build config and dependency manifest files to read (e.g. CMakeLists.txt, pixi.toml, Cargo.toml, package.json, Makefile — whichever are present). Call `read` on each file directly. Do NOT use grep. Do NOT read .opencode/.
+{{SPECIFIC_QUESTION}}
 
-Return: dependency names, versions, and exact file:line references. State "No relevant boundaries found" if nothing applies.
+Call `read` on each file directly. Do NOT use grep. Do NOT read .opencode/.
+
+Glob syntax if needed: ✓ glob("**/*.ext") ✗ glob("a.ext,b.ext")
+
+Return: specific findings with file:line citations. State "Nothing found" if nothing is relevant.
+```
+
+**Scout 3**
+
+> (1) Write a focused prompt for the second investigation angle.
+> (2) Include specific file paths derived from Scout 1 output. Do not ask the scout to re-derive what to read.
+> (3) Use this structure as the `prompt` field:
+
+```
+You are a subagent. The primary agent is planning a solution to this user task and has delegated this investigation to you. Do not ask the user questions.
+
+User task: {{USER_TASK}}
+
+Read these files:
+{{FILES}}
+
+{{SPECIFIC_QUESTION}}
+
+Call `read` on each file directly. Do NOT use grep. Do NOT read .opencode/.
+
+Glob syntax if needed: ✓ glob("**/*.ext") ✗ glob("a.ext,b.ext")
+
+Return: specific findings with file:line citations. State "Nothing found" if nothing is relevant.
 ```
 
 Call `next_step()` after both tasks complete.

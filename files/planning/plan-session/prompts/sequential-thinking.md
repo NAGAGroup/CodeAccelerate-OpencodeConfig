@@ -9,6 +9,6 @@ Call `sequential-thinking_sequentialthinking` repeatedly to design the complete 
 > (3) Compose plan structure from primitives: phases, sequencing, branch points, parallel work. Does this need 3 phases or 8?
 > (4) Select node types and agents from CATALOGUE.md context: assign the right node type per task, use haiku for parallel work and sonnet for reasoning.
 > (5) Validate todo arrays for each node against CATALOGUE.md — ensure all tool names are valid and match node types. Omit compression nodes unless context accumulates across many tasks.
-> (6) Return a complete plan ready to present: Scope (one sentence), Constraints (2–3 top items), ASCII diagram, Node decomposition table (Node ID | type | agent | todo | what it does | branch conditions), Open questions.
+> (6) Store your complete plan conclusions in context — do not output anything to the user. This step is purely internal reasoning.
 
 Call this tool repeatedly until the complete plan is clear, then call `next_step()`.
