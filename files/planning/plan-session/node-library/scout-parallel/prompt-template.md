@@ -24,7 +24,7 @@ Answer the investigation question above with file:line citations from what you a
 To answer you MUST follow these steps in order:
 
 (1) Use `read` on `.` (the project root) to get a flat directory listing.
-(2) Read the contents of every top-level file relevant to the area — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
+(2) Read the contents of every top-level file — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
 (3) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Exclude generated/build output and package cache dirs.
 
 ✓ Core: `<source-dir>/`, `<test-dir>/`, `<ci-dir>/`, `<config-dir>/` — structural, serve the project directly
@@ -83,7 +83,7 @@ Answer the investigation question above with file:line citations from what you a
 To answer you MUST follow these steps in order:
 
 (1) Use `read` on `.` (the project root) to get a flat directory listing.
-(2) Read the contents of every top-level file relevant to the area — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
+(2) Read the contents of every top-level file — manifests, lock files, config files, READMEs, dotfiles. Do not skip a file because you assume you know what it contains.
 (3) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Exclude generated/build output and package cache dirs.
 
 ✓ Core: `<source-dir>/`, `<test-dir>/`, `<ci-dir>/`, `<config-dir>/` — structural, serve the project directly
