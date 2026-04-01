@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `files/agents/context-scout.md`, `files/agents/context-insurgent.md`, `files/agents/external-scout.md`, `files/agents/junior-dev.md`, `files/agents/quick-doc.md` — added **Todo Management** section to all five subagent files: when a todowrite list is present, mark each todo `in_progress` before starting it and `completed` immediately when done; added ✗/✓ showing create-and-ignore (✗) vs mark-in_progress-then-completed (✓); encodes the behavior in the agent system prompt so it applies universally without repeating it in every dispatch prompt
+
 - `files/planning/plan-session/prompts/scout.md`, `files/planning/plan-session/prompts/scout-parallel.md`, `files/planning/plan-session/node-library/scout-parallel/prompt-template.md` — changed step (3) from a declarative filter ("read every file not excluded in step 2") to an imperative per-file check ("for each file, check exclusion list first — skip if present, read if not"); models were writing the exclusion list in step (2) but ignoring it when issuing Read calls in step (3), causing lock files to be read and flooding the context; added ✗/✓ at step (3) showing a lock file being correctly skipped
 
 - `files/agents/context-scout.md`, `files/agents/context-insurgent.md`, `files/agents/external-scout.md`, `files/agents/junior-dev.md`, `files/agents/quick-doc.md` — added `todowrite: allow` to all subagent permission lists; `todowrite` is now available to all agents so dispatch prompts can require a todo list as the first action to keep the step sequence visible in the model's active context as a system-injected list

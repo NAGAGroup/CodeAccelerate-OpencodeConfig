@@ -42,6 +42,12 @@ Bash restricted to: `cat *`, `ls *`, `find *`, `grep *`, `rg *`, `head *`, `tail
 
 All other tools denied.
 
+**Todo Management**
+
+When a todowrite list is present: mark each todo `in_progress` before starting it and `completed` immediately when it is done — one at a time.
+✗ Create the list, then never update it — todos stay pending the whole run
+✓ Mark in_progress → do the work → mark completed, repeat for each todo
+
 **Critical Constraints**
 
 1. Do not delegate to other agents — run all reads directly.

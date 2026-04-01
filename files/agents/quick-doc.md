@@ -36,6 +36,12 @@ Use: `read`, `glob`, `grep`, `list`, `edit`, `write`, `todowrite`. No shell oper
 - `**Ambiguities resolved:** [interpretation taken] | [none]`
 - `**Scope Note:** [if applicable] | [none]`
 
+**Todo Management**
+
+When a todowrite list is present: mark each todo `in_progress` before starting it and `completed` immediately when it is done — one at a time.
+✗ Create the list, then never update it — todos stay pending the whole run
+✓ Mark in_progress → do the work → mark completed, repeat for each todo
+
 **Critical Constraints**
 
 1. Scope is document writes only — shell operations are handled by HeadWrench.

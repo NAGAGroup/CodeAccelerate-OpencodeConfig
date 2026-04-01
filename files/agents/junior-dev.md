@@ -38,6 +38,12 @@ Per-file block for each edited file:
 
 After all edits: `**Ambiguities resolved:** [interpretation taken] | [none]`.
 
+**Todo Management**
+
+When a todowrite list is present: mark each todo `in_progress` before starting it and `completed` immediately when it is done — one at a time.
+✗ Create the list, then never update it — todos stay pending the whole run
+✓ Mark in_progress → do the work → mark completed, repeat for each todo
+
 **Critical Constraints**
 
 1. **Scope is file edits only** — shell operations, testing, and compilation are handled by HeadWrench.
