@@ -13,15 +13,25 @@
       },
       "models": {
         "opencode-model": {
-          "name": "Default Ollama"
+          "name": "Default Ollama",
+          // Disable thinking mode for Qwen3 and other reasoning models.
+          // think: false prevents the ~60% tool-execution failure rate caused by
+          // the model reasoning about tool calls internally without emitting them.
+          // Non-thinking-capable models (Llama, Mistral, Phi, etc.) silently ignore this.
+          "options": {
+            "extraBody": {
+              "think": false
+            }
+          }
         }
       }
     }
   },
   // Recommended model (2026, RTX 4090 24GB VRAM):
-  //   ollama pull qwen2.5:14b
-  //   Tool-calling F1: 0.971 (High confidence) — 9-10GB VRAM at Q4_K_M
-  //   Context: 32K native; set num_ctx 16384 in Modelfile for safe VRAM margin
+  //   ollama pull qwen3:14b
+  //   Minimum-supported model for planning sessions — all prompts are engineered to this baseline.
+  //   Tool-calling reliable with think: false (see model options above); ~60% failure rate with thinking enabled.
+  //   VRAM: ~9-10GB at Q4_K_M; Context: 32K native; set num_ctx 16384 in Modelfile for safe VRAM margin
   //
   // KV cache optimization (cuts context VRAM ~50%):
   //   export OLLAMA_KV_CACHE_TYPE=q8_0
@@ -31,8 +41,8 @@
   // Secondary: mistral-small (24B, Q4_K_M, ~15.9GB, purpose-built function calling, Medium confidence)
   //   ollama pull mistral-small
   //   OR: ollama pull hf.co/bartowski/Mistral-Small-3.2-24B-Instruct-2506-GGUF:Q4_K_M
-  // Alternative: qwen3:32b (32B, Q4_K_M, ~20.7GB, agentic design, Low confidence, tight KV headroom)
-  // Fallback: llama3.1:8b (Q4_K_M, 5-6GB, 89% tool accuracy)
+  // Alternative: qwen3:32b (32B, Q4_K_M, ~20.7GB, agentic design, same think: false applies)
+  // Fallback: qwen2.5:14b (Q4_K_M, 9-10GB, 97.1% tool-calling F1, no thinking mode)
   // Do NOT use 70B+ models — zero VRAM for KV cache, context collapses to <2K
   // Full report: docs/reports/ollama-model-recommendations.md
   "agent": {

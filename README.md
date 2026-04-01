@@ -69,13 +69,15 @@ Once a plan exists, `/activate-plan` picks it up and executes it step by step. P
 
 ## Running on local models
 
-The Ollama profile is designed to run the full system on local hardware. The v4.0.0 release was validated on a single 4090 using Qwen 2.5 14B as the primary model. The entire orchestration stack works: multi-agent delegation, parallel scouting, DAG planning, clarifying questions, and tool-based plan authoring.
+The Ollama profile is designed to run the full system on local hardware. The v4.0.0 release was validated on a single 4090 using Qwen 2.5 14B as the primary model. Qwen3 14B is the current minimum-supported target — all planning prompts are engineered to this baseline. The entire orchestration stack works: multi-agent delegation, parallel scouting, DAG planning, clarifying questions, and tool-based plan authoring.
+
+The profile automatically sets `think: false` for all model requests, which prevents Qwen3's ~60% tool-execution failure rate in thinking mode. Non-thinking-capable models silently ignore this setting.
 
 To use the Ollama profile:
 
 ```sh
 # Copy your chosen model to the opencode-model alias
-ollama cp qwen2.5:14b opencode-model
+ollama cp qwen3:14b opencode-model
 
 # Install the profile
 ocx profile add naga-ollama --global --source naga-group/ocx-ollama
