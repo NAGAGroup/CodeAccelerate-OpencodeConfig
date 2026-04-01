@@ -121,7 +121,7 @@ If constraint is missing from ANY of these locations, the filled prompt is incom
 ## Scope restrictions
 
 - **Do NOT** send scouts into `.opencode/` session directories — they contain stale planning artifacts that conflict with the actual codebase
-- **Exception:** Planning infrastructure files under `{{SESSION_PATH}}/node-library/` are permitted if explicitly named in scout paths
+- **Exception:** Planning infrastructure files are permitted if explicitly named in scout paths (e.g., `.opencode/session-plans/plan-session-ses_{id}/node-library/`)
 - **Step budget:** ContextScout has 12 steps per scout task. Keep questions answerable within that budget. If a scout scope requires more than 12 steps, move it to an `analyze-deep` node instead.
 
 ## Customization — fewer than 3 scouts
