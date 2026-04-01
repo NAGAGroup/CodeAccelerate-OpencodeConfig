@@ -12,7 +12,7 @@
       "next": {
         "id": "scout-parallel",
         "prompt": "scout-parallel.md",
-        "todo": ["task", "task"],
+        "todo": ["sequential-thinking_sequentialthinking", "task", "task"],
         "next": {
           "id": "git-context",
           "prompt": "git-context.md",
@@ -35,19 +35,19 @@
                     "node": {
                       "id": "research-brief",
                       "prompt": "research-brief.md",
-                      "todo": ["task"],
+                      "todo": ["sequential-thinking_sequentialthinking", "task"],
                       "next": {
                         "id": "sequential-thinking",
-                        "prompt": "sequential-thinking.md",
-                        "todo": ["sequential-thinking_sequentialthinking"],
+                         "prompt": "sequential-thinking.md",
+                         "todo": ["read", "sequential-thinking_sequentialthinking"],
                         "next": {
-                          "id": "clarifying-questions",
-                          "prompt": "clarifying-questions.md",
-                          "todo": ["question"],
+                           "id": "clarifying-questions",
+                           "prompt": "clarifying-questions.md",
+                           "todo": ["sequential-thinking_sequentialthinking", "question"],
                           "next": {
-                            "id": "propose-plan",
-                            "prompt": "propose-plan.md",
-                            "todo": ["question"],
+                             "id": "propose-plan",
+                             "prompt": "propose-plan.md",
+                             "todo": ["sequential-thinking_sequentialthinking", "question"],
                             "next": [
                               {
                                 "when": "Approve \u2014 write the DAG",
@@ -88,9 +88,9 @@
                               {
                                 "when": "Rethink",
                                 "node": {
-                                  "id": "propose-plan-2",
-                                  "prompt": "propose-plan.md",
-                                  "todo": ["question"],
+                                   "id": "propose-plan-2",
+                                   "prompt": "propose-plan.md",
+                                   "todo": ["sequential-thinking_sequentialthinking", "question"],
                                   "next": [
                                     {
                                       "when": "Approve \u2014 write the DAG",
@@ -135,9 +135,9 @@
                                     {
                                       "when": "Rethink",
                                       "node": {
-                                        "id": "propose-plan-3",
-                                        "prompt": "propose-plan.md",
-                                        "todo": ["question"],
+                                         "id": "propose-plan-3",
+                                         "prompt": "propose-plan.md",
+                                         "todo": ["sequential-thinking_sequentialthinking", "question"],
                                         "next": {
                                           "id": "write-dag-3",
                                           "prompt": "write-dag.md",
@@ -190,16 +190,16 @@
                     "when": "No, skip research",
                     "node": {
                       "id": "sequential-thinking-2",
-                      "prompt": "sequential-thinking.md",
-                      "todo": ["sequential-thinking_sequentialthinking"],
+                       "prompt": "sequential-thinking.md",
+                       "todo": ["read", "sequential-thinking_sequentialthinking"],
                       "next": {
-                        "id": "clarifying-questions-2",
-                        "prompt": "clarifying-questions.md",
-                        "todo": ["question"],
+                         "id": "clarifying-questions-2",
+                         "prompt": "clarifying-questions.md",
+                         "todo": ["sequential-thinking_sequentialthinking", "question"],
                         "next": {
-                          "id": "propose-plan-5",
-                          "prompt": "propose-plan.md",
-                          "todo": ["question"],
+                           "id": "propose-plan-5",
+                           "prompt": "propose-plan.md",
+                           "todo": ["sequential-thinking_sequentialthinking", "question"],
                           "next": [
                             {
                               "when": "Approve \u2014 write the DAG",
@@ -240,9 +240,9 @@
                             {
                               "when": "Rethink",
                               "node": {
-                                "id": "propose-plan-6",
-                                "prompt": "propose-plan.md",
-                                "todo": ["question"],
+                                   "id": "propose-plan-6",
+                                   "prompt": "propose-plan.md",
+                                   "todo": ["sequential-thinking_sequentialthinking", "question"],
                                 "next": {
                                   "id": "write-dag-6",
                                   "prompt": "write-dag.md",
