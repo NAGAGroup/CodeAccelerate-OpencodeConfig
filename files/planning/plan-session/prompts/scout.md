@@ -24,15 +24,28 @@ Complete all 7 steps below in order. Do not write your answers until all 7 steps
 ✓ Exclude dirs: `<build-output-dir>/`, `<package-cache-dir>/` — generated or fetched content
 ✓ Exclude files: `<lock-file>`, `<binary-file>` — machine-generated or non-text
 
+Write your exclusion list before continuing to step (3):
+- Excluded dirs: <list every dir you are excluding>
+- Excluded files: <list every file you are excluding>
+
 (3) Read the contents of every top-level FILE not excluded in step (2) — manifests, config files, READMEs, dotfiles. Do not read directories here; directories are handled in steps (4) and (5). Do not skip a file because you assume you know what it contains.
 (4) From the step (1) listing, identify the core project directories — source dirs, test dirs, CI dirs, config dirs. Do not include any directory already excluded in step (2).
 
 ✓ Core: `<source-dir>/`, `<test-dir>/`, `<ci-dir>/`, `<config-dir>/` — structural, serve the project directly
 ✗ Not core: already in the step (2) exclude list
 
+Write your core directory list before continuing to step (5):
+- Core dirs: <list every dir you will glob>
+
 (5) For each core directory identified in step (4), run `glob <dir>/**` to list its contents. Do NOT glob `.` or `*` or `**/*` from the project root.
 
-(6) Identify grep patterns that would surface files relevant to the 8 questions (e.g. entry point markers, test framework imports, CI trigger keywords, deploy config markers). For each core directory from step (4), run `grep "<pattern>" <dir>` for each pattern. Do NOT grep `.` directly.
+(6) Identify grep patterns that would surface files relevant to the 8 questions (e.g. entry point markers, test framework imports, CI trigger keywords, deploy config markers).
+
+Write your grep patterns before running them:
+- Pattern `<pattern>` → dirs: <list of dirs to grep>
+- Pattern `<pattern>` → dirs: <list of dirs to grep>
+
+Then for each core directory from step (4), run `grep "<pattern>" <dir>` for each pattern. Do NOT grep `.` directly.
 
 ✗ Bad grep: `grep "cmake" .` — searches root, hits excluded dirs, too broad
 ✓ Good grep: `grep "<entry-point-marker>" <dir-a>`, `grep "<test-framework-import>" <dir-b>` — one pattern per question, one named dir per call
