@@ -11,7 +11,7 @@ import { renderMermaidASCII } from 'beautiful-mermaid';
 export const CONFIG_ROOT = path.dirname(import.meta.dirname);
 
 // Tools that bypass DAG blocking, regardless of current node's todos
-export const exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "todowrite", "sequential-thinking_sequentialthinking", "show_dag", "init_dag", "add_node", "delete_node", "modify_node", "present_dag_to_user"];
+export const exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "todowrite", "sequential-thinking_sequentialthinking"];
 
 // Re-exports for downstream consumers
 export { tool };
