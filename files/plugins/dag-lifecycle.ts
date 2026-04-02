@@ -117,13 +117,9 @@ export function activateDag(
      if (hasNext) {
        state.status = "waiting_step";
        writeState(statePath, state);
-       result += `\n\n---\n\nNo todos for this node. When you're ready, call \`next_step()\` to advance.`;
     } else {
       // Terminal node with no todos
-      const advanceResult = autoAdvance(state, statePath, worktree);
-      if (advanceResult) {
-        result += `\n\n---\n\n${advanceResult}`;
-      }
+      autoAdvance(state, statePath, worktree);
     }
   }
 
@@ -146,7 +142,7 @@ export function autoAdvance(
      state.updated_at = now();
      writeState(statePath, state);
 
-     return `All todos complete. When you're ready, call \`next_step()\` to advance to the next node.`;
+     return null;
   }
 
   // Branching — present choices and require next_step()
@@ -159,10 +155,10 @@ export function autoAdvance(
        .map((b, i) => `${i + 1}. **${b.nodeId}** — ${b.when}`)
        .join("\n");
 
-     return `All todos complete. Choose next path:\n\n${choices}\n\nWhen you're ready, call \`next_step({ next: "<node-id>" })\` to continue.`;
+     return null;
   }
 
-  // Terminal — close session
+   // Terminal — close session
   state.status = "complete";
   state.updated_at = now();
   writeState(statePath, state);

@@ -109889,7 +109889,7 @@ import * as path7 from "path";
 // constants.ts
 import * as path from "path";
 var CONFIG_ROOT = path.dirname(import.meta.dirname);
-var exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "validate_dag", "todowrite", "sequential-thinking_sequentialthinking", "show_dag", "init_dag", "add_node", "delete_node", "modify_node", "present_dag_to_user"];
+var exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "todowrite", "sequential-thinking_sequentialthinking"];
 
 // state-io.ts
 import * as fs from "fs";
@@ -110158,20 +110158,8 @@ ${promptText}`;
     if (hasNext) {
       state.status = "waiting_step";
       writeState(statePath, state);
-      result += `
-
----
-
-No todos for this node. When you're ready, call \`next_step()\` to advance.`;
     } else {
-      const advanceResult = autoAdvance(state, statePath, worktree);
-      if (advanceResult) {
-        result += `
-
----
-
-${advanceResult}`;
-      }
+      autoAdvance(state, statePath, worktree);
     }
   }
   return result;
@@ -110184,7 +110172,7 @@ function autoAdvance(state, statePath, worktree) {
     state.status = "waiting_step";
     state.updated_at = now();
     writeState(statePath, state);
-    return `All todos complete. When you're ready, call \`next_step()\` to advance to the next node.`;
+    return null;
   }
   if (node.branches && node.branches.length > 0) {
     state.status = "waiting_step";
@@ -110192,11 +110180,7 @@ function autoAdvance(state, statePath, worktree) {
     writeState(statePath, state);
     const choices = node.branches.map((b, i) => `${i + 1}. **${b.nodeId}** — ${b.when}`).join(`
 `);
-    return `All todos complete. Choose next path:
-
-${choices}
-
-When you're ready, call \`next_step({ next: "<node-id>" })\` to continue.`;
+    return null;
   }
   state.status = "complete";
   state.updated_at = now();
@@ -110316,20 +110300,8 @@ ${promptText}`;
               if (hasNext) {
                 state.status = "waiting_step";
                 writeState(statePath, state);
-                result += `
-
----
-
-No todos for this node. Call \`next_step()\` now to advance.`;
               } else {
-                const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
-                if (advanceResult) {
-                  result += `
-
----
-
-${advanceResult}`;
-                }
+                autoAdvance(state, statePath, resolveWorktree(context));
               }
             }
             return result;
@@ -110369,20 +110341,8 @@ ${promptText}`;
               if (hasNext) {
                 state.status = "waiting_step";
                 writeState(statePath, state);
-                result += `
-
----
-
-No todos for this node. Call \`next_step()\` now to advance.`;
               } else {
-                const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
-                if (advanceResult) {
-                  result += `
-
----
-
-${advanceResult}`;
-                }
+                autoAdvance(state, statePath, resolveWorktree(context));
               }
             }
             return result;
@@ -110449,19 +110409,6 @@ ${promptText}
 ## Pending Branch Choice
 ${choices}
 `;
-            result += `
-All todos complete. You MUST call \`next_step({ next: "<node-id>" })\` right now to choose a branch.
-`;
-          } else if (state.status === "waiting_step") {
-            if (currentNode?.nextLinear) {
-              result += `
-All todos complete. Call \`next_step()\` now.
-`;
-            } else {
-              result += `
-No todos for this node. Call \`next_step()\` now to advance.
-`;
-            }
           }
           return result;
         }
@@ -110916,22 +110863,11 @@ ${ascii}`;
         state.todo_index += 1;
         state.updated_at = now();
         if (state.todo_index >= node.todo.length) {
+          state.status = "waiting_step";
+          state.updated_at = now();
           writeState(statePath, state);
-          const advanceResult = autoAdvance(state, statePath, worktree);
-          if (advanceResult) {
-            output.output = output.output + `
-
----
-
-${advanceResult}`;
-          }
         } else {
           writeState(statePath, state);
-          const remaining = node.todo.length - state.todo_index;
-          const nextExpected = node.todo[state.todo_index];
-          output.output = output.output + `
-
-[DAG: ${remaining} todo(s) remaining. Call \`${nextExpected}\` now.]`;
         }
       }
     },

@@ -132,13 +132,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                 if (hasNext) {
                   state.status = "waiting_step";
                   writeState(statePath, state);
-                  result += `\n\n---\n\nNo todos for this node. Call \`next_step()\` now to advance.`;
                } else {
                 // Terminal node with no todos
-                const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
-                if (advanceResult) {
-                  result += `\n\n---\n\n${advanceResult}`;
-                }
+                autoAdvance(state, statePath, resolveWorktree(context));
               }
             }
 
@@ -185,13 +181,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                 if (hasNext) {
                   state.status = "waiting_step";
                   writeState(statePath, state);
-                  result += `\n\n---\n\nNo todos for this node. Call \`next_step()\` now to advance.`;
                } else {
                 // Terminal node with no todos
-                const advanceResult = autoAdvance(state, statePath, resolveWorktree(context));
-                if (advanceResult) {
-                  result += `\n\n---\n\n${advanceResult}`;
-                }
+                autoAdvance(state, statePath, resolveWorktree(context));
               }
             }
 
@@ -263,13 +255,6 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                  .map((b) => `- **${b.nodeId}** — ${b.when}`)
                  .join("\n");
                result += `\n## Pending Branch Choice\n${choices}\n`;
-               result += `\nAll todos complete. You MUST call \`next_step({ next: "<node-id>" })\` right now to choose a branch.\n`;
-             } else if (state.status === "waiting_step") {
-                if (currentNode?.nextLinear) {
-                   result += `\nAll todos complete. Call \`next_step()\` now.\n`;
-                } else {
-                  result += `\nNo todos for this node. Call \`next_step()\` now to advance.\n`;
-               }
             }
 
             return result;
@@ -830,22 +815,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         state.todo_index += 1;
         state.updated_at = now();
 
-        // Check if all todos exhausted
+        // Check if all todos exhausted — flip to waiting_step so next_step() can run
         if (state.todo_index >= node.todo.length) {
+          state.status = "waiting_step";
+          state.updated_at = now();
           writeState(statePath, state);
-          const advanceResult = autoAdvance(state, statePath, worktree);
-          if (advanceResult) {
-            // Append navigation prompt to the tool's output
-            output.output = output.output + `\n\n---\n\n${advanceResult}`;
-          }
         } else {
           writeState(statePath, state);
-          // Inform agent of progress
-          const remaining = node.todo.length - state.todo_index;
-          const nextExpected = node.todo[state.todo_index];
-          output.output =
-            output.output +
-            `\n\n[DAG: ${remaining} todo(s) remaining. Call \`${nextExpected}\` now.]`;
         }
       }
     },
