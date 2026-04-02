@@ -30,7 +30,7 @@
       "files": [
         "plugins/planning-enforcement.js",
         "planning/reference/dag-design-guide.md",
-        "planning/plan-session/plan.json",
+        "planning/plan-session/plan.jsonl",
         "planning/plan-session/prompts/session-overview.md",
         "planning/plan-session/prompts/scout.md",
         "planning/plan-session/prompts/scout-think.md",
@@ -100,7 +100,10 @@
         "planning/plan-session/node-library/research-basic/prompt-template.md",
         "planning/plan-session/node-library/research-deep/plan.json",
         "planning/plan-session/node-library/research-deep/README.md",
-        "planning/plan-session/node-library/research-deep/prompt-template.md"
+        "planning/plan-session/node-library/research-deep/prompt-template.md",
+        "planning/plan-session/node-library/hello-world/NODE_REQS.md",
+        "planning/plan-session/node-library/hello-world/README.md",
+        "planning/plan-session/node-library/hello-world/prompt-template.md"
       ]
     },
     {

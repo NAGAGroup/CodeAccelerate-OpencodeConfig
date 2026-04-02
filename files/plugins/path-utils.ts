@@ -18,14 +18,14 @@ export function readPrompt(promptPath: string, worktree: string): string {
 }
 
 export function resolveDagPath(target: string, worktree: string): string {
-  if (target.includes('/') || target.includes('\\') || target.endsWith('.json')) {
+  if (target.includes('/') || target.includes('\\') || target.endsWith('.jsonl') || target.endsWith('.json')) {
     const expanded = expandPath(target);
     const resolved = path.resolve(worktree, expanded);
-    // If the resolved path is a directory, append plan.json automatically
+    // If the resolved path is a directory, append plan.jsonl automatically
     if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-      return path.join(resolved, 'plan.json');
+      return path.join(resolved, 'plan.jsonl');
     }
     return resolved;
   }
-  return path.join(worktree, '.opencode', 'session-plans', target, 'plan.json');
+  return path.join(worktree, '.opencode', 'session-plans', target, 'plan.jsonl');
 }

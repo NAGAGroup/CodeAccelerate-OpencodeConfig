@@ -1,5 +1,52 @@
 import * as path from "path";
-import type { DagNode, BranchOption, PlanDag, FlatNode } from "./types";
+import type { DagNode, BranchOption, PlanDag, FlatNode, DagNodeV3, DagMetadataV3 } from "./types";
+
+// ─── V3 (JSONL flat-array) utilities ─────────────────────────────────────────
+
+export function dagToMermaidV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): string {
+  const lines: string[] = ['flowchart TD'];
+  for (const node of nodes) {
+    const promptFile = path.basename(node.prompt);
+    const todoStr = node.todo.length > 0 ? node.todo.join(', ') : 'none';
+    lines.push(`  ${node.id}["${node.id}<br/>${promptFile} | [${todoStr}]"]`);
+  }
+  for (const node of nodes) {
+    if (!node.children || node.children.length === 0) continue;
+    for (const childId of node.children) {
+      lines.push(`  ${node.id} --> ${childId}`);
+    }
+  }
+  return lines.join('\n');
+}
+
+export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void {
+  const ids = new Set<string>();
+  const duplicates: string[] = [];
+  for (const node of nodes) {
+    if (ids.has(node.id)) duplicates.push(node.id);
+    else ids.add(node.id);
+  }
+  if (duplicates.length > 0) {
+    throw new Error(`Duplicate node IDs in DAG: ${duplicates.join(', ')}`);
+  }
+  if (!ids.has(metadata.entry_node_id)) {
+    throw new Error(`Entry node "${metadata.entry_node_id}" not found in DAG nodes`);
+  }
+}
+
+export function flattenTreeV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): Record<string, FlatNode> {
+  const map: Record<string, FlatNode> = {};
+  for (const node of nodes) {
+    if (map[node.id]) {
+      throw new Error(`DAG validation error: duplicate node id "${node.id}".`);
+    }
+    const flat: FlatNode = { id: node.id, prompt: node.prompt, todo: node.todo };
+    if (node.children && node.children.length > 0) flat.children = node.children;
+    if (node.unlocked_tools && node.unlocked_tools.length > 0) flat.unlockedTools = node.unlocked_tools;
+    map[node.id] = flat;
+  }
+  return map;
+}
 
 export function collectAllNodes(node: DagNode, collected: DagNode[] = []): DagNode[] {
   collected.push(node);

@@ -1,20 +1,36 @@
-# session-overview Node Type
+# Session Overview Prompt Creation
 
-## When to use
+This is the first node of every plan. The executing agent was not part of the planning session — it has no knowledge of the task, the findings, or the decisions made. This prompt is its only briefing. Everything it needs to know must be in the TASK_CONTEXT you provide.
 
-**Always — every DAG starts with exactly one `session-overview` node.** It auto-advances immediately. Its only job is to give HeadWrench a one-sentence statement of what the session is for.
+**Todo:**
+1. `sequential-thinking_sequentialthinking` — compose the TASK_CONTEXT by reviewing your planning notes
+2. `write_prompt` — write the session overview prompt with your TASK_CONTEXT
 
-## What the planning agent must resolve
+---
+**REASONING TASK**
 
-**Session goal** — One declarative sentence stating what the DAG accomplishes. This is what HW reads when the session starts.
-- ✓ Good: "Implement token refresh logic in the auth module with full test coverage."
-- ✓ Good: "Migrate the billing system from Stripe to Square."
-- ✗ Bad: "Update the auth system." (too vague)
-- ✗ Bad: A paragraph describing phases, scouts, or expected steps — HW will be guided through those by the DAG itself.
+Use the `sequential-thinking_sequentialthinking` tool to compose the TASK_CONTEXT before calling `write_prompt`. Do not write it as text — you must call the tool.
 
-## Notes
+- What is the user's goal? State it directly — the executing agent has no other source for this.
+- What did the investigation phase discover that constrains or informs the work? Include specific file paths, line numbers, config values — not summaries.
+- What scope decisions were made during user discussion? What's in, what's out, and why?
+- Are there assumptions from the planning notes that the executing agent should be aware of?
 
-- **Empty todo means auto-advance.** No tool calls, no user interaction, no action instructions. HW reads the goal and the DAG moves on.
-- **Do not describe what comes next.** The DAG handles flow. Writing "Next, scouts will explore the codebase" is dead weight — it will never be acted on and may cause HW to try to predict or skip ahead.
-- **One sentence only.** This is not a briefing document. Save detail for `propose-plan`.
-- **The "STOP — Do not work ahead" block is fixed text.** It must appear verbatim in every generated session-overview prompt, below the `{{SESSION_GOAL}}` slot. Do not paraphrase, remove, or move it. This block is the primary guard against models working ahead before the DAG has a chance to sequence them.
+Then call:
+```
+write_prompt(plan_name, "session-overview", "session-overview", {
+  TASK_CONTEXT: "<your composed briefing>"
+})
+```
+
+---
+
+✓ Good: composes TASK_CONTEXT via sequential thinking with specific evidence from planning
+`sequential-thinking_sequentialthinking({ thought: "<reviews planning notes, extracts key findings, scope decisions, and constraints>", ... })`
+`sequential-thinking_sequentialthinking({ thought: "<composes TASK_CONTEXT with specific files, lines, user decisions>", ..., nextThoughtNeeded: false })`
+`write_prompt(plan_name, "session-overview", "session-overview", { TASK_CONTEXT: "<composed briefing>" })`
+
+✗ Bad: skips sequential thinking and writes a vague TASK_CONTEXT from memory
+`write_prompt(plan_name, "session-overview", "session-overview", { TASK_CONTEXT: "<one sentence restating the user's original request>" })`
+
+✗ Bad: writes the TASK_CONTEXT as prose between tool calls instead of composing it in sequential thinking
