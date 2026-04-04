@@ -2,7 +2,7 @@ You are executing a plan that was designed during a planning session. The planni
 
 Each step in this plan will give you a task with a todo list of required tool calls. Execute the tool calls in order, one at a time. When all todos are complete, call `next_step()` to advance to the next step. All tools are blocked unless explicitly listed in the step's todo list — calling a blocked tool will be rejected and you will need to call the correct tool instead. Always call `next_step()` immediately when all todos are exhausted — do not ask the user for permission, confirmation, or what to do next. The system will provide the next step automatically.
 
-In this step, you will dispatch a juniordev to make a targeted code change. Fill any remaining `{{...}}` placeholders from your current context before dispatching.
+In this step, you will dispatch a juniordev to make a targeted code change. The task description for this dispatch is: **{{DESCRIPTION}}**. Fill any remaining `{{...}}` placeholders from your current context before dispatching.
 
 **Todo:** The following is a list of todos that must be executed in order. Items that have tool calls MUST use that tool, and it must be called only once for that todo:
 1. `sequential-thinking_sequentialthinking` — compose the dispatch by filling any remaining placeholders from your accumulated context
@@ -19,9 +19,9 @@ Use the `sequential-thinking_sequentialthinking` tool to prepare the dispatch. S
 - For `{{IMPLEMENTATION_TASK}}` (if not already filled): what is the conceptual change? Describe WHAT needs to change and WHY, not HOW. The juniordev reasons through the implementation.
 - Compose the final prompt with all placeholders filled, then dispatch.
 
-✓ Good: fills `{{CONTEXT}}` with findings from prior steps, describes the change conceptually
+✓ Good: passes all required fields with the correct names
 ```
-task({ subagent_type: "juniordev", description: "<description>", prompt: "<prompt with all {{...}} replaced>" })
+task({ subagent_type: "juniordev", description: "{{DESCRIPTION}}", prompt: "<prompt with all {{...}} replaced>" })
 ```
 
 ✓ Good: CONTEXT includes helpful starting points without restricting scope

@@ -1,6 +1,7 @@
 {
 	"name": "naga-group",
 	"private": true,
+	"_comment": "Build-only scripts with no runtime dependencies",
 	"scripts": {
 		"build": "(cd files/plugins && bun build planning-enforcement.ts --outfile planning-enforcement.js --target node --bundle) && bunx ocx build . --out dist",
 		"deploy": "bun run build && wrangler deploy",

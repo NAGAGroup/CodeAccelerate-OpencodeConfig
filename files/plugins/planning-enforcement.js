@@ -110185,16 +110185,22 @@ var PlanningEnforcementPlugin = async (_ctx) => {
             };
             writeState(statePath, state);
             const promptText = readPrompt(entryNode.prompt, worktree);
-            let result = `DAG "${metadata.id}" activated. Starting at node: ${metadata.entry_node_id}.
-
----
-
-${promptText}`;
+            await client.session.prompt({
+              path: { id: context.sessionID },
+              body: {
+                noReply: true,
+                parts: [{
+                  type: "text",
+                  text: promptText
+                }]
+              }
+            });
             if (entryNode.todo.length === 0) {
               const hasNext = entryNode.children && entryNode.children.length > 0;
               state.status = hasNext ? "waiting_step" : "complete";
               writeState(statePath, state);
             }
+            const result = `DAG "${metadata.id}" activated. Your next task, "${metadata.entry_node_id}", will be presented in the following message.`;
             return result;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
@@ -110237,11 +110243,16 @@ ${promptText}`;
             };
             writeState(statePath, state);
             const promptText = readPrompt(entryNode.prompt, worktree);
-            let result = `DAG "${metadata.id}" activated. Starting at node: ${metadata.entry_node_id}.
-
----
-
-${promptText}`;
+            await client.session.prompt({
+              path: { id: context.sessionID },
+              body: {
+                noReply: true,
+                parts: [{
+                  type: "text",
+                  text: promptText
+                }]
+              }
+            });
             if (entryNode.todo.length === 0) {
               if (entryNode.children && entryNode.children.length > 0) {
                 state.status = "waiting_step";
@@ -110251,6 +110262,7 @@ ${promptText}`;
                 writeState(statePath, state);
               }
             }
+            const result = `DAG "${metadata.id}" activated. Your next task, "${metadata.entry_node_id}", will be presented in the following message.`;
             return result;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
@@ -110312,11 +110324,16 @@ ${promptText}`;
           state.updated_at = now();
           writeState(statePath, state);
           const promptText = readPrompt(nextNode.prompt, resolveWorktree(context));
-          const result = `Node "${node.id}" complete. Advancing to "${nextId}".
-
----
-
-${promptText}`;
+          await client.session.prompt({
+            path: { id: context.sessionID },
+            body: {
+              noReply: true,
+              parts: [{
+                type: "text",
+                text: promptText
+              }]
+            }
+          });
           if (nextNode.todo.length === 0) {
             const nextChildren = nextNode.children ?? [];
             if (nextChildren.length > 0) {
@@ -110327,6 +110344,13 @@ ${promptText}`;
               writeState(statePath, state);
             }
           }
+          const { metadata } = readDagV3(state.plan_path);
+          const isFromEntryNode = node.id === metadata.entry_node_id;
+          let result = "";
+          if (!isFromEntryNode) {
+            result += `You have just completed "${node.id}". `;
+          }
+          result += `Your next task, "${nextId}", will be presented in the following message.`;
           return result;
         }
       }),
@@ -110609,7 +110633,7 @@ ${ascii}`;
               entryNode.unlocked_tools = unlocked_tools;
             }
             writeDagV3(planPath, metadata, [entryNode]);
-            return `## init_dag: Created DAG "${dag_id}"
+            return `## init_dag: Created DAG "${plan_name}"
 
 ` + `Plan directory: ${planDir}
 ` + `Prompts directory: ${promptsDir}
@@ -110833,7 +110857,7 @@ ${ascii}`;
             }
             const filledPrompt = template.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
               return allArgs[key] !== undefined ? allArgs[key] : _match;
-            });
+            }).replace(/>\|(\w+)\|</g, (_match, key) => `{{${key}}}`);
             fs6.writeFileSync(promptPath, filledPrompt, "utf-8");
             return `Prompt written to ${promptPath}
 

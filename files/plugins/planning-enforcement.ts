@@ -67,7 +67,19 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             writeState(statePath, state);
 
             const promptText = readPrompt(entryNode.prompt, worktree);
-            let result = `DAG "${metadata.id}" activated. Starting at node: ${metadata.entry_node_id}.\n\n---\n\n${promptText}`;
+            
+            // Inject the prompt into the conversation as a system message.
+            // Must await so the prompt is written before the tool returns.
+            await client.session.prompt({
+              path: { id: context.sessionID },
+              body: {
+                noReply: true,
+                parts: [{
+                  type: "text",
+                  text: promptText
+                }]
+              }
+            });
 
             if (entryNode.todo.length === 0) {
               const hasNext = entryNode.children && entryNode.children.length > 0;
@@ -75,6 +87,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               writeState(statePath, state);
             }
 
+            const result = `DAG "${metadata.id}" activated. Your next task, "${metadata.entry_node_id}", will be presented in the following message.`;
             return result;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
@@ -126,7 +139,19 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             writeState(statePath, state);
 
             const promptText = readPrompt(entryNode.prompt, worktree);
-            let result = `DAG "${metadata.id}" activated. Starting at node: ${metadata.entry_node_id}.\n\n---\n\n${promptText}`;
+            
+            // Inject the prompt into the conversation as a system message.
+            // Must await so the prompt is written before the tool returns.
+            await client.session.prompt({
+              path: { id: context.sessionID },
+              body: {
+                noReply: true,
+                parts: [{
+                  type: "text",
+                  text: promptText
+                }]
+              }
+            });
 
             if (entryNode.todo.length === 0) {
               if (entryNode.children && entryNode.children.length > 0) {
@@ -139,6 +164,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               }
             }
 
+            const result = `DAG "${metadata.id}" activated. Your next task, "${metadata.entry_node_id}", will be presented in the following message.`;
             return result;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
@@ -217,7 +243,19 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           writeState(statePath, state);
 
           const promptText = readPrompt(nextNode.prompt, resolveWorktree(context));
-          const result = `Node "${node.id}" complete. Advancing to "${nextId}".\n\n---\n\n${promptText}`;
+          
+          // Inject the prompt into the conversation as a system message.
+          // Must await so the prompt is written before the tool returns.
+          await client.session.prompt({
+            path: { id: context.sessionID },
+            body: {
+              noReply: true,
+              parts: [{
+                type: "text",
+                text: promptText
+              }]
+            }
+          });
 
           if (nextNode.todo.length === 0) {
             const nextChildren = nextNode.children ?? [];
@@ -230,6 +268,16 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
           }
 
+          // Build completion message - read DAG to get entry node
+          const { metadata } = readDagV3(state.plan_path);
+          const isFromEntryNode = node.id === metadata.entry_node_id;
+          
+          let result = "";
+          if (!isFromEntryNode) {
+            result += `You have just completed "${node.id}". `;
+          }
+          result += `Your next task, "${nextId}", will be presented in the following message.`;
+          
           return result;
         },
       }),
@@ -534,7 +582,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
             writeDagV3(planPath, metadata, [entryNode]);
 
-            return `## init_dag: Created DAG "${dag_id}"\n\n` +
+            return `## init_dag: Created DAG "${plan_name}"\n\n` +
               `Plan directory: ${planDir}\n` +
               `Prompts directory: ${promptsDir}\n` +
               `Plan file: ${planPath}\n` +
@@ -821,9 +869,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
 
             // Fill template placeholders
-            const filledPrompt = template.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
-              return allArgs[key] !== undefined ? allArgs[key] : _match;
-            });
+            const filledPrompt = template
+              .replace(/\{\{(\w+)\}\}/g, (_match, key) => {
+                return allArgs[key] !== undefined ? allArgs[key] : _match;
+              })
+              // Unescape >|PLACEHOLDER|< → {{PLACEHOLDER}} (must run after fill so these aren't filled)
+              .replace(/>\|(\w+)\|</g, (_match, key) => `{{${key}}}`);
 
             // Write to disk
             fs.writeFileSync(promptPath, filledPrompt, "utf-8");
