@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- All profiles (`files/profiles/*/opencode.jsonc`) — Qdrant MCP server configuration updated to support concurrent sessions: replaced `QDRANT_LOCAL_PATH` with `QDRANT_URL: http://localhost:6333` to connect all sessions to a single shared Qdrant instance instead of spawning per-session servers; requires starting Qdrant once as a persistent background service (`docker run -d --name qdrant -p 6333:6333 qdrant/qdrant` or `uvx mcp-server-qdrant`)
+
 - `files/planning/plan-session/plan.jsonl` — removed `dag-revision` and `user-review` nodes; wired `dag-review` directly to `plan-success`; fixed `write-notes` todo from `["write"]` to `["qdrant_qdrant-store"]` to match the Qdrant-only storage model
 - `files/planning/plan-session/prompts/write-notes.md` — removed markdown file writing entirely; todo now stores all findings to Qdrant via `qdrant_qdrant-store`; Qdrant is the sole persistent record for session knowledge
 - `files/planning/plan-session/prompts/session-overview.md` — replaced shallow reasoning questions ("Are you ready?") with three skill-specific questions that force genuine engagement with following-plans, asking-questions, and sequential-thinking content

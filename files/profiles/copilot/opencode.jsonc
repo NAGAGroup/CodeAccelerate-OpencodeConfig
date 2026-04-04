@@ -82,13 +82,14 @@
       "enabled": true
     },
     // Semantic session memory. Stores and retrieves findings by meaning across DAG steps.
-    // Uses local embedded Qdrant (no server required) + FastEmbed for local embeddings.
-    // First use downloads the embedding model (~90MB, one-time).
+    // Connects to a shared Qdrant server instance (supports concurrent sessions).
+    // Start the server once: docker run -d --name qdrant -p 6333:6333 qdrant/qdrant
+    // Or without Docker: uvx mcp-server-qdrant
     "qdrant": {
       "type": "local",
       "command": ["uvx", "mcp-server-qdrant"],
       "environment": {
-        "QDRANT_LOCAL_PATH": ".opencode/qdrant",
+        "QDRANT_URL": "http://localhost:6333",
         "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2"
       },
       "enabled": true,
