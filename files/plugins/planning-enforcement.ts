@@ -4,7 +4,7 @@ import { renderMermaidASCII } from "beautiful-mermaid";
 import * as fs from "fs";
 import * as path from "path";
 import type { DecisionEntry, DagSessionState, DagNodeV3, DagMetadataV3 } from "./types";
-import { CONFIG_ROOT, exemptTools, isExempt } from "./constants";
+import { exemptTools, isExempt } from "./constants";
 import { dagStatePath, writeState, readState, now } from "./state-io";
 import { expandPath, readPrompt, resolveDagPath } from "./path-utils";
 import { readDagV3, writeDagV3 } from "./dag-io";
@@ -561,12 +561,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
 
             // Load execution-kickoff node spec from the library
-            const kickoffSpecPath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", "execution-kickoff", "node-spec.json");
+            const nodeLibRelBase = path.join("files", "planning", "plan-session", "node-library");
+            const kickoffSpecPath = path.join(process.cwd(), nodeLibRelBase, "execution-kickoff", "node-spec.json");
             if (!fs.existsSync(kickoffSpecPath)) {
               return `Error in init_dag: execution-kickoff node-spec.json not found at ${kickoffSpecPath}.`;
             }
             const kickoffSpec = JSON.parse(fs.readFileSync(kickoffSpecPath, "utf-8"));
-            const kickoffPromptPath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", "execution-kickoff", kickoffSpec.prompt);
+            const kickoffPromptPath = path.join(nodeLibRelBase, "execution-kickoff", kickoffSpec.prompt);
 
             fs.mkdirSync(planDir, { recursive: true });
 
@@ -632,12 +633,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
 
             // Load component spec from the node library
-            const specPath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", component_name, "node-spec.json");
+            const nodeLibRelBase = path.join("files", "planning", "plan-session", "node-library");
+            const specPath = path.join(process.cwd(), nodeLibRelBase, component_name, "node-spec.json");
             if (!fs.existsSync(specPath)) {
               return `Error in add_node: Component "${component_name}" not found in node library at ${specPath}. Use get_planning_components_catalogue() to see available types.`;
             }
             const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
-            const promptPath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", component_name, spec.prompt);
+            const promptPath = path.join(nodeLibRelBase, component_name, spec.prompt);
 
             const newNode: DagNodeV3 = {
               id: nodeId,
@@ -770,7 +772,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
        args: {},
         async execute(_args, _context) {
           try {
-            const cataloguePath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", "CATALOGUE.md");
+            const cataloguePath = path.join(process.cwd(), "files", "planning", "plan-session", "node-library", "CATALOGUE.md");
 
            if (!fs.existsSync(cataloguePath)) {
              return `CATALOGUE.md not found at ${cataloguePath}. ` +
@@ -792,7 +794,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
        args: {},
        async execute(_args, _context) {
          try {
-           const guidePath = path.join(CONFIG_ROOT, "planning", "plan-session", "dag-design-guide.md");
+            const guidePath = path.join(process.cwd(), "files", "planning", "plan-session", "dag-design-guide.md");
 
            if (!fs.existsSync(guidePath)) {
              return `dag-design-guide.md not found at ${guidePath}. ` +
