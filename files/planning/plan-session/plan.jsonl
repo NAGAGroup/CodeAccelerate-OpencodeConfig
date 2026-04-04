@@ -7,5 +7,7 @@
 {"id":"compress","prompt":"compress.md","todo":["compress"],"children":["session-overview-refresher"]}
 {"id":"session-overview-refresher","prompt":"session-overview-refresher.md","todo":["qdrant_qdrant-find","sequential-thinking_sequentialthinking"],"children":["dag-design"]}
 {"id":"dag-design","prompt":"dag-design.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["dag-review"]}
-{"id":"dag-review","prompt":"dag-review.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["plan-success"]}
+{"id":"dag-review","prompt":"dag-review.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["dag-revision"]}
+{"id":"dag-revision","prompt":"dag-revision.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["user-review"]}
+{"id":"user-review","prompt":"user-review.md","todo":["present_dag_to_user","question"],"children":["plan-success"]}
 {"id":"plan-success","prompt":"plan-success.md","todo":[],"children":[]}
