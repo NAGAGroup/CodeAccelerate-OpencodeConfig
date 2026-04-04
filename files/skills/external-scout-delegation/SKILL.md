@@ -9,128 +9,73 @@ description: Delegate to @external-scout
 
 ```json
 {
-  // The type of specialist subagent to spin up.
-  // Must be one of the available agent types (see below).
   "subagent_type": "string",
-
-  // Short 3-5 word description of what this task does.
-  // Used for labelling/logging — not seen by the subagent.
-
   "description": "string",
-  // The full task prompt sent to the subagent.
-  // Should be highly detailed and self-contained — the subagent
-  // starts with a fresh context and only knows what you tell it here.
-  // Include: what to do, what to return, how to verify its work.
-
   "prompt": "string",
-  // Optional — the slash command that triggered this task, if any.
-  // e.g. "/check-file path/to/file.py"
-
-  // Optional — resume a previous subagent session instead of starting fresh.
-  // Pass the task_id returned from a prior Task call to continue
-  // with that agent's existing message history and tool outputs.
   "task_id": "string"
 }
 ```
 
-Only provide "task_id" if instructed to resume a previous subagent session, omit it entirely from the tool call arguments if not using it.
+- `subagent_type`: The agent type to use. Use `"external-scout"`.
+- `description`: A short 3–5 word label for logging. Not seen by the agent.
+- `prompt`: The full task prompt sent to the agent. Must be self-contained.
+- `task_id`: Only include when resuming a previous session. Omit otherwise.
 
-The four arguments are only those listed above: "description", "prompt", "subagent_type", and optionally "task_id". You must call the tool with this schema, do not attempt to improvise or shortcut.
+Only these four arguments are accepted. Do not add others.
 
-## What @external-scout is
+## What @external-scout Does
 
-@external-scout is a research subagent that searches external
-sources — documentation, community resources, technical
-references, forums, and published guides. It cannot access
-the project. It has access to web search tools, URL fetching,
-and sequential thinking.
+@external-scout is a research agent. It searches external sources — public references, community resources, and published guides. It has no access to internal materials. It relies on web search, URL reading, and sequential thinking.
 
-## What @external-scout is good at
+@external-scout is good at resolving questions that cannot be answered from internal materials — verifying whether something is supported, finding established approaches, and discovering edge cases others have encountered.
 
-@external-scout excels at resolving uncertainties that can't
-be answered from the project alone — verifying whether a tool
-supports a feature, finding best practices for an approach,
-understanding how a technology works in practice, and
-discovering gotchas or edge cases that others have encountered.
+## Before You Delegate: Review for Private Information
 
-@external-scout is not good at understanding project-specific
-context. It has no access to the project and relies entirely
-on what you tell it in the delegation prompt.
+Your delegation prompt will be sent to external search tools. Before dispatching, review the prompt and remove or generalize any private details:
 
-## How to delegate effectively
+- Replace internal names with generic descriptions.
+- Replace private terms with their general category.
+- Remove any identifiers or internal-only terminology.
+- Frame questions in terms of the publicly available subject matter.
 
-Your delegation prompt should:
-- Provide enough context about the situation for @external-scout
-  to understand what it's researching and why, without including
-  proprietary details
-- Frame questions in general, public terms — ask about
-  technologies and practices, not about your specific project
-- Describe what you already know so @external-scout doesn't
-  waste time confirming things you've already established
-- Request that @external-scout search before answering — it
-  should never answer from training data alone
-- Request that @external-scout fetch and read actual sources
-  rather than relying on search snippets
-- Require an uncertainties section — what it searched for but
-  couldn't verify from sources it actually read
+Present the delegation prompt to the user for review before dispatching.
 
-## IP safety
+## How to Write a Good Delegation Prompt
 
-Before dispatching @external-scout, you must present your
-delegation prompt to the user for review via the `question`
-tool. The prompt will be used in external web searches.
-Generalize any project-specific details:
+Your prompt should:
+1. Give enough background for @external-scout to understand what it is researching and why.
+2. Use general, public terms. Do not include private details.
+3. State what you already know so @external-scout does not repeat confirmed findings.
+4. Ask @external-scout to search before answering — never from memory alone.
+5. Ask @external-scout to read actual sources, not only search summaries.
+6. Ask for an uncertainties section — what was searched for but could not be confirmed from sources actually read.
 
-- Replace internal project names with generic descriptions
-- Replace proprietary tool names with their public category
-- Remove any identifiers, code names, or internal terminology
-- Frame questions about your situation in terms of the
-  publicly available technologies involved
+## What to Ask @external-scout to Report
 
-## Output to request
-
-@external-scout should report:
-
-- What it found, with distinction between information from
-  sources it actually read versus search snippet summaries
-- How confident it is in each finding — did it verify from
-  a primary source, or is it relying on secondary references?
-- What it searched for but couldn't find reliable answers to
-- Any contradictions between sources
+- What it found, with a distinction between verified (read from source), inferred (from summaries), and uncertain.
+- How confident it is in each finding.
+- What it searched for but could not confirm.
+- Any contradictions between sources.
 
 ## Examples
 
-✓ Good delegation: general terminology, enough context
-  "We're using a package manager to manage toolchains for
-  a compiled language. We need to know whether a specific
-  meta-package provides different compiler backends when
-  targeting a new platform. Search the package manager's
-  documentation and community forums."
+Good — general terms, enough context:
+> "We are using [a type of tool] to manage [a process]. We need to know whether [tool] supports [capability] in [context]. Search [tool's] documentation and community resources."
 
-✓ Good delegation: states what's already known
-  "We've confirmed the build system is cross-platform and
-  uses standard install directories. What we need to know
-  is whether the coverage tooling has equivalents on the
-  target platform in the same package ecosystem."
+Good — states what is already known:
+> "We have confirmed [known fact]. What we need to know is whether [unknown] exists in [context]."
 
-✓ Good delegation: asks for source verification
-  "Search for this, but read the actual documentation pages
-  rather than relying on search result snippets. If you
-  can't find a primary source, say so."
+Good — asks for source verification:
+> "Search for this, but read the actual reference pages rather than relying on search snippets. If you cannot find a primary source, say so."
 
-✗ Bad delegation: leaks project internals
-  "Search for how to add platform support to the
-  MyCompany-InternalProject repository."
+Bad — leaks private details:
+> "Search for how to do [X] for [internal project name]."
 
-✗ Bad delegation: answerable from the project itself
-  "Find out what dependencies our project uses." —
-  @external-scout has no project access, and this should
-  have been answered by @context-scout
+Bad — answerable from internal materials:
+> "Find out what [thing] our work uses." — @external-scout has no internal access. This should have been answered by @context-scout.
 
-✗ Bad delegation: no context provided
-  "Research platform support for compiled language
-  projects." — too vague to produce actionable findings
+Bad — no context provided:
+> "Research [topic]." — too vague to produce useful findings.
 
-✗ Bad delegation: accepts training data as evidence
-  "Tell me about this tool's packages." — should require
-  actual search and source verification
+Bad — accepts memory as evidence:
+> "Tell me about [topic]." — must require actual search and source verification.

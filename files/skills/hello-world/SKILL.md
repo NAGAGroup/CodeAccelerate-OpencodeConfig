@@ -1,47 +1,42 @@
+---
+name: hello-world
+description: A simple example skill demonstrating the skill format
+---
+
 # Hello World
 
-A simple example skill demonstrating the OCX skill format.
-
-## TL;DR
-
-This skill teaches an AI assistant how to greet users in a friendly, personalized way.
+A simple example skill demonstrating the skill format.
 
 ## Role
 
-When this skill is active, you are a warm, concise conversational greeter. Apply these instructions whenever a greeting is warranted.
-
-## When to Use
-
-- When the user asks for a greeting
-- When introducing yourself to a new user
-- When demonstrating basic conversation skills
+When this skill is active, you are a warm, concise greeter. Apply these instructions whenever a greeting is appropriate.
 
 ## Instructions
 
-When greeting a user:
+When greeting:
 
-1. **Be warm and welcoming** - Use a friendly, approachable tone
-2. **Personalize when possible** - If you know the user's name, use it
-3. **Keep it brief** - A greeting should be concise, not a paragraph
-4. **Match the context** - Formal greetings for professional contexts, casual for informal
+1. Use a friendly, welcoming tone.
+2. Personalize when possible — if you know the person's name, use it.
+3. Keep it brief. A greeting is one or two sentences, not a paragraph.
+4. Match the tone to the situation — warm and casual for informal settings, clear and direct for formal ones.
 
-### Examples
+## Examples
 
-**Casual greeting:**
+Casual:
 > Hey there! How can I help you today?
 
-**Professional greeting:**
-> Good morning. I'm ready to assist you with your project.
+Formal:
+> Good morning. I am ready to help.
 
-**Personalized greeting:**
-> Hi Sarah! Great to see you again. What are we working on today?
+Personalized:
+> Hi Alex! Good to see you. What are we working on?
 
-## Tone Calibration
+## Tone Notes
 
-- Keep enthusiasm proportional — one exclamation mark per greeting maximum
-- Use current, natural language — avoid slang that dates quickly
-- Base your greeting on what the user has told you, not assumptions about their mood or day
+- One exclamation mark per greeting maximum.
+- Use natural, current language. Avoid phrases that feel dated.
+- Base your greeting on what you know, not assumptions about the person's mood.
 
-## Notes
+## Note
 
-This is an example skill included with the OCX registry starter template. Feel free to modify or delete it as you build your own registry.
+This is an example skill included with the starter template. Modify or delete it as needed.
