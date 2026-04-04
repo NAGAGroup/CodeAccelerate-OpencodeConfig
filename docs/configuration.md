@@ -97,13 +97,86 @@ Set `"enabled": false` to disable a server without deleting its config. Set it b
 
 ### Qdrant setup
 
-Qdrant provides semantic memory for planning sessions. It runs locally and stores data in `.opencode/qdrant` inside your project directory.
+Qdrant provides semantic memory for planning sessions. All OpenCode sessions connect to a **shared Qdrant server instance** — this allows multiple concurrent sessions without port conflicts.
 
 **Requirements:** Python with `uv` installed (`pip install uv` or see [uv docs](https://docs.astral.sh/uv/)).
 
-No other setup is needed. On first use, `uvx mcp-server-qdrant` will download and cache the server and the embedding model (`sentence-transformers/all-MiniLM-L6-v2`, ~90MB). This takes 30–60 seconds. Subsequent starts are instant.
+#### Quick start (manual)
 
-> **Timeout note:** The profile sets `"timeout": 30000` (30 seconds) on the qdrant MCP entry. This covers the first-run model download. Do not reduce this value.
+Start the server once in a terminal:
+
+```bash
+uvx mcp-server-qdrant
+```
+
+All OpenCode sessions will connect to `http://localhost:6333`. The server stays running until you close the terminal.
+
+#### Persistent setup (systemd service)
+
+To avoid starting the server manually every time you log in, create a systemd user service:
+
+**1. Create the service file:**
+
+```bash
+mkdir -p ~/.config/systemd/user
+cat > ~/.config/systemd/user/qdrant.service << 'EOF'
+[Unit]
+Description=Qdrant MCP Server for CodeAccelerate
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/%u/.local/bin/uvx mcp-server-qdrant
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
+EOF
+```
+
+**2. Enable and start the service:**
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable qdrant
+systemctl --user start qdrant
+```
+
+**3. Verify it's running:**
+
+```bash
+systemctl --user status qdrant
+curl http://localhost:6333/health
+```
+
+You should see a JSON response like `{"status":"ok"}`.
+
+**4. View logs:**
+
+```bash
+journalctl --user -u qdrant -f
+```
+
+**5. Stop or restart (if needed):**
+
+```bash
+systemctl --user stop qdrant
+systemctl --user restart qdrant
+```
+
+#### First-run timing
+
+On first start, `uvx mcp-server-qdrant` downloads the embedding model (`sentence-transformers/all-MiniLM-L6-v2`, ~90MB). This takes 30–60 seconds. Subsequent starts are instant. The profile sets `"timeout": 30000` (30 seconds) on the qdrant MCP entry to cover this download window.
+
+#### Troubleshooting
+
+- **"Connection refused" when starting OpenCode:** The Qdrant service isn't running. Check status with `systemctl --user status qdrant` and start it with `systemctl --user start qdrant`.
+- **Service fails to start:** Check logs with `journalctl --user -u qdrant -n 50` to see the error.
+- **Port 6333 already in use:** Kill the existing process with `lsof -i :6333` and `kill <PID>`, then restart the service.
 
 ### SearXNG setup (ollama profile only)
 
