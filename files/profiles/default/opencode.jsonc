@@ -33,7 +33,7 @@
     "context-scout": {
       "model": "anthropic/claude-haiku-4-5"
     },
-    "quick-doc": {
+    "documentation-expert": {
       "model": "anthropic/claude-haiku-4-5"
     },
     "junior-dev": {
@@ -44,6 +44,12 @@
     },
     "external-scout": {
       "model": "anthropic/claude-haiku-4-5"
+    },
+    "tailwrench": {
+      "model": "anthropic/claude-sonnet-4-6"
+    },
+    "autonomous-agent": {
+      "model": "anthropic/claude-sonnet-4-6"
     },
     "compaction": {
       "model": "anthropic/claude-haiku-4-5"
@@ -64,9 +70,32 @@
       ],
       "enabled": true
     },
-    "exa": {
-      "type": "remote",
-      "url": "https://mcp.exa.ai/mcp?exaApiKey={env:EXA_API_KEY}&tools=web_search_exa,web_search_advanced_exa,get_code_context_exa,crawling_exa",
+    "probe": {
+      "type": "local",
+      "command": ["npx", "-y", "@probelabs/probe@latest", "mcp"],
+      "enabled": true
+    },
+    // Semantic session memory. Stores and retrieves findings by meaning across DAG steps.
+    // Uses local embedded Qdrant (no server required) + FastEmbed for local embeddings.
+    // First use downloads the embedding model (~90MB, one-time).
+    "qdrant": {
+      "type": "local",
+      "command": ["uvx", "mcp-server-qdrant"],
+      "environment": {
+        "QDRANT_LOCAL_PATH": ".opencode/qdrant",
+        "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2"
+      },
+      "enabled": true,
+      "timeout": 30000
+    },
+    // Self-hosted web search. Requires a running SearXNG instance on localhost:8080.
+    // To spin up a local instance: docker run -d -p 8080:8080 searxng/searxng
+    "searxng": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-searxng"],
+      "environment": {
+        "SEARXNG_URL": "http://localhost:8080"
+      },
       "enabled": true
     }
   }

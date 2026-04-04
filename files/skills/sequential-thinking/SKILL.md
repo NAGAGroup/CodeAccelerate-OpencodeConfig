@@ -9,39 +9,54 @@ description: How to use the sequential-thinking tool for step-by-step reasoning
 
 Use `sequential-thinking_sequentialthinking` to reason through a problem one step at a time. Each call is one focused thought. The tool does not act — it is a space to record your reasoning.
 
-## Tool Schema
+## How to Call the Tool
 
-```jsonc
-{
-  // Your current reasoning step.
-  "thought": "string",
+Call `sequential-thinking_sequentialthinking` once per thought step. The required fields are `thought`, `nextThoughtNeeded`, `thoughtNumber`, and `totalThoughts`.
 
-  // Set to true if you need to keep thinking.
-  // Set to false only when you have a final answer.
-  "nextThoughtNeeded": true,
+Example — first step of a reasoning task:
 
-  // Which step you are on right now. Starts at 1.
-  "thoughtNumber": 1,
+```
+sequential-thinking_sequentialthinking(
+  thought="The task is to [X]. The key question I need to answer is [Y]. Let me start by considering [Z].",
+  nextThoughtNeeded=true,
+  thoughtNumber=1,
+  totalThoughts=4
+)
+```
 
-  // Your best estimate of how many steps the full reasoning will take.
-  // You can adjust this up or down as you go.
-  "totalThoughts": 5,
+Example — continuing to the next step:
 
-  // Optional — set to true when correcting a previous step.
-  "isRevision": false,
+```
+sequential-thinking_sequentialthinking(
+  thought="Based on the previous step, I now know [finding]. This means [implication]. The next thing to consider is [next question].",
+  nextThoughtNeeded=true,
+  thoughtNumber=2,
+  totalThoughts=4
+)
+```
 
-  // Optional — which step you are correcting. Only set when isRevision is true.
-  "revisesThought": 2,
+Example — final step:
 
-  // Optional — which step this branch starts from.
-  "branchFromThought": 3,
+```
+sequential-thinking_sequentialthinking(
+  thought="I have considered all the relevant factors. My conclusion is [answer]. I am confident because [reason].",
+  nextThoughtNeeded=false,
+  thoughtNumber=4,
+  totalThoughts=4
+)
+```
 
-  // Optional — a label for this branch.
-  "branchId": "string",
+Example — correcting a previous step:
 
-  // Optional — set to true when you reach the end but realize you need more steps.
-  "needsMoreThoughts": false
-}
+```
+sequential-thinking_sequentialthinking(
+  thought="I was wrong in step 2. The correct interpretation is [corrected understanding] because [reason].",
+  nextThoughtNeeded=true,
+  thoughtNumber=3,
+  totalThoughts=5,
+  isRevision=true,
+  revisesThought=2
+)
 ```
 
 ## Rules

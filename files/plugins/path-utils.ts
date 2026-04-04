@@ -9,12 +9,19 @@ export function expandPath(p: string): string {
   return p;
 }
 
-export function readPrompt(promptPath: string, worktree: string): string {
+export function readPrompt(promptPath: string, worktree: string, sessionPath?: string): string {
   const expanded = expandPath(promptPath);
+  let content: string;
   if (path.isAbsolute(expanded)) {
-    return fs.readFileSync(expanded, "utf-8");
+    content = fs.readFileSync(expanded, "utf-8");
+  } else {
+    content = fs.readFileSync(path.join(worktree, expanded), "utf-8");
   }
-  return fs.readFileSync(path.join(worktree, expanded), "utf-8");
+  if (sessionPath) {
+    content = content.replaceAll("{{SESSION_PATH}}", sessionPath);
+    content = content.replaceAll("{{SESSION_NAME}}", path.basename(sessionPath));
+  }
+  return content;
 }
 
 export function resolveDagPath(target: string, worktree: string): string {

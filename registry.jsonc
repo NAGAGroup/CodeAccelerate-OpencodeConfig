@@ -28,46 +28,80 @@
       "type": "tool",
       "description": "NAGAGroup's plugins and planning scaffolds",
       "files": [
+        // Plugin
         "plugins/planning-enforcement.js",
-        "planning/reference/dag-design-guide.md",
+        // Plan session DAG + guide
         "planning/plan-session/plan.jsonl",
+        "planning/plan-session/dag-design-guide.md",
+        // Planning prompts
         "planning/plan-session/prompts/session-overview.md",
         "planning/plan-session/prompts/scout.md",
-        "planning/plan-session/prompts/scout-think.md",
-        "planning/plan-session/prompts/scout-parallel.md",
-        "planning/plan-session/prompts/sequential-thinking.md",
-        "planning/plan-session/prompts/clarifying-questions.md",
-        "planning/plan-session/prompts/research-gate.md",
-        "planning/plan-session/prompts/research-brief.md",
-        "planning/plan-session/prompts/scout-node-library.md",
-        "planning/plan-session/prompts/pre-research-thinking.md",
-        "planning/plan-session/prompts/propose-plan.md",
-        "planning/plan-session/prompts/present-dag.md",
-        "planning/plan-session/prompts/write-dag.md",
-        "planning/plan-session/prompts/activation-gate.md",
-        "planning/plan-session/prompts/activate-now.md",
-        "planning/plan-session/prompts/plan-complete.md",
-        "planning/plan-session/prompts/git-context.md",
-         "planning/plan-session/prompts/compress.md",
-         "planning/plan-session/prompts/planning-research.md",
-         "planning/plan-session/prompts/planning-research-think.md",
-         "planning/plan-session/prompts/planning-research-gate.md",
-         "planning/plan-session/prompts/session-overview-refresher.md",
-         "planning/plan-session/prompts/user-discussion.md",
-         "planning/plan-session/prompts/user-discussion-notes.md",
-         "planning/plan-session/prompts/write-discussion-notes.md",
-         "planning/plan-session/prompts/write-findings.md",
-         "planning/plan-session/prompts/write-research-and-discussion-notes.md",
-         "planning/plan-session/node-library/CATALOGUE.md",
-        "planning/plan-session/node-library/implement/NODE_REQS.md",
-        "planning/plan-session/node-library/implement/README.md",
-        "planning/plan-session/node-library/implement/prompt-template.md",
-        "planning/plan-session/node-library/session-overview-refresher/NODE_REQS.md",
-        "planning/plan-session/node-library/session-overview-refresher/README.md",
-        "planning/plan-session/node-library/session-overview-refresher/prompt-template.md",
-        "planning/plan-session/node-library/session-overview/NODE_REQS.md",
-        "planning/plan-session/node-library/session-overview/README.md",
-        "planning/plan-session/node-library/session-overview/prompt-template.md"
+        "planning/plan-session/prompts/orientation-scout.md",
+        "planning/plan-session/prompts/external-research.md",
+        "planning/plan-session/prompts/user-questions.md",
+        "planning/plan-session/prompts/write-notes.md",
+        "planning/plan-session/prompts/compress.md",
+        "planning/plan-session/prompts/session-overview-refresher.md",
+        "planning/plan-session/prompts/dag-design.md",
+        "planning/plan-session/prompts/dag-review.md",
+        "planning/plan-session/prompts/dag-revision.md",
+        "planning/plan-session/prompts/user-review.md",
+        // Node library catalogue
+        "planning/plan-session/node-library/CATALOGUE.md",
+        // Node library: execution-kickoff
+        "planning/plan-session/node-library/execution-kickoff/node-spec.json",
+        "planning/plan-session/node-library/execution-kickoff/prompt.md",
+        // Node library: work-item
+        "planning/plan-session/node-library/work-item/node-spec.json",
+        "planning/plan-session/node-library/work-item/prompt.md",
+        // Node library: project-search-and-analysis
+        "planning/plan-session/node-library/project-search-and-analysis/node-spec.json",
+        "planning/plan-session/node-library/project-search-and-analysis/prompt.md",
+        // Node library: research
+        "planning/plan-session/node-library/research/node-spec.json",
+        "planning/plan-session/node-library/research/prompt.md",
+        // Node library: deep-research
+        "planning/plan-session/node-library/deep-research/node-spec.json",
+        "planning/plan-session/node-library/deep-research/prompt.md",
+        // Node library: write-notes
+        "planning/plan-session/node-library/write-notes/node-spec.json",
+        "planning/plan-session/node-library/write-notes/prompt.md",
+        // Node library: compress
+        "planning/plan-session/node-library/compress/node-spec.json",
+        "planning/plan-session/node-library/compress/prompt.md",
+        // Node library: session-overview-refresher
+        "planning/plan-session/node-library/session-overview-refresher/node-spec.json",
+        "planning/plan-session/node-library/session-overview-refresher/prompt.md",
+        // Node library: sequential-thinking
+        "planning/plan-session/node-library/sequential-thinking/node-spec.json",
+        "planning/plan-session/node-library/sequential-thinking/prompt.md",
+        // Node library: agentic-loop
+        "planning/plan-session/node-library/agentic-loop/node-spec.json",
+        "planning/plan-session/node-library/agentic-loop/prompt.md",
+        // Node library: decision-gate
+        "planning/plan-session/node-library/decision-gate/node-spec.json",
+        "planning/plan-session/node-library/decision-gate/prompt.md",
+        // Node library: user-decision-gate
+        "planning/plan-session/node-library/user-decision-gate/node-spec.json",
+        "planning/plan-session/node-library/user-decision-gate/prompt.md",
+        // Node library: plan-fail
+        "planning/plan-session/node-library/plan-fail/node-spec.json",
+        "planning/plan-session/node-library/plan-fail/prompt.md",
+        // Node library: plan-success
+        "planning/plan-session/node-library/plan-success/node-spec.json",
+        "planning/plan-session/node-library/plan-success/prompt.md",
+        // Node library: verify
+        "planning/plan-session/node-library/verify/node-spec.json",
+        "planning/plan-session/node-library/verify/prompt.md",
+        // Node library: run-project-commands
+        "planning/plan-session/node-library/run-project-commands/node-spec.json",
+        "planning/plan-session/node-library/run-project-commands/prompt.md",
+        // Node library: commit
+        "planning/plan-session/node-library/commit/node-spec.json",
+        "planning/plan-session/node-library/commit/prompt.md",
+        // Node library: user-discussion
+        "planning/plan-session/node-library/user-discussion/node-spec.json",
+        "planning/plan-session/node-library/user-discussion/prompt.md"
       ]
     },
     {
@@ -75,17 +109,33 @@
       "type": "bundle",
       "description": "NAGAGroup's base opencode distro files",
       "files": [
-         "agents/context-insurgent.md",
-         "agents/context-scout.md",
-         "agents/external-scout.md",
-         "agents/headwrench.md",
-         "agents/junior-dev.md",
-         "agents/quick-doc.md",
-         "agents/tailwrench.md",
-         "commands/activate-plan.md",
-         "commands/plan-session.md",
-         "skills/hello-world/SKILL.md"
-       ],
+        // Agents
+        "agents/autonomous-agent.md",
+        "agents/context-insurgent.md",
+        "agents/context-scout.md",
+        "agents/documentation-expert.md",
+        "agents/external-scout.md",
+        "agents/headwrench.md",
+        "agents/junior-dev.md",
+        "agents/tailwrench.md",
+        // Commands
+        "commands/activate-plan.md",
+        "commands/plan-session.md",
+        // Skills
+        "skills/asking-questions/SKILL.md",
+        "skills/autonomous-agent-delegation/SKILL.md",
+        "skills/context-insurgent-delegation/SKILL.md",
+        "skills/context-scout-delegation/SKILL.md",
+        "skills/dag-design/SKILL.md",
+        "skills/dag-review/SKILL.md",
+        "skills/documentation-expert-delegation/SKILL.md",
+        "skills/external-scout-delegation/SKILL.md",
+        "skills/following-plans/SKILL.md",
+        "skills/juniordev-delegation/SKILL.md",
+        "skills/qdrant-notes/SKILL.md",
+        "skills/sequential-thinking/SKILL.md",
+        "skills/tailwrench-delegation/SKILL.md"
+      ],
       "dependencies": [
         "ocx-tools"
       ]

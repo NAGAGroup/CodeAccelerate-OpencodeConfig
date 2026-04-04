@@ -1,5 +1,12 @@
 {"schema_version":"3.0","id":"plan-session","entry_node_id":"session-overview"}
-{"id":"session-overview","prompt":"session-overview.md","todo":["skill", "skill", "sequential-thinking_sequentialthinking"],"children":["scout"]}
-{"id":"scout","prompt":"scout.md","todo":["skill", "sequential-thinking_sequentialthinking", "task"],"children":["external-scout"]}
-{"id":"external-scout","prompt":"research-brief.md","todo":["skill", "skill", "sequential-thinking_sequentialthinking", "question", "task"],"children":["post-scout-user-questions"]}
-{"id":"post-scout-user-questions","prompt":"post-scout-user-questions.md","todo":["skill", "sequential-thinking_sequentialthinking", "question"],"children":[]}
+{"id":"session-overview","prompt":"session-overview.md","todo":["skill","skill","skill","sequential-thinking_sequentialthinking"],"children":["orientation-scout"]}
+{"id":"orientation-scout","prompt":"orientation-scout.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["external-research"]}
+{"id":"external-research","prompt":"external-research.md","todo":["skill","sequential-thinking_sequentialthinking","question","task"],"children":["user-questions"]}
+{"id":"user-questions","prompt":"user-questions.md","todo":["sequential-thinking_sequentialthinking","question"],"children":["write-notes"]}
+{"id":"write-notes","prompt":"write-notes.md","todo":["write"],"children":["compress"]}
+{"id":"compress","prompt":"compress.md","todo":["compress"],"children":["session-overview-refresher"]}
+{"id":"session-overview-refresher","prompt":"session-overview-refresher.md","todo":["qdrant_qdrant-find","sequential-thinking_sequentialthinking"],"children":["dag-design"]}
+{"id":"dag-design","prompt":"dag-design.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["dag-review"]}
+{"id":"dag-review","prompt":"dag-review.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["dag-revision"]}
+{"id":"dag-revision","prompt":"dag-revision.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["user-review"]}
+{"id":"user-review","prompt":"user-review.md","todo":["question"],"children":[]}

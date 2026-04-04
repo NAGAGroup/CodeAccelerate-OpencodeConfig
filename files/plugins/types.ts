@@ -24,7 +24,6 @@ export interface DagNodeV3 {
   prompt: string;
   todo: string[];
   children?: string[]; // node IDs: absent/empty = terminal, length 1 = linear, length 2+ = branching
-  unlocked_tools?: string[]; // tools to add to exempt list for this node
 }
 
 // DAG metadata (stored as first line or separate metadata file)
@@ -40,7 +39,6 @@ export interface FlatNode {
   prompt: string;
   todo: string[];
   children?: string[]; // node IDs: absent/empty = terminal, length 1 = linear, length 2+ = branching
-  unlockedTools?: string[];
 }
 
 export interface ProgressEntry {

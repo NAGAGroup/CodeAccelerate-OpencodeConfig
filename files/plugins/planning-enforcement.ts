@@ -4,7 +4,7 @@ import { renderMermaidASCII } from "beautiful-mermaid";
 import * as fs from "fs";
 import * as path from "path";
 import type { DecisionEntry, DagSessionState, DagNodeV3, DagMetadataV3 } from "./types";
-import { CONFIG_ROOT, exemptTools } from "./constants";
+import { CONFIG_ROOT, exemptTools, isExempt } from "./constants";
 import { dagStatePath, writeState, readState, now } from "./state-io";
 import { expandPath, readPrompt, resolveDagPath } from "./path-utils";
 import { readDagV3, writeDagV3 } from "./dag-io";
@@ -66,7 +66,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             };
             writeState(statePath, state);
 
-            const promptText = readPrompt(entryNode.prompt, worktree);
+            const sessionPath = `.opencode/session-plans/${plan_name}`;
+            const promptText = readPrompt(entryNode.prompt, worktree, sessionPath);
             
             // Inject the prompt into the conversation as a system message.
             // Must await so the prompt is written before the tool returns.
@@ -138,7 +139,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             };
             writeState(statePath, state);
 
-            const promptText = readPrompt(entryNode.prompt, worktree);
+            const sessionPath = `.opencode/session-plans/${plan_name}`;
+            const promptText = readPrompt(entryNode.prompt, worktree, sessionPath);
             
             // Inject the prompt into the conversation as a system message.
             // Must await so the prompt is written before the tool returns.
@@ -242,7 +244,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           state.updated_at = now();
           writeState(statePath, state);
 
-          const promptText = readPrompt(nextNode.prompt, resolveWorktree(context));
+          const sessionPath = `.opencode/session-plans/${state.dag_id}`;
+          const promptText = readPrompt(nextNode.prompt, resolveWorktree(context), sessionPath);
           
           // Inject the prompt into the conversation as a system message.
           // Must await so the prompt is written before the tool returns.
@@ -319,22 +322,23 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
 
             const currentNode = state.node_map[state.current_node];
-           const promptText = currentNode
-             ? readPrompt(currentNode.prompt, resolveWorktree(context))
-             : "(prompt not found)";
+            const sessionPath = `.opencode/session-plans/${state.dag_id}`;
+            const promptText = currentNode
+              ? readPrompt(currentNode.prompt, resolveWorktree(context), sessionPath)
+              : "(prompt not found)";
 
-           const todoProgress = currentNode
-             ? currentNode.todo
-                 .map((t, i) => `  ${i < state.todo_index ? "[x]" : "[ ]"} ${t}`)
-                 .join("\n")
-             : "  (no todos)";
+            const todoProgress = currentNode
+              ? currentNode.todo
+                  .map((t, i) => `  ${i < state.todo_index ? "[x]" : "[ ]"} ${t}`)
+                  .join("\n")
+              : "  (no todos)";
 
-           const decisionsLog =
-             state.decisions.length > 0
-               ? state.decisions
-                   .map((d) => `- [${d.node_id}] ${d.summary}`)
-                   .join("\n")
-               : "None yet";
+            const decisionsLog =
+              state.decisions.length > 0
+                ? state.decisions
+                    .map((d) => `- [${d.node_id}] ${d.summary}`)
+                    .join("\n")
+                : "None yet";
 
             let result = divergenceWarning + `# DAG Session Recovery\n\n`;
             result += `**DAG:** ${state.dag_id}\n`;
@@ -540,53 +544,50 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
     }),
 
      init_dag: tool({
-        description: "Initialize a new project DAG plan.jsonl (JSONL format, schema_version 3.0) with metadata and the entry node. Creates the session plan directory, prompts directory, and plan.jsonl.",
+        description: "Initialize a new project DAG plan.jsonl (JSONL format, schema_version 3.0). Creates the session plan directory and plan.jsonl with the hardcoded execution-kickoff entry node.",
         args: {
           plan_name: tool.schema.string().describe(
             "Name for the session plan (e.g., 'my-feature-delivery'). Used as the directory name under .opencode/session-plans/ and as the DAG id. Lowercase, hyphens only, no spaces."
           ),
-          entry_node_id: tool.schema.string().describe(
-            "ID for the entry node (e.g., 'session-overview'). Prompt file will be '{entry_node_id}.md'."
-          ),
-          todo: tool.schema.array(tool.schema.string()).describe(
-            "Ordered array of tool-name strings for the entry node's todo list."
-          ),
-          unlocked_tools: tool.schema.array(tool.schema.string()).optional().describe(
-            "Tools to unlock (add to exempt list) for the entry node only."
-          ),
         },
-        async execute({ plan_name, entry_node_id, todo, unlocked_tools }, context) {
+        async execute({ plan_name }, context) {
           try {
             const worktree = resolveWorktree(context);
             const planDir = path.join(worktree, '.opencode', 'session-plans', plan_name);
             const planPath = path.join(planDir, 'plan.jsonl');
-            const promptsDir = path.join(planDir, 'prompts');
 
             if (fs.existsSync(planPath)) {
               return `Error in init_dag: plan.jsonl already exists at ${planPath}. Use add_node to extend the existing DAG, or delete the file manually to start fresh.`;
             }
 
+            // Load execution-kickoff node spec from the library
+            const kickoffSpecPath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", "execution-kickoff", "node-spec.json");
+            if (!fs.existsSync(kickoffSpecPath)) {
+              return `Error in init_dag: execution-kickoff node-spec.json not found at ${kickoffSpecPath}.`;
+            }
+            const kickoffSpec = JSON.parse(fs.readFileSync(kickoffSpecPath, "utf-8"));
+            const kickoffPromptPath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", "execution-kickoff", kickoffSpec.prompt);
+
             fs.mkdirSync(planDir, { recursive: true });
-            fs.mkdirSync(promptsDir, { recursive: true });
 
             const metadata: DagMetadataV3 = {
               schema_version: "3.0",
               id: plan_name,
-              entry_node_id: entry_node_id,
+              entry_node_id: "execution-kickoff",
             };
 
-            const entryNode: DagNodeV3 = { id: entry_node_id, prompt: `${entry_node_id}.md`, todo };
-            if (unlocked_tools && unlocked_tools.length > 0) {
-              entryNode.unlocked_tools = unlocked_tools;
-            }
+            const entryNode: DagNodeV3 = {
+              id: "execution-kickoff",
+              prompt: kickoffPromptPath,
+              todo: kickoffSpec.todo,
+            };
 
             writeDagV3(planPath, metadata, [entryNode]);
 
             return `## init_dag: Created DAG "${plan_name}"\n\n` +
               `Plan directory: ${planDir}\n` +
-              `Prompts directory: ${promptsDir}\n` +
               `Plan file: ${planPath}\n` +
-              `Entry node: ${entry_node_id}`;
+              `Entry node: execution-kickoff`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in init_dag: ${msg}`;
@@ -595,28 +596,30 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       }),
 
     add_node: tool({
-        description: "Add a new node to a JSONL DAG (plan.jsonl, schema_version 3.0). Adds the node and appends its ID to the parent's children array.",
+        description: "Add a new node to a JSONL DAG (plan.jsonl, schema_version 3.0). Looks up the component type in the node library for its fixed todo array and prompt. Adds the node and appends its ID to the parent's children array.",
         args: {
-          target: tool.schema.string().describe(
-            "Session plan name or raw path to plan.jsonl."
+          plan_name: tool.schema.string().describe(
+            "Name of the session plan (directory under .opencode/session-plans/)."
           ),
           parentId: tool.schema.string().describe(
             "ID of the existing node to attach the new node to."
           ),
           nodeId: tool.schema.string().describe(
-            "ID for the new node. Must be unique across all existing node IDs. Prompt file will be '{nodeId}.md'."
+            "ID for the new node. Must be unique across all existing node IDs."
           ),
-          todo: tool.schema.array(tool.schema.string()).describe(
-            "Ordered array of tool-name strings for the new node's todo list."
-          ),
-          unlocked_tools: tool.schema.array(tool.schema.string()).optional().describe(
-            "Tools to unlock (add to exempt list) for this specific node only."
+          component_name: tool.schema.string().describe(
+            "Component type name from the node library (e.g., 'work-item', 'research', 'plan-fail'). Use get_planning_components_catalogue() to see available types."
           ),
         },
-        async execute({ target, parentId, nodeId, todo, unlocked_tools }, context) {
+        async execute({ plan_name, parentId, nodeId, component_name }, context) {
           try {
             const worktree = resolveWorktree(context);
-            const planPath = resolveDagPath(target, worktree);
+            const planPath = path.join(worktree, '.opencode', 'session-plans', plan_name, 'plan.jsonl');
+
+            if (!fs.existsSync(planPath)) {
+              return `Error in add_node: plan.jsonl not found for "${plan_name}". Initialize with init_dag first.`;
+            }
+
             const { metadata, nodes } = readDagV3(planPath);
 
             if (nodes.some(n => n.id === nodeId)) {
@@ -628,8 +631,19 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               return `Error in add_node: Parent node "${parentId}" not found in DAG.`;
             }
 
-            const newNode: DagNodeV3 = { id: nodeId, prompt: `${nodeId}.md`, todo };
-            if (unlocked_tools && unlocked_tools.length > 0) newNode.unlocked_tools = unlocked_tools;
+            // Load component spec from the node library
+            const specPath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", component_name, "node-spec.json");
+            if (!fs.existsSync(specPath)) {
+              return `Error in add_node: Component "${component_name}" not found in node library at ${specPath}. Use get_planning_components_catalogue() to see available types.`;
+            }
+            const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
+            const promptPath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", component_name, spec.prompt);
+
+            const newNode: DagNodeV3 = {
+              id: nodeId,
+              prompt: promptPath,
+              todo: spec.todo,
+            };
 
             // Append to parent's children array
             if (!parent.children) parent.children = [];
@@ -638,11 +652,11 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             nodes.push(newNode);
             writeDagV3(planPath, metadata, nodes);
 
-            return `## add_node: Added "${nodeId}" to "${parentId}"\n\n` +
+            return `## add_node: Added "${nodeId}" (${component_name}) to "${parentId}"\n\n` +
               `Node: ${nodeId}\n` +
-              `Todo items: ${todo.length}\n` +
-              (unlocked_tools && unlocked_tools.length > 0 ? `Unlocked tools: ${unlocked_tools.join(", ")}\n` : "") +
-              `\n**DAG now contains ${nodes.length} nodes.**`;
+              `Component: ${component_name}\n` +
+              `Todo items: ${spec.todo.length}\n\n` +
+              `**DAG now contains ${nodes.length} nodes.**`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in add_node: ${msg}`;
@@ -772,144 +786,24 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
        },
      }),
 
-     get_prompt_requirements_for_component: tool({
+     get_dag_design_guide: tool({
        description:
-         "Retrieve the prompt requirements and template for a specific component/node type. Returns README.md verbatim from the global node-library installation.",
-       args: {
-         component_name: tool.schema
-           .string()
-           .describe("Name of the component/node type (matches directory name under node-library/)."),
-       },
-       async execute({ component_name }, _context) {
+         "Retrieve the DAG design guide. Returns the guide verbatim from the global plan-session installation.",
+       args: {},
+       async execute(_args, _context) {
          try {
-           const readmePath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", component_name, "README.md");
+           const guidePath = path.join(CONFIG_ROOT, "planning", "plan-session", "dag-design-guide.md");
 
-           if (!fs.existsSync(readmePath)) {
-             return `README.md not found for component "${component_name}" at ${readmePath}. ` +
-               `Check component name spelling or retrieve the catalogue with get_planning_components_catalogue().`;
+           if (!fs.existsSync(guidePath)) {
+             return `dag-design-guide.md not found at ${guidePath}. ` +
+               `Ensure the planning components are installed correctly via OCX.`;
            }
 
-           const readme = fs.readFileSync(readmePath, "utf-8");
-           return readme;
+           const guide = fs.readFileSync(guidePath, "utf-8");
+           return guide;
          } catch (err) {
            const msg = err instanceof Error ? err.message : String(err);
-           return `Error retrieving component requirements: ${msg}`;
-         }
-       },
-     }),
-
-      write_prompt: tool({
-        description:
-          "Write a filled prompt for a planning component. Validates arguments against component schema, fills template placeholders, and writes to <node_id>.md in the prompts directory. {{SESSION_PATH}} is always auto-filled with the session's path.",
-        args: {
-          plan_name: tool.schema
-            .string()
-            .describe("Name of the session plan (directory under .opencode/session-plans/)."),
-          component_name: tool.schema
-            .string()
-            .describe("Name of the component/node type (directory under node-library/)."),
-          node_id: tool.schema
-            .string()
-            .describe("ID for this node instance (e.g., 'hello-world-1'). Prompt will be written to <node_id>.md."),
-          arguments: tool.schema
-            .object()
-            .describe("Object containing filled placeholder values. Note: {{SESSION_PATH}} is always provided automatically — do not include it here."),
-        },
-        async execute({ plan_name, component_name, node_id, arguments: args }, context) {
-          try {
-            const worktree = resolveWorktree(context);
-            const sessionDir = path.join(worktree, ".opencode", "session-plans", plan_name);
-            const promptsDir = path.join(sessionDir, "prompts");
-            const promptPath = path.join(promptsDir, `${node_id}.md`);
-
-            if (!fs.existsSync(sessionDir)) {
-              return `Error: Session plan "${plan_name}" not found at ${sessionDir}. ` +
-                `Initialize with init_dag(plan_name, ...) first.`;
-            }
-
-            if (!fs.existsSync(promptsDir)) {
-              fs.mkdirSync(promptsDir, { recursive: true });
-            }
-
-            // Read template from global node-library (CONFIG_ROOT), not session-local copy
-            const templatePath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", component_name, "prompt-template.md");
-
-            if (!fs.existsSync(templatePath)) {
-              return `Error: prompt-template.md not found for component "${component_name}" at ${templatePath}. ` +
-                `Verify component name with get_planning_components_catalogue().`;
-            }
-
-            const template = fs.readFileSync(templatePath, "utf-8");
-
-            // Auto-fill SESSION_PATH — agent should never need to provide this
-            const sessionPath = `.opencode/session-plans/${plan_name}`;
-            const userArgs = args || {};
-            const allArgs: Record<string, string> = {
-              SESSION_PATH: sessionPath,
-              ...Object.fromEntries(Object.entries(userArgs).map(([k, v]) => [k, String(v)])),
-            };
-
-            // STRICT validation: check that all {{PLACEHOLDER}} patterns in template have corresponding arguments
-            const placeholderRegex = /\{\{(\w+)\}\}/g;
-            const placeholdersInTemplate = new Set<string>();
-            let match;
-            while ((match = placeholderRegex.exec(template)) !== null) {
-              placeholdersInTemplate.add(match[1]);
-            }
-
-            // Remove SESSION_PATH from "must-provide" check — it is auto-filled
-            const userProvidable = new Set([...placeholdersInTemplate].filter(k => k !== "SESSION_PATH"));
-            const providedKeys = new Set(Object.keys(userArgs));
-            const unknownKeys = Array.from(providedKeys).filter(key => !placeholdersInTemplate.has(key));
-
-            if (unknownKeys.length > 0) {
-              // STRICT mode: reject unknown arguments
-              return `Error: Unknown arguments provided: ${unknownKeys.join(", ")}. ` +
-                `Component "${component_name}" only accepts: ${Array.from(userProvidable).join(", ")}`;
-            }
-
-            // Fill template placeholders
-            const filledPrompt = template
-              .replace(/\{\{(\w+)\}\}/g, (_match, key) => {
-                return allArgs[key] !== undefined ? allArgs[key] : _match;
-              })
-              // Unescape >|PLACEHOLDER|< → {{PLACEHOLDER}} (must run after fill so these aren't filled)
-              .replace(/>\|(\w+)\|</g, (_match, key) => `{{${key}}}`);
-
-            // Write to disk
-            fs.writeFileSync(promptPath, filledPrompt, "utf-8");
-
-             return `Prompt written to ${promptPath}\n\nFile: ${node_id}.md\nComponent: ${component_name}`;
-           } catch (err) {
-             const msg = err instanceof Error ? err.message : String(err);
-             return `Error writing prompt: ${msg}`;
-           }
-         },
-       }),
-
-     get_node_requirements_for_component: tool({
-       description:
-         "Retrieve the node requirements and schema documentation for a DAG component. Returns NODE_REQS.md from the global node-library installation.",
-       args: {
-         component_name: tool.schema
-           .string()
-           .describe("Name of the component/node type (matches directory name under node-library/)."),
-       },
-       async execute({ component_name }, _context) {
-         try {
-           const nodeReqsPath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", component_name, "NODE_REQS.md");
-
-           if (!fs.existsSync(nodeReqsPath)) {
-             return `NODE_REQS.md not found for component "${component_name}" at ${nodeReqsPath}. ` +
-               `This file documents the required/optional fields for building DAG nodes with this component. ` +
-               `Check component name spelling or retrieve the catalogue with get_planning_components_catalogue().`;
-           }
-
-           const nodeReqs = fs.readFileSync(nodeReqsPath, "utf-8");
-           return nodeReqs;
-         } catch (err) {
-           const msg = err instanceof Error ? err.message : String(err);
-           return `Error retrieving node requirements: ${msg}`;
+           return `Error retrieving DAG design guide: ${msg}`;
          }
        },
      }),
@@ -921,7 +815,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
     "tool.execute.before": async (input, output) => {
       if (!input.tool || !input.sessionID) return;
 
-      if (exemptTools.includes(input.tool)) return;
+      if (isExempt(input.tool)) return;
 
       const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
@@ -941,16 +835,11 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
        const node = state.node_map[state.current_node];
        if (!node || node.todo.length === 0) return;
 
-       // Check if tool is unlocked for this specific node
-       if (node.unlockedTools && node.unlockedTools.includes(input.tool)) {
-         return; // Tool is unlocked for this node, allow it
-       }
-
        const expectedTool = node.todo[state.todo_index];
        if (!expectedTool) return;
 
         if (input.tool !== expectedTool) {
-          if (exemptTools.includes(input.tool)) return;
+          if (isExempt(input.tool)) return;
           throw new Error(
             `[DAG BLOCKED] Tool "${input.tool}" is not allowed at this step. ` +
             `Expected: "${expectedTool}". Call "${expectedTool}" to continue.\n\n` +
@@ -982,7 +871,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       // Exempt tools skip tracking unless they ARE the currently expected todo item.
       // This allows "question" in a todo[] to advance todo_index normally.
       const isExpectedTodo = expectedTool === input.tool;
-      if (exemptTools.includes(input.tool) && !isExpectedTodo) return;
+      if (isExempt(input.tool) && !isExpectedTodo) return;
 
       if (input.tool === expectedTool) {
         state.todo_index += 1;

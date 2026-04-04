@@ -5,23 +5,25 @@ description: Delegate to @context-scout
 
 # Delegating to @context-scout
 
-## Tool Schema
+## How to Call the task Tool
 
-```json
-{
-  "subagent_type": "string",
-  "description": "string",
-  "prompt": "string",
-  "task_id": "string"
-}
+Call the `task` tool with exactly these three fields:
+
+- `subagent_type`: always the string `"context-scout"`
+- `description`: a short 3–5 word label (for logging only, not seen by the agent)
+- `prompt`: your full delegation prompt as a single string
+
+Example call:
+
+```
+task(
+  subagent_type="context-scout",
+  description="Project orientation scout",
+  prompt="The goal is to understand how the current system handles [concern]. Explore what exists, how the parts relate, and what is unclear. Load the sequential-thinking skill first. Report in prose only — no file trees or raw lists. End with a section on what you investigated but could not fully determine."
+)
 ```
 
-- `subagent_type`: The agent type to use. Use `"context-scout"`.
-- `description`: A short 3–5 word label for logging. Not seen by the agent.
-- `prompt`: The full task prompt sent to the agent. Must be self-contained.
-- `task_id`: Only include when resuming a previous session. Omit otherwise.
-
-Only these four arguments are accepted. Do not add others.
+Do not include `task_id`. Omit it entirely.
 
 ## What @context-scout Does
 

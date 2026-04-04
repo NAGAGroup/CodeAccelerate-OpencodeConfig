@@ -13,34 +13,60 @@ Only ask the user a question when:
 
 Do not ask questions at any other time.
 
-## Tool Schema
+## How to Call the question Tool
 
-```jsonc
-{
-  "questions": [
-    {
-      // The full question text shown to the user.
-      "question": "string",
+Call the `question` tool with a `questions` array. Each question has these fields:
 
-      // A very short label shown above the question (max 30 characters).
-      "header": "string",
+- `question`: the full question text shown to the user (one short sentence)
+- `header`: a very short label shown above the question (max 30 characters)
+- `options`: list of choices, each with a `label` (1–5 words) and `description` (explanation)
+- `multiple`: optional — set to `true` to allow selecting more than one option
 
-      // The list of choices the user can pick from.
-      "options": [
-        {
-          // Display text for the choice (1–5 words).
-          "label": "string",
+Example — single choice:
 
-          // A longer explanation of what this option means.
-          "description": "string"
-        }
-      ],
+```
+question(
+  questions=[{
+    "question": "Which approach do you want to take?",
+    "header": "Choose approach",
+    "options": [
+      {"label": "Option A", "description": "Does X with tradeoff Y"},
+      {"label": "Option B", "description": "Does X differently with tradeoff Z"}
+    ]
+  }]
+)
+```
 
-      // Optional — set to true to allow selecting more than one option.
-      "multiple": false
-    }
-  ]
-}
+Example — approval gate (after presenting content in a plain message first):
+
+```
+question(
+  questions=[{
+    "question": "Does this look right?",
+    "header": "Confirm plan",
+    "options": [
+      {"label": "Yes, proceed", "description": "Continue with this approach"},
+      {"label": "No, change it", "description": "I want to adjust something"}
+    ]
+  }]
+)
+```
+
+Example — multiple select:
+
+```
+question(
+  questions=[{
+    "question": "Which of these apply to your project?",
+    "header": "Select all that apply",
+    "multiple": true,
+    "options": [
+      {"label": "Has tests", "description": "The project has an automated test suite"},
+      {"label": "Has CI", "description": "There is a CI pipeline configured"},
+      {"label": "Monorepo", "description": "Multiple packages in one repository"}
+    ]
+  }]
+)
 ```
 
 ## The Most Important Rule
@@ -65,17 +91,39 @@ The `question` field must be a single short sentence — not a summary, not a pl
 - Do not ask about things the user cannot see.
 - Do not use options for open-ended feedback. Ask a free-form question instead.
 
-## Examples
+Example — open-ended (no options):
 
-Ask for approval — show content first, then ask:
-> [message]: "Here is what I plan to do: [details spanning many lines]."
-> [question tool, question: "Does this look right to proceed?"]
+```
+question(
+  questions=[{
+    "question": "What should I change about this?",
+    "header": "Your feedback"
+  }]
+)
+```
 
-Ask the user to pick one option:
-> [question tool, multiple: false]: "Which direction do you want to take?"
+Example — multiple questions in one call:
 
-Ask the user to pick one or more options:
-> [question tool, multiple: true]: "Which of these apply? Select all that are relevant."
-
-Ask for open-ended input:
-> [question tool, no options]: "What should I change about this?"
+```
+question(
+  questions=[
+    {
+      "question": "What is the primary goal of this task?",
+      "header": "Primary goal",
+      "options": [
+        {"label": "Fix a bug", "description": "Correct something that is broken"},
+        {"label": "Add a feature", "description": "Introduce new capability"},
+        {"label": "Refactor", "description": "Improve structure without changing behavior"}
+      ]
+    },
+    {
+      "question": "Are there parts of the codebase that must not change?",
+      "header": "Off-limits areas",
+      "options": [
+        {"label": "Yes", "description": "I will describe them in the next question"},
+        {"label": "No", "description": "Everything is in scope"}
+      ]
+    }
+  ]
+)
+```

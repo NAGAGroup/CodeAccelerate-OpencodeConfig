@@ -5,23 +5,25 @@ description: Delegate to @external-scout
 
 # Delegating to @external-scout
 
-## Tool Schema
+## How to Call the task Tool
 
-```json
-{
-  "subagent_type": "string",
-  "description": "string",
-  "prompt": "string",
-  "task_id": "string"
-}
+Call the `task` tool with exactly these three fields:
+
+- `subagent_type`: always the string `"external-scout"`
+- `description`: a short 3–5 word label (for logging only, not seen by the agent)
+- `prompt`: your full delegation prompt as a single string
+
+Example call:
+
+```
+task(
+  subagent_type="external-scout",
+  description="Research tool capability",
+  prompt="We are using [a type of tool] to manage [a process]. We need to know whether [tool] supports [capability] in [context]. Search the tool's documentation and community resources. Read actual sources — do not rely on search snippets. Report what you found with a distinction between verified (read from source), inferred (from summaries), and uncertain. End with what you searched for but could not confirm."
+)
 ```
 
-- `subagent_type`: The agent type to use. Use `"external-scout"`.
-- `description`: A short 3–5 word label for logging. Not seen by the agent.
-- `prompt`: The full task prompt sent to the agent. Must be self-contained.
-- `task_id`: Only include when resuming a previous session. Omit otherwise.
-
-Only these four arguments are accepted. Do not add others.
+Do not include `task_id`. Omit it entirely.
 
 ## What @external-scout Does
 

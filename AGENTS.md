@@ -167,7 +167,6 @@ Profiles configure these MCP servers:
 |--------|---------|-------------|
 | `context7` | Documentation lookup | None |
 | `sequential-thinking` | Step-by-step reasoning | None |
-| `exa` | Web search | `EXA_API_KEY` env var |
 
 ## Changelog Policy
 
