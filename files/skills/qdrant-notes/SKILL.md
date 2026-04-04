@@ -12,7 +12,7 @@ Two tools are available for session knowledge:
 - `qdrant_qdrant-store` — store a finding, decision, or piece of context
 - `qdrant_qdrant-find` — retrieve relevant findings by meaning
 
-Agents continue writing notes to files as before. Use these tools in addition to file notes, not instead of them.
+Use these tools to store all session knowledge. Qdrant is the sole persistent record for findings, decisions, and context.
 
 ## Collection Name
 

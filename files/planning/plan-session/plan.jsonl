@@ -3,10 +3,9 @@
 {"id":"orientation-scout","prompt":"orientation-scout.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["external-research"]}
 {"id":"external-research","prompt":"external-research.md","todo":["skill","sequential-thinking_sequentialthinking","question","task"],"children":["user-questions"]}
 {"id":"user-questions","prompt":"user-questions.md","todo":["sequential-thinking_sequentialthinking","question"],"children":["write-notes"]}
-{"id":"write-notes","prompt":"write-notes.md","todo":["write"],"children":["compress"]}
+{"id":"write-notes","prompt":"write-notes.md","todo":["qdrant_qdrant-store"],"children":["compress"]}
 {"id":"compress","prompt":"compress.md","todo":["compress"],"children":["session-overview-refresher"]}
 {"id":"session-overview-refresher","prompt":"session-overview-refresher.md","todo":["qdrant_qdrant-find","sequential-thinking_sequentialthinking"],"children":["dag-design"]}
 {"id":"dag-design","prompt":"dag-design.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["dag-review"]}
-{"id":"dag-review","prompt":"dag-review.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["dag-revision"]}
-{"id":"dag-revision","prompt":"dag-revision.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["user-review"]}
-{"id":"user-review","prompt":"user-review.md","todo":["question"],"children":[]}
+{"id":"dag-review","prompt":"dag-review.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["plan-success"]}
+{"id":"plan-success","prompt":"plan-success.md","todo":[],"children":[]}

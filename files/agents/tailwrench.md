@@ -2,6 +2,7 @@
 description: "Tailwrench — powerful operator for verification, shell operations, and git. Full tool access, step-limited."
 mode: subagent
 color: "#f97316"
+steps: 30
 permission:
   "*": allow
   bash:

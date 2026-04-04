@@ -19,7 +19,7 @@ Example call:
 task(
   subagent_type="headwrench",
   description="Review execution DAG",
-  prompt="Review the DAG at [plan path]. The rationale is at [rationale path]. The user's goal is [goal]. Call get_dag_design_guide and get_planning_components_catalogue before reviewing. Return a structured critique: what is good, what is missing, and what should change with specific reasons."
+  prompt="Review the DAG at [plan path]. The rationale is at [rationale path]. The user's goal is [goal]. Call get_dag_design_guide and get_planning_components_catalogue before reviewing. Address each of the 7 items in the Review Checklist explicitly."
 )
 ```
 
@@ -38,22 +38,24 @@ Your prompt should:
 2. Provide the rationale document path.
 3. State the user's goal so the reviewer can assess fit.
 4. Tell it to call `get_dag_design_guide` and `get_planning_components_catalogue` before reviewing.
-5. Ask for a structured critique: what is good, what is missing, what should change, and why.
+5. Ask the reviewer to address each item in the Review Checklist explicitly.
 
-## What the Review Agent Returns
+## Review Checklist
 
-A structured critique covering:
-- What the DAG does well.
-- What is missing or insufficient.
-- What should change and why.
-- Any component types used incorrectly.
+Address each item explicitly in your review:
 
-The critique should be specific and actionable. Vague praise or criticism is not useful.
+1. **Completeness** — Does the DAG cover all work required to achieve the stated goal? Are any necessary steps missing?
+2. **Dependency correctness** — Are node dependencies in the right order? Does each node have the inputs it needs from prior nodes?
+3. **Component fit** — Does each node use the right component type for its purpose? Are work nodes, verify nodes, and decision nodes used appropriately?
+4. **Verification coverage** — Does every work node have a corresponding verify node? Are changes confirmed before the next step proceeds?
+5. **Scope creep** — Does the DAG stay within the stated scope? Are there nodes that address work not requested?
+6. **Failure handling** — Are there appropriate paths for failure cases? Does the DAG handle build failures, user disapproval, or other error conditions?
+7. **Efficiency** — Is the DAG as lean as possible? Are there redundant nodes or steps that could be combined without losing coverage?
 
 ## Examples
 
 Good — complete context provided:
-> "Review the DAG at [plan path]. The rationale is at [rationale path]. The user's goal is [goal]. Call get_dag_design_guide and get_planning_components_catalogue before reviewing. Return a structured critique: what is good, what is missing, and what should change."
+> "Review the DAG at [plan path]. The rationale is at [rationale path]. The user's goal is [goal]. Call get_dag_design_guide and get_planning_components_catalogue before reviewing. Address each of the 7 items in the Review Checklist explicitly."
 
 Bad — no rationale path:
 > "Review the DAG at [path]." — the reviewer needs the rationale to understand designer intent.

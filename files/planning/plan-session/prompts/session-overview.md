@@ -16,6 +16,6 @@ The session runs autonomously. Execute each step immediately without pausing.
 
 **Reasoning Task:**
 Use `sequential-thinking_sequentialthinking` to answer:
-- What is your role in this session?
-- What do the loaded skills require of you?
-- Are you ready to call `next_step`?
+- What does the following-plans skill require you to do immediately when a step is done?
+- What does the asking-questions skill prohibit inside the question tool?
+- What does the sequential-thinking skill require of each individual thought step?

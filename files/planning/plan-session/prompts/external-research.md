@@ -8,6 +8,7 @@ In this step, you will send @external-scout to gather external information. Befo
 3. Write a message to the user presenting the full delegation prompt you plan to send. Show the exact text. Do not ask anything yet.
 4. Call the `question` tool to ask: "Approve this research query?" with options: Approve / Modify / Skip.
 5. If the user chose Modify, update the prompt. If they chose Skip, call `next_step` now.
+5b. If the prompt was modified, write the revised research prompt as a plain message to the user. Do not dispatch without showing the user what changed.
 6. Call the `task` tool to send @external-scout the approved prompt.
 7. Call the `next_step` tool to continue.
 

@@ -46,6 +46,7 @@
         "planning/plan-session/prompts/dag-review.md",
         "planning/plan-session/prompts/dag-revision.md",
         "planning/plan-session/prompts/user-review.md",
+        "planning/plan-session/prompts/plan-success.md",
         // Node library catalogue
         "planning/plan-session/node-library/CATALOGUE.md",
         // Node library: execution-kickoff

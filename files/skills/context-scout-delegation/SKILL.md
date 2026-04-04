@@ -38,8 +38,7 @@ Your prompt should:
 2. Describe what areas to explore in terms of concepts, not specific locations.
 3. Ask for prose output, as one person briefing another.
 4. Ask for an uncertainties section — what was looked at but could not be fully determined.
-5. Tell @context-scout to load the `sequential-thinking` skill first.
-6. Tell @context-scout NOT to include raw lists of materials or structure in its response.
+5. Tell @context-scout NOT to include raw lists of materials or structure in its response.
 
 ## What to Ask @context-scout to Report
 

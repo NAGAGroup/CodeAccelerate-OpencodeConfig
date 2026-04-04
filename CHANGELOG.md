@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `files/planning/plan-session/prompts/plan-success.md` — new terminal node for the planning session DAG; writes a plan summary and ends the session cleanly so the user can run `/activate-plan`
+
+### Changed
+
+- `files/planning/plan-session/plan.jsonl` — removed `dag-revision` and `user-review` nodes; wired `dag-review` directly to `plan-success`; fixed `write-notes` todo from `["write"]` to `["qdrant_qdrant-store"]` to match the Qdrant-only storage model
+- `files/planning/plan-session/prompts/write-notes.md` — removed markdown file writing entirely; todo now stores all findings to Qdrant via `qdrant_qdrant-store`; Qdrant is the sole persistent record for session knowledge
+- `files/planning/plan-session/prompts/session-overview.md` — replaced shallow reasoning questions ("Are you ready?") with three skill-specific questions that force genuine engagement with following-plans, asking-questions, and sequential-thinking content
+- `files/planning/plan-session/prompts/external-research.md` — added step 5b: show revised research prompt as a plain message before dispatching when user chose Modify, closing the loop on the approval flow
+- `files/planning/plan-session/prompts/user-review.md` — added `present_dag_to_user` as first todo step; question tool now contains only a short approval question; added disapproval guidance to rules
+- `files/planning/plan-session/prompts/dag-design.md` — updated dispatch instructions: collapsed `add_node` signature (no custom prompt/todos), descriptive node IDs required, rationale document required at `{{SESSION_PATH}}/notes/rationale.md`, delegation restricted to context-scout/context-insurgent only
+- `files/planning/plan-session/prompts/dag-review.md` — updated dispatch instructions: `show_dag` before reviewing, read rationale document, explicit 7-item checklist, delegation restricted to context-scout only
+- `files/planning/plan-session/node-library/execution-kickoff/prompt.md` — expanded from thin 3-step prompt to full orientation: retrieves planning context via `qdrant_qdrant-find`, visualizes DAG via `show_dag`, reasons through plan intent via `sequential-thinking_sequentialthinking` before proceeding
+- `files/planning/plan-session/node-library/execution-kickoff/node-spec.json` — updated todo array from `["skill", "read"]` to `["skill", "qdrant_qdrant-find", "sequential-thinking_sequentialthinking", "show_dag"]`
+- `files/agents/junior-dev.md` — added `"probe*": allow` to permission block; description and rules reframed from surgical-editing to goal-oriented investigation-first approach
+- `files/agents/tailwrench.md` — added `steps: 30` to YAML frontmatter to constrain the highest-capability agent
+- `files/agents/context-insurgent.md` — removed `compress: allow` from permission block (leftover; compress is a HW-only session management tool)
+- `files/skills/sequential-thinking/SKILL.md` — added `## Anti-patterns` section documenting four failure modes: compressing all reasoning into a single thought, planning without doing, empty filler thoughts, locking totalThoughts too early
+- `files/skills/dag-review/SKILL.md` — replaced free-form critique guidance with structured `## Review Checklist` covering seven items: Completeness, Dependency correctness, Component fit, Verification coverage, Scope creep, Failure handling, Efficiency
+- `files/skills/context-scout-delegation/SKILL.md` — removed redundant step instructing delegating agents to tell the scout to load the sequential-thinking skill (the scout's own agent definition already does this unconditionally)
+- `files/skills/qdrant-notes/SKILL.md` — updated purpose statement from "use in addition to file notes" to "Qdrant is the sole persistent record for findings, decisions, and context"
+- `files/skills/juniordev-delegation/SKILL.md` — reframed from surgical-editing model to goal-based delegation; updated "What @juniordev Does", delegation prompt guidance, and examples
+
 ### Changed
 
 - `files/agents/context-scout.md` — added `sequential-thinking_sequentialthinking: allow` to permission block and Tool Access line; ContextScout now uses sequential-thinking to reason through its search plan before touching files

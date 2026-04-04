@@ -10,7 +10,6 @@ permission:
   list: allow
   skill: allow
   "sequential-thinking*": allow
-  compress: allow
   todowrite: allow
 ---
 

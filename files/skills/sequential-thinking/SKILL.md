@@ -67,3 +67,13 @@ sequential-thinking_sequentialthinking(
 - Set `nextThoughtNeeded` to false only when you have a satisfactory final answer.
 - Adjust `totalThoughts` up or down as your understanding changes.
 - To correct a previous step, set `isRevision: true` and `revisesThought` to the step number being corrected.
+
+## Anti-patterns
+
+**Compressing all reasoning into a single thought.** Using one long thought to cover an entire reasoning task defeats the purpose of sequential thinking. Each thought should advance understanding by one step — if a thought covers multiple conclusions, split it.
+
+**Planning without doing.** Using thoughts to describe what you will do instead of actually doing it. Sequential thinking is for reasoning through a problem, not for narrating future actions. When a thought says "I will now...", that is a sign to stop thinking and act.
+
+**Empty filler thoughts.** Thoughts that restate the previous thought, say "continuing...", or add no new reasoning. Every thought must contain a substantive step forward. If there is nothing new to reason about, set nextThoughtNeeded to false.
+
+**Locking in totalThoughts too early.** Setting a fixed count at the start and not adjusting it. The totalThoughts estimate should change as understanding deepens — increase it when the problem is more complex than expected, decrease it when the answer becomes clear sooner.

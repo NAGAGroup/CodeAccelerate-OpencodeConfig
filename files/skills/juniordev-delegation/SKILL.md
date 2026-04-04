@@ -27,18 +27,18 @@ Do not include `task_id`. Omit it entirely.
 
 ## What @juniordev Does
 
-@juniordev is a surgical code editor. It makes exactly the changes specified to exactly the files named. It does not run tests, execute shell commands, or reason about downstream correctness.
+@juniordev is a goal-oriented implementer. It investigates the codebase using probe tools to understand context, then makes targeted changes to achieve the stated goal. It does not run shell commands, execute tests, or reason about architectural correctness.
 
 @juniordev is suited for targeted edits to source code, configuration files, and scripts. For documentation files, use @documentation-expert instead.
 
 ## How to Write a Good Delegation Prompt
 
 Your prompt should:
-1. Name every file that needs to be changed.
-2. Describe the exact change needed at each file — what to add, remove, or modify.
-3. Explain why the change is needed so @juniordev can resolve ambiguities conservatively.
-4. State any constraints — what must NOT be changed.
-5. Keep scope tight. One logical change per dispatch.
+1. State the goal clearly — what needs to be achieved and why.
+2. Provide relevant context and rationale — what the change is for.
+3. Describe scope boundaries — what areas to change and what to leave alone.
+4. Point to any reference files or existing patterns to follow.
+5. State constraints — what must NOT be changed.
 
 ## What @juniordev Reports Back
 
@@ -48,17 +48,17 @@ Your prompt should:
 
 ## Examples
 
-Good — specific and complete:
-> "In [file], change [thing] to [other thing]. This is needed because [reason]. Do not touch [other area]."
+Good — goal-oriented with context:
+> "Enable verbose logging in the debug configuration. Currently, log level is set to 'info' in [file]. Change it to 'debug' and update the corresponding environment variable. This will help troubleshoot connection issues in development."
 
-Good — named files with clear intent:
-> "Add [feature] to [file A] and update the corresponding entry in [file B]. The two files must stay in sync."
+Good — goal with scope and constraints:
+> "Add a new authentication provider to the login flow. Reference the existing OAuth pattern in [file A]. The change should be scoped to [module B] only. Do not modify any test files or existing authentication methods."
 
-Bad — too vague:
-> "Update the configuration." — @juniordev needs to know exactly what to change.
+Bad — too vague about scope:
+> "Refactor the authentication module." — @juniordev needs to know what specific aspect to change and why.
 
 Bad — includes shell operations:
-> "Run the build after making the change." — shell operations are handled by @tailwrench.
+> "Add the feature and run the test suite." — shell operations are handled by @tailwrench.
 
-Bad — asks for reasoning:
-> "Figure out the best way to implement this." — @juniordev follows instructions, it does not design.
+Bad — asks for reasoning or design:
+> "Make the codebase more performant." — @juniordev implements goals, not architectural decisions.
