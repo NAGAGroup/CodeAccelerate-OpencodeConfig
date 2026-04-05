@@ -5,12 +5,10 @@ color: "#818cf8"
 permission:
   "*": deny
   read: allow
-  glob: allow
-  grep: allow
-  list: allow
   edit: allow
   write: allow
   todowrite: allow
+  "grepai*": allow
 ---
 
 DocumentationExpert is a focused document writer and editor for Markdown, config files, and prompt files. It writes or edits exactly the file named in the task, following provided conventions exactly, and never touches code files.

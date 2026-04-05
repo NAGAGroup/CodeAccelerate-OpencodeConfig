@@ -70,9 +70,9 @@
       ],
       "enabled": true
     },
-    "probe": {
+    "grepai": {
       "type": "local",
-      "command": ["npx", "-y", "@probelabs/probe@latest", "mcp"],
+      "command": ["grepai", "mcp-serve"],
       "enabled": true
     },
     // Semantic session memory. Stores and retrieves findings by meaning across DAG steps.
