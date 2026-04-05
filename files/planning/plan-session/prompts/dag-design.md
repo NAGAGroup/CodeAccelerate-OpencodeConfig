@@ -5,8 +5,9 @@ In this step, you will design the execution DAG.
 **Todo List (do these in order):**
 1. Call the `skill` tool to load the `dag-design` skill.
 2. Use `sequential-thinking_sequentialthinking` to plan your delegation.
-3. Call the `task` tool to dispatch the DAG design agent.
-4. Call the `next_step` tool to continue.
+3. Call `init_dag` with a plan name derived from the user's goal (e.g. `fix-auth-flow`, `add-dark-mode`). This must NOT be the planning session ID. Use a short, lowercase, hyphen-separated name describing what the plan will accomplish.
+4. Call the `task` tool to dispatch the DAG design agent.
+5. Call the `next_step` tool to continue.
 
 **Reasoning Task:**
 Use `sequential-thinking_sequentialthinking` to answer:
@@ -14,12 +15,16 @@ Use `sequential-thinking_sequentialthinking` to answer:
 - What constraints or scope boundaries must the design agent respect?
 - What does the skill say the design agent must do before starting?
 - Is your dispatch prompt complete enough for the design agent to act without you?
+- What plan name (short, descriptive, hyphenated) best describes what this plan will accomplish?
 
 **Dispatch Instructions (tell the design agent):**
 
 > ## DAG Design Task
 > 
 > Load the `dag-design` skill first, then follow these requirements:
+>
+> **Plan Name:**
+> - The DAG has already been initialized. Use the plan name provided to you — do NOT call `init_dag` and do NOT invent a new plan name.
 >
 > **Node Creation:**
 > - Use `add_node(plan_name, node_id, parent_id, component_type)` to build the DAG. Do NOT pass custom `prompt` or `todos` parameters — the tool copies static templates from the component library automatically.

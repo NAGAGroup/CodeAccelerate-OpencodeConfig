@@ -6,7 +6,7 @@
 {"id":"write-notes","prompt":"write-notes.md","todo":["qdrant_qdrant-store"],"children":["compress"]}
 {"id":"compress","prompt":"compress.md","todo":["compress"],"children":["session-overview-refresher"]}
 {"id":"session-overview-refresher","prompt":"session-overview-refresher.md","todo":["qdrant_qdrant-find","sequential-thinking_sequentialthinking"],"children":["dag-design"]}
-{"id":"dag-design","prompt":"dag-design.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["dag-review"]}
+{"id":"dag-design","prompt":"dag-design.md","todo":["skill","sequential-thinking_sequentialthinking","init_dag","task"],"children":["dag-review"]}
 {"id":"dag-review","prompt":"dag-review.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["dag-revision"]}
 {"id":"dag-revision","prompt":"dag-revision.md","todo":["skill","sequential-thinking_sequentialthinking","task"],"children":["user-review"]}
 {"id":"user-review","prompt":"user-review.md","todo":["present_dag_to_user","question"],"children":["plan-success"]}
