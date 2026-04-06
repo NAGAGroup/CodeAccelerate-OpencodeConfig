@@ -109926,7 +109926,7 @@ function expandPath(p) {
   }
   return p;
 }
-function readPrompt(promptPath, worktree, sessionPath) {
+function readPrompt(promptPath, worktree, sessionPath, vars) {
   const expanded = expandPath(promptPath);
   let content;
   if (path3.isAbsolute(expanded)) {
@@ -109937,6 +109937,12 @@ function readPrompt(promptPath, worktree, sessionPath) {
   if (sessionPath) {
     content = content.replaceAll("{{SESSION_PATH}}", sessionPath);
     content = content.replaceAll("{{SESSION_NAME}}", path3.basename(sessionPath));
+  }
+  if (vars?.plan_name) {
+    content = content.replaceAll("{{PLAN_NAME}}", vars.plan_name);
+  }
+  if (vars?.planning_session_id) {
+    content = content.replaceAll("{{PLANNING_SESSION_ID}}", vars.planning_session_id);
   }
   return content;
 }
@@ -110270,11 +110276,12 @@ var PlanningEnforcementPlugin = async (_ctx) => {
               started_at: now(),
               updated_at: now(),
               decisions: [],
-              node_map: nodeMap
+              node_map: nodeMap,
+              planning_session_id: plan_name
             };
             writeState(statePath, state);
             const sessionPath = `.opencode/session-plans/${plan_name}`;
-            const promptText = readPrompt(entryNode.prompt, worktree, sessionPath);
+            const promptText = readPrompt(entryNode.prompt, worktree, sessionPath, { planning_session_id: plan_name });
             await client.session.prompt({
               path: { id: context.sessionID },
               body: {
@@ -110415,7 +110422,10 @@ var PlanningEnforcementPlugin = async (_ctx) => {
           state.updated_at = now();
           writeState(statePath, state);
           const sessionPath = `.opencode/session-plans/${state.dag_id}`;
-          const promptText = readPrompt(nextNode.prompt, resolveWorktree(context), sessionPath);
+          const promptText = readPrompt(nextNode.prompt, resolveWorktree(context), sessionPath, {
+            plan_name: state.plan_name,
+            planning_session_id: state.planning_session_id
+          });
           await client.session.prompt({
             path: { id: context.sessionID },
             body: {
@@ -110486,7 +110496,10 @@ var PlanningEnforcementPlugin = async (_ctx) => {
           }
           const currentNode = state.node_map[state.current_node];
           const sessionPath = `.opencode/session-plans/${state.dag_id}`;
-          const promptText = currentNode ? readPrompt(currentNode.prompt, resolveWorktree(context), sessionPath) : "(prompt not found)";
+          const promptText = currentNode ? readPrompt(currentNode.prompt, resolveWorktree(context), sessionPath, {
+            plan_name: state.plan_name,
+            planning_session_id: state.planning_session_id
+          }) : "(prompt not found)";
           const todoProgress = currentNode ? currentNode.todo.map((t, i) => `  ${i < state.todo_index ? "[x]" : "[ ]"} ${t}`).join(`
 `) : "  (no todos)";
           const decisionsLog = state.decisions.length > 0 ? state.decisions.map((d) => `- [${d.node_id}] ${d.summary}`).join(`
@@ -110750,26 +110763,31 @@ ${ascii}`;
       choose_plan_name: tool({
         description: "Set the execution plan name for this planning session. Substitutes {{PLAN_NAME}} in all remaining node prompts in the current session's node map. Call this during the session-overview node after deciding on a plan name.",
         args: {
-          plan_name: tool.schema.string().describe("The name for the execution plan that will be designed in this planning session. Lowercase, hyphens only, no spaces (e.g., 'add-auth-flow', 'fix-payment-bug').")
+          name: tool.schema.string().describe("The name for the execution plan that will be designed in this planning session. Descriptive and human-memorable — this is what the user will type into /activate-plan. Lowercase, hyphens only, no spaces (e.g., 'add-auth-flow', 'fix-payment-bug').")
         },
-        async execute({ plan_name }, context) {
+        async execute({ name }, context) {
           try {
-            const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
+            const worktree = resolveWorktree(context);
+            const statePath = dagStatePath(worktree, context.sessionID);
             const state = readState(statePath);
             if (!state) {
               return "No active DAG session. choose_plan_name must be called during an active planning session.";
             }
-            let substitutionCount = 0;
-            for (const nodeId of Object.keys(state.node_map)) {
-              const node = state.node_map[nodeId];
-              if (node.prompt.includes("{{PLAN_NAME}}")) {
-                node.prompt = node.prompt.replaceAll("{{PLAN_NAME}}", plan_name);
-                substitutionCount++;
-              }
+            if (!name || name.trim().length === 0) {
+              return "Error in choose_plan_name: name must not be empty.";
             }
+            const sessionPlansDir = path7.join(worktree, ".opencode", "session-plans");
+            let confirmedName = name.trim();
+            let suffix = 2;
+            while (fs6.existsSync(path7.join(sessionPlansDir, confirmedName))) {
+              confirmedName = `${name.trim()}-${suffix}`;
+              suffix++;
+            }
+            state.plan_name = confirmedName;
             state.updated_at = now();
             writeState(statePath, state);
-            return `Plan name set to "${plan_name}". Substituted {{PLAN_NAME}} in ${substitutionCount} node prompt path(s).`;
+            const dedupeNote = confirmedName !== name.trim() ? ` (deduplicated from "${name.trim()}" — directory already existed)` : "";
+            return `Plan name set to "${confirmedName}"${dedupeNote}. {{PLAN_NAME}} will be substituted in all subsequent planning prompts automatically.`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in choose_plan_name: ${msg}`;
@@ -110848,7 +110866,12 @@ ${ascii}`;
               return `Error in add_node: Component "${component_name}" not found in node library at ${specPath}. Use get_planning_components_catalogue() to see available types.`;
             }
             const spec = JSON.parse(fs6.readFileSync(specPath, "utf-8"));
-            const promptPath = path7.join(nodeLibRelBase, component_name, spec.prompt);
+            const sourcePromptPath = path7.join(process.cwd(), nodeLibRelBase, component_name, spec.prompt);
+            const sessionPromptsDir = path7.join(worktree, ".opencode", "session-plans", plan_name, "prompts");
+            fs6.mkdirSync(sessionPromptsDir, { recursive: true });
+            const destPromptPath = path7.join(sessionPromptsDir, `${nodeId}.md`);
+            fs6.copyFileSync(sourcePromptPath, destPromptPath);
+            const promptPath = path7.join(".opencode", "session-plans", plan_name, "prompts", `${nodeId}.md`);
             const newNode = {
               id: nodeId,
               prompt: promptPath,
@@ -110864,6 +110887,7 @@ ${ascii}`;
 ` + `Node: ${nodeId}
 ` + `Component: ${component_name}
 ` + `Todo items: ${spec.todo.length}
+` + `Prompt: ${destPromptPath}
 
 ` + `**DAG now contains ${nodes.length} nodes.**`;
           } catch (err) {
@@ -110910,6 +110934,14 @@ ${ascii}`;
             }
             const remaining = nodes.filter((n) => !toRemove.has(n.id));
             writeDagV3(planPath, metadata, remaining);
+            const planDir = path7.dirname(planPath);
+            const sessionPromptsDir = path7.join(planDir, "prompts");
+            for (const removedId of toRemove) {
+              const promptFile = path7.join(sessionPromptsDir, `${removedId}.md`);
+              if (fs6.existsSync(promptFile)) {
+                fs6.unlinkSync(promptFile);
+              }
+            }
             const afterAscii = await renderMermaidASCII(dagToMermaidV3(metadata, remaining), { colorMode: "none" });
             return `## delete_node: Deleted "${nodeId}" and its subtree (${toRemove.size} node(s))
 
@@ -110927,32 +110959,56 @@ ${afterAscii}`;
         }
       }),
       modify_node: tool({
-        description: "Modify an existing DAG node's prompt file or todo array. Does NOT change the node's children.",
+        description: "Change the parent of a node. Used to restructure the DAG without deleting surviving children. Prompt content is immutable — to change a node's prompt or enforcement sequence, delete it and add a new one.",
         args: {
           target: tool.schema.string().describe("Session plan name or raw path to plan.jsonl."),
-          nodeId: tool.schema.string().describe("ID of the node to modify."),
-          promptFile: tool.schema.string().optional().describe("New prompt filename. If omitted, the existing value is unchanged."),
-          todo: tool.schema.array(tool.schema.string()).optional().describe("New todo array. If omitted, the existing value is unchanged.")
+          nodeId: tool.schema.string().describe("ID of the node to reparent."),
+          new_parent_id: tool.schema.string().describe("ID of the new parent node. Must already exist in the DAG.")
         },
-        async execute({ target, nodeId, promptFile, todo }, context) {
+        async execute({ target, nodeId, new_parent_id }, context) {
           try {
             const worktree = resolveWorktree(context);
             const planPath = resolveDagPath(target, worktree);
             const { metadata, nodes } = readDagV3(planPath);
+            if (nodeId === metadata.entry_node_id) {
+              return `Error in modify_node: Cannot reparent the entry node "${nodeId}".`;
+            }
             const node = nodes.find((n) => n.id === nodeId);
             if (!node) {
               return `Error in modify_node: Node "${nodeId}" not found in DAG.`;
             }
-            if (promptFile === undefined && todo === undefined) {
-              return `Nothing to modify — provide at least one of promptFile or todo.`;
+            const newParent = nodes.find((n) => n.id === new_parent_id);
+            if (!newParent) {
+              return `Error in modify_node: New parent node "${new_parent_id}" not found in DAG.`;
             }
-            if (promptFile !== undefined)
-              node.prompt = promptFile;
-            if (todo !== undefined)
-              node.todo = todo;
+            const descendants = new Set;
+            const queue = [nodeId];
+            while (queue.length > 0) {
+              const id = queue.pop();
+              descendants.add(id);
+              const n = nodes.find((x) => x.id === id);
+              if (n?.children)
+                queue.push(...n.children);
+            }
+            if (descendants.has(new_parent_id)) {
+              return `Error in modify_node: Reparenting "${nodeId}" to "${new_parent_id}" would create a cycle.`;
+            }
+            for (const n of nodes) {
+              if (n.children) {
+                const idx = n.children.indexOf(nodeId);
+                if (idx !== -1) {
+                  n.children.splice(idx, 1);
+                  if (n.children.length === 0)
+                    delete n.children;
+                }
+              }
+            }
+            if (!newParent.children)
+              newParent.children = [];
+            newParent.children.push(nodeId);
             writeDagV3(planPath, metadata, nodes);
             const ascii = await renderMermaidASCII(dagToMermaidV3(metadata, nodes), { colorMode: "none" });
-            return `## modify_node: Modified "${nodeId}"
+            return `## modify_node: Reparented "${nodeId}" to "${new_parent_id}"
 
 ${ascii}`;
           } catch (err) {

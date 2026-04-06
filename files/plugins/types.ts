@@ -64,6 +64,8 @@ export interface DagSessionState {
   updated_at: string;
   decisions: DecisionEntry[];
   node_map: Record<string, FlatNode>;
+  plan_name?: string; // set by choose_plan_name; substituted into {{PLAN_NAME}} in prompts
+  planning_session_id?: string; // set by plan_session; substituted into {{PLANNING_SESSION_ID}} in prompts
 }
 
 // New format: session state embedded in JSONL DAG file

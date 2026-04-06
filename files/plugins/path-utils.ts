@@ -9,7 +9,12 @@ export function expandPath(p: string): string {
   return p;
 }
 
-export function readPrompt(promptPath: string, worktree: string, sessionPath?: string): string {
+export function readPrompt(
+  promptPath: string,
+  worktree: string,
+  sessionPath?: string,
+  vars?: { plan_name?: string; planning_session_id?: string }
+): string {
   const expanded = expandPath(promptPath);
   let content: string;
   if (path.isAbsolute(expanded)) {
@@ -20,6 +25,12 @@ export function readPrompt(promptPath: string, worktree: string, sessionPath?: s
   if (sessionPath) {
     content = content.replaceAll("{{SESSION_PATH}}", sessionPath);
     content = content.replaceAll("{{SESSION_NAME}}", path.basename(sessionPath));
+  }
+  if (vars?.plan_name) {
+    content = content.replaceAll("{{PLAN_NAME}}", vars.plan_name);
+  }
+  if (vars?.planning_session_id) {
+    content = content.replaceAll("{{PLANNING_SESSION_ID}}", vars.planning_session_id);
   }
   return content;
 }
