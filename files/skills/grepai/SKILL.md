@@ -9,99 +9,59 @@ This skill teaches how to use GrepAI semantic search and code intelligence tools
 
 ## GrepAI Tools Overview
 
-GrepAI provides multiple tool categories for different investigation needs:
+GrepAI provides multiple tool categories for different investigation needs.
 
-**Search Tools:**
-- `grepai_grepai_search` - Semantic code search using natural language queries. Parameters: query (required), limit (default: 10), compact (default: false), workspace, project, path, format (json or toon).
+**Search Tools:** Use grepai_grepai_search for semantic code search using natural language queries. Parameters: query (required), limit (default 10), compact (default false), workspace, project, path, format (json or toon).
 
-**Trace Tools (Call Graph Analysis):**
-- `grepai_grepai_trace_callers` - Find all functions that call a specific symbol. Parameters: symbol (required), workspace, project, compact (default: false).
-- `grepai_grepai_trace_callees` - Find all functions called by a specific symbol. Parameters: symbol (required), workspace, project, compact (default: false).
-- `grepai_grepai_trace_graph` - Build complete call graph showing both callers and callees. Parameters: symbol (required), depth (default: 2), workspace, project.
+**Trace Tools (Call Graph Analysis):** Use grepai_grepai_trace_callers to find all functions that call a specific symbol. Use grepai_grepai_trace_callees to find all functions called by a specific symbol. Use grepai_grepai_trace_graph to build complete call graph showing both callers and callees. Parameters: symbol (required), depth (default 2 for graph), workspace, project, compact (default false).
 
-**Refs Tools (Property/State Tracking):**
-- `grepai_grepai_refs_readers` - Find where a property or state is read. Useful for Vue/Pinia state tracking.
-- `grepai_grepai_refs_writers` - Find where a property or state is written.
-- `grepai_grepai_refs_graph` - Build complete property usage graph.
+**Refs Tools (Property/State Tracking):** Use grepai_grepai_refs_readers to find where a property or state is read. Use grepai_grepai_refs_writers to find where a property or state is written. Use grepai_grepai_refs_graph to build complete property usage graph. Useful for Vue/Pinia state tracking.
 
-**Workspace Tools:**
-- `grepai_grepai_list_workspaces` - List all available workspace names.
-- `grepai_grepai_list_projects` - List projects within a workspace. Parameters: workspace (required).
+**Workspace Tools:** Use grepai_grepai_list_workspaces to list all available workspace names. Use grepai_grepai_list_projects to list projects within a workspace (requires workspace parameter).
 
-**Status Tools:**
-- `grepai_grepai_index_status` - Check index health and statistics. Parameters: verbose (optional), workspace.
+**Status Tools:** Use grepai_grepai_index_status to check index health and statistics. Parameters: verbose (optional), workspace.
 
 ## When to Use GrepAI
 
-**Use GrepAI as your PRIMARY tool for:**
-- Understanding what code does or where functionality lives
-- Finding implementations by intent or behavior
-- Exploring unfamiliar parts of the codebase
-- Understanding function dependencies before refactoring
-- Cross-project search in multi-repo setups
-- Tracking property/state usage patterns
+Use GrepAI as your PRIMARY tool for understanding what code does or where functionality lives, finding implementations by intent or behavior, exploring unfamiliar parts of the codebase, understanding function dependencies before refactoring, cross-project search in multi-repo setups, and tracking property/state usage patterns.
 
-**Use standard tools (grep/glob) only for:**
-- Exact text matching (variable names, imports, specific strings)
-- File path patterns
+Use standard tools (grep/glob) only for exact text matching (variable names, imports, specific strings) and file path patterns.
 
 ## Output Format Optimization
 
-GrepAI supports multiple output formats optimized for different use cases:
+GrepAI supports multiple output formats optimized for different use cases.
 
-**Default format** - Human-readable with file paths, line numbers, scores, and code snippets. Use for exploration and understanding.
+Default format provides human-readable results with file paths, line numbers, scores, and code snippets. Use for exploration and understanding.
 
-**Compact mode** (`compact: true`) - Omits the content field, reducing token usage by approximately 80%. Use when you only need file locations and scores, not the actual code snippets.
+Compact mode (compact parameter set to true) omits the content field, reducing token usage by approximately 80 percent. Use when you only need file locations and scores, not the actual code snippets.
 
-**TOON format** (`format: "toon"`) - Token-Oriented Object Notation, approximately 50% fewer tokens than JSON. Use for high-volume operations or when token efficiency is critical.
+TOON format (format parameter set to toon) uses Token-Oriented Object Notation, approximately 50 percent fewer tokens than JSON. Use for high-volume operations or when token efficiency is critical.
 
-**Recommendation:** For AI agent operations, use `compact: true` by default unless you specifically need to see code snippets in the results. Use `format: "toon"` when making many search calls or working with large result sets.
+For AI agent operations, use compact set to true by default unless you specifically need to see code snippets in the results. Use format set to toon when making many search calls or working with large result sets.
 
 ## Query Best Practices
 
-**Use English for queries** - Embedding models are trained on English and perform best with English queries.
+Use English for queries because embedding models are trained on English and perform best with English queries.
 
-**Describe INTENT, not implementation** - Write "handles user login" instead of "func Login" or "function that validates user credentials" instead of "validateUser".
+Describe INTENT, not implementation. Write "handles user login" instead of "func Login" or "function that validates user credentials" instead of "validateUser".
 
-**Be specific with terminology** - "JWT token validation" is better than just "token". Include domain-specific terms when relevant.
+Be specific with terminology. "JWT token validation" is better than just "token". Include domain-specific terms when relevant.
 
-**Natural language works best** - "how are errors handled in API requests" is more effective than "error handler".
+Natural language works best. "how are errors handled in API requests" is more effective than "error handler".
 
-**Good query examples:**
-- "user authentication flow"
-- "database connection pooling"
-- "error handling middleware"
-- "JWT token validation logic"
+Good query examples: "user authentication flow", "database connection pooling", "error handling middleware", "JWT token validation logic".
 
-**Bad query examples:**
-- "auth" (too vague)
-- "function Login" (describes implementation, not intent)
-- "JWT token expiration validation check implementation" (overly specific)
+Bad query examples: "auth" (too vague), "function Login" (describes implementation not intent), "JWT token expiration validation check implementation" (overly specific).
 
 ## Workflow Patterns
 
-**Standard Investigation Workflow:**
-1. Start with `grepai_grepai_search` to find relevant code by describing what it does
-2. Use `grepai_grepai_trace_callers` or `grepai_grepai_trace_callees` to understand dependencies
-3. Use the `read` tool to examine the specific files identified by GrepAI
-4. Use `grep` only for exact string matching within the narrowed scope
+Standard investigation workflow: Start with grepai_grepai_search to find relevant code by describing what it does. Use grepai_grepai_trace_callers or grepai_grepai_trace_callees to understand dependencies. Use the read tool to examine the specific files identified by GrepAI. Use grep only for exact string matching within the narrowed scope.
 
-**Before Refactoring Workflow:**
-1. Use `grepai_grepai_trace_callers` to find all functions that depend on the code you plan to change
-2. Use `grepai_grepai_trace_graph` to visualize the complete dependency chain
-3. Read the caller files to understand usage patterns
-4. Make informed refactoring decisions based on actual usage
+Before refactoring workflow: Use grepai_grepai_trace_callers to find all functions that depend on the code you plan to change. Use grepai_grepai_trace_graph to visualize the complete dependency chain. Read the caller files to understand usage patterns. Make informed refactoring decisions based on actual usage.
 
-**Cross-Project Search (Workspace Mode):**
-1. Use `grepai_grepai_list_workspaces` to see available workspaces
-2. Use `grepai_grepai_search` with workspace parameter to search across all projects
-3. Optionally filter by specific projects using the project parameter
-4. Use path parameter to narrow results to specific directories
+Cross-project search in workspace mode: Use grepai_grepai_list_workspaces to see available workspaces. Use grepai_grepai_search with workspace parameter to search across all projects. Optionally filter by specific projects using the project parameter. Use path parameter to narrow results to specific directories.
 
-**Property/State Tracking (Vue/Pinia):**
-1. Use `grepai_grepai_refs_readers` to find where state is accessed
-2. Use `grepai_grepai_refs_writers` to find where state is modified
-3. Use `grepai_grepai_refs_graph` to see complete usage patterns
+Property/state tracking for Vue/Pinia: Use grepai_grepai_refs_readers to find where state is accessed. Use grepai_grepai_refs_writers to find where state is modified. Use grepai_grepai_refs_graph to see complete usage patterns.
 
 ## Rules
 
@@ -111,7 +71,7 @@ Start with grepai_grepai_search for broad exploration and code discovery. Use tr
 
 **Anti-pattern: Using file tools first for exploration**
 
-What it looks like: You need to find authentication code. You call glob with "auth*.ts" to find files, getting back 20 results. You read all of them trying to find the right one.
+What it looks like: You need to find authentication code. You call glob with pattern matching auth files to find files, getting back 20 results. You read all of them trying to find the right one.
 
 Why it fails: Semantic search is far more efficient than trying many files. You waste effort on irrelevant code. GrepAI understands intent and returns focused results.
 
@@ -153,7 +113,7 @@ Why it fails: Trace tools work on function calls. For property and state access 
 
 **Good:** You need to find where a Pinia store property is being modified. You call grepai_grepai_refs_writers with the property name to see all write locations.
 
-**Bad — uses glob first:** You need to find authentication code, so you call glob("**/*auth*.ts") and read 15 files trying to find validation logic. Use grepai_grepai_search instead.
+**Bad — uses glob first:** You need to find authentication code, so you call glob with pattern matching auth files and read 15 files trying to find validation logic. Use grepai_grepai_search instead.
 
 **Bad — overly specific semantic query:** You search for "JWT token expiration validation check implementation" when "token validation" would work better and return more relevant results.
 

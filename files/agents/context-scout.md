@@ -9,6 +9,9 @@ permission:
   "*": deny
   glob: allow
   grepai_grepai_search: allow
+  grepai_grepai_trace_callers: allow
+  grepai_grepai_trace_callees: allow
+  grepai_grepai_trace_graph: allow
   grepai_grepai_index_status: allow
   sequential-thinking_sequentialthinking: allow
   qdrant_qdrant-store: allow
