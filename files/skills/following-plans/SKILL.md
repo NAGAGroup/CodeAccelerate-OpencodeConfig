@@ -15,6 +15,10 @@ When the enforcement engine blocks a tool call, read the error message — it id
 
 Call next_step after completing each required tool call to determine what comes next. When the enforcement engine returns an error, read the message to identify the required tool and call it immediately. Use recover_context when context loss occurs between steps to resume at the correct position. Treat enforcement errors as authoritative — the error message specifies which tool is required.
 
+Load relevant skills like "asking-questions" or "sequential-thinking" when instructed to ask questions to the user or do sequential thinking.
+
+Questions are always asked using the question tool, not in response content.
+
 ## Anti-patterns
 
 **Anti-pattern: Skipping ahead without next_step**

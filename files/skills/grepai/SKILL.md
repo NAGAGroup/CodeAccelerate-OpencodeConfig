@@ -63,6 +63,8 @@ Cross-project search in workspace mode: Use grepai_grepai_list_workspaces to see
 
 Start with grepai_grepai_search for broad exploration and code discovery. Use trace tools when you need to understand a specific function's dependencies and callers before making changes. Rely on GrepAI tools first for investigation — file operation tools (read, glob, grep) are fallbacks only after GrepAI has identified the specific files you need. Once GrepAI identifies relevant files, read those files using the read tool to understand their full context. Use the grep tool for exact string matching only when semantic search has narrowed the scope to specific files. Always use compact mode or TOON format for token efficiency unless you need to see code snippets in results.
 
+If workspaces aren't configured for the project, use the tools without specifying a workspace.
+
 ## Anti-patterns
 
 **Anti-pattern: Using file tools first for exploration**
