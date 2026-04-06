@@ -11,7 +11,7 @@ import { renderMermaidASCII } from 'beautiful-mermaid';
 export const CONFIG_ROOT = path.dirname(import.meta.dirname);
 
 // Tools that bypass DAG blocking, regardless of current node's enforcement
-export const exemptTools = ["sequential-thinking_sequentialthinking", "question", "qdrant_qdrant-store", "qdrant_qdrant-find", "recover_context"];
+export const exemptTools = ["sequential-thinking_sequentialthinking", "question", "qdrant_qdrant-store", "qdrant_qdrant-find", "recover_context", "next_step", "exit_plan"];
 
 // Check if a tool name is exempt (exact match only)
 export function isExempt(toolName: string): boolean {

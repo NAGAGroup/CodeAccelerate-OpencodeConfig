@@ -109889,7 +109889,7 @@ import * as path7 from "path";
 // constants.ts
 import * as path from "path";
 var CONFIG_ROOT = path.dirname(import.meta.dirname);
-var exemptTools = ["sequential-thinking_sequentialthinking", "question", "qdrant_qdrant-store", "qdrant_qdrant-find", "recover_context"];
+var exemptTools = ["sequential-thinking_sequentialthinking", "question", "qdrant_qdrant-store", "qdrant_qdrant-find", "recover_context", "next_step", "exit_plan"];
 function isExempt(toolName) {
   return exemptTools.includes(toolName);
 }
