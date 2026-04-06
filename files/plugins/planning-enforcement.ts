@@ -942,7 +942,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       if (!input.tool || !input.sessionID) return;
 
       if (input.tool === "question") {
-        const args = (input as any).args ?? {};
+        const args = (output as any).args ?? {};
         const questions = args.questions;
         const errors: string[] = [];
 
@@ -1017,7 +1017,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       }
 
       if (input.tool === "task") {
-        const args = (input as any).args ?? {};
+        const args = (output as any).args ?? {};
         const errors: string[] = [];
 
         if (typeof args.description !== "string" || args.description.trim() === "") {

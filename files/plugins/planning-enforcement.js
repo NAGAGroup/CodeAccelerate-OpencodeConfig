@@ -111004,7 +111004,7 @@ ${ascii}`;
       if (!input.tool || !input.sessionID)
         return;
       if (input.tool === "question") {
-        const args = input.args ?? {};
+        const args = output.args ?? {};
         const questions = args.questions;
         const errors3 = [];
         if (questions === undefined || questions === null) {
@@ -111073,7 +111073,7 @@ ${errors3.join(`
         }
       }
       if (input.tool === "task") {
-        const args = input.args ?? {};
+        const args = output.args ?? {};
         const errors3 = [];
         if (typeof args.description !== "string" || args.description.trim() === "") {
           errors3.push(`  - "description": required string (3-5 words describing the task, e.g. "Explore auth module")`);
