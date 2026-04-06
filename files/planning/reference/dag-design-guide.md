@@ -135,4 +135,5 @@ Result: commit-setup → investigate-state → implement-physics → ...
 - Failure paths end in `plan-fail`, never `plan-success`
 - Store design rationale to Qdrant after building — write intent, not prescriptive steps
 - Run `validate_dag` when the DAG is complete
+- You must call show_compact_dag frequently to visualize the plan as you build
 ```
