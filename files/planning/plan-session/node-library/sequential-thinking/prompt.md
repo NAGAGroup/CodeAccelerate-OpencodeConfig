@@ -1,17 +1,9 @@
-You are executing a plan.
+You are reasoning through a problem or decision before continuing.
 
-In this step, you will reason through a problem before continuing.
+Use the qdrant_qdrant-find tool to retrieve relevant context from the session if your reasoning needs prior findings or decisions.
 
-**Todo List (do these in order):**
-1. Use `sequential-thinking_sequentialthinking` to reason through the current situation.
-2. Call `next_step` to continue.
+Use the sequential-thinking_sequentialthinking tool to think through what the current situation requires. Consider what uncertainties need to be resolved, what options are available, what constraints apply, and what the right path forward is.
 
-**Rules:**
-- Read `{{SESSION_PATH}}/notes/` before reasoning if you need context.
-- Let the reasoning drive what you do at the next step.
+After your reasoning is complete, use the next_step tool to advance to the next step.
 
-**Reasoning Task:**
-Use `sequential-thinking_sequentialthinking` to answer:
-- What does the current state of the work require you to think through?
-- What are the key uncertainties or decision points?
-- What is the right path forward?
+**Constraints:** Reason through the problem at this step. Action happens at subsequent steps.

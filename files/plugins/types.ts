@@ -22,7 +22,7 @@ export interface PlanDag {
 export interface DagNodeV3 {
   id: string;
   prompt: string;
-  todo: string[];
+  enforcement: string[];
   children?: string[]; // node IDs: absent/empty = terminal, length 1 = linear, length 2+ = branching
 }
 
@@ -37,13 +37,13 @@ export interface DagMetadataV3 {
 export interface FlatNode {
   id: string;
   prompt: string;
-  todo: string[];
+  enforcement: string[];
   children?: string[]; // node IDs: absent/empty = terminal, length 1 = linear, length 2+ = branching
 }
 
 export interface ProgressEntry {
   node_id: string;
-  todo_index: number; // how many todos completed for this node when stepped
+  todo_index: number; // how many enforcement positions completed for this node when stepped
   timestamp: string;
 }
 
@@ -73,7 +73,7 @@ export interface DagSessionStateV3 {
   dag_id: string;
   status: "running" | "waiting_step" | "complete" | "abandoned";
   current_node: string;
-  todo_index: number; // progress within current node's todo array
+  todo_index: number; // progress within current node's enforcement array
   started_at: string;
   updated_at: string;
   decisions: DecisionEntry[];

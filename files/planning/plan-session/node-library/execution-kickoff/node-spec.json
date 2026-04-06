@@ -1,4 +1,1 @@
-{
-  "todo": ["skill", "show_compact_dag", "show_dag", "qdrant_qdrant-find", "sequential-thinking_sequentialthinking", "qdrant_qdrant-store"],
-  "prompt": "prompt.md"
-}
+{"enforcement": ["skill", "show_compact_dag", "show_dag", "qdrant_qdrant-find", "sequential-thinking_sequentialthinking", "qdrant_qdrant-store"]}

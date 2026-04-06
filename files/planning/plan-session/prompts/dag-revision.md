@@ -1,23 +1,5 @@
-You are a planning agent. Your job is to design a plan for another agent to follow.
+You are dispatching @dag-designer again with the reviewer's critique to address design issues.
 
-In this step, the DAG designer will address the reviewer's critique.
+Use the skill tool to load the dag-design delegation skill to understand how the designer approaches revision and what constraints apply. Use the sequential-thinking_sequentialthinking tool to reason through the reviewer's critique: what specific issues the reviewer identified, which critique points are most important to address, how to incorporate each critique into a clear revision prompt, and whether the designer will have all the context needed to revise correctly. Use the task tool to dispatch @dag-designer with the reviewer's critique, the current plan.jsonl path, and clear instructions that this is one revision round to address every critique point. Tell the designer exactly what the reviewer said needs to change and your assessment of which points are most critical. This is the only revision round — the DAG goes to user review after this.
 
-**Todo List (do these in order):**
-1. Call the `skill` tool to load the `dag-design` skill.
-2. Use `sequential-thinking_sequentialthinking` to plan your delegation.
-3. Call the `task` tool to dispatch the DAG design agent with the reviewer's critique.
-4. Call the `next_step` tool to continue.
-
-**Rules:**
-- Load the skill before writing the delegation prompt.
-- Follow the skill's guidance when writing the prompt.
-- Give the design agent: the reviewer's critique, the current plan.jsonl path, and the rationale path.
-- Tell the design agent this is a revision round. It should address every critique point.
-- This is one revision round only. Do not loop back to review again.
-
-**Reasoning Task:**
-Use `sequential-thinking_sequentialthinking` to answer:
-- What did the reviewer say needs to change?
-- Which critique points are most important to address?
-- Does your dispatch prompt make the revision scope clear?
-- Is the design agent given everything it needs to revise correctly?
+Constraints: Load the design skill before composing the dispatch. Include the reviewer's critique verbatim or closely paraphrased. Tell the designer this is a single revision round, not an ongoing iteration. The designer must address every critique point. Provide the full context the designer needs to revise correctly.

@@ -31,7 +31,7 @@ This does not mean large models are unwanted. Frontier models run the system bet
 ## Major Components
 
 ### The DAG Enforcement Engine
-A plugin that constrains tool access during DAG execution. Every node has an enforcement sequence — an ordered list of tools that must be called. The engine blocks non-exempt tools until their prerequisites are satisfied. This is the primary mechanism for ensuring agents follow the intended workflow.
+A plugin that constrains tool access when headwrench is executing DAG nodes. Every node has an enforcement sequence — an ordered list of tools that must be called. The engine blocks non-exempt tools until their prerequisites are satisfied. This is the primary mechanism for ensuring headwrench follows the intended workflow. Subagents dispatched via the `task` tool do not run under DAG enforcement and are governed only by their agent permissions.
 
 ### The Planning-Enforcement Plugin
 Our plugin. Provides the DAG tooling (`next_step`, `recover_context`, `init_dag`, `add_node`, and others), activates planning and execution sessions, performs template variable substitution in node prompts, and runs the enforcement engine.

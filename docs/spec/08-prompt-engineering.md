@@ -118,7 +118,7 @@ Agent system prompts define who the agent is and how it behaves across all conte
 
 ### Structure
 
-Every agent system prompt follows this five-part structure:
+Every **subagent** system prompt follows this five-part structure:
 
 **1. Role statement.** One sentence defining the agent's identity and purpose.
 
@@ -141,6 +141,8 @@ This grounds the agent's self-model without listing tool names. Tool instruction
 **5. Output format.** What the agent should return to its caller.
 
 > Example: "Report what you changed, what you found during investigation that may be relevant, and any issues you encountered."
+
+**Note:** The primary agent (headwrench) does not have an output format section because it runs DAG nodes and does not return results to a caller in the same way subagents do.
 
 ---
 
@@ -264,7 +266,7 @@ Use this checklist when reviewing any prompt before finalizing it.
 - [ ] Reasoning blocks use "consider" framing
 - [ ] Constraints section frames rules positively
 
-**For agent system prompts:**
+**For subagent system prompts:**
 - [ ] 30–50 lines total
 - [ ] Role statement in first sentence
 - [ ] No tool usage instructions (those belong in skills)

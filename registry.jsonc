@@ -35,7 +35,6 @@
         "planning/plan-session/dag-design-guide.md",
         // Planning prompts
         "planning/plan-session/prompts/session-overview.md",
-        "planning/plan-session/prompts/scout.md",
         "planning/plan-session/prompts/orientation-scout.md",
         "planning/plan-session/prompts/external-research.md",
         "planning/plan-session/prompts/user-questions.md",
@@ -72,36 +71,15 @@
         // Node library: compress
         "planning/plan-session/node-library/compress/node-spec.json",
         "planning/plan-session/node-library/compress/prompt.md",
-        // Node library: session-overview-refresher
-        "planning/plan-session/node-library/session-overview-refresher/node-spec.json",
-        "planning/plan-session/node-library/session-overview-refresher/prompt.md",
+        // Node library: kickoff-refresher
+        "planning/plan-session/node-library/kickoff-refresher/node-spec.json",
+        "planning/plan-session/node-library/kickoff-refresher/prompt.md",
         // Node library: sequential-thinking
         "planning/plan-session/node-library/sequential-thinking/node-spec.json",
         "planning/plan-session/node-library/sequential-thinking/prompt.md",
-        // Node library: agentic-loop
-        "planning/plan-session/node-library/agentic-loop/node-spec.json",
-        "planning/plan-session/node-library/agentic-loop/prompt.md",
-        // Node library: decision-gate
-        "planning/plan-session/node-library/decision-gate/node-spec.json",
-        "planning/plan-session/node-library/decision-gate/prompt.md",
-        // Node library: user-decision-gate
-        "planning/plan-session/node-library/user-decision-gate/node-spec.json",
-        "planning/plan-session/node-library/user-decision-gate/prompt.md",
-        // Node library: plan-fail
-        "planning/plan-session/node-library/plan-fail/node-spec.json",
-        "planning/plan-session/node-library/plan-fail/prompt.md",
-        // Node library: plan-success
-        "planning/plan-session/node-library/plan-success/node-spec.json",
-        "planning/plan-session/node-library/plan-success/prompt.md",
-        // Node library: verify
-        "planning/plan-session/node-library/verify/node-spec.json",
-        "planning/plan-session/node-library/verify/prompt.md",
-        // Node library: run-project-commands
-        "planning/plan-session/node-library/run-project-commands/node-spec.json",
-        "planning/plan-session/node-library/run-project-commands/prompt.md",
-        // Node library: commit
-        "planning/plan-session/node-library/commit/node-spec.json",
-        "planning/plan-session/node-library/commit/prompt.md",
+        // Node library: autonomous-work
+        "planning/plan-session/node-library/autonomous-work/node-spec.json",
+        "planning/plan-session/node-library/autonomous-work/prompt.md",
         // Node library: user-discussion
         "planning/plan-session/node-library/user-discussion/node-spec.json",
         "planning/plan-session/node-library/user-discussion/prompt.md"

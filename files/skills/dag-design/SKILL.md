@@ -1,58 +1,64 @@
----
-name: dag-design
-description: Dispatch a DAG design agent
----
+# Delegating to @dag-designer
 
-# Dispatching the DAG Design Agent
+This skill teaches how to dispatch @dag-designer to build execution DAGs from the component library. Load it before writing a dispatch prompt to understand what @dag-designer needs to create a complete plan.
 
-## How to Call the task Tool
+## How to Dispatch the Agent
 
-Call the `task` tool with exactly these three fields:
-
-- `subagent_type`: always the string `"dag-designer"`
-- `description`: a short 3–5 word label (for logging only, not seen by the agent)
-- `prompt`: your full delegation prompt as a single string
-
-Example call:
+Call the task tool with subagent_type dag-designer:
 
 ```
 task(
   subagent_type="dag-designer",
   description="Design execution DAG",
-  prompt="Design an execution DAG for the following goal: [goal]. Scope: [boundaries]. Planning notes are at [path]. Call get_planning_components_catalogue and get_dag_design_guide before designing. Write the DAG to [plan path] and the rationale to [rationale path]."
+  prompt="Goal: design an execution DAG for adding comprehensive logging throughout the authentication system. Scope: authentication module only, do not add logging to other systems. Plan name: logging-auth-module. Call init_dag with the plan_name parameter. You have accumulated planning findings from investigation. Use the tools init_dag, add_node, validate_dag, show_compact_dag as needed to design the DAG. Call get_planning_components_catalogue and get_dag_design_guide to reference available node types and design principles. Before starting, retrieve any previous design context from Qdrant collection 'dag-designs' using qdrant_qdrant-find. Store your design decisions and rationale to Qdrant collection 'dag-designs' when done. Provide the complete DAG structure and explain why each node choice fits the goal."
 )
 ```
 
-Do not include `task_id`. Omit it entirely.
+**Parameters:**
+- `subagent_type`: always the string "dag-designer"
+- `description`: 3–5 word label for logging
+- `prompt`: your full goal-based dispatch prompt
 
-## What the DAG Design Agent Does
+## Tools Available to @dag-designer
 
-The DAG design agent is a full HeadWrench instance. It reads the planning context, designs an execution DAG from the component library, writes it as a plan.jsonl file, and produces a rationale document.
+@dag-designer uses these tools to design execution DAGs:
 
-The design agent has access to `get_planning_components_catalogue` and `get_dag_design_guide`. It must call both before designing.
+- `init_dag`: Initialize a new DAG with a plan_name
+- `add_node`: Add a component node to the DAG
+- `delete_node`: Remove a node from the DAG
+- `modify_node`: Update node parameters
+- `validate_dag`: Check DAG structure for errors and enforceability
+- `show_dag`: Display the full DAG structure
+- `show_compact_dag`: Display a compact overview of the DAG
+- `get_planning_components_catalogue`: Reference available component node types
+- `get_dag_design_guide`: Reference design principles and patterns
+- `choose_plan_name`: Select or confirm the plan name (used in planning phase)
+- `present_compact_dag_to_user`: Show the DAG to the user for review
 
-## How to Write a Good Delegation Prompt
+## What @dag-designer Does
 
-Your prompt should:
-1. State the user's goal and any scope boundaries.
-2. Provide the planning notes path so the agent can read accumulated findings.
-3. Tell it the output path for plan.jsonl (under `.opencode/session-plans/`).
-4. Tell it to call `get_planning_components_catalogue` and `get_dag_design_guide` before designing.
-5. Tell it to produce: the plan.jsonl DAG and a rationale document at `{{SESSION_PATH}}/notes/rationale.md`.
+@dag-designer designs execution DAGs by selecting appropriate component nodes from the library and arranging them to accomplish a goal. It references the component catalogue to understand each node type's purpose and enforcement requirements. It validates the DAG structure, checks dependencies, and ensures ordering is correct. It produces a complete, enforceable plan that can be executed by the framework. @dag-designer works from accumulated planning findings and understands component semantics, ordering constraints, and how to structure branching for conditional work paths. It focuses on DAG design and structure only, not implementation — code changes and execution are handled separately.
 
-## What the Design Agent Returns
+## Rules for Good Dispatch Prompts
 
-- Confirmation that plan.jsonl was written and its path.
-- Confirmation that rationale.md was written and its path.
-- A brief summary of the DAG structure it designed.
+State the user's goal and scope boundaries clearly — what should the DAG accomplish and what is explicitly out of scope. Provide all accumulated planning findings so the designer understands what was discovered and what constraints were identified. Include the plan_name explicitly — this is the identifier used in all add_node calls and must be consistent throughout. Tell the designer to call get_planning_components_catalogue and get_dag_design_guide before designing — these provide reference material about available node types and design principles. When working within a plan session, include the plan name (the Qdrant collection name) in the dispatch prompt. Instruct @dag-designer to use qdrant_qdrant-find to retrieve accumulated session knowledge from that collection before starting, and to store design decisions and rationale to the same collection when done. The prompt must be self-contained — the designer will not ask questions. For complex goals, you can suggest constraints on DAG structure (linearity vs. branching, verification coverage, whether additional investigation is needed).
 
 ## Examples
 
-Good — complete context provided:
-> "Design an execution DAG for the following goal: [goal]. Scope: [boundaries]. Planning notes are at [path]. Write the DAG to [plan path] and the rationale to [rationale path]. Call get_planning_components_catalogue and get_dag_design_guide before designing."
+**Good:** "Goal: design a DAG for adding logging to authentication. Scope: auth module only. Plan name: logging-auth-module. Call init_dag with plan_name parameter. You have planning findings about the auth system. Call get_planning_components_catalogue and get_dag_design_guide first. Before starting, retrieve design context from Qdrant collection 'dag-designs' using qdrant_qdrant-find. Validate and show the final DAG. Store design decisions to Qdrant when done."
 
-Bad — no planning context:
-> "Design a DAG for [goal]." — the agent needs accumulated findings, not just the goal.
+**Bad — no plan_name:** "Design a DAG for the goal." The plan_name is required for add_node calls. Must be included in the dispatch prompt.
 
-Bad — no output paths:
-> "Design a DAG." — always specify where to write the output.
+**Bad — no planning context:** "Design a DAG for adding logging to authentication." The designer needs accumulated findings from planning, not just the goal statement.
+
+**Bad — prescribes implementation instead of design:** "Create a DAG that reads files in src/auth, updates logging calls in validation.ts, and then runs tests." That is implementation detail. The designer chooses the node types that accomplish the goal.
+
+**Bad — missing planning findings:** "Design a DAG based on the user's goal." Needs accumulated planning findings from prior investigation steps to make informed design choices.
+
+**Bad — vague scope:** "Design a DAG to improve the system." Too vague. Needs specific user goal and scope boundaries.
+
+**Bad — insufficient context for design:** "Design a DAG for adding features." Missing the user's goal, investigation findings, and scope boundaries.
+
+## When to Use @dag-designer
+
+Dispatch @dag-designer during the planning phase to translate discovered context and user intent into a structured execution DAG. The designer works best when you have accumulated investigation findings, clear scope boundaries, and a well-defined goal. Provide planning findings and constraints that will guide good design choices. Do not use it for implementation (component nodes execute the plan), for investigation (scouts gather information), or for plan review (use @dag-reviewer).

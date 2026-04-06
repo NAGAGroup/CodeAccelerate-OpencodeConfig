@@ -1,64 +1,44 @@
----
-name: juniordev-delegation
-description: Delegate to @juniordev
----
+# Delegating to @junior-dev
 
-# Delegating to @juniordev
+This skill teaches how to dispatch @junior-dev for goal-oriented implementation. Load it before writing a dispatch prompt to understand what @junior-dev can do and how to frame the goal.
 
-## How to Call the task Tool
+## How to Dispatch the Agent
 
-Call the `task` tool with exactly these three fields:
-
-- `subagent_type`: always the string `"junior-dev"`
-- `description`: a short 3–5 word label (for logging only, not seen by the agent)
-- `prompt`: your full delegation prompt as a single string
-
-Example call:
+Call the task tool with subagent_type junior-dev:
 
 ```
 task(
   subagent_type="junior-dev",
-  description="Update config value",
-  prompt="In [file], change [thing] to [other thing]. This is needed because [reason]. Do not touch any other area of the file. Read the file before editing."
+  description="Add error logging configuration",
+  prompt="Goal: add verbose error logging to the debug configuration. This helps troubleshoot connection issues. Context: the logging framework is configured in src/config/logging.ts. Scope: modify only the debug config, do not touch production configuration. Constraints: do not change test files or modify the logging framework itself. Before starting, retrieve accumulated session knowledge from Qdrant collection 'project-implementation' using qdrant_qdrant-find. Investigate the current logging configuration and the patterns used, then make the change. Store findings and changes to the same collection when done. Report what file changed and any issues encountered."
 )
 ```
 
-Do not include `task_id`. Omit it entirely.
+**Parameters:**
+- `subagent_type`: always the string "junior-dev"
+- `description`: 3–5 word label for logging
+- `prompt`: your full goal-based dispatch prompt
 
-## What @juniordev Does
+## What @junior-dev Does
 
-@juniordev is a goal-oriented implementer. It investigates the codebase using probe tools to understand context, then makes targeted changes to achieve the stated goal. It does not run shell commands, execute tests, or reason about architectural correctness.
+@junior-dev is a goal-oriented implementer. It investigates code using semantic search and tracing tools to understand context, then makes targeted changes to achieve the stated goal. It reads and edits files to accomplish objectives. @junior-dev executes implementation goals effectively and reliably. It handles shell operations through @tailwrench, not directly. For testing and verification, dispatch @tailwrench separately. For documentation files, dispatch @documentation-expert. @junior-dev focuses on code implementation, not testing or shell operations.
 
-@juniordev is suited for targeted edits to source code, configuration files, and scripts. For documentation files, use @documentation-expert instead.
+## Rules for Good Dispatch Prompts
 
-## How to Write a Good Delegation Prompt
-
-Your prompt should:
-1. State the goal clearly — what needs to be achieved and why.
-2. Provide relevant context and rationale — what the change is for.
-3. Describe scope boundaries — what areas to change and what to leave alone.
-4. Point to any reference files or existing patterns to follow.
-5. State constraints — what must NOT be changed.
-
-## What @juniordev Reports Back
-
-- Each file changed, with a one-sentence description of what changed.
-- Any syntax or logic errors it noticed at the edit site (without fixing them).
-- Any ambiguities it encountered and how it resolved them.
+State the goal clearly — what needs to be achieved and why it matters. Provide relevant context and rationale so @junior-dev understands the change's purpose. Describe scope boundaries precisely — what to change and what to leave alone. When working within a plan session, include the plan name (the Qdrant collection name) in the dispatch prompt. Instruct @junior-dev to use qdrant_qdrant-find to retrieve accumulated session knowledge from that collection before starting, and to store findings and changes to the same collection when done. Point to reference files or existing patterns @junior-dev should study. State constraints — what should not be changed. Let @junior-dev investigate and decide how to implement rather than prescribing exact line numbers or diff hunks. Investigation gives junior-dev its reliability. The more context you provide about why the change matters, the better decisions junior-dev makes.
 
 ## Examples
 
-Good — goal-oriented with context:
-> "Enable verbose logging in the debug configuration. Currently, log level is set to 'info' in [file]. Change it to 'debug' and update the corresponding environment variable. This will help troubleshoot connection issues in development."
+**Good:** "Goal: add verbose error logging to debug configuration. This helps troubleshoot connection issues. Context: logging framework in src/config/logging.ts. Scope: debug config only, do not touch production. Constraints: do not change test files. Before starting, retrieve knowledge from Qdrant collection 'project-implementation' using qdrant_qdrant-find. Investigate and make the change. Store findings to Qdrant when done."
 
-Good — goal with scope and constraints:
-> "Add a new authentication provider to the login flow. Reference the existing OAuth pattern in [file A]. The change should be scoped to [module B] only. Do not modify any test files or existing authentication methods."
+**Bad — too vague:** "Refactor the authentication module." Needs specific aspect to change and why it matters.
 
-Bad — too vague about scope:
-> "Refactor the authentication module." — @juniordev needs to know what specific aspect to change and why.
+**Bad — prescribes implementation:** "In file X at line Y, change Z to W, then add three lines of new code below." Let @junior-dev investigate and decide how to implement the goal.
 
-Bad — includes shell operations:
-> "Add the feature and run the test suite." — shell operations are handled by @tailwrench.
+**Bad — includes shell operations:** "Add the feature and run the test suite." Dispatch @junior-dev for the code change, then @tailwrench separately for testing.
 
-Bad — asks for reasoning or design:
-> "Make the codebase more performant." — @juniordev implements goals, not architectural decisions.
+**Bad — asks for architectural decisions:** "Make this system more performant." @junior-dev implements stated goals, not broad design decisions.
+
+**Bad — missing Qdrant instruction:** "Add support for custom authentication providers. Store in /src/auth/providers.ts." Does not include instruction to retrieve and store findings with Qdrant. When in a plan session, include the plan name and Qdrant instructions in the dispatch prompt.
+
+**Bad — out-of-scope for implementation:** "Investigate the database schema and decide whether to refactor it." Investigation goes to scouts. Implementation of a decided-upon change goes to junior-dev.

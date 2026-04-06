@@ -1,65 +1,48 @@
----
-name: tailwrench-delegation
-description: Delegate to @tailwrench
----
-
 # Delegating to @tailwrench
 
-## How to Call the task Tool
+This skill teaches how to dispatch @tailwrench for shell operations, verification, and git commands. Load it before writing a dispatch prompt to understand what @tailwrench can do and how to write clear, specific instructions.
 
-Call the `task` tool with exactly these three fields:
+## How to Dispatch the Agent
 
-- `subagent_type`: always the string `"tailwrench"`
-- `description`: a short 3–5 word label (for logging only, not seen by the agent)
-- `prompt`: your full delegation prompt as a single string
-
-Example call:
+Call the task tool with subagent_type tailwrench:
 
 ```
 task(
   subagent_type="tailwrench",
-  description="Run build and verify",
-  prompt="Run [build command]. Report the full output and whether it succeeded. A pass means exit code 0 with no errors. If it fails, report the exact error. Do not attempt to fix anything."
+  description="Run build and tests",
+  prompt="Run: npm run build. Report the full output and exit code. A pass means exit code 0 with no errors. If it fails, report the exact error message. Then run: npm test. Report the test output and pass/fail result. Do not attempt to fix failures. Before starting, retrieve any previous verification results from Qdrant collection 'build-verification' using qdrant_qdrant-find. Store the final results to the same collection when done."
 )
 ```
 
-Do not include `task_id`. Omit it entirely.
+**Parameters:**
+- `subagent_type`: always the string "tailwrench"
+- `description`: 3–5 word label for logging
+- `prompt`: your full goal-based dispatch prompt
 
-## What @tailwrench Does
+## What @tailwrench Can Do
 
-@tailwrench is a powerful operator with full tool access. It runs shell commands, executes builds, performs verification checks, and creates git commits. It follows instructions exactly and does not improvise.
+@tailwrench is a powerful operator with full tool access. It runs shell commands, executes builds and tests, performs verification checks, creates git commits, and manages environment setup. It follows instructions exactly and executes defined tasks with precision. It has a step limit of 30 — dispatch prompts must be specific and compact to avoid wasting steps on ambiguous work. @tailwrench focuses on verification and execution, not investigation or file editing. It reports findings directly without attempting to diagnose or fix problems beyond its scope.
 
-Use @tailwrench for: running tests or build commands, verifying outputs, installing dependencies, and creating git commits. Do not use it for file editing (use @juniordev or @documentation-expert) or open-ended exploration (use @context-scout or @context-insurgent).
+## Rules for Good Dispatch Prompts
 
-## How to Write a Good Delegation Prompt
-
-Your prompt should:
-1. State the task clearly — verify, run commands, or commit.
-2. For verification: describe what to check and what a passing result looks like.
-3. For commands: list the exact commands to run and in what order.
-4. For commits: describe what was changed so it can write a meaningful message.
-5. State what to report back.
-
-## What @tailwrench Reports Back
-
-- What was done (task summary).
-- Outcome: pass, fail, or completed.
-- Evidence: command output, test results, commit hash, or relevant observations.
-- Any issues encountered.
+State the task clearly — verify, run commands, or commit. For verification, describe what to check and what a passing result looks like. For commands, list commands in order with what to report back for each. For commits, describe what was changed and the scope so @tailwrench can write a meaningful commit message. Write with specific, compact language — @tailwrench has 30 steps and cannot pursue investigation if uncertain. Focus on defined tasks only, not problem-solving or design work. Use imperative language — state what @tailwrench should do. Specify success criteria explicitly so the agent knows when verification passes and when it fails. When working within a plan session, include the plan name (the Qdrant collection name) in the dispatch prompt. Instruct @tailwrench to use qdrant_qdrant-find to retrieve accumulated session knowledge from that collection before starting, and to store the final results to the same collection when done.
 
 ## Examples
 
-Good — verification with clear pass criteria:
-> "Run [test command] and report whether it passes. A pass means all tests exit with code 0. Report the full output."
+**Good:** "Run: npm run build. Report full output and exit code. A pass means exit code 0, no errors. If it fails, report the exact error. Then run: npm test. Report test output and result. Before starting, retrieve previous results from Qdrant collection 'build-verification' using qdrant_qdrant-find. Store final results when done."
 
-Good — commit with context:
-> "Stage all changes to [files] and commit with a message that reflects [what was done]. Report the commit hash."
+**Bad — open-ended task:** "Fix whatever is broken." @tailwrench executes instructions, not designs solutions. It works on defined problems with clear success criteria.
 
-Good — command sequence:
-> "Run [command A] then [command B]. Report the output of each. Stop if either fails."
+**Bad — file editing mixed in:** "Update the config file and then run the build." Dispatch @junior-dev for config changes, then @tailwrench separately for the build.
 
-Bad — open-ended:
-> "Fix whatever is broken." — @tailwrench follows instructions, it does not investigate or design.
+**Bad — missing-context bad example:** "Verify the changes work. Run the tests." Missing specific verification criteria or which commands to run. Specify what success means.
 
-Bad — file editing:
-> "Update the config file and then run the build." — file editing goes to @juniordev first; then dispatch @tailwrench separately for the build.
+**Bad — investigation disguised as verification:** "Run the tests and figure out what is broken." @tailwrench verifies against specific criteria, not troubleshoots or investigates root causes.
+
+**Bad — exceeds step budget:** "Build the project, run all tests, generate reports, verify documentation, check linting, and commit changes." @tailwrench has 30 steps; simplify or split into multiple dispatches.
+
+**Bad — asks for troubleshooting work:** "Run the deployment and tell me what went wrong if it fails." Specify success criteria and what to check, not paths for investigation.
+
+## When to Use @tailwrench
+
+Dispatch @tailwrench for verification (testing, linting, coverage checks), build operations, environment setup, git operations, and shell commands. @tailwrench is especially useful when you need structured verification against clear success criteria. Use @junior-dev for file editing, dispatch scouts for investigation, place architectural design work in the planning phase.

@@ -8,6 +8,8 @@ This document defines how agents dispatch subagents, what skills exist, and how 
 
 When HeadWrench or a specialized planning subagent needs to perform work it cannot or should not do inline — investigation, implementation, external research — it dispatches a subagent using the `task` tool. The dispatching agent writes a prompt, chooses a `subagent_type`, and receives a single response when the subagent finishes.
 
+Subagents are competent specialists. They load the relevant delegation skill to understand their capabilities and constraints. They query Qdrant to retrieve accumulated knowledge from the session. They use investigative tools and reasoning to understand context. They decide how to accomplish the goal and report back. The dispatch prompt provides the goal and sufficient context, not a recipe of steps to follow.
+
 Delegation is mediated by **delegation skills**. Before dispatching, the agent loads the appropriate delegation skill via the `skill` tool. The skill teaches the agent what the target subagent can and cannot do, what a good dispatch prompt looks like, and what to expect back. The agent then reasons through its dispatch prompt using `sequential-thinking_sequentialthinking` before calling `task`.
 
 This pattern produces tailored delegations without encoding all context into a template. The skill teaches methodology; the agent's reasoning fills in specifics at runtime.
@@ -61,6 +63,8 @@ The enforcement sequence for such nodes encodes this flow structurally. For exam
 
 ## Dispatch Prompt Requirements
 
+A well-formed dispatch prompt briefs a competent specialist: here is the goal, here is why it matters, here is the scope, here is the context you need. Subagents are expected to read the delegation skill themselves, query Qdrant for accumulated session knowledge, explore the codebase as needed, and decide how to accomplish the goal. Trust them to figure out implementation details, file locations, search strategies, and sequencing.
+
 Every dispatch prompt must include:
 
 - **The goal** — what the subagent should accomplish or investigate. Specific enough that the subagent can determine when it is done.
@@ -68,15 +72,21 @@ Every dispatch prompt must include:
 - **Scope boundaries** — what to focus on and what to leave alone.
 - **What to report back** — what the dispatching agent needs from the response.
 
+When dispatching within a plan session, the prompt must also include:
+
+- **The Qdrant collection name** — the plan name, so the subagent can retrieve accumulated knowledge from prior work and store findings when done.
+
+**Subagent results are returned as a direct message** to the dispatching agent, not written to files or summary documents. The dispatch prompt should specify what the agent should include in its response message. In plan sessions, the dispatching agent always provides the plan name (the Qdrant collection name) in the dispatch prompt. The subagent uses this to retrieve accumulated session knowledge from the collection using `qdrant_qdrant-find` before starting work, and stores its findings to the collection using `qdrant_qdrant-store` when done. In free-form work outside plan sessions, Qdrant instructions are not included in dispatch prompts.
+
 ### Format guidance by subagent type
 
-**For context-scout and context-insurgent:** Ask for prose findings with an uncertainties section. No file trees, no raw grep output, no lists of file names. The scout should synthesize what it found, why it matters, and what it could not determine.
+**For context-scout and context-insurgent:** Ask for prose findings with an uncertainties section. Provide the goal (what should be investigated and why), relevant context about what has been discovered so far, and scope boundaries. The scout should synthesize what it found, why it matters, and what it could not determine. Do not prescribe investigative methods or search queries.
 
-**For junior-dev:** Provide a goal and context, not surgical editing instructions. The subagent investigates and decides how to accomplish the goal. Specifying exact line numbers or diff hunks bypasses the investigation step that gives junior-dev its reliability.
+**For junior-dev:** Provide a goal and context, not surgical editing instructions. State what needs to be achieved and why. The subagent investigates and decides how to accomplish the goal. Specifying exact line numbers or diff hunks bypasses the investigation step that gives junior-dev its reliability.
 
-**For documentation-expert:** Provide the goal, the relevant file paths if known, and any style or format constraints.
+**For documentation-expert:** Provide the goal, the relevant file paths if known, and any style or format constraints. Let the subagent determine how to structure the work.
 
-**For tailwrench:** Provide specific verification criteria or commands to run. Tailwrench is step-limited (30 steps), so clarity prevents wasted steps on self-directed investigation.
+**For tailwrench:** Provide the goal — what verification needs to happen or what command needs to succeed — along with context about why it matters and any constraints. Tailwrench is step-limited (30 steps), so clear goal framing prevents wasted steps on discovering what success looks like. Let the subagent decide how to verify and what commands to run.
 
 **For external-scout:** Provide the exact research query. The IP approval gate (the `question` call before dispatch, enforced in research component nodes) ensures the user has approved this query before it is sent.
 

@@ -2,7 +2,9 @@
 
 The DAG enforcement engine is a component of the planning-enforcement plugin. It constrains tool access during DAG execution by tracking which tools have been called in the current node and blocking calls that arrive out of order.
 
-The enforcement engine operates independently of agent permissions. Both systems must allow a tool call for it to succeed:
+**DAG enforcement applies to headwrench only.** The enforcement engine blocks non-exempt tools when headwrench is executing DAG nodes (in planning or execution mode). Subagents dispatched via the `task` tool do not run under DAG enforcement — they operate under their own agent permission constraints and have no enforcement sequences. The globally exempt tools are available to headwrench during DAG execution; subagents are available the tools defined in their agent files.
+
+The enforcement engine operates independently of agent permissions. Both systems must allow a tool call for headwrench to succeed during DAG execution:
 
 1. **Agent permissions** — defined in the agent file's YAML frontmatter. Static. Does not change during execution. If an agent's permissions deny a tool, the call fails regardless of what the enforcement engine would allow.
 2. **DAG enforcement** — defined by the enforcement sequence of the current node. Dynamic. Changes at each node transition. If the engine blocks a tool because a prerequisite has not been met, the call fails regardless of what agent permissions would allow.
@@ -20,6 +22,8 @@ These tools are never blocked by the enforcement engine. They can be called at a
 - `qdrant_qdrant-store` — store to semantic notes
 - `qdrant_qdrant-find` — retrieve from semantic notes
 - `recover_context` — recover DAG session context
+
+**Note on Qdrant availability:** The Qdrant tools (`qdrant_qdrant-store` and `qdrant_qdrant-find`) are available to all agents and subagents that include them in their permission list. For headwrench executing DAG nodes, these tools are globally exempt and never blocked by DAG enforcement. For subagents dispatched via the `task` tool, Qdrant access is governed only by their agent permissions — DAG enforcement does not apply to subagents.
 
 Exempt tools can also appear in enforcement sequences as **positional requirements** (see below). When they do, calling them is never blocked — but a call made before that position in the sequence does not satisfy the positional requirement.
 
@@ -94,20 +98,21 @@ These error messages are the primary recovery mechanism. The `following-plans` s
 
 Enforcement sequences in this spec and in `plan.jsonl` use exact callable identifiers. The following table maps the readable names used in this document's prose to those identifiers.
 
-| Readable name | Callable identifier | Provider |
-|---|---|---|
-| skill | `skill` | OpenCode built-in |
-| task | `task` | OpenCode built-in |
-| question | `question` | OpenCode built-in |
-| compress | `compress` | DCP plugin |
-| thinking | `sequential-thinking_sequentialthinking` | MCP: Sequential Thinking |
-| qdrant-store | `qdrant_qdrant-store` | MCP: Qdrant |
-| qdrant-find | `qdrant_qdrant-find` | MCP: Qdrant |
-| choose_plan_name | `choose_plan_name` | Planning-enforcement plugin |
-| init_dag | `init_dag` | Planning-enforcement plugin |
-| show_dag | `show_dag` | Planning-enforcement plugin |
-| show_compact_dag | `show_compact_dag` | Planning-enforcement plugin |
-| present_compact_dag_to_user | `present_compact_dag_to_user` | Planning-enforcement plugin |
+| Readable name | Callable identifier | Provider | Globally Exempt |
+|---|---|---|---|
+| question | `question` | OpenCode built-in | Yes |
+| thinking | `sequential-thinking_sequentialthinking` | MCP: Sequential Thinking | Yes |
+| qdrant-store | `qdrant_qdrant-store` | MCP: Qdrant | Yes |
+| qdrant-find | `qdrant_qdrant-find` | MCP: Qdrant | Yes |
+| recover-context | `recover_context` | Planning-enforcement plugin | Yes |
+| skill | `skill` | OpenCode built-in | No |
+| task | `task` | OpenCode built-in | No |
+| compress | `compress` | DCP plugin | No |
+| choose_plan_name | `choose_plan_name` | Planning-enforcement plugin | No |
+| init_dag | `init_dag` | Planning-enforcement plugin | No |
+| show_dag | `show_dag` | Planning-enforcement plugin | No |
+| show_compact_dag | `show_compact_dag` | Planning-enforcement plugin | No |
+| present_compact_dag_to_user | `present_compact_dag_to_user` | Planning-enforcement plugin | No |
 
 All other tool identifiers (e.g., `grepai_grepai_search`, `validate_dag`) are used as-is in enforcement sequences.
 

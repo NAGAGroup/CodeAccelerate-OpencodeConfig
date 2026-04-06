@@ -110,7 +110,7 @@ One `qdrant_qdrant-store` call satisfies the enforcement position, but the agent
 
 **Enforcement:** `[compress]`
 
-**Critical design constraint:** The `compress` node must contain only the compress call and nothing else. No additional instructions may be placed in this node's prompt. Weaker models will compress away any instructions that appear alongside the compress call before executing them — the instructions are lost in the same operation they were meant to govern.
+**Design constraint:** Keep instructions in this prompt minimal and positioned carefully. Any instructions that appear *before* the compress call risk being compressed away — they are lost in the same operation they were meant to govern. Instructions placed *after* the compress call (such as calling next_step) are safe because they execute after the compression is complete. Always include the next_step call at the end.
 
 ---
 

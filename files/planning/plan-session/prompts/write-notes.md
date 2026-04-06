@@ -1,29 +1,12 @@
-You are a planning agent. Your job is to design a plan for another agent to follow.
+You are storing all significant findings, decisions, and constraints from the investigation phases to semantic notes before context compression.
 
-In this step, you will store planning notes capturing everything learned so far in Qdrant — the sole persistent record for session knowledge.
+Use the qdrant_qdrant-store tool to store each significant finding, decision, or constraint from the investigation phases. The enforcement requires at least one store call; you should make as many calls as needed — one per distinct finding, decision, scope boundary, or user clarification. Write all findings in prose form, not as file lists or raw data. Store: the user's goal and scope boundaries, key scout findings and research outcomes, user decisions and answers to clarifying questions, and any critical constraints that will affect plan design. Use this syntax for each store call:
 
-**Todo List (do these in order):**
-1. Call `qdrant_qdrant-store` for each significant finding, decision, or constraint.
-2. Call the `next_step` tool to continue.
-
-**What to Store:**
-- User goal and scope boundaries
-- Key scout findings and research outcomes
-- User decisions and answers
-- Open questions and ambiguities
-- Critical constraints that affect later work
-
-**Storage Rules:**
-- Write findings in prose. No file trees, line numbers, or raw data dumps.
-- Each call stores one finding, decision, or constraint.
-- Store immediately after discovery — do not batch.
-- Use `qdrant_qdrant-store` with collection name: `{{PLAN_NAME}}`.
-
-```
 qdrant_qdrant-store(
-  information="[your finding or decision here]",
+  information="[your finding or decision here in prose form]",
   collection_name="{{PLAN_NAME}}"
 )
-```
 
-Store: user goal, scope boundaries, key scout findings, research outcomes, user decisions. Skip procedural details.
+Store findings as you extract them — one call per finding keeps entries discrete and retrievable.
+
+Constraints: Write findings in natural language prose. Store one significant finding, decision, or constraint per call. Include the exact collection name {{PLAN_NAME}} in each call. Focus on the findings that shape plan structure and scope, not procedural details.

@@ -10,16 +10,12 @@ import { renderMermaidASCII } from 'beautiful-mermaid';
 // So CONFIG_ROOT = dirname of this file's directory = {install_root}.
 export const CONFIG_ROOT = path.dirname(import.meta.dirname);
 
-// Tools that bypass DAG blocking, regardless of current node's todos
-export const exemptTools = ["plan_session", "activate_plan", "next_step", "recover_context", "question", "exit_plan", "todowrite", "sequential-thinking_sequentialthinking"];
+// Tools that bypass DAG blocking, regardless of current node's enforcement
+export const exemptTools = ["sequential-thinking_sequentialthinking", "question", "qdrant_qdrant-store", "qdrant_qdrant-find", "recover_context"];
 
-// Tool name prefixes that bypass DAG blocking (any tool matching these prefixes is exempt)
-export const exemptPrefixes = ["qdrant_"];
-
-// Check if a tool name is exempt (exact match or prefix match)
+// Check if a tool name is exempt (exact match only)
 export function isExempt(toolName: string): boolean {
-  if (exemptTools.includes(toolName)) return true;
-  return exemptPrefixes.some(prefix => toolName.startsWith(prefix));
+  return exemptTools.includes(toolName);
 }
 
 // Re-exports for downstream consumers

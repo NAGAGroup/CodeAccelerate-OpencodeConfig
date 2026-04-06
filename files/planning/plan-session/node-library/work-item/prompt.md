@@ -1,47 +1,13 @@
-You are executing a plan.
+You are implementing a scoped goal that requires investigating the project before making changes.
 
-In this step, you will make a change to the project.
+Use the task tool to dispatch @context-scout to investigate the current state of the area that needs to change. Ask the scout to report on existing patterns, what will be affected by changes, and any pain points to watch for.
 
-**Todo List (do these in order):**
-1. Call the `skill` tool to load the `context-scout-delegation` skill.
-2. Call the `skill` tool to load the appropriate implementation delegation skill:
-   - Code or configuration changes → load `juniordev-delegation`
-   - Documentation changes → load `documentation-expert-delegation`
-3. Call the `task` tool to dispatch @context-scout to read all planning notes and execution notes so far. Ask it to summarize what has been accomplished, what work is needed at this step, any uncertainties, and expected pain points.
-4. Use `sequential-thinking_sequentialthinking` to decide what to implement and formulate your dispatch prompt for the implementation subagent.
-5. Call the `task` tool to dispatch the implementation subagent.
-6. Call `next_step` to continue.
+Use the skill tool to load the delegation skill matching the type of work the scout described. For code or configuration changes, load the juniordev-delegation skill. For documentation changes, load the documentation-expert-delegation skill.
 
-**Rules:**
-- Step 3 is always @context-scout reading notes. Do not skip it.
-- Choose juniordev or documentation-expert based on the type of work the scout describes.
-- Base the implementation goal entirely on what the scout returns.
-- Give the subagent a complete goal: what to change, where, and why.
-- The notes path is `{{SESSION_PATH}}/notes/`.
+Use the sequential-thinking_sequentialthinking tool to reason through what the scout found and what it means for the implementation approach. Consider what boundaries are important, what the implementation subagent needs to know, and whether your task brief will be clear enough to avoid back-and-forth.
 
-**Reasoning Task:**
-Use `sequential-thinking_sequentialthinking` to answer:
-- What does the scout's notes summary say needs to be changed at this step?
-- Is this a code change or a documentation change?
-- What context does the implementation subagent need to act without you?
-- What are the boundaries — what should it NOT change?
-- Is the dispatch prompt complete and unambiguous?
+Use the task tool to dispatch the implementation subagent with a complete goal: what to change, where, why, and what boundaries apply.
 
-**How to Call the task Tool:**
+After the implementation subagent returns, use the next_step tool to advance to verification or the next step.
 
-Use exactly these three fields:
-```
-task(
-  subagent_type="context-scout",
-  description="Read notes for this step",
-  prompt="Read all notes in {{SESSION_PATH}}/notes/. Summarize what has been accomplished, what work is needed at this step, any uncertainties, and expected pain points. Return findings in prose only."
-)
-```
-Then after sequential thinking, call it again with the implementation subagent:
-```
-task(
-  subagent_type="junior-dev",
-  description="Implement the change",
-  prompt="[your full implementation task here]"
-)
-```
+**Constraints:** Base your implementation goal entirely on what the scout reports, not on assumptions. Give the subagent enough context to work independently. Dispatch the implementation to the appropriate subagent.

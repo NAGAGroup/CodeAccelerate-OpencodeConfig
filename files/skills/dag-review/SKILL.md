@@ -1,64 +1,59 @@
----
-name: dag-review
-description: Dispatch a DAG review agent
----
+# Delegating to @dag-reviewer
 
-# Dispatching the DAG Review Agent
+This skill teaches how to dispatch @dag-reviewer to review execution DAGs against design criteria. Load it before writing a dispatch prompt to understand what @dag-reviewer needs to produce a thorough critique.
 
-## How to Call the task Tool
+## How to Dispatch the Agent
 
-Call the `task` tool with exactly these three fields:
-
-- `subagent_type`: always the string `"dag-reviewer"`
-- `description`: a short 3–5 word label (for logging only, not seen by the agent)
-- `prompt`: your full delegation prompt as a single string
-
-Example call:
+Call the task tool with subagent_type dag-reviewer:
 
 ```
 task(
   subagent_type="dag-reviewer",
   description="Review execution DAG",
-  prompt="Review the DAG at [plan path]. The rationale is at [rationale path]. The user's goal is [goal]. Call get_dag_design_guide and get_planning_components_catalogue before reviewing. Address each of the 7 items in the Review Checklist explicitly."
+  prompt="Review the execution DAG for plan name: logging-auth-module. The user's goal is: add comprehensive logging to the authentication system. Call get_dag_design_guide and get_planning_components_catalogue to reference design principles and component types. Show the DAG and review it against these dimensions: Is the DAG complete for the goal — does it cover all work needed? Are dependencies in the right order — do nodes execute in logical sequence? Does each node use the appropriate component type for its purpose? Is verification comprehensive — does every work node have a verification check? Does the DAG maintain scope discipline — does it stay within stated boundaries? Are failure paths appropriate — are there recovery or handling nodes where needed? Is the design efficient — as lean as possible without skipping necessary work? Before starting, retrieve any previous review findings from Qdrant collection 'dag-reviews' using qdrant_qdrant-find. Store your findings and critique to Qdrant when done."
 )
 ```
 
-Do not include `task_id`. Omit it entirely.
+**Parameters:**
+- `subagent_type`: always the string "dag-reviewer"
+- `description`: 3–5 word label for logging
+- `prompt`: your full goal-based dispatch prompt
 
-## What the DAG Review Agent Does
+## Tools Available to @dag-reviewer
 
-The DAG review agent is a full HeadWrench instance. It reads the plan.jsonl and the rationale document, checks the DAG against the design guide, and returns a structured critique.
+@dag-reviewer uses these tools to evaluate DAGs:
 
-The reviewer does not revise the DAG. It critiques only. One review round.
+- `show_dag`: Display the full DAG structure
+- `show_compact_dag`: Display a compact overview of the DAG
+- `validate_dag`: Check DAG structure for errors and enforceability
+- `get_planning_components_catalogue`: Reference available component node types
+- `get_dag_design_guide`: Reference design principles and patterns
+- `present_compact_dag_to_user`: Show the DAG to the user for review
 
-## How to Write a Good Delegation Prompt
+## What @dag-reviewer Does
 
-Your prompt should:
-1. Provide the plan.jsonl path.
-2. Provide the rationale document path.
-3. State the user's goal so the reviewer can assess fit.
-4. Tell it to call `get_dag_design_guide` and `get_planning_components_catalogue` before reviewing.
-5. Ask the reviewer to address each item in the Review Checklist explicitly.
+@dag-reviewer evaluates execution DAGs against design criteria and produces structured critiques. It reads the DAG structure and design rationale, understands the intended goal and scope, and assesses the design against multiple dimensions: completeness, dependency ordering, component fit, verification coverage, scope discipline, failure handling, and efficiency. It can delegate to @context-scout for spot-checking specific areas to verify DAG assumptions about the codebase. @dag-reviewer reviews and critiques DAGs thoroughly but does not revise them — revisions are separate work.
 
-## Review Checklist
+## Rules for Good Dispatch Prompts
 
-Address each item explicitly in your review:
-
-1. **Completeness** — Does the DAG cover all work required to achieve the stated goal? Are any necessary steps missing?
-2. **Dependency correctness** — Are node dependencies in the right order? Does each node have the inputs it needs from prior nodes?
-3. **Component fit** — Does each node use the right component type for its purpose? Are work nodes, verify nodes, and decision nodes used appropriately?
-4. **Verification coverage** — Does every work node have a corresponding verify node? Are changes confirmed before the next step proceeds?
-5. **Scope creep** — Does the DAG stay within the stated scope? Are there nodes that address work not requested?
-6. **Failure handling** — Are there appropriate paths for failure cases? Does the DAG handle build failures, user disapproval, or other error conditions?
-7. **Efficiency** — Is the DAG as lean as possible? Are there redundant nodes or steps that could be combined without losing coverage?
+State the plan_name explicitly so the reviewer knows which DAG to evaluate. Provide the user's goal so the reviewer can assess whether the DAG fits the intention and scope. Tell the reviewer to call get_dag_design_guide and get_planning_components_catalogue before reviewing — these provide reference material about design principles and component types. Describe the review dimensions to evaluate: completeness (does the DAG cover all work needed), dependency order (are nodes in logical sequence), component fit (does each node use the right type for its purpose), verification coverage (does every work node have verification), scope discipline (does it stay within boundaries), failure handling (are recovery paths appropriate), and efficiency (is it as lean as possible). When working within a plan session, include the plan name (the Qdrant collection name) in the dispatch prompt. Instruct @dag-reviewer to use qdrant_qdrant-find to retrieve accumulated session knowledge from that collection before starting, and to store findings and critique to the same collection when done. The prompt must be self-contained.
 
 ## Examples
 
-Good — complete context provided:
-> "Review the DAG at [plan path]. The rationale is at [rationale path]. The user's goal is [goal]. Call get_dag_design_guide and get_planning_components_catalogue before reviewing. Address each of the 7 items in the Review Checklist explicitly."
+**Good:** "Review DAG for plan: logging-auth-module. Goal: add logging to authentication. Call get_dag_design_guide and get_planning_components_catalogue first. Review dimensions: completeness, dependency order, component fit, verification coverage, scope discipline, failure handling, efficiency. Before starting, retrieve previous findings from Qdrant collection 'dag-reviews' using qdrant_qdrant-find. Store your findings when done."
 
-Bad — no rationale path:
-> "Review the DAG at [path]." — the reviewer needs the rationale to understand designer intent.
+**Bad — no plan_name:** "Review the DAG at some path." The reviewer needs the plan name to identify which DAG to evaluate.
 
-Bad — asks for revision:
-> "Review the DAG and fix any problems you find." — the reviewer critiques only. Revision is a separate step.
+**Bad — asks for revision:** "Review the DAG and fix any problems." Reviewer critiques only. Revision is separate work with its own dispatch.
+
+**Bad — missing goal context:** "Review the DAG." The reviewer needs the user's goal to assess whether the DAG is appropriate and complete.
+
+**Bad — asks for implementation:** "Review the DAG and tell me what files to edit." Review evaluates design, not prescribes implementation. Implementation happens through component node execution.
+
+## Review Dimensions Explained
+
+Completeness assesses whether the DAG covers all work needed to accomplish the goal and whether any major work items are missing. Dependency order evaluates whether nodes execute in logical sequence and whether any dependencies are backwards or skipped. Component fit reviews whether each node uses the right component type for its intended purpose — investigation nodes vs. work nodes vs. verification nodes. Verification coverage checks whether every work-producing node has a corresponding verification check and whether verification is comprehensive. Scope discipline examines whether the DAG respects stated scope boundaries and does not venture into out-of-scope work. Failure handling assesses whether error conditions and edge cases have appropriate recovery or handling paths. Efficiency evaluates whether the DAG is as lean as possible without skipping necessary steps — no redundant work, no excessive complexity.
+
+## When to Use @dag-reviewer
+
+Dispatch @dag-reviewer after the planning phase completes and a DAG has been designed. The reviewer examines the design before execution begins, catching structural problems, missing work, verification gaps, or scope violations. Use @dag-reviewer for quality assurance on DAG structure before handing off to execution. Do not use it for implementation (component nodes execute the plan), for investigation (scouts gather information), or for DAG redesign (that is separate work with a new design dispatch).

@@ -1,44 +1,15 @@
-You are executing a plan.
+You are conducting external research with IP approval required before dispatch.
 
-In this step, you will gather external information.
+Use the skill tool to load the external-scout-delegation skill.
 
-**Todo List (do these in order):**
-1. Call the `skill` tool to load the `context-scout-delegation` skill.
-2. Call the `skill` tool to load the `external-scout-delegation` skill.
-3. Call the `task` tool to dispatch @context-scout to read all planning notes and execution notes so far. Ask it to summarize what external information is still needed at this step and why.
-4. Use `sequential-thinking_sequentialthinking` to formulate a focused research query based on the scout's summary.
-5. Call the `task` tool to dispatch the external research subagent.
-6. Call `next_step` to continue.
+Use the sequential-thinking_sequentialthinking tool to compose a focused research query. Consider what external information is most valuable, what scope makes sense, and what boundaries protect proprietary information.
 
-**Rules:**
-- Step 3 is always @context-scout reading notes. Do not skip it.
-- Base the research query entirely on what the scout returns.
-- Review your external dispatch prompt before sending — remove anything sensitive or proprietary.
-- Be specific. Vague queries return vague results.
-- The notes path is `{{SESSION_PATH}}/notes/`.
+Use the question tool to present the exact research query to the user for approval before the external scout is dispatched. This gate ensures the user reviews any information that will be shared outside the organization.
 
-**Reasoning Task:**
-Use `sequential-thinking_sequentialthinking` to answer:
-- What does the scout say is still unknown and needs external research?
-- What is the most focused query that would fill that gap?
-- Is there anything in the query that should not be sent externally?
-- What does a useful result look like?
+If the user approves, use the task tool to dispatch @external-scout with the approved query.
 
-**How to Call the task Tool:**
+If the user declines, you may still dispatch @external-scout with a prompt instructing it to return immediately without research — this satisfies the enforcement sequence without requiring a branch.
 
-Use exactly these three fields:
-```
-task(
-  subagent_type="context-scout",
-  description="Read notes for this step",
-  prompt="Read all notes in {{SESSION_PATH}}/notes/. Summarize what external information is still needed at this step and why. Return findings in prose only."
-)
-```
-Then after sequential thinking, call it again with the external scout:
-```
-task(
-  subagent_type="external-scout",
-  description="Research specific question",
-  prompt="[your full research task here]"
-)
-```
+After external-scout returns, use the next_step tool to advance to the next step.
+
+**Constraints:** Collect user approval before sending external queries to ensure information security. Be specific in your research question. Remove or redact any proprietary, sensitive, or confidential information before submitting the query.

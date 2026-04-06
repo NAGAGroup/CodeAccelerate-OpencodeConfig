@@ -83,7 +83,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               }
             });
 
-            if (entryNode.todo.length === 0) {
+            if (entryNode.enforcement.length === 0) {
               const hasNext = entryNode.children && entryNode.children.length > 0;
               state.status = hasNext ? "waiting_step" : "complete";
               writeState(statePath, state);
@@ -156,7 +156,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               }
             });
 
-            if (entryNode.todo.length === 0) {
+            if (entryNode.enforcement.length === 0) {
               if (entryNode.children && entryNode.children.length > 0) {
                 state.status = "waiting_step";
                 writeState(statePath, state);
@@ -196,12 +196,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             return "DAG session is already complete.";
           }
           if (state.status !== "waiting_step") {
-            const currentNode = state.node_map[state.current_node];
-            const remaining = currentNode ? currentNode.todo.length - state.todo_index : 0;
-            const nextExpected = currentNode ? currentNode.todo[state.todo_index] ?? "none" : "unknown";
-            return `Cannot call next_step — node "${state.current_node}" still has ${remaining} todo(s) pending. ` +
-              `Next expected tool: "${nextExpected}". Call "${nextExpected}" to continue, ` +
-              `then call next_step when all todos are complete.`;
+             const currentNode = state.node_map[state.current_node];
+             const remaining = currentNode ? currentNode.enforcement.length - state.todo_index : 0;
+             const nextExpected = currentNode ? currentNode.enforcement[state.todo_index] ?? "none" : "unknown";
+             return `Cannot call next_step — node "${state.current_node}" still has ${remaining} enforcement item(s) pending. ` +
+               `Next expected tool: "${nextExpected}". Call "${nextExpected}" to continue, ` +
+               `then call next_step when all enforcement items are complete.`;
           }
 
           const node = state.node_map[state.current_node];
@@ -223,16 +223,16 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`;
           }
 
-          // Branching — next parameter required
-          if (children.length > 1) {
-            if (!next) {
-              return `Branch choice required. Valid options: [${children.join(", ")}]. Call \`next_step({ next: "<node-id>" })\` to choose.`;
-            }
-            if (!children.includes(next)) {
-              return `Invalid branch "${next}". Valid options: [${children.join(", ")}]`;
-            }
-            state.decisions.push({ node_id: state.current_node, timestamp: now(), summary: `Chose branch "${next}"` });
-          }
+           // Branching — next parameter required
+           if (children.length > 1) {
+             if (!next) {
+               return `[BRANCH REQUIRED] Node "${state.current_node}" has multiple children.\nCall next_step with the next parameter. Valid options: [${children.join(", ")}].`;
+             }
+             if (!children.includes(next)) {
+               return `Invalid branch "${next}". Valid options: [${children.join(", ")}]`;
+             }
+             state.decisions.push({ node_id: state.current_node, timestamp: now(), summary: `Chose branch "${next}"` });
+           }
 
           // Linear or chosen branch — advance
           const nextId = children.length === 1 ? children[0] : next!;
@@ -264,16 +264,16 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
           });
 
-          if (nextNode.todo.length === 0) {
-            const nextChildren = nextNode.children ?? [];
-            if (nextChildren.length > 0) {
-              state.status = "waiting_step";
-              writeState(statePath, state);
-            } else {
-              state.status = "complete";
-              writeState(statePath, state);
-            }
-          }
+           if (nextNode.enforcement.length === 0) {
+             const nextChildren = nextNode.children ?? [];
+             if (nextChildren.length > 0) {
+               state.status = "waiting_step";
+               writeState(statePath, state);
+             } else {
+               state.status = "complete";
+               writeState(statePath, state);
+             }
+           }
 
           // Build completion message - read DAG to get entry node
           const { metadata } = readDagV3(state.plan_path);
@@ -316,14 +316,14 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
 
             // Resume an abandoned session from where it left off
-            if (state.status === "abandoned") {
-              const node = state.node_map[state.current_node];
-              const remaining = node ? node.todo.length - state.todo_index : 0;
-              // If all todos were done, resume as waiting_step; otherwise resume as running
-              state.status = remaining === 0 ? "waiting_step" : "running";
-              state.updated_at = now();
-              writeState(statePath, state);
-            }
+             if (state.status === "abandoned") {
+               const node = state.node_map[state.current_node];
+               const remaining = node ? node.enforcement.length - state.todo_index : 0;
+               // If all enforcement items were done, resume as waiting_step; otherwise resume as running
+               state.status = remaining === 0 ? "waiting_step" : "running";
+               state.updated_at = now();
+               writeState(statePath, state);
+             }
 
             const currentNode = state.node_map[state.current_node];
             const sessionPath = `.opencode/session-plans/${state.dag_id}`;
@@ -334,11 +334,11 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                 })
               : "(prompt not found)";
 
-            const todoProgress = currentNode
-              ? currentNode.todo
-                  .map((t, i) => `  ${i < state.todo_index ? "[x]" : "[ ]"} ${t}`)
-                  .join("\n")
-              : "  (no todos)";
+             const todoProgress = currentNode
+               ? currentNode.enforcement
+                   .map((t, i) => `  ${i < state.todo_index ? "[x]" : "[ ]"} ${t}`)
+                   .join("\n")
+               : "  (no enforcement items)";
 
             const decisionsLog =
               state.decisions.length > 0
@@ -490,7 +490,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         }),
 
     show_dag: tool({
-      description: "Display the raw JSONL content of a DAG plan file. Returns the plan.jsonl text directly so agents can read node IDs, todo arrays, and structure without file access. Accepts a session plan name or a raw path to plan.jsonl.",
+      description: "Display the raw JSONL content of a DAG plan file. Returns the plan.jsonl text directly so agents can read node IDs, enforcement arrays, and structure without file access. Accepts a session plan name or a raw path to plan.jsonl.",
       args: {
         target: tool.schema.string().describe(
           "Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl."
@@ -661,14 +661,14 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               return `Error in init_dag: plan.jsonl already exists at ${planPath}. Use add_node to extend the existing DAG, or delete the file manually to start fresh.`;
             }
 
-            // Load execution-kickoff node spec from the library
-            const nodeLibRelBase = path.join("files", "planning", "plan-session", "node-library");
-            const kickoffSpecPath = path.join(process.cwd(), nodeLibRelBase, "execution-kickoff", "node-spec.json");
-            if (!fs.existsSync(kickoffSpecPath)) {
-              return `Error in init_dag: execution-kickoff node-spec.json not found at ${kickoffSpecPath}.`;
-            }
-            const kickoffSpec = JSON.parse(fs.readFileSync(kickoffSpecPath, "utf-8"));
-            const kickoffPromptPath = path.join(nodeLibRelBase, "execution-kickoff", kickoffSpec.prompt);
+             // Load execution-kickoff node spec from the library
+             const nodeLibRelBase = path.join("files", "planning", "plan-session", "node-library");
+             const kickoffSpecPath = path.join(process.cwd(), nodeLibRelBase, "execution-kickoff", "node-spec.json");
+             if (!fs.existsSync(kickoffSpecPath)) {
+               return `Error in init_dag: execution-kickoff node-spec.json not found at ${kickoffSpecPath}.`;
+             }
+             const kickoffSpec = JSON.parse(fs.readFileSync(kickoffSpecPath, "utf-8"));
+             const kickoffPromptPath = path.join(nodeLibRelBase, "execution-kickoff", "prompt.md");
 
             fs.mkdirSync(planDir, { recursive: true });
 
@@ -678,11 +678,11 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               entry_node_id: "execution-kickoff",
             };
 
-            const entryNode: DagNodeV3 = {
-              id: "execution-kickoff",
-              prompt: kickoffPromptPath,
-              todo: kickoffSpec.todo,
-            };
+             const entryNode: DagNodeV3 = {
+               id: "execution-kickoff",
+               prompt: kickoffPromptPath,
+               enforcement: kickoffSpec.enforcement,
+             };
 
             writeDagV3(planPath, metadata, [entryNode]);
 
@@ -697,9 +697,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
-    add_node: tool({
-        description: "Add a new node to a JSONL DAG (plan.jsonl, schema_version 3.0). Looks up the component type in the node library for its fixed todo array and prompt. Adds the node and appends its ID to the parent's children array.",
-        args: {
+     add_node: tool({
+         description: "Add a new node to a JSONL DAG (plan.jsonl, schema_version 3.0). Looks up the component type in the node library for its fixed enforcement array and prompt. Adds the node and appends its ID to the parent's children array.",
+         args: {
           plan_name: tool.schema.string().describe(
             "Name of the session plan (directory under .opencode/session-plans/)."
           ),
@@ -739,8 +739,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             if (!fs.existsSync(specPath)) {
               return `Error in add_node: Component "${component_name}" not found in node library at ${specPath}. Use get_planning_components_catalogue() to see available types.`;
             }
-            const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
-            const sourcePromptPath = path.join(process.cwd(), nodeLibRelBase, component_name, spec.prompt);
+             const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
+             const sourcePromptPath = path.join(process.cwd(), nodeLibRelBase, component_name, "prompt.md");
 
             // Copy prompt.md to session prompts folder as {node_id}.md
             const sessionPromptsDir = path.join(worktree, '.opencode', 'session-plans', plan_name, 'prompts');
@@ -751,11 +751,11 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             // Store worktree-relative path in plan.jsonl
             const promptPath = path.join('.opencode', 'session-plans', plan_name, 'prompts', `${nodeId}.md`);
 
-            const newNode: DagNodeV3 = {
-              id: nodeId,
-              prompt: promptPath,
-              todo: spec.todo,
-            };
+             const newNode: DagNodeV3 = {
+               id: nodeId,
+               prompt: promptPath,
+               enforcement: spec.enforcement,
+             };
 
             // Append to parent's children array
             if (!parent.children) parent.children = [];
@@ -764,12 +764,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             nodes.push(newNode);
             writeDagV3(planPath, metadata, nodes);
 
-            return `## add_node: Added "${nodeId}" (${component_name}) to "${parentId}"\n\n` +
-              `Node: ${nodeId}\n` +
-              `Component: ${component_name}\n` +
-              `Todo items: ${spec.todo.length}\n` +
-              `Prompt: ${destPromptPath}\n\n` +
-              `**DAG now contains ${nodes.length} nodes.**`;
+             return `## add_node: Added "${nodeId}" (${component_name}) to "${parentId}"\n\n` +
+               `Node: ${nodeId}\n` +
+               `Component: ${component_name}\n` +
+               `Enforcement items: ${spec.enforcement.length}\n` +
+               `Prompt: ${destPromptPath}\n\n` +
+               `**DAG now contains ${nodes.length} nodes.**`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in add_node: ${msg}`;
@@ -976,27 +976,26 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       if (state.status === "complete" || state.status === "abandoned") return;
 
        if (state.status === "waiting_step") {
-         throw new Error(
-           `[DAG BLOCKED] All todos for node "${state.current_node}" are complete. ` +
-           `Call \`next_step()\` to advance to the next node before calling any other tools.`
-         );
-       }
-
-       // status === "running" from here
-       const node = state.node_map[state.current_node];
-       if (!node || node.todo.length === 0) return;
-
-       const expectedTool = node.todo[state.todo_index];
-       if (!expectedTool) return;
-
-        if (input.tool !== expectedTool) {
-          if (isExempt(input.tool)) return;
           throw new Error(
-            `[DAG BLOCKED] Tool "${input.tool}" is not allowed at this step. ` +
-            `Expected: "${expectedTool}". Call "${expectedTool}" to continue.\n\n` +
-            `Current node: "${state.current_node}" | Todo progress can be checked with recover_context().`
+            `[DAG BLOCKED] All required calls for node "${state.current_node}" are complete.\n` +
+            `Call next_step to advance to the next node.`
           );
         }
+
+        // status === "running" from here
+        const node = state.node_map[state.current_node];
+        if (!node || node.enforcement.length === 0) return;
+
+        const expectedTool = node.enforcement[state.todo_index];
+        if (!expectedTool) return;
+
+         if (input.tool !== expectedTool) {
+           if (isExempt(input.tool)) return;
+           throw new Error(
+             `[DAG BLOCKED] Cannot call ${input.tool} — prerequisite not met.\n` +
+             `Call ${expectedTool} first to continue.`
+           );
+         }
     },
 
      // Track tool calls and auto-advance when todos are exhausted.
@@ -1012,31 +1011,31 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
        if (!state) return;
        if (state.status === "complete" || state.status === "abandoned") return;
 
-      const node = state.node_map[state.current_node];
-      if (!node || node.todo.length === 0) return;
+       const node = state.node_map[state.current_node];
+       if (!node || node.enforcement.length === 0) return;
 
-      // Check if this tool call matches the expected todo item
-      const expectedTool = node.todo[state.todo_index];
-      if (!expectedTool) return;
+       // Check if this tool call matches the expected enforcement item
+       const expectedTool = node.enforcement[state.todo_index];
+       if (!expectedTool) return;
 
-      // Exempt tools skip tracking unless they ARE the currently expected todo item.
-      // This allows "question" in a todo[] to advance todo_index normally.
-      const isExpectedTodo = expectedTool === input.tool;
-      if (isExempt(input.tool) && !isExpectedTodo) return;
+       // Exempt tools skip tracking unless they ARE the currently expected enforcement item.
+       // This allows "question" in an enforcement[] to advance todo_index normally.
+       const isExpectedTodo = expectedTool === input.tool;
+       if (isExempt(input.tool) && !isExpectedTodo) return;
 
-      if (input.tool === expectedTool) {
-        state.todo_index += 1;
-        state.updated_at = now();
+       if (input.tool === expectedTool) {
+         state.todo_index += 1;
+         state.updated_at = now();
 
-        // Check if all todos exhausted — flip to waiting_step so next_step() can run
-        if (state.todo_index >= node.todo.length) {
-          state.status = "waiting_step";
-          state.updated_at = now();
-          writeState(statePath, state);
-        } else {
-          writeState(statePath, state);
-        }
-      }
+         // Check if all enforcement items exhausted — flip to waiting_step so next_step() can run
+         if (state.todo_index >= node.enforcement.length) {
+           state.status = "waiting_step";
+           state.updated_at = now();
+           writeState(statePath, state);
+         } else {
+           writeState(statePath, state);
+         }
+       }
     },
 
     // Cache whether a DAG is active for this session turn.
@@ -1073,12 +1072,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       if (!state) return;
 
-      const node = state.node_map[state.current_node];
-      const todoProgress = node
-        ? node.todo
-            .map((t, i) => `${i < state.todo_index ? "[done]" : "[pending]"} ${t}`)
-            .join(", ")
-        : "none";
+       const node = state.node_map[state.current_node];
+       const todoProgress = node
+         ? node.enforcement
+             .map((t, i) => `${i < state.todo_index ? "[done]" : "[pending]"} ${t}`)
+             .join(", ")
+         : "none";
 
       const decisionsLog =
         state.decisions.length > 0

@@ -1,64 +1,48 @@
----
-name: documentation-expert-delegation
-description: Delegate to @documentation-expert
----
-
 # Delegating to @documentation-expert
 
-## How to Call the task Tool
+This skill teaches how to dispatch @documentation-expert for writing and editing documentation. Load it before writing a dispatch prompt to understand what @documentation-expert can do and how to frame documentation tasks.
 
-Call the `task` tool with exactly these three fields:
+## How to Dispatch the Agent
 
-- `subagent_type`: always the string `"documentation-expert"`
-- `description`: a short 3–5 word label (for logging only, not seen by the agent)
-- `prompt`: your full delegation prompt as a single string
-
-Example call:
+Call the task tool with subagent_type documentation-expert:
 
 ```
 task(
   subagent_type="documentation-expert",
-  description="Write release notes",
-  prompt="Write [file] as a [type of document]. It should cover [topics]. Use [reference file] for formatting conventions. Do not create any additional files."
+  description="Write API configuration guide",
+  prompt="Goal: write a configuration guide for the API module. File: docs/guides/api-configuration.md. Before starting, retrieve any previous findings or context from Qdrant collection 'project-docs' using qdrant_qdrant-find. The guide should cover: available configuration options, environment variable setup, and common patterns. Use docs/guides/database-setup.md as a formatting reference for structure and tone. Keep it practical and include at least one complete example. Do not create additional files. Store your work summary to Qdrant collection 'project-docs' when done."
 )
 ```
 
-Do not include `task_id`. Omit it entirely.
+**Parameters:**
+- `subagent_type`: always the string "documentation-expert"
+- `description`: 3–5 word label for logging
+- `prompt`: your full goal-based dispatch prompt
 
 ## What @documentation-expert Does
 
-@documentation-expert is a focused document writer and editor. It writes or edits exactly the file named in the task — Markdown files, config files, and prompt files. It does not touch code files.
+@documentation-expert writes and edits documentation files — Markdown, configuration files, and prompt files. It reads other documents as formatting references to match tone and structure. @documentation-expert works on single files per dispatch and has read-only access to code — it reads code as reference material but does not edit it. It excels at creating user-facing guides, API documentation, architecture overviews, configuration guides, and inline code comments. For code changes, dispatch @junior-dev. @documentation-expert focuses on documentation work, not code implementation.
 
-@documentation-expert is suited for writing new documents, updating existing ones, and maintaining consistent formatting. For code or script files, use @juniordev instead.
+## Rules for Good Dispatch Prompts
 
-## How to Write a Good Delegation Prompt
-
-Your prompt should:
-1. Name the exact file to write or edit.
-2. Describe what the document should contain or what needs to change.
-3. Point to any existing files to use as formatting references.
-4. Explain the purpose of the document so conventions can be applied correctly.
-5. State any constraints — tone, structure, length, what must NOT be changed.
-
-## What @documentation-expert Reports Back
-
-- The file written or edited, with a one-sentence description of what changed.
-- The formatting schema followed.
-- Any ambiguities encountered and how they were resolved.
+Name the exact file to write or edit precisely. Describe what the document should contain or what needs to change — what topics, what audience, what tone. When working within a plan session, include the plan name (the Qdrant collection name) in the dispatch prompt. Instruct @documentation-expert to use qdrant_qdrant-find to retrieve accumulated session knowledge from that collection before starting, and to store the work summary to the same collection when done. Point to existing documents to use as formatting references so the expert can match your project's style and structure. Explain the purpose so conventions can be applied correctly. State constraints — tone, structure, length, what should not be changed. Let @documentation-expert determine the best structure and wording to make the content clear and usable rather than prescribing exact structure.
 
 ## Examples
 
-Good — named file with clear content requirements:
-> "Write [file] as a [type of document]. It should cover [topics]. Use [reference file] for formatting conventions."
+**Good:** "Write docs/guides/api-configuration.md. It should cover: available options, environment variable setup, and common patterns. Use docs/guides/database-setup.md as formatting reference. Keep it practical with complete examples. Before starting, retrieve context from Qdrant collection 'project-docs' using qdrant_qdrant-find. Store summary when done."
 
-Good — targeted edit:
-> "Update the [section] of [file] to reflect [new state]. Keep all other sections unchanged."
+**Bad — multiple files:** "Update all the documentation files." @documentation-expert handles one file per dispatch.
 
-Bad — multiple files at once:
-> "Update all the documentation files." — @documentation-expert handles one file per dispatch.
+**Bad — asks for code changes:** "Update the configuration and also fix the script." Code changes go to @junior-dev.
 
-Bad — asks for code changes:
-> "Update the configuration and also fix the script." — code changes go to @juniordev.
+**Bad — too vague:** "Improve the documentation." Needs a specific file and what to write or change.
 
-Bad — too vague:
-> "Improve the documentation." — @documentation-expert needs a specific file and what to write.
+**Bad — missing context about changes:** "Write docs/architecture.md." Needs description of what should be covered, reference files for formatting, and context about what changed in the system.
+
+**Bad — missing-context bad example:** "Update the API documentation." Needs specific file name, what parts changed, and what the documentation should convey to readers.
+
+**Bad — multiple files in one dispatch:** "Write a getting started guide and API reference." Dispatch @documentation-expert once per file.
+
+## When to Use @documentation-expert
+
+Dispatch @documentation-expert for any documentation writing or editing work — user guides, API references, tutorials, architecture documentation, configuration guides, inline code comments. @documentation-expert is especially effective when you have reference documents available for style matching. Use it when documentation needs to be clear, well-structured, and consistent with project style. Dispatch @junior-dev for code changes, @tailwrench for shell operations.

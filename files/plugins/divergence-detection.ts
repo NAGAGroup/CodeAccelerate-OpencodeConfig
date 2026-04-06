@@ -52,12 +52,12 @@ export function detectDivergence(state: DagSessionState): DivergenceReport {
 
   // Check todo_index validity
   const currentNode = state.node_map[state.current_node];
-  if (currentNode && state.todo_index > currentNode.todo.length) {
+  if (currentNode && state.todo_index > currentNode.enforcement.length) {
     report.issues.push({
       type: "progress_mismatch",
       severity: "error",
-      description: `todo_index (${state.todo_index}) exceeds the number of todos in node ` +
-        `"${state.current_node}" (${currentNode.todo.length}). This suggests the DAG was modified ` +
+      description: `todo_index (${state.todo_index}) exceeds the number of enforcement items in node ` +
+        `"${state.current_node}" (${currentNode.enforcement.length}). This suggests the DAG was modified ` +
         `or state was corrupted.`,
     });
     report.hasDivergence = true;

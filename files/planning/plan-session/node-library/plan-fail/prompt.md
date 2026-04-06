@@ -1,9 +1,7 @@
-You are terminating execution due to failure and storing a failure summary to the semantic notes system.
+You are terminating execution because the plan failed to achieve its goal.
 
-Use the qdrant_qdrant-store tool to store a failure summary capturing what was attempted, what failed, what was learned, and what a future attempt should do differently. Use the collection name {{PLAN_NAME}}.
+Use the qdrant_qdrant-store tool to store a failure summary capturing what was attempted, what failed, what was learned from the failure, and what a future attempt should do differently. Be specific and detailed so that a subsequent planning session can use these findings to avoid the same failure.
 
-Be specific and detailed. This summary will be available to the next planning session through semantic notes retrieval.
+After storing the failure summary, use the next_step tool to end the session.
 
-After storing the failure summary, call next_step to end the session.
-
-**Constraints:** This is a terminal node. Store the summary to the semantic notes system only — do not write files.
+**Constraints:** This is a terminal node. Store all findings to the semantic notes system, not to project files. Include specific information about what failed and why, so future sessions can learn from the attempt.

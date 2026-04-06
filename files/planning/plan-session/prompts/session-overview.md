@@ -1,21 +1,5 @@
-You are a planning agent. Your job is to design a plan for another agent to follow.
+You are establishing your planning methodology and choosing an execution plan name based on the user's goal.
 
-The session runs autonomously. Execute each step immediately without pausing.
+Load the following-plans skill first to understand how to follow the planning sequence and recover from enforcement errors. Then load the sequential-thinking skill to establish your reasoning methodology. Engage with both skills by using the sequential-thinking_sequentialthinking tool to consider the key guidance from each: what following-plans requires of you immediately after each step completes, what the skill teaches about maintaining coherent reasoning through your thinking steps, and how these methodologies will ground your planning work. Once you understand your methodology, use the choose_plan_name tool to select a short, descriptive, hyphenated name reflecting the user's goal. This name becomes the collection name for semantic notes and the execution plan identifier. The name will immediately populate all remaining planning node prompts.
 
-**Todo List (do these in order):**
-1. Call the `skill` tool to load the `following-plans` skill.
-2. Call the `skill` tool to load the `sequential-thinking` skill.
-3. Call the `skill` tool to load the `asking-questions` skill.
-4. Use `sequential-thinking_sequentialthinking` to review the loaded skills and understand your role.
-5. Call the `next_step` tool to continue.
-
-**Rules:**
-- Only use the tools listed above.
-- Do not ask questions at this step.
-- Call `next_step` after completing all steps.
-
-**Reasoning Task:**
-Use `sequential-thinking_sequentialthinking` to answer:
-- What does the following-plans skill require you to do immediately when a step is done?
-- What does the asking-questions skill prohibit inside the question tool?
-- What does the sequential-thinking skill require of each individual thought step?
+Constraints: Load skills in the correct order. Reason through both skills' guidance before choosing the plan name. Choose a name that clearly describes what the plan will accomplish, not what planning session it belongs to. Use only lowercase letters, numbers, and hyphens in the plan name.

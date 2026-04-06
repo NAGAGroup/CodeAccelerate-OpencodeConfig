@@ -1,83 +1,38 @@
----
-name: external-scout-delegation
-description: Delegate to @external-scout
----
-
 # Delegating to @external-scout
 
-## How to Call the task Tool
+This skill teaches how to dispatch @external-scout for external research on public information. Load it before writing a dispatch prompt to understand what @external-scout can do and what kind of research questions work well.
 
-Call the `task` tool with exactly these three fields:
+## How to Dispatch the Agent
 
-- `subagent_type`: always the string `"external-scout"`
-- `description`: a short 3–5 word label (for logging only, not seen by the agent)
-- `prompt`: your full delegation prompt as a single string
-
-Example call:
+Call the task tool with subagent_type external-scout:
 
 ```
 task(
   subagent_type="external-scout",
-  description="Research tool capability",
-  prompt="We are using [a type of tool] to manage [a process]. We need to know whether [tool] supports [capability] in [context]. Search the tool's documentation and community resources. Read actual sources — do not rely on search snippets. Report what you found with a distinction between verified (read from source), inferred (from summaries), and uncertain. End with what you searched for but could not confirm."
+  description="Research JWT implementation patterns",
+  prompt="Research question: does the JWT specification support custom claim types? We know JWT is a standard token format used widely. What we need to verify: whether custom claims are part of the standard or non-standard practice. Search the official JWT documentation and published guides. Read actual sources rather than relying on search snippets. Before starting, retrieve any previous research findings from Qdrant collection 'research-findings' using qdrant_qdrant-find. Store new findings to the same collection when done. Report what you found with distinctions: verified (read from source), inferred (from summaries), and uncertain. End with what you searched for but could not confirm from primary sources."
 )
 ```
 
-Do not include `task_id`. Omit it entirely.
+**Parameters:**
+- `subagent_type`: always the string "external-scout"
+- `description`: 3–5 word label for logging
+- `prompt`: your full goal-based dispatch prompt
 
 ## What @external-scout Does
 
-@external-scout is a research agent. It searches external sources — public references, community resources, and published guides. It has no access to internal materials. It relies on web search, URL reading, and sequential thinking.
+@external-scout searches external sources — public documentation, community resources, published guides. It uses web search, URL reading, and reasoning tools. It accesses only public, external information and has no access to internal project materials or private systems. Use @external-scout only for questions that cannot be answered from project code or internal documentation. Use @context-scout for internal project investigation instead.
 
-@external-scout is good at resolving questions that cannot be answered from internal materials — verifying whether something is supported, finding established approaches, and discovering edge cases others have encountered.
+## Rules for Good Dispatch Prompts
 
-## Before You Delegate: Review for Private Information
-
-Your delegation prompt will be sent to external search tools. Before dispatching, review the prompt and remove or generalize any private details:
-
-- Replace internal names with generic descriptions.
-- Replace private terms with their general category.
-- Remove any identifiers or internal-only terminology.
-- Frame questions in terms of the publicly available subject matter.
-
-Present the delegation prompt to the user for review before dispatching.
-
-## How to Write a Good Delegation Prompt
-
-Your prompt should:
-1. Give enough background for @external-scout to understand what it is researching and why.
-2. Use general, public terms. Do not include private details.
-3. State what you already know so @external-scout does not repeat confirmed findings.
-4. Ask @external-scout to search before answering — never from memory alone.
-5. Ask @external-scout to read actual sources, not only search summaries.
-6. Ask for an uncertainties section — what was searched for but could not be confirmed from sources actually read.
-
-## What to Ask @external-scout to Report
-
-- What it found, with a distinction between verified (read from source), inferred (from summaries), and uncertain.
-- How confident it is in each finding.
-- What it searched for but could not confirm.
-- Any contradictions between sources.
+Provide enough background so @external-scout understands what it is researching and why. Use general, public terms — include no private details or internal identifiers. State what is already known so @external-scout focuses on new information rather than re-discovering confirmed findings. Instruct it to search and read sources rather than answer from memory. Ask for verification distinctions: verified (read from source), inferred (from summaries), and uncertain. When working within a plan session, include the plan name (the Qdrant collection name) in the dispatch prompt. Instruct @external-scout to use qdrant_qdrant-find to retrieve accumulated session knowledge from that collection before starting, and to store new findings to the same collection when done. Include an uncertainties section listing what was searched but not confirmed.
 
 ## Examples
 
-Good — general terms, enough context:
-> "We are using [a type of tool] to manage [a process]. We need to know whether [tool] supports [capability] in [context]. Search [tool's] documentation and community resources."
+**Good:** "Research question: does JWT specification support custom claim types? We know JWT is standard. What we need to verify: whether custom claims are standard or non-standard. Search JWT documentation and guides. Read actual sources, not snippets. Before starting, retrieve findings from Qdrant collection 'research-findings' using qdrant_qdrant-find. Store new findings when done. Report verified/inferred/uncertain findings and what you could not confirm."
 
-Good — states what is already known:
-> "We have confirmed [known fact]. What we need to know is whether [unknown] exists in [context]."
+**Bad — leaks private details:** "Search for how to do X for our internal project name." Generalize project-specific terms first.
 
-Good — asks for source verification:
-> "Search for this, but read the actual reference pages rather than relying on search snippets. If you cannot find a primary source, say so."
+**Bad — answerable internally:** "Find out what tool our work uses." @external-scout has no internal access. Use @context-scout instead.
 
-Bad — leaks private details:
-> "Search for how to do [X] for [internal project name]."
-
-Bad — answerable from internal materials:
-> "Find out what [thing] our work uses." — @external-scout has no internal access. This should have been answered by @context-scout.
-
-Bad — no context provided:
-> "Research [topic]." — too vague to produce useful findings.
-
-Bad — accepts memory as evidence:
-> "Tell me about [topic]." — must require actual search and source verification.
+**Bad — accepts memory as evidence:** "Tell me about token specifications." @external-scout must search and verify sources, not answer from memory.

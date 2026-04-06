@@ -1,13 +1,5 @@
-You are a planning agent. Your job is to design a plan for another agent to follow.
+You are compressing the investigation phases to free context window space for DAG design.
 
-In this step, you will compress the conversation context.
+Use the compress tool to compress the investigation conversation sections — scout findings, external research, user questions and answers, and all related reasoning. All significant findings have been stored to semantic notes and will be retrieved in the next phase; compression is purely about context window management. After compression completes, use the next_step tool to advance.
 
-**Todo List (do these in order):**
-1. Call the `compress` tool to compress closed sections of the conversation.
-2. Call the `next_step` tool to continue.
-
-**Rules:**
-- Compress everything up to and including the scout and research phases.
-- Keep the planning notes reference and the user's answers uncompressed.
-- Preserve all key findings, decisions, and scope boundaries in your summary.
-- The notes file is the permanent record. The compressed summary can be leaner.
+Constraints: Preserve key decisions and scope boundaries in the compression summary. Compress all investigation phase content. Keep the semantic notes collection reference and user answers visible in the summary.

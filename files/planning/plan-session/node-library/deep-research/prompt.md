@@ -1,43 +1,11 @@
-You are executing a plan.
+You are conducting extended external research to explore a domain broadly and deeply.
 
-In this step, you will conduct extended external research.
+Use the skill tool to load the external-scout-delegation skill.
 
-**Todo List (do these in order):**
-1. Call the `skill` tool to load the `context-scout-delegation` skill.
-2. Call the `skill` tool to load the `external-scout-delegation` skill.
-3. Call the `task` tool to dispatch @context-scout to read all planning notes and execution notes so far. Ask it to describe what domain needs exploration, what is already known, and what angles are most valuable to cover.
-4. Use `sequential-thinking_sequentialthinking` to formulate a comprehensive research prompt based on the scout's summary.
-5. Call the `task` tool to dispatch the external research subagent.
-6. Call `next_step` to continue.
+Use the sequential-thinking_sequentialthinking tool to plan the scope of investigation. Consider what domain or topic needs exploration, what angles or sub-questions are most valuable to cover, and what external research would best serve the plan.
 
-**Rules:**
-- Step 3 is always @context-scout reading notes. Do not skip it.
-- This node is for broad domain exploration. Ask the subagent to cover multiple angles and synthesize findings.
-- Review your external dispatch prompt before sending — remove anything sensitive or proprietary.
-- The notes path is `{{SESSION_PATH}}/notes/`.
+Use the task tool to dispatch @external-scout with a comprehensive research brief that covers multiple angles or perspectives.
 
-**Reasoning Task:**
-Use `sequential-thinking_sequentialthinking` to answer:
-- What domain or topic needs thorough exploration based on the scout's summary?
-- What are the key angles or sub-questions worth covering?
-- Is there anything in the query that should not be sent externally?
-- What does a comprehensive result look like for this use case?
+After external-scout returns with findings, use the next_step tool to advance to the next step.
 
-**How to Call the task Tool:**
-
-Use exactly these three fields:
-```
-task(
-  subagent_type="context-scout",
-  description="Read notes for this step",
-  prompt="Read all notes in {{SESSION_PATH}}/notes/. Describe what domain needs exploration, what is already known, and what angles are most valuable to cover. Return findings in prose only."
-)
-```
-Then after sequential thinking, call it again with the external scout:
-```
-task(
-  subagent_type="external-scout",
-  description="Deep domain research",
-  prompt="[your full research task here]"
-)
-```
+**Constraints:** This component is for broad domain exploration, not single targeted queries. Expect the scout to synthesize findings across multiple sources and perspectives. Remove or redact any proprietary, sensitive, or confidential information before sending the research brief.

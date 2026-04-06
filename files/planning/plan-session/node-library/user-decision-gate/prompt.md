@@ -1,13 +1,7 @@
-You are executing a plan.
+You are presenting branch options to the user for a decision.
 
-In this step, the user will choose a path forward.
+Use the question tool to present the available branches and relevant context to the user. Ask the user to choose which branch should be taken next. Include enough context for the user to make an informed choice.
 
-**Todo List (do these in order):**
-1. Call the `question` tool to present the decision to the user and collect their choice.
-2. Call `next_step` with the chosen branch ID.
+After the user responds with their choice, use the next_step tool with the next parameter set to the ID of the chosen child node.
 
-**Rules:**
-- Read `{{SESSION_PATH}}/notes/` first to understand the context for this decision.
-- Present the options clearly. Include enough context for the user to choose.
-- Do not make the choice yourself. This node exists because the user must decide.
-- Call `next_step({ next: "<branch-id>" })` with the exact node ID matching the user's choice.
+**Constraints:** Collect the user's choice through the question tool based on presented options and context. Present all available branches with sufficient context for an informed decision. Interpret the user's response as the branch ID to advance to.

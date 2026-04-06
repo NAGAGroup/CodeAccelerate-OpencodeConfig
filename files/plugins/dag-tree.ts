@@ -7,8 +7,8 @@ export function dagToMermaidV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): str
   const lines: string[] = ['flowchart TD'];
   for (const node of nodes) {
     const promptFile = path.basename(node.prompt);
-    const todoStr = node.todo.length > 0 ? node.todo.join(', ') : 'none';
-    lines.push(`  ${node.id}["${node.id}<br/>${promptFile} | [${todoStr}]"]`);
+    const enforcementStr = node.enforcement.length > 0 ? node.enforcement.join(', ') : 'none';
+    lines.push(`  ${node.id}["${node.id}<br/>${promptFile} | [${enforcementStr}]"]`);
   }
   for (const node of nodes) {
     if (!node.children || node.children.length === 0) continue;
@@ -131,7 +131,7 @@ export function flattenTreeV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): Reco
     if (map[node.id]) {
       throw new Error(`DAG validation error: duplicate node id "${node.id}".`);
     }
-    const flat: FlatNode = { id: node.id, prompt: node.prompt, todo: node.todo };
+    const flat: FlatNode = { id: node.id, prompt: node.prompt, enforcement: node.enforcement };
     if (node.children && node.children.length > 0) flat.children = node.children;
     if (node.unlocked_tools && node.unlocked_tools.length > 0) flat.unlockedTools = node.unlocked_tools;
     map[node.id] = flat;
@@ -244,7 +244,7 @@ export function flattenTree(node: DagNode, map: Record<string, FlatNode> = {}): 
   const flat: FlatNode = {
     id: node.id,
     prompt: node.prompt,
-    todo: node.todo,
+    enforcement: node.todo,
   };
 
   if (node.next === undefined || node.next === null) {

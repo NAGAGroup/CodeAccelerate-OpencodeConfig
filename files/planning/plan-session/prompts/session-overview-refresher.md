@@ -1,31 +1,5 @@
-You are a planning agent. Your job is to design a plan for another agent to follow.
+You are re-establishing your planning methodology after context compression to prepare for DAG design.
 
-In this step, you will re-establish context after compression before designing the DAG.
+Use the skill tool to load the following-plans skill to restore your understanding of how to follow the planning sequence and manage enforcement constraints. Use the skill tool to load the sequential-thinking skill to re-establish your reasoning methodology. Use the sequential-thinking_sequentialthinking tool to re-engage with both skills: consider what following-plans teaches about maintaining discipline through the planning flow, what sequential-thinking teaches about coherent reasoning, and how these methodologies anchor your work as you move from investigation to design. Your planning context was stored to semantic notes in the previous phase and will be retrieved in the next node — this node restores your methodology only.
 
-**Todo List (do these in order):**
-1. Use `qdrant_qdrant-find` to retrieve prior findings from this session. Collection name: `{{PLAN_NAME}}`.
-2. Use `sequential-thinking_sequentialthinking` to orient yourself before continuing.
-3. Call the `next_step` tool to continue.
-
-**Rules:**
-- Do not start designing the DAG yet. This step is orientation only.
-- Do not ask questions.
-- Always call `qdrant_qdrant-find` — do not skip it.
-- Call `next_step` after completing all steps.
-
-**How to Call qdrant_qdrant-find:**
-```
-qdrant_qdrant-find(
-  query="user goal, scope, scout findings, user clarifications",
-  collection_name="{{PLAN_NAME}}"
-)
-```
-Run multiple queries if needed.
-
-**Reasoning Task:**
-Use `sequential-thinking_sequentialthinking` to answer:
-- What is the user's goal?
-- What are the scope boundaries?
-- What did the scouts find that the DAG design must account for?
-- What did the user clarify that changes the shape of the work?
-- Are you ready to call `next_step`?
+Constraints: Load skills in the correct order. Reason through both skills' guidance to restore your methodology. This is a methodology refresh, not context retrieval. Context retrieval happens in the next node.

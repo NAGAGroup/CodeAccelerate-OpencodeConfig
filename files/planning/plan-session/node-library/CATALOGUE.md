@@ -1,69 +1,109 @@
 # Node Library Catalogue
 
-## Core
+## Automatic
 
 ### execution-kickoff
-The hardcoded entry node for every project DAG. Loads the `following-plans` skill, views the plan structure (compact then full), retrieves planning context from semantic notes, reasons through execution strategy, and stores executor-framed orientation notes. Every DAG starts here.
+The hardcoded entry node placed by init_dag at the root of every execution DAG. The agent loads the following-plans skill, views the plan structure (compact then full via show_compact_dag then show_dag), retrieves planning context from semantic notes via qdrant_qdrant-find, reasons through its execution strategy using sequential-thinking_sequentialthinking, and stores executor-framed orientation notes via qdrant_qdrant-store. Every DAG starts here — the dag-designer does not add it.
+
+Enforcement: `[skill, show_compact_dag, show_dag, qdrant_qdrant-find, sequential-thinking_sequentialthinking, qdrant_qdrant-store]`
+
+---
+
+## Core
 
 ### work-item
-A project mutation node. The agent reads notes, scouts the accumulated context, then delegates to either `@juniordev` (code/configuration changes) or `@documentation-expert` (documentation changes). Use for any discrete unit of work that changes files.
+Any project mutation — code changes, file edits, refactors, documentation updates. The agent dispatches @context-scout to understand current state, loads the appropriate delegation skill (juniordev-delegation for code, documentation-expert-delegation for docs), reasons through the implementation goal, then dispatches the chosen implementation subagent.
+
+Enforcement: `[task, skill, sequential-thinking_sequentialthinking, task]`
 
 ### project-search-and-analysis
-An investigation node. The agent reads notes, scouts context, then delegates to either `@context-scout` (wide, broad survey) or `@context-insurgent` (narrow, targeted analysis). Use before work-item nodes to ensure the agent understands what it is changing.
+Investigation without mutation. The agent loads either the context-scout-delegation or context-insurgent-delegation skill based on session context, reasons through the dispatch prompt, then dispatches the chosen investigator. Use before work-item nodes when the current state of the area needs to be understood first.
+
+Enforcement: `[skill, sequential-thinking_sequentialthinking, task]`
 
 ### research
-An external research node. The agent reads notes, scouts context, then delegates to `@external-scout` for a focused web search. Use when the task requires current external information that is not in the project.
+External research via @external-scout behind an IP approval gate. The agent loads the external-scout-delegation skill, reasons through the research query, presents the exact query to the user for approval via the question tool, then dispatches @external-scout. If the user declines, dispatches @external-scout with a prompt to return immediately — satisfies enforcement without requiring a branch.
+
+Enforcement: `[skill, sequential-thinking_sequentialthinking, question, task]`
 
 ### deep-research
-An extended external research node. Like `research`, but scoped for broad domain exploration across multiple angles. Use when the user requests comprehensive coverage of a topic, not a single targeted query.
+Extended domain exploration, usually user-requested. For broad investigation across multiple sources rather than a single targeted query. The agent loads the external-scout-delegation skill, reasons through the research scope, then dispatches @external-scout.
+
+Enforcement: `[skill, sequential-thinking_sequentialthinking, task]`
 
 ### write-notes
-A notes-writing node. The agent stores findings, decisions, and open questions to the semantic notes system. Use after investigation or implementation phases to capture what was learned before compressing.
+Store accumulated findings, decisions, and constraints to semantic notes. Place explicitly when a step's primary purpose is note storage. One qdrant_qdrant-store call satisfies enforcement; the agent makes as many calls as needed — one per significant finding.
+
+Enforcement: `[qdrant_qdrant-store]`
 
 ### compress
-A context compression node. The agent compresses closed sections of the conversation. Use after a phase that produced substantial notes and before moving to the next major phase.
+Compress closed conversation sections to free context window space. Instructions before the compress call risk being compressed away — keep pre-compress prose minimal. Always followed by a kickoff-refresher node.
 
-### session-overview-refresher
-A re-orientation node (kickoff-refresher in the spec). The agent loads methodology skills, retrieves accumulated session context from semantic notes, and synthesizes understanding of what has been accomplished and what remains. Use after every `compress` node.
+Enforcement: `[compress]`
+
+### kickoff-refresher
+Realign the agent after context compression. The agent loads the following-plans skill, loads the sequential-thinking skill, retrieves accumulated session context via qdrant_qdrant-find, then synthesizes understanding via sequential-thinking_sequentialthinking. Always placed after a compress node.
+
+Enforcement: `[skill, skill, qdrant_qdrant-find, sequential-thinking_sequentialthinking]`
 
 ### sequential-thinking
-A pure reasoning node. The agent works through a problem using sequential thinking before continuing. Use when a decision or analysis step is needed that does not require a subagent.
+Pure reasoning step with no side effects. The agent reasons through a problem, decision, or assessment using sequential-thinking_sequentialthinking without dispatching subagents or making changes.
+
+Enforcement: `[sequential-thinking_sequentialthinking]`
 
 ---
 
 ## Logic
 
 ### decision-gate
-A branching node where the agent assesses accumulated evidence and chooses a path. The agent reasons through the options and calls `next_step` with the chosen branch ID. Use when the right path depends on what has been discovered during execution.
+The executor assesses accumulated evidence from semantic notes and chooses which branch to take. The agent retrieves context via qdrant_qdrant-find, reasons through the decision criteria via sequential-thinking_sequentialthinking, then calls next_step with the chosen branch ID. DAG designers must store notes about each conditional node's branch conditions by exact node ID during planning.
+
+Enforcement: `[qdrant_qdrant-find, sequential-thinking_sequentialthinking]`
 
 ### user-decision-gate
-A branching node where the user chooses a path. The agent presents the options via the `question` tool and routes based on the answer. Use when the choice requires user judgment.
+The user chooses which branch to take. The agent presents the options via the question tool and routes based on the answer.
+
+Enforcement: `[question]`
 
 ### plan-fail
-A terminal failure node. The agent stores a failure summary to semantic notes explaining what failed, what was tried, and what a future attempt should do differently. Use when an unresolvable problem is encountered or verification fails after retries.
+Terminal failure node. The agent stores a failure summary to semantic notes via qdrant_qdrant-store capturing what was attempted, what failed, and what was learned. These notes are available to the next planning session.
+
+Enforcement: `[qdrant_qdrant-store]`
 
 ### plan-success
-A terminal success node. The agent provides a success summary of what was accomplished and notes any deferred items or follow-up work. Use as the final node when the plan completes successfully.
+Terminal success node. No required tool calls. The agent provides a summary of what was accomplished and notes any deferred items or follow-up work.
+
+Enforcement: `[]`
 
 ---
 
 ## Verification and Operations
 
 ### verify
-A verification node. The agent reads notes, scouts context, then delegates to `@tailwrench` to run checks and report results. Use after every significant work-item to confirm the change is correct before continuing.
+Verification of the most recent change. The agent loads the tailwrench-delegation skill, reasons through what verification means for this specific change (from semantic notes), then dispatches @tailwrench with specific verification criteria.
+
+Enforcement: `[skill, sequential-thinking_sequentialthinking, task]`
 
 ### run-project-commands
-A shell operations node. The agent reads notes, scouts context, then delegates to `@tailwrench` to run commands. Use for installing dependencies, running build scripts, configuring tools, or any operation that requires shell access.
+Shell operations — adding dependencies, running build scripts, configuring tools, running tests. The agent loads the tailwrench-delegation skill, plans the command sequence, then dispatches @tailwrench.
+
+Enforcement: `[skill, sequential-thinking_sequentialthinking, task]`
 
 ### commit
-A git checkpoint node. The agent reads notes, scouts context, then delegates to `@tailwrench` to stage and commit changes. Use at stable checkpoints after verified work.
+Git checkpoint at a meaningful save point. The agent loads the tailwrench-delegation skill, composes an appropriate commit message from session context, then dispatches @tailwrench to stage and commit.
+
+Enforcement: `[skill, sequential-thinking_sequentialthinking, task]`
 
 ---
 
 ## General
 
-### agentic-loop
-A fully autonomous execution node (autonomous-work in the spec). The agent confirms the user's explicit approval before delegating to `@autonomous-agent`, which has full tool access and works without interruption until its goal is complete. Use only when the user has explicitly approved autonomous execution during planning.
-
 ### user-discussion
-A free-form conversation node. The agent presents a topic to the user via the `question` tool and collects their input. Use when user input is needed mid-execution that does not require a branching decision.
+Free-form conversation with the user mid-execution. For presenting findings, discussing tradeoffs, or getting open-ended feedback that does not fit the structured question format.
+
+Enforcement: `[question]`
+
+### autonomous-work
+Escape hatch that delegates to @autonomous-agent with no tool restrictions or step limits. The agent confirms the user's explicit approval via the question tool before dispatching. Include in a DAG only when the user explicitly approved autonomous work during planning.
+
+Enforcement: `[question, task]`

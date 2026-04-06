@@ -1,79 +1,63 @@
----
-name: qdrant-notes
-description: How to store and find session knowledge using the Qdrant semantic memory tools
----
-
 # Qdrant Notes
 
-## Purpose
+This skill teaches how to store and retrieve session knowledge using the qdrant_qdrant-store and qdrant_qdrant-find tools. Load it when your dispatch prompt mentions Qdrant or when you need to access accumulated session knowledge. Qdrant stores structured knowledge that persists across the entire session and can be accessed by any agent.
 
-Two tools are available for session knowledge:
+## How to Retrieve and Store Knowledge
 
-- `qdrant_qdrant-store` — store a finding, decision, or piece of context
-- `qdrant_qdrant-find` — retrieve relevant findings by meaning
-
-Use these tools to store all session knowledge. Qdrant is the sole persistent record for findings, decisions, and context.
-
-## Collection Name
-
-Every call requires a `collection_name`. Use `{{PLAN_NAME}}` as the collection name. This isolates all stored findings to the current session.
-
-## When to Store
-
-Store a finding when:
-- You discover a key constraint or requirement
-- You make a decision that affects later work
-- You complete a step and the outcome matters to future steps
-- A subagent returns a significant finding
-
-Store it immediately after the finding is made. Do not batch.
-
-## When to Find
-
-Use `qdrant_qdrant-find` instead of reading multiple notes files when:
-- You need specific information and don't know which file contains it
-- You want to check if something was already decided or discovered
-- You are working deep in a DAG and need context from early steps
-
-One `qdrant_qdrant-find` call replaces many sequential file reads.
-
-## How to Store
+When your dispatch prompt mentions a Qdrant collection, retrieve accumulated knowledge immediately using qdrant_qdrant-find:
 
 ```
-qdrant_qdrant-store(
-  information="The target module uses lazy initialization. Changing the constructor signature breaks all callers.",
-  collection_name="{{PLAN_NAME}}"
-)
+qdrant_qdrant-find({
+  collection_name: "rebuild-files-from-spec",
+  query: "authentication token expiration handling"
+})
 ```
 
-With optional metadata:
-```
-qdrant_qdrant-store(
-  information="Decision: use approach B for the data pipeline. Approach A was ruled out due to memory constraints.",
-  collection_name="{{PLAN_NAME}}",
-  metadata={"step": "research", "type": "decision"}
-)
-```
-
-## How to Find
+Store findings immediately after discovering them using qdrant_qdrant-store:
 
 ```
-qdrant_qdrant-find(
-  query="what constraints did we find about the initialization sequence",
-  collection_name="{{PLAN_NAME}}"
-)
-```
-
-```
-qdrant_qdrant-find(
-  query="decisions made about the data pipeline approach",
-  collection_name="{{PLAN_NAME}}"
-)
+qdrant_qdrant-store({
+  collection_name: "rebuild-files-from-spec",
+  information: "Found that authentication uses JWT tokens with 24-hour expiration. Refresh tokens are implemented in auth/refresh.ts and return a new JWT."
+})
 ```
 
 ## Rules
 
-- Always use `{{PLAN_NAME}}` as the collection name. Never use a hardcoded name.
-- Store findings immediately — do not wait until the end of a step.
-- Write queries in natural language. Describe what you are looking for, not keywords.
-- These tools are available at any point. They do not count as todo steps.
+Retrieve accumulated knowledge before starting your work — use the qdrant_qdrant-find query to check what has already been discovered. Specify the exact collection_name provided in your dispatch prompt; using the wrong collection loses context and pollutes other sessions. Write stored information as prose with enough context to be useful without reading additional files — another agent with no context should understand what you found. Store findings immediately after discovering them rather than batching at the end. Query Qdrant with natural language — describe what you are looking for semantically, not with keywords. When retrieval returns results, read them carefully before proceeding — you may not need to re-discover what is already known.
+
+## Anti-patterns
+
+**Anti-pattern: Not retrieving from Qdrant before starting**
+
+What it looks like: Your dispatch prompt tells you to use Qdrant collection "project-findings", but you skip the retrieval step and begin investigation immediately without calling qdrant_qdrant-find.
+
+Why it fails: Previous findings exist that you will re-discover, wasting effort. Qdrant retrieval is cheap and prevents duplication of already-completed work.
+
+**Anti-pattern: Storing information without sufficient context**
+
+What it looks like: You store: "Did database investigation, found stuff" with no detail or explanation.
+
+Why it fails: Another agent retrieving this finding later learns nothing useful. When storing, include enough context that the information stands alone and informs future work.
+
+**Anti-pattern: Using the wrong collection name**
+
+What it looks like: Your dispatch prompt specifies collection "project-alpha" but you use "current-session" or create a new collection instead.
+
+Why it fails: The collection name isolates findings to a specific session and purpose. Using the wrong collection loses context and prevents other agents from finding your findings when they need them.
+
+**Anti-pattern: Batching findings instead of storing immediately**
+
+What it looks like: You make multiple discoveries but only call qdrant_qdrant-store at the end, combining all findings into one large storage call.
+
+Why it fails: If you encounter an error or context loss before the batch storage call, findings are lost. Storing immediately ensures each finding is preserved when discovered.
+
+**Anti-pattern: Storing findings from memory instead of investigation**
+
+What it looks like: You retrieve from Qdrant, see what is already known, then store: "Authentication also probably uses API keys" without actually investigating whether it does.
+
+Why it fails: Speculative storage contaminates findings with guesses. Store only what you have actually verified through investigation.
+
+## When to Use Qdrant in Dispatch Prompts
+
+Every delegation prompt that mentions a Qdrant collection should instruct the subagent to retrieve findings before starting and store their own findings when done. This ensures knowledge accumulates across the session and prevents re-discovery of what is already known. Queries should be natural language — describe what you are looking for semantically, not with keywords. When the subagent retrieves results, it should read them carefully and continue only if additional investigation is needed. The dispatch prompt should name the collection explicitly so the subagent knows where to store and retrieve.

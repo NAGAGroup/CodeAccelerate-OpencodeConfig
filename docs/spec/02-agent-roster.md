@@ -6,7 +6,9 @@ Every agent in the system is defined as an agent file with YAML frontmatter spec
 
 `grepai_grepai_list_projects` and `grepai_grepai_list_workspaces` are denied to all agents. The system operates within a single project; cross-project access is not permitted.
 
-Agents that have access to both GrepAI tools and file operation tools (`read`, `glob`, `grep`) must use GrepAI tools first for any project search or file discovery. File operation tools are a fallback for cases where GrepAI cannot satisfy the need — for example, reading a specific file at a known path after GrepAI has identified it, or writing and editing files. This applies to headwrench, junior-dev, documentation-expert, and tailwrench. Context-scout and context-insurgent are GrepAI-only by design and have no file operation tools to fall back on.
+Agents that have `qdrant_qdrant-store` and `qdrant_qdrant-find` in their permission list have persistent access to the current plan's Qdrant collection through their tool permissions. For headwrench executing DAG nodes, these tools are globally exempt from DAG enforcement and can be called at any time. For subagents dispatched via the `task` tool, Qdrant access is available through their agent permissions (DAG enforcement does not apply to subagents). **Agents' system prompts do not instruct them to use Qdrant** — that instruction comes from dispatch prompts written by the dispatching agent (typically headwrench or a planning subagent). The reason: agents can be used in free-form mode outside DAG sessions where Qdrant is irrelevant. Tool availability and usage instruction are separate concerns.
+
+Agents that have access to both GrepAI tools and file operation tools (`read`, `glob`, `grep`) must use GrepAI tools first for any project search or file discovery. File operation tools are a fallback for cases where GrepAI cannot satisfy the need — for example, reading a specific file at a known path after GrepAI has identified it, or writing and editing files. This applies to headwrench, junior-dev, documentation-expert, and tailwrench. Context-scout has GrepAI search plus `glob` for file discovery. Context-insurgent has GrepAI search, GrepAI trace tools, plus `read`, `glob`, and `grep` for direct file access when needed.
 
 ---
 
@@ -35,8 +37,8 @@ These agents are dispatched via the `task` tool. Each has a purpose-specific, mi
 **Role:** Wide-shallow project exploration. Surveys what exists, how parts relate, and what is unclear. Returns prose briefings with uncertainties sections. Does not make changes.
 
 **Tools:**
+- `glob` — file discovery
 - `grepai_grepai_search` — semantic code search
-- `grepai_grepai_rpg_explore`, `grepai_grepai_rpg_search`, `grepai_grepai_rpg_fetch` — structural exploration
 - `grepai_grepai_index_status` — index health check
 - `sequential-thinking_sequentialthinking`
 - `qdrant_qdrant-store`, `qdrant_qdrant-find`
@@ -44,7 +46,7 @@ These agents are dispatched via the `task` tool. Each has a purpose-specific, mi
 
 **Skills:** sequential-thinking, qdrant-notes, grepai
 
-**Denied:** `read`, `write`, `edit`, `glob`, `grep`, `bash`, `task`, `question`, `compress`, all DAG tools, all web tools, all GrepAI trace tools (`grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph`), `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
+**Denied:** `read`, `write`, `edit`, `grep`, `bash`, `task`, `question`, `compress`, all DAG tools, all web tools, all GrepAI trace tools (`grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph`), all GrepAI RPG tools, `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
 
 **Step limit:** 20. Context-scout must stay quick and shallow — it surveys, it does not investigate.
 
@@ -55,11 +57,12 @@ These agents are dispatched via the `task` tool. Each has a purpose-specific, mi
 **Role:** Narrow-deep analysis. Traces cross-file logic, audits constraints, synthesizes findings across many sources. Returns detailed analytical reports. Does not make changes.
 
 **Tools:** Same as context-scout, plus:
+- `read`, `glob`, `grep` — direct file access
 - `grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph` — call chain and dependency tracing
 
 **Skills:** sequential-thinking, qdrant-notes, grepai
 
-**Denied:** `read`, `write`, `edit`, `glob`, `grep`, `bash`, `task`, `question`, `compress`, all DAG tools, all web tools, `grepai_grepai_rpg_explore`, `grepai_grepai_rpg_search`, `grepai_grepai_rpg_fetch`, `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
+**Denied:** `write`, `edit`, `bash`, `task`, `question`, `compress`, all DAG tools, all web tools, all GrepAI RPG tools, `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
 
 **Step limit:** None. Insurgent work involves tracing cross-file logic chains and synthesizing findings across many sources — depth cannot be bounded arbitrarily.
 
@@ -174,14 +177,15 @@ These are distinct agent files with their own permissions. They are not constrai
 - `validate_dag` — check structural validity
 - `get_planning_components_catalogue`, `get_dag_design_guide` — reference materials
 - `task` — delegation to context-scout and context-insurgent only
-- `grepai_grepai_search`, `grepai_grepai_rpg_search`, `grepai_grepai_rpg_explore`, `grepai_grepai_rpg_fetch` — codebase understanding
+- `grepai_grepai_search` — semantic code search
+- `grepai_grepai_index_status` — index health check
 - `sequential-thinking_sequentialthinking`
 - `qdrant_qdrant-store`, `qdrant_qdrant-find`
 - `skill`
 
 **Skills:** context-scout-delegation, context-insurgent-delegation, sequential-thinking, qdrant-notes, grepai
 
-**Denied:** `init_dag`, `present_compact_dag_to_user`, `choose_plan_name`, `plan_session`, `next_step`, `recover_context`, `read`, `write`, `edit`, `glob`, `grep`, `bash`, `question`, `compress`, all web tools, all GrepAI trace tools (`grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph`), `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
+**Denied:** `init_dag`, `present_compact_dag_to_user`, `choose_plan_name`, `plan_session`, `next_step`, `recover_context`, `read`, `write`, `edit`, `glob`, `grep`, `bash`, `question`, `compress`, all web tools, all GrepAI trace tools (`grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph`), all GrepAI RPG tools, `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
 
 **Step limit:** None. DAG design complexity varies with task scope — a simple plan and a complex multi-phase plan require fundamentally different amounts of work.
 

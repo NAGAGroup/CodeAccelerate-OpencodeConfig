@@ -1,12 +1,11 @@
-You are executing a plan.
+You are having a conversation with the user mid-execution.
 
-In this step, you will have a conversation with the user.
+Use the qdrant_qdrant-find tool to retrieve relevant context if you need to understand what topics or decisions relate to this discussion.
 
-**Todo List (do these in order):**
-1. Call the `question` tool to open a discussion with the user.
-2. Call `next_step` to continue.
+Use the question tool to present your topic or findings to the user. Ask for their input, perspective, or decision as appropriate. Include enough context for them to engage meaningfully.
 
-**Rules:**
-- Read `{{SESSION_PATH}}/notes/` first to understand what topics need discussion.
-- Use the question tool to surface the topic and collect the user's input.
-- After the user responds, write key decisions or clarifications to notes before calling `next_step`.
+After the user responds, consider storing any decisions or clarifications to the semantic notes system for future reference.
+
+After the discussion is complete, use the next_step tool to advance to the next step.
+
+**Constraints:** This step is for free-form conversation that doesn't fit the structured question format. Present information clearly and ask open-ended questions that invite substantive input.
