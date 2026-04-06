@@ -738,13 +738,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             nodes.push(newNode);
             writeDagV3(planPath, metadata, nodes);
 
-            const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: 'none' });
             return `## add_node: Added "${nodeId}" (${component_name}) to "${parentId}"\n\n` +
               `Node: ${nodeId}\n` +
               `Component: ${component_name}\n` +
               `Enforcement items: ${spec.enforcement.length}\n` +
               `Prompt: ${destPromptPath}\n\n` +
-              `**DAG now contains ${nodes.length} nodes.**\n\n${ascii}`;
+              `**DAG now contains ${nodes.length} nodes.**\n\n` +
+              `Call show_compact_dag to visualize the current DAG diagram.`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in add_node: ${msg}`;
@@ -803,13 +803,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
              fs.unlinkSync(promptFile);
            }
 
-           const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, remaining), { colorMode: 'none' });
            let result = `## delete_node: Deleted "${nodeId}"\n\n`;
            if (orphanedChildren.length > 0) {
              result += `**Orphaned nodes (need re-parenting):** ${orphanedChildren.join(', ')}\n`;
              result += `Use set_parent or add_parent to reconnect these nodes.\n\n`;
            }
-           result += ascii;
+           result += `Call show_compact_dag to visualize the current DAG diagram.`;
            return result;
          } catch (err) {
            const msg = err instanceof Error ? err.message : String(err);
@@ -882,8 +881,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           }
 
           writeDagV3(planPath, metadata, nodes);
-          const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: 'none' });
-          return `## set_parent: Reparented "${nodeId}" to "${new_parent_id}"\n\n${ascii}`;
+          return `## set_parent: Reparented "${nodeId}" to "${new_parent_id}"\n\nCall show_compact_dag to visualize the current DAG diagram.`;
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           return `Error in set_parent: ${msg}`;
@@ -950,9 +948,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const parentCount = nodes.filter(n => n.children?.includes(nodeId)).length;
 
           writeDagV3(planPath, metadata, nodes);
-          const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: 'none' });
           return `## add_parent: Added "${new_parent_id}" as parent of "${nodeId}"\n\n` +
-            `"${nodeId}" now has ${parentCount} parent(s) (convergence node).\n\n${ascii}`;
+            `"${nodeId}" now has ${parentCount} parent(s) (convergence node).\n\n` +
+            `Call show_compact_dag to visualize the current DAG diagram.`;
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           return `Error in add_parent: ${msg}`;

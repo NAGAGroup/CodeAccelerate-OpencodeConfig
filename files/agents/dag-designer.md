@@ -8,7 +8,8 @@ permission:
     "*": deny
     add_node: allow
     delete_node: allow
-    modify_node: allow
+    add_parent: allow
+    set_parent: allow
     show_dag: allow
     show_compact_dag: allow
     validate_dag: allow

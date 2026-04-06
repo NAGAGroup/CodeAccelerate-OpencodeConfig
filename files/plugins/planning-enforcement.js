@@ -110878,7 +110878,6 @@ ${ascii}`;
             parent.children.push(nodeId);
             nodes.push(newNode);
             writeDagV3(planPath, metadata, nodes);
-            const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: "none" });
             return `## add_node: Added "${nodeId}" (${component_name}) to "${parentId}"
 
 ` + `Node: ${nodeId}
@@ -110888,7 +110887,7 @@ ${ascii}`;
 
 ` + `**DAG now contains ${nodes.length} nodes.**
 
-${ascii}`;
+` + `Call show_compact_dag to visualize the current DAG diagram.`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in add_node: ${msg}`;
@@ -110932,7 +110931,6 @@ ${ascii}`;
             if (fs6.existsSync(promptFile)) {
               fs6.unlinkSync(promptFile);
             }
-            const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, remaining), { colorMode: "none" });
             let result = `## delete_node: Deleted "${nodeId}"
 
 `;
@@ -110943,7 +110941,7 @@ ${ascii}`;
 
 `;
             }
-            result += ascii;
+            result += `Call show_compact_dag to visualize the current DAG diagram.`;
             return result;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
@@ -111002,10 +111000,9 @@ ${ascii}`;
               newParent.children.push(nodeId);
             }
             writeDagV3(planPath, metadata, nodes);
-            const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: "none" });
             return `## set_parent: Reparented "${nodeId}" to "${new_parent_id}"
 
-${ascii}`;
+Call show_compact_dag to visualize the current DAG diagram.`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in set_parent: ${msg}`;
@@ -111055,12 +111052,11 @@ ${ascii}`;
             newParent.children.push(nodeId);
             const parentCount = nodes.filter((n) => n.children?.includes(nodeId)).length;
             writeDagV3(planPath, metadata, nodes);
-            const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: "none" });
             return `## add_parent: Added "${new_parent_id}" as parent of "${nodeId}"
 
 ` + `"${nodeId}" now has ${parentCount} parent(s) (convergence node).
 
-${ascii}`;
+` + `Call show_compact_dag to visualize the current DAG diagram.`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in add_parent: ${msg}`;
