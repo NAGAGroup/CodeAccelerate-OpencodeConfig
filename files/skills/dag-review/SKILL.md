@@ -9,7 +9,7 @@ description: Dispatch a DAG review agent
 
 Call the `task` tool with exactly these three fields:
 
-- `subagent_type`: always the string `"headwrench"`
+- `subagent_type`: always the string `"dag-reviewer"`
 - `description`: a short 3–5 word label (for logging only, not seen by the agent)
 - `prompt`: your full delegation prompt as a single string
 
@@ -17,7 +17,7 @@ Example call:
 
 ```
 task(
-  subagent_type="headwrench",
+  subagent_type="dag-reviewer",
   description="Review execution DAG",
   prompt="Review the DAG at [plan path]. The rationale is at [rationale path]. The user's goal is [goal]. Call get_dag_design_guide and get_planning_components_catalogue before reviewing. Address each of the 7 items in the Review Checklist explicitly."
 )

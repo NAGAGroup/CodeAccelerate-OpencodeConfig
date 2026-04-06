@@ -9,7 +9,7 @@ description: Dispatch a DAG design agent
 
 Call the `task` tool with exactly these three fields:
 
-- `subagent_type`: always the string `"headwrench"`
+- `subagent_type`: always the string `"dag-designer"`
 - `description`: a short 3–5 word label (for logging only, not seen by the agent)
 - `prompt`: your full delegation prompt as a single string
 
@@ -17,7 +17,7 @@ Example call:
 
 ```
 task(
-  subagent_type="headwrench",
+  subagent_type="dag-designer",
   description="Design execution DAG",
   prompt="Design an execution DAG for the following goal: [goal]. Scope: [boundaries]. Planning notes are at [path]. Call get_planning_components_catalogue and get_dag_design_guide before designing. Write the DAG to [plan path] and the rationale to [rationale path]."
 )

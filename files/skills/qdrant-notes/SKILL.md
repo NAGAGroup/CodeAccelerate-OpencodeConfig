@@ -16,7 +16,7 @@ Use these tools to store all session knowledge. Qdrant is the sole persistent re
 
 ## Collection Name
 
-Every call requires a `collection_name`. Use `{{SESSION_NAME}}` as the collection name. This isolates all stored findings to the current session.
+Every call requires a `collection_name`. Use `{{PLAN_NAME}}` as the collection name. This isolates all stored findings to the current session.
 
 ## When to Store
 
@@ -42,7 +42,7 @@ One `qdrant_qdrant-find` call replaces many sequential file reads.
 ```
 qdrant_qdrant-store(
   information="The target module uses lazy initialization. Changing the constructor signature breaks all callers.",
-  collection_name="{{SESSION_NAME}}"
+  collection_name="{{PLAN_NAME}}"
 )
 ```
 
@@ -50,7 +50,7 @@ With optional metadata:
 ```
 qdrant_qdrant-store(
   information="Decision: use approach B for the data pipeline. Approach A was ruled out due to memory constraints.",
-  collection_name="{{SESSION_NAME}}",
+  collection_name="{{PLAN_NAME}}",
   metadata={"step": "research", "type": "decision"}
 )
 ```
@@ -60,20 +60,20 @@ qdrant_qdrant-store(
 ```
 qdrant_qdrant-find(
   query="what constraints did we find about the initialization sequence",
-  collection_name="{{SESSION_NAME}}"
+  collection_name="{{PLAN_NAME}}"
 )
 ```
 
 ```
 qdrant_qdrant-find(
   query="decisions made about the data pipeline approach",
-  collection_name="{{SESSION_NAME}}"
+  collection_name="{{PLAN_NAME}}"
 )
 ```
 
 ## Rules
 
-- Always use `{{SESSION_NAME}}` as the collection name. Never use a hardcoded name.
+- Always use `{{PLAN_NAME}}` as the collection name. Never use a hardcoded name.
 - Store findings immediately — do not wait until the end of a step.
 - Write queries in natural language. Describe what you are looking for, not keywords.
 - These tools are available at any point. They do not count as todo steps.
