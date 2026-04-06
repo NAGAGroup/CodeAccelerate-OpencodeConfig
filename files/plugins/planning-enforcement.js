@@ -110694,38 +110694,6 @@ ${ascii}`;
           }
         }
       }),
-      present_dag_to_user: tool({
-        description: "Display an ASCII Mermaid diagram of a session plan DAG to the user. Injects the diagram directly into the conversation as a system message that the agent ignores.",
-        args: {
-          plan_name: tool.schema.string().describe("Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.")
-        },
-        async execute({ plan_name }, toolCtx) {
-          try {
-            const worktree = resolveWorktree(toolCtx);
-            const planPath = resolveDagPath(plan_name, worktree);
-            const { metadata, nodes } = readDagV3(planPath);
-            validateDagV3(metadata, nodes);
-            const mermaid = dagToMermaidV3(metadata, nodes);
-            const ascii = await renderMermaidASCII(mermaid, { colorMode: "none" });
-            const diagramText = `## Session Plan: ${metadata.id}
-
-**Plan Name:** ${plan_name}
-
-${ascii}`;
-            await client.session.prompt({
-              path: { id: toolCtx.sessionID },
-              body: {
-                noReply: true,
-                parts: [{ type: "text", text: diagramText }]
-              }
-            });
-            return "DAG diagram presented via prompt injection below. Ignore the following system message—it contains the session plan visualization.";
-          } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err);
-            return `Error in present_dag_to_user: ${msg}`;
-          }
-        }
-      }),
       present_compact_dag_to_user: tool({
         description: "Display an ASCII Mermaid diagram of a session plan DAG to the user, with sequential nodes collapsed into single blocks. Injects the compact diagram into the conversation as a system message that the agent ignores. Use this for user review — it avoids hangs on large DAGs.",
         args: {

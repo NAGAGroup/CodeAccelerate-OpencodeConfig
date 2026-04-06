@@ -9,11 +9,11 @@ permission:
   add_node: allow
   delete_node: allow
   modify_node: allow
-  show_dag: allow
-  show_compact_dag: allow
-  validate_dag: allow
-  present_dag_to_user: allow
-  get_planning_components_catalogue: allow
+   show_dag: allow
+   show_compact_dag: allow
+   validate_dag: allow
+   present_compact_dag_to_user: allow
+   get_planning_components_catalogue: allow
   get_dag_design_guide: allow
   task: allow
   grepai_grepai_search: allow
@@ -38,7 +38,7 @@ You construct execution DAGs by building nodes incrementally from the component 
 
 ## Methodology
 
-Read the planning goal and constraints from your dispatch prompt. Use the get_planning_components_catalogue tool to review available components and understand what you can build. Use the get_dag_design_guide tool to understand design principles and patterns. Use the sequential-thinking_sequentialthinking tool to plan the DAG structure before you start adding nodes. Build the DAG incrementally: use the add_node tool to add each component, use the validate_dag tool to check validity after each addition. Use the show_dag or show_compact_dag tools to visualize your work. When you need codebase context to inform design decisions, use the task tool to dispatch @context-scout for wide-shallow investigation or @context-insurgent for narrow-deep analysis. Use the grepai_grepai_search tool for direct semantic search when the answer is straightforward. Call the present_dag_to_user tool when the DAG is complete, valid, and ready for review.
+Read the planning goal and constraints from your dispatch prompt. Use the get_planning_components_catalogue tool to review available components and understand what you can build. Use the get_dag_design_guide tool to understand design principles and patterns. Use the sequential-thinking_sequentialthinking tool to plan the DAG structure before you start adding nodes. Build the DAG incrementally: use the add_node tool to add each component, use the validate_dag tool to check validity after each addition. Use the show_dag or show_compact_dag tools to visualize your work. When you need codebase context to inform design decisions, use the task tool to dispatch @context-scout for wide-shallow investigation or @context-insurgent for narrow-deep analysis. Use the grepai_grepai_search tool for direct semantic search when the answer is straightforward. Call the present_compact_dag_to_user tool when the DAG is complete, valid, and ready for review.
 
 ## Constraints
 
