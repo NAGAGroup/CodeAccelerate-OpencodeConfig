@@ -4,7 +4,7 @@ import { renderMermaidASCII } from "beautiful-mermaid";
 import * as fs from "fs";
 import * as path from "path";
 import type { DecisionEntry, DagSessionState, DagNodeV3, DagMetadataV3 } from "./types";
-import { exemptTools, isExempt } from "./constants";
+import { exemptTools, isExempt, CONFIG_ROOT } from "./constants";
 import { dagStatePath, writeState, readState, now } from "./state-io";
 import { expandPath, readPrompt, resolveDagPath } from "./path-utils";
 import { readDagV3, writeDagV3 } from "./dag-io";
@@ -629,8 +629,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
 
              // Load execution-kickoff node spec from the library
-             const nodeLibRelBase = path.join("files", "planning", "plan-session", "node-library");
-             const kickoffSpecPath = path.join(process.cwd(), nodeLibRelBase, "execution-kickoff", "node-spec.json");
+             const nodeLibRelBase = path.join("planning", "plan-session", "node-library");
+             const kickoffSpecPath = path.join(CONFIG_ROOT, nodeLibRelBase, "execution-kickoff", "node-spec.json");
              if (!fs.existsSync(kickoffSpecPath)) {
                return `Error in init_dag: execution-kickoff node-spec.json not found at ${kickoffSpecPath}.`;
              }
@@ -701,13 +701,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             }
 
             // Load component spec from the node library
-            const nodeLibRelBase = path.join("files", "planning", "plan-session", "node-library");
-            const specPath = path.join(process.cwd(), nodeLibRelBase, component_name, "node-spec.json");
+            const nodeLibRelBase = path.join("planning", "plan-session", "node-library");
+            const specPath = path.join(CONFIG_ROOT, nodeLibRelBase, component_name, "node-spec.json");
             if (!fs.existsSync(specPath)) {
               return `Error in add_node: Component "${component_name}" not found in node library at ${specPath}. Use get_planning_components_catalogue() to see available types.`;
             }
              const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
-             const sourcePromptPath = path.join(process.cwd(), nodeLibRelBase, component_name, "prompt.md");
+             const sourcePromptPath = path.join(CONFIG_ROOT, nodeLibRelBase, component_name, "prompt.md");
 
             // Copy prompt.md to session prompts folder as {node_id}.md
             const sessionPromptsDir = path.join(worktree, '.opencode', 'session-plans', plan_name, 'prompts');
@@ -886,17 +886,17 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
        description:
          "Retrieve the planning components catalogue listing all available node types. Returns CATALOGUE.md text verbatim from the global node-library installation.",
        args: {},
-        async execute(_args, _context) {
-          try {
-            const cataloguePath = path.join(process.cwd(), "files", "planning", "plan-session", "node-library", "CATALOGUE.md");
+         async execute(_args, _context) {
+           try {
+             const cataloguePath = path.join(CONFIG_ROOT, "planning", "plan-session", "node-library", "CATALOGUE.md");
 
-           if (!fs.existsSync(cataloguePath)) {
-             return `CATALOGUE.md not found at ${cataloguePath}. ` +
-               `Ensure the planning components are installed correctly via OCX.`;
-           }
+            if (!fs.existsSync(cataloguePath)) {
+              return `CATALOGUE.md not found at ${cataloguePath}. ` +
+                `Ensure the planning components are installed correctly via OCX.`;
+            }
 
-           const catalogue = fs.readFileSync(cataloguePath, "utf-8");
-           return catalogue;
+            const catalogue = fs.readFileSync(cataloguePath, "utf-8");
+            return catalogue;
          } catch (err) {
            const msg = err instanceof Error ? err.message : String(err);
            return `Error retrieving catalogue: ${msg}`;

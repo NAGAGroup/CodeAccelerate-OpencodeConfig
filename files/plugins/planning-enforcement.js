@@ -110773,8 +110773,8 @@ ${ascii}`;
             if (fs6.existsSync(planPath)) {
               return `Error in init_dag: plan.jsonl already exists at ${planPath}. Use add_node to extend the existing DAG, or delete the file manually to start fresh.`;
             }
-            const nodeLibRelBase = path7.join("files", "planning", "plan-session", "node-library");
-            const kickoffSpecPath = path7.join(process.cwd(), nodeLibRelBase, "execution-kickoff", "node-spec.json");
+            const nodeLibRelBase = path7.join("planning", "plan-session", "node-library");
+            const kickoffSpecPath = path7.join(CONFIG_ROOT, nodeLibRelBase, "execution-kickoff", "node-spec.json");
             if (!fs6.existsSync(kickoffSpecPath)) {
               return `Error in init_dag: execution-kickoff node-spec.json not found at ${kickoffSpecPath}.`;
             }
@@ -110826,13 +110826,13 @@ ${ascii}`;
             if (!parent) {
               return `Error in add_node: Parent node "${parentId}" not found in DAG.`;
             }
-            const nodeLibRelBase = path7.join("files", "planning", "plan-session", "node-library");
-            const specPath = path7.join(process.cwd(), nodeLibRelBase, component_name, "node-spec.json");
+            const nodeLibRelBase = path7.join("planning", "plan-session", "node-library");
+            const specPath = path7.join(CONFIG_ROOT, nodeLibRelBase, component_name, "node-spec.json");
             if (!fs6.existsSync(specPath)) {
               return `Error in add_node: Component "${component_name}" not found in node library at ${specPath}. Use get_planning_components_catalogue() to see available types.`;
             }
             const spec = JSON.parse(fs6.readFileSync(specPath, "utf-8"));
-            const sourcePromptPath = path7.join(process.cwd(), nodeLibRelBase, component_name, "prompt.md");
+            const sourcePromptPath = path7.join(CONFIG_ROOT, nodeLibRelBase, component_name, "prompt.md");
             const sessionPromptsDir = path7.join(worktree, ".opencode", "session-plans", plan_name, "prompts");
             fs6.mkdirSync(sessionPromptsDir, { recursive: true });
             const destPromptPath = path7.join(sessionPromptsDir, `${nodeId}.md`);
@@ -110988,7 +110988,7 @@ ${ascii}`;
         args: {},
         async execute(_args, _context) {
           try {
-            const cataloguePath = path7.join(process.cwd(), "files", "planning", "plan-session", "node-library", "CATALOGUE.md");
+            const cataloguePath = path7.join(CONFIG_ROOT, "planning", "plan-session", "node-library", "CATALOGUE.md");
             if (!fs6.existsSync(cataloguePath)) {
               return `CATALOGUE.md not found at ${cataloguePath}. ` + `Ensure the planning components are installed correctly via OCX.`;
             }
