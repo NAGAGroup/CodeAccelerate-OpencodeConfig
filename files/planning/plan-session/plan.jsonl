@@ -1,11 +1,11 @@
 {"schema_version":"3.0","id":"plan-session","entry_node_id":"session-overview"}
-{"id":"session-overview","prompt":"session-overview.md","enforcement":["skill","skill","sequential-thinking_sequentialthinking","choose_plan_name"],"children":["orientation-scout"]}
+{"id":"session-overview","prompt":"session-overview.md","enforcement":["skill","choose_plan_name"],"children":["orientation-scout"]}
 {"id":"orientation-scout","prompt":"orientation-scout.md","enforcement":["skill","sequential-thinking_sequentialthinking","task"],"children":["external-research"]}
 {"id":"external-research","prompt":"external-research.md","enforcement":["skill","skill","sequential-thinking_sequentialthinking","question","task"],"children":["user-questions"]}
 {"id":"user-questions","prompt":"user-questions.md","enforcement":["skill","sequential-thinking_sequentialthinking","question"],"children":["write-notes"]}
 {"id":"write-notes","prompt":"store-notes.md","enforcement":["skill","qdrant_qdrant-store"],"children":["compress"]}
 {"id":"compress","prompt":"compress.md","enforcement":["compress"],"children":["session-overview-refresher"]}
-{"id":"session-overview-refresher","prompt":"session-overview-refresher.md","enforcement":["skill","skill","sequential-thinking_sequentialthinking"],"children":["retrieve-notes"]}
+{"id":"session-overview-refresher","prompt":"session-overview-refresher.md","enforcement":["skill"],"children":["retrieve-notes"]}
 {"id":"retrieve-notes","prompt":"retrieve-notes.md","enforcement":["skill","sequential-thinking_sequentialthinking","qdrant_qdrant-find","sequential-thinking_sequentialthinking"],"children":["dag-design"]}
 {"id":"dag-design","prompt":"dag-design.md","enforcement":["skill","init_dag","sequential-thinking_sequentialthinking","task"],"children":["dag-review"]}
 {"id":"dag-review","prompt":"dag-review.md","enforcement":["skill","sequential-thinking_sequentialthinking","task"],"children":["dag-revision"]}

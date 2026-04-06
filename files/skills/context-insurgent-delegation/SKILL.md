@@ -25,10 +25,11 @@ Explicitly require the insurgent to report what it examined but could not fully 
 
 Include explicit skill-loading instructions in your dispatch prompt so @context-insurgent loads necessary skills before starting work. Add these instructions near the top of the dispatch prompt:
 
+- **Before reasoning through investigation scope:** Include "Load the sequential-thinking skill and use it to reason through the investigation approach and what specific questions to trace before starting."
 - **Before searching code:** Include "Load the grepai skill for semantic code search and deep tracing tools."
 - **Before storing findings:** Include "Load the qdrant-notes skill for persisting discoveries to the plan session collection."
 
-Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning deep analysis. This ensures @context-insurgent has access to semantic search and knowledge persistence from the start.
+Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning deep analysis. This ensures @context-insurgent reasons through its investigation approach before diving in and has access to semantic search and knowledge persistence from the start.
 
 ## Examples
 

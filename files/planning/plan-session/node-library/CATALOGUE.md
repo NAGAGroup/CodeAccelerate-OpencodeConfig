@@ -3,9 +3,9 @@
 ## Automatic
 
 ### execution-kickoff
-The hardcoded entry node placed by init_dag at the root of every execution DAG. The agent loads the following-plans skill, views the plan structure (compact then full via show_compact_dag then show_dag), retrieves planning context from semantic notes via qdrant_qdrant-find, reasons through its execution strategy using sequential-thinking_sequentialthinking, and stores executor-framed orientation notes via qdrant_qdrant-store. Every DAG starts here — the dag-designer does not add it.
+The hardcoded entry node placed by init_dag at the root of every execution DAG. The agent loads the following-plans skill, views the plan structure (compact then full via show_compact_dag then show_dag), retrieves planning context from semantic notes via qdrant_qdrant-find, and stores executor-framed orientation notes via qdrant_qdrant-store. Every DAG starts here — the dag-designer does not add it.
 
-Enforcement: `[skill, show_compact_dag, show_dag, qdrant_qdrant-find, sequential-thinking_sequentialthinking, qdrant_qdrant-store]`
+Enforcement: `[skill, show_compact_dag, show_dag, qdrant_qdrant-find, qdrant_qdrant-store]`
 
 ---
 
@@ -42,9 +42,9 @@ Compress closed conversation sections to free context window space. Instructions
 Enforcement: `[compress]`
 
 ### kickoff-refresher
-Realign the agent after context compression. The agent loads the following-plans skill, loads the sequential-thinking skill, retrieves accumulated session context via qdrant_qdrant-find, then synthesizes understanding via sequential-thinking_sequentialthinking. Always placed after a compress node.
+Realign the agent after context compression. The agent loads the following-plans skill and retrieves accumulated session context via qdrant_qdrant-find. Always placed after a compress node.
 
-Enforcement: `[skill, skill, qdrant_qdrant-find, sequential-thinking_sequentialthinking]`
+Enforcement: `[skill, qdrant_qdrant-find]`
 
 ### sequential-thinking
 Pure reasoning step with no side effects. The agent reasons through a problem, decision, or assessment using sequential-thinking_sequentialthinking without dispatching subagents or making changes.

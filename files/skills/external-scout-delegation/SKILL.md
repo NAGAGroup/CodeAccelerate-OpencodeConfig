@@ -23,10 +23,11 @@ Provide enough background so @external-scout understands what it is researching 
 
 Include explicit skill-loading instructions in your dispatch prompt so @external-scout loads necessary skills before starting work. Add these instructions near the top of the dispatch prompt:
 
+- **Before reasoning through research scope:** Include "Load the sequential-thinking skill and use it to reason through the research question, what you already know, and what verification strategy makes sense before starting."
 - **Before doing web research:** Include "Load the web-research skill for searching external sources and reading documentation."
 - **Before storing findings:** Include "Load the qdrant-notes skill for persisting research findings to the plan session collection."
 
-Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning web research. This ensures @external-scout has access to web search and knowledge persistence from the start.
+Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning web research. This ensures @external-scout reasons through its research approach before searching and has access to web search and knowledge persistence from the start.
 
 ## Examples
 

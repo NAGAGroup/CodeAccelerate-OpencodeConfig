@@ -25,10 +25,11 @@ Explicitly request that the scout surface what it could not determine — areas 
 
 Include explicit skill-loading instructions in your dispatch prompt so @context-scout loads necessary skills before starting work. Add these instructions near the top of the dispatch prompt:
 
+- **Before reasoning through exploration scope:** Include "Load the sequential-thinking skill and use it to reason through what areas to explore and what questions you are trying to answer before starting."
 - **Before searching code:** Include "Load the grepai skill for semantic code search and exploration tools."
 - **Before storing findings:** Include "Load the qdrant-notes skill for persisting discoveries to the plan session collection."
 
-Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning exploration. This ensures @context-scout has access to semantic search and knowledge persistence from the start.
+Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning exploration. This ensures @context-scout reasons through its exploration approach and has access to semantic search and knowledge persistence from the start.
 
 ## Examples
 

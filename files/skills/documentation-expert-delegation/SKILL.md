@@ -23,10 +23,11 @@ Name the exact file to write or edit precisely. Describe what the document shoul
 
 Include explicit skill-loading instructions in your dispatch prompt so @documentation-expert loads necessary skills before starting work. Add these instructions near the top of the dispatch prompt:
 
+- **Before reasoning through documentation structure:** Include "Load the sequential-thinking skill and use it to reason through the documentation structure, audience, and what to cover before starting."
 - **Before making file edits:** Include "Load the file-operations skill for reading and editing documentation files."
 - **Before storing findings:** Include "Load the qdrant-notes skill for persisting work summaries and decisions to the plan session collection."
 
-Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning documentation work. This ensures @documentation-expert has access to file operations and knowledge persistence from the start.
+Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning documentation work. This ensures @documentation-expert reasons through structure and content approach before writing and has access to file operations and knowledge persistence from the start.
 
 ## Examples
 

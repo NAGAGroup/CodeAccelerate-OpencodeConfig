@@ -1,5 +1,5 @@
 You are re-establishing your planning methodology after context compression to prepare for DAG design.
 
-Use the skill tool to load the following-plans skill to restore your understanding of how to follow the planning sequence and manage enforcement constraints. Use the skill tool to load the sequential-thinking skill to re-establish your reasoning methodology. Use the sequential-thinking_sequentialthinking tool to re-engage with both skills: consider what following-plans teaches about maintaining discipline through the planning flow, what sequential-thinking teaches about coherent reasoning, and how these methodologies anchor your work as you move from investigation to design. Your planning context was stored to semantic notes in the previous phase and will be retrieved in the next node — this node restores your methodology only.
+Use the skill tool to load the following-plans skill to restore your understanding of how to follow the planning sequence and manage enforcement constraints. Your planning context was stored to semantic notes in the previous phase and will be retrieved in the next node — this node restores your methodology only.
 
-Constraints: Load skills in the correct order. Reason through both skills' guidance to restore your methodology. This is a methodology refresh, not context retrieval. Context retrieval happens in the next node.
+Constraints: Load the skill fully before advancing. This is a methodology refresh, not context retrieval. Context retrieval happens in the next node.

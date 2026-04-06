@@ -23,10 +23,11 @@ State the task clearly — verify, run commands, or commit. For verification, de
 
 Include explicit skill-loading instructions in your dispatch prompt so @tailwrench loads necessary skills before starting work. Add these instructions near the top of the dispatch prompt:
 
+- **Before reasoning through command sequence:** Include "Load the sequential-thinking skill and use it to reason through the command sequence, success criteria, and what to check before starting."
 - **Before running shell commands:** Include "Load the shell-operations skill for running commands, tests, builds, and git operations."
 - **Before storing results:** Include "Load the qdrant-notes skill for persisting verification results and findings to the plan session collection."
 
-Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning shell operations. This ensures @tailwrench has access to shell operations and knowledge persistence from the start.
+Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning shell operations. This ensures @tailwrench reasons through its command sequence and success criteria before executing and has access to shell operations and knowledge persistence from the start.
 
 ## Examples
 

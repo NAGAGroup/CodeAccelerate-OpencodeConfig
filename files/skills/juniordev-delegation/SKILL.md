@@ -23,11 +23,12 @@ State the goal clearly — what needs to be achieved and why it matters. Provide
 
 Include explicit skill-loading instructions in your dispatch prompt so @junior-dev loads necessary skills before starting work. Add these instructions near the top of the dispatch prompt:
 
+- **Before reasoning through approach:** Include "Load the sequential-thinking skill and use it to reason through your implementation approach before starting."
 - **Before searching code:** Include "Load the grepai skill for semantic code search and dependency tracing."
 - **Before making file edits:** Include "Load the file-operations skill for reading and editing files."
 - **Before storing findings:** Include "Load the qdrant-notes skill for persisting discoveries and changes to the plan session collection."
 
-Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning investigation and implementation work. This ensures @junior-dev has access to semantic search, file operations, and knowledge persistence from the start.
+Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning investigation and implementation work. This ensures @junior-dev reasons through its approach before acting and has access to semantic search, file operations, and knowledge persistence from the start.
 
 ## Examples
 

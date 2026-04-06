@@ -23,12 +23,13 @@ State the goal clearly and completely — what needs to be accomplished. Define 
 
 Include explicit skill-loading instructions in your dispatch prompt so @autonomous-agent loads necessary skills before starting work. Add these instructions near the top of the dispatch prompt:
 
+- **Before reasoning through execution strategy:** Include "Load the sequential-thinking skill and use it to reason through your execution strategy, what the plan requires, and how to sequence the work before starting."
 - **Before making file edits:** Include "Load the file-operations skill for reading and editing files."
 - **Before searching code:** Include "Load the grepai skill for semantic code search and dependency tracing."
 - **Before running shell commands:** Include "Load the shell-operations skill for running commands, tests, and builds."
 - **Before storing progress:** Include "Load the qdrant-notes skill for persisting progress notes and findings to the plan session collection."
 
-Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning work. This ensures @autonomous-agent has access to all necessary tools from the start, whether the task involves code investigation, implementation, shell operations, or knowledge persistence.
+Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning work. This ensures @autonomous-agent reasons through its execution strategy before acting and has access to all necessary tools from the start, whether the task involves code investigation, implementation, shell operations, or knowledge persistence.
 
 ## Examples
 
