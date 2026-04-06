@@ -19,6 +19,8 @@ Call the task tool with subagent_type set to "context-scout", a short descriptio
 
 State the goal and describe what areas to explore in terms of concepts, not file paths. When working within a plan session, include the plan name (the Qdrant collection name) in the dispatch prompt. Instruct @context-scout to use qdrant_qdrant-find to retrieve accumulated session knowledge from that collection before starting, and to store new findings to the same collection as it discovers them. Ask for prose findings with an uncertainties section. Let @context-scout choose appropriate tools based on the goal rather than prescribing search queries or investigative methods. Specify off-limits areas if there are specific domains the scout should not investigate.
 
+Explicitly request that the scout surface what it could not determine — areas that were investigated but remain ambiguous, questions the scout raised that it could not answer, and anything a deeper investigation should follow up on. This surfacing of unknowns is as valuable as the findings themselves.
+
 ## Skill-Loading Instructions for @context-scout
 
 Include explicit skill-loading instructions in your dispatch prompt so @context-scout loads necessary skills before starting work. Add these instructions near the top of the dispatch prompt:
@@ -30,7 +32,7 @@ Skill-loading instructions should appear early in the dispatch prompt so the sub
 
 ## Examples
 
-**Good:** "Load the grepai skill for semantic code search. Load the qdrant-notes skill for persisting findings. Goal: understand how the system handles user authentication. Explore what exists, how parts relate, and what constraints matter. Before starting, retrieve any previous findings on this topic from Qdrant collection 'rebuild-files-from-spec' using qdrant_qdrant-find. Store new findings to the same collection. Report prose findings with uncertainties section."
+**Good:** "Load the grepai skill for semantic code search. Load the qdrant-notes skill for persisting findings. Goal: understand how the system handles user authentication. Explore what exists, how parts relate, and what constraints matter. Before starting, retrieve any previous findings on this topic from Qdrant collection 'rebuild-files-from-spec' using qdrant_qdrant-find. Store new findings to the same collection. Report prose findings — what you found, what remains unclear or ambiguous, and what a deeper investigation should follow up on."
 
 **Bad — missing Qdrant instruction:** "Goal: explore the authentication system." Does not tell scout to retrieve previous findings or where to store new ones. When in a plan session, include the plan name and Qdrant instructions in the dispatch prompt.
 
@@ -74,7 +76,7 @@ Before dispatching @context-scout, verify your prompt includes:
 - ✓ Plan name and Qdrant collection name
 - ✓ Instructions to retrieve prior findings from the collection
 - ✓ Instructions to store new findings to the collection
-- ✓ Request for prose findings with uncertainties section
+- ✓ Request for prose findings — what was found, what remains unclear, what to follow up on
 - ✓ Any off-limits areas that should not be explored
 
 ## Anti-pattern: Confusing Scouts with Investigation Tasks

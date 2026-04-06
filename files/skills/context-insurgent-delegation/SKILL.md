@@ -19,6 +19,8 @@ Call the task tool with subagent_type set to "context-insurgent", a short descri
 
 Name the specific area or question to investigate with precision. Describe what you need to understand — relationships, logic flow, root causes, constraints that matter. When working within a plan session, include the plan name (the Qdrant collection name) in the dispatch prompt. Instruct @context-insurgent to use qdrant_qdrant-find to retrieve accumulated session knowledge from that collection before starting, and to store new findings to the same collection as it discovers them. Ask for prose findings with specific supporting evidence and an uncertainties section. Let @context-insurgent choose which files to read and which tools to use based on the investigation goal rather than prescribing specific methods. Provide enough context that @context-insurgent understands why this question matters and what decisions depend on the answer.
 
+Explicitly require the insurgent to report what it examined but could not fully verify — partial traces, ambiguous constraints, code paths that were not fully resolvable. These surfaced unknowns are critical input for the planner. An insurgent that only reports what it confirmed is hiding the most important information.
+
 ## Skill-Loading Instructions for @context-insurgent
 
 Include explicit skill-loading instructions in your dispatch prompt so @context-insurgent loads necessary skills before starting work. Add these instructions near the top of the dispatch prompt:
@@ -30,7 +32,7 @@ Skill-loading instructions should appear early in the dispatch prompt so the sub
 
 ## Examples
 
-**Good:** "Load the grepai skill for semantic code search and tracing. Load the qdrant-notes skill for persisting findings. Goal: understand how token validation works. Trace the flow from request entry through validation and identify all constraints. Before starting, retrieve previous findings on token validation from Qdrant collection 'rebuild-files-from-spec' using qdrant_qdrant-find. Store new findings to the same collection. Report prose findings with code evidence and uncertainties section."
+**Good:** "Load the grepai skill for semantic code search and tracing. Load the qdrant-notes skill for persisting findings. Goal: understand how token validation works. Trace the flow from request entry through validation and identify all constraints. Before starting, retrieve previous findings on token validation from Qdrant collection 'rebuild-files-from-spec' using qdrant_qdrant-find. Store new findings to the same collection. Report prose findings with specific code evidence — what you confirmed, what you traced partially, and what you examined but could not fully verify."
 
 **Bad — missing Qdrant instruction:** "Goal: investigate token validation." Does not tell insurgent to retrieve or store findings. When in a plan session, include the plan name and Qdrant instructions in the dispatch prompt.
 
@@ -74,4 +76,4 @@ Before dispatching @context-insurgent, verify your prompt includes:
 - ✓ Plan name and Qdrant collection name
 - ✓ Instructions to retrieve prior findings from the collection
 - ✓ Instructions to store new findings to the collection
-- ✓ Request for prose findings with code evidence and uncertainties section
+- ✓ Request for prose findings with code evidence — what was confirmed, what was partially traced, what could not be fully verified
