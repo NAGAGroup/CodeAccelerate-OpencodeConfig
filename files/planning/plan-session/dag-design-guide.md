@@ -1,4 +1,3 @@
-```markdown
 # DAG Design Guide
 
 Teaches @dag-designer how to compose execution DAGs. You design work structure — component types, node names, and parent-child relationships. You do not write prompts, configure enforcement sequences, or delegate to subagents. Selecting a component assigns its prompt and enforcement automatically.
@@ -40,4 +39,3 @@ When deleting nodes immediately run `show_compact_dag` and `show_dag` to reason 
 - Run `validate_dag` when the DAG is complete
 - You must call show_compact_dag frequently to visualize the plan as you build
 ```
-
