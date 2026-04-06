@@ -73,8 +73,8 @@ export function dagToMermaidCompactV3(metadata: DagMetadataV3, nodes: DagNodeV3[
       cur = nextId;
     }
 
-    // The group label is the chain of IDs joined by →
-    const label = chain.join(' → ');
+    // The group label is the chain of IDs joined vertically with <br/>
+    const label = chain.join('<br/>');
     const groupId = chain[0]; // representative node ID for edges
     groups.push({ ids: chain, label });
 

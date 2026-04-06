@@ -110058,7 +110058,7 @@ function dagToMermaidCompactV3(metadata, nodes) {
       visited.add(nextId);
       cur = nextId;
     }
-    const label = chain.join(" → ");
+    const label = chain.join("<br/>");
     const groupId = chain[0];
     groups.push({ ids: chain, label });
     const lastNode = nodeMap[chain[chain.length - 1]];
