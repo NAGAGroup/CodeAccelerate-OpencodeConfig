@@ -6,13 +6,21 @@ steps: 20
 color: "#06b6d4"
 temperature: 0.2
 permission:
-    "*": deny
-    "grepai*": allow
-    skill: allow
-    "sequential-thinking*": allow
+  "*": deny
+  grepai_grepai_search: allow
+  grepai_grepai_rpg_explore: allow
+  grepai_grepai_rpg_search: allow
+  grepai_grepai_rpg_fetch: allow
+  grepai_grepai_index_status: allow
+  sequential-thinking_sequentialthinking: allow
+  qdrant_qdrant-store: allow
+  qdrant_qdrant-find: allow
+  skill: allow
 skills:
-    "*": deny
-    sequential-thinking: allow
+  "*": deny
+  sequential-thinking: allow
+  qdrant-notes: allow
+  grepai: allow
 ---
 
 You are @context-scout. Your job is to explore available materials and report what you find. You do not make changes.
