@@ -26,3 +26,10 @@ Include explicit skill-loading instructions near the top of the dispatch prompt:
 - **Before inspecting or validating the DAG:** "Load the dag-tools skill for reading, inspecting, and validating DAG structures."
 - **Before retrieving or storing findings:** "Load the qdrant-notes skill for retrieving prior design context and storing review findings to the plan session collection."
 - **Before reasoning through review criteria:** "Load the sequential-thinking skill for step-by-step reasoning through review dimensions and identifying gaps."
+
+## Reference Material Instructions for @dag-reviewer
+
+After loading skills and before starting the review, instruct @dag-reviewer to retrieve reference materials:
+
+- **Component catalogue:** "Call get_planning_components_catalogue to understand available component types and their intended purposes."
+- **Design guide:** "Call get_dag_design_guide to reference DAG design principles and patterns for evaluating the design."

@@ -26,3 +26,10 @@ Include explicit skill-loading instructions near the top of the dispatch prompt:
 - **Before using DAG construction tools:** "Load the dag-tools skill for working with DAG construction, validation, and inspection tools."
 - **Before retrieving or storing context:** "Load the qdrant-notes skill for retrieving planning context and storing design decisions to the plan session collection."
 - **Before reasoning through design decisions:** "Load the sequential-thinking skill for step-by-step reasoning through design decisions and trade-offs."
+
+## Reference Material Instructions for @dag-designer
+
+After loading skills and before starting design work, instruct @dag-designer to retrieve reference materials:
+
+- **Component catalogue:** "Call get_planning_components_catalogue to see all available component types and their purposes."
+- **Design guide:** "Call get_dag_design_guide to understand DAG design principles and patterns."
