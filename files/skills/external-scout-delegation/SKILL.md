@@ -1,3 +1,8 @@
+---
+name: external-scout-delegation
+description: Teaches how to dispatch @external-scout for external research on public information and documentation.
+---
+
 # Delegating to @external-scout
 
 This skill teaches how to dispatch @external-scout for external research on public information. Load it before writing a dispatch prompt to understand what @external-scout can do and what kind of research questions work well.

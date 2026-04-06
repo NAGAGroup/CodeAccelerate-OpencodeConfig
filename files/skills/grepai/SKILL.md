@@ -1,3 +1,8 @@
+---
+name: grepai
+description: Teaches how to use GrepAI semantic search and code intelligence tools for code investigation and dependency tracing.
+---
+
 # GrepAI Semantic Search and Code Intelligence
 
 This skill teaches how to use GrepAI semantic search and code intelligence tools effectively. Load it when you need to investigate code, locate files, understand dependencies, or trace function calls through the codebase.

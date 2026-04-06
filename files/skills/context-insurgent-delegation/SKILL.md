@@ -1,3 +1,8 @@
+---
+name: context-insurgent-delegation
+description: Teaches how to dispatch @context-insurgent for deep, narrow analysis of specific code mechanisms and logic flows.
+---
+
 # Delegating to @context-insurgent
 
 This skill teaches how to dispatch @context-insurgent for narrow-deep analysis of specific code mechanisms. Load it before writing a dispatch prompt to understand what @context-insurgent can do and what kind of questions work well for this agent.

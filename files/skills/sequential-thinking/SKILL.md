@@ -1,3 +1,8 @@
+---
+name: sequential-thinking
+description: Teaches how to use sequential thinking for step-by-step reasoning about complex problems and decisions.
+---
+
 # Sequential Thinking
 
 This skill teaches how to use the sequential-thinking_sequentialthinking tool for step-by-step reasoning. Load it whenever you need to work through a complex problem, reason about decisions, or analyze multiple factors before acting. Sequential thinking breaks reasoning into discrete steps where each step advances your understanding.

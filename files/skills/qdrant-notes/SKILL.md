@@ -1,3 +1,8 @@
+---
+name: qdrant-notes
+description: Teaches how to store and retrieve session knowledge using Qdrant for cross-agent knowledge sharing.
+---
+
 # Qdrant Notes
 
 This skill teaches how to store and retrieve session knowledge using the qdrant_qdrant-store and qdrant_qdrant-find tools. Load it when your dispatch prompt mentions Qdrant or when you need to access accumulated session knowledge. Qdrant stores structured knowledge that persists across the entire session and can be accessed by any agent.

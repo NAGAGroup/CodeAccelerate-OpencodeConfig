@@ -1,3 +1,8 @@
+---
+name: asking-questions
+description: Teaches how to ask users for information, decisions, or approval when blocked on work decisions.
+---
+
 # Asking Questions
 
 This skill teaches how to use the question tool to ask users for information, decisions, or approval. Load it whenever you need to gather input from the user that blocks your work.

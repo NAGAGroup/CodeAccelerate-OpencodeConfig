@@ -1,3 +1,8 @@
+---
+name: autonomous-agent-delegation
+description: Teaches how to dispatch @autonomous-agent for fully autonomous execution of explicitly approved work.
+---
+
 # Delegating to @autonomous-agent
 
 This skill teaches how to dispatch @autonomous-agent for fully autonomous execution on explicitly approved work. Load it only when the user has explicitly approved autonomous work in the current session.

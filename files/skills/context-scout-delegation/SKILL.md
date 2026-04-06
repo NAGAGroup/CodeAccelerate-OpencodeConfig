@@ -1,3 +1,8 @@
+---
+name: context-scout-delegation
+description: Teaches how to dispatch @context-scout for wide-shallow project exploration and landscape overviews.
+---
+
 # Delegating to @context-scout
 
 This skill teaches how to dispatch @context-scout for wide-shallow project exploration. Load it before writing a dispatch prompt to understand what @context-scout can do and what kind of goals work well for this agent.

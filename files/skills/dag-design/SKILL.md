@@ -1,3 +1,8 @@
+---
+name: dag-design
+description: Teaches how to dispatch @dag-designer to build execution DAGs from the component library.
+---
+
 # Delegating to @dag-designer
 
 This skill teaches how to dispatch @dag-designer to build execution DAGs from the component library. Load it before writing a dispatch prompt to understand what @dag-designer needs to create a complete plan.

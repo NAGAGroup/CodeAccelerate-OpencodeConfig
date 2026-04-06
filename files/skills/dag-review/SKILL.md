@@ -1,3 +1,8 @@
+---
+name: dag-review
+description: Teaches how to dispatch @dag-reviewer to review execution DAGs against design criteria and produce structured critiques.
+---
+
 # Delegating to @dag-reviewer
 
 This skill teaches how to dispatch @dag-reviewer to review execution DAGs against design criteria. Load it before writing a dispatch prompt to understand what @dag-reviewer needs to produce a thorough critique.

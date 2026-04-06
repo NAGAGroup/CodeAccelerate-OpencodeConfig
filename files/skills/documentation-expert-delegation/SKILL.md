@@ -1,3 +1,8 @@
+---
+name: documentation-expert-delegation
+description: Teaches how to dispatch @documentation-expert for writing and editing documentation files.
+---
+
 # Delegating to @documentation-expert
 
 This skill teaches how to dispatch @documentation-expert for writing and editing documentation. Load it before writing a dispatch prompt to understand what @documentation-expert can do and how to frame documentation tasks.

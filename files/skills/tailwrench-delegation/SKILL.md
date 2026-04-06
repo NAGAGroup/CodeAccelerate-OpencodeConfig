@@ -1,3 +1,8 @@
+---
+name: tailwrench-delegation
+description: Teaches how to dispatch @tailwrench for shell operations, verification checks, and git commands.
+---
+
 # Delegating to @tailwrench
 
 This skill teaches how to dispatch @tailwrench for shell operations, verification, and git commands. Load it before writing a dispatch prompt to understand what @tailwrench can do and how to write clear, specific instructions.

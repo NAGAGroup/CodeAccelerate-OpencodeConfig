@@ -1,3 +1,8 @@
+---
+name: following-plans
+description: Teaches how to execute DAG step sequences exactly as specified, handling enforcement errors and context recovery.
+---
+
 # Following Plans
 
 This skill teaches how to execute DAG step sequences exactly as specified. Load it when entering DAG mode or when the enforcement engine returns errors. It shows how to read enforcement errors, call required tools in sequence, use next_step to advance, and recover from context loss.

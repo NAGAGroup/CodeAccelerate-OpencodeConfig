@@ -1,3 +1,8 @@
+---
+name: juniordev-delegation
+description: Teaches how to dispatch @junior-dev for goal-oriented code implementation with investigation-driven approach.
+---
+
 # Delegating to @junior-dev
 
 This skill teaches how to dispatch @junior-dev for goal-oriented implementation. Load it before writing a dispatch prompt to understand what @junior-dev can do and how to frame the goal.
