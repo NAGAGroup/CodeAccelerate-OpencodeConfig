@@ -81,7 +81,7 @@ Later nodes query this accumulated context. A verification node can retrieve wha
 
 ---
 
-## Branching
+## Branching and Convergence
 
 At `decision-gate` and `user-decision-gate` nodes, the agent must choose which child node to advance to. The `next` parameter to `next_step` is the child node's ID as it appears in `plan.jsonl`.
 
@@ -95,6 +95,21 @@ Call next_step with the next parameter. Valid options: [<child_id_1>, <child_id_
 ```
 
 The `following-plans` skill teaches the agent to read these error messages and call `next_step` again with the correct parameter.
+
+### Multiple Parents (Convergence)
+
+Nodes can have multiple parents. When multiple branches point to the same node, that node is a convergence point. The node executes when any parent path reaches it — whichever branch was taken, the convergent node is the next step.
+
+**Example:** After a decision gate, both success and retry paths might converge to a shared commit node:
+```
+verify → decision-gate
+  ├─ (pass) → commit-changes
+  └─ (fail) → fix-work → verify-fix → commit-changes
+```
+
+The `commit-changes` node has two parents. It executes once, when either path reaches it. The execution state tracks which path was taken (via the decision log), but the convergent node itself doesn't distinguish between parents — it performs the same work regardless of which path arrived.
+
+Convergence reduces node duplication and makes DAG structure clearer. Use it when different paths genuinely need the same next step.
 
 ---
 

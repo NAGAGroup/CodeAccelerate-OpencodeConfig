@@ -1,151 +1,163 @@
 # DAG Design Guide
 
-This guide is the shared reference for two agents: @dag-designer (who builds DAGs) and @dag-reviewer (who evaluates them). Both read this guide before starting work. The guide teaches design principles that are also review criteria.
+For @dag-designer and @dag-reviewer. Design principles are review criteria.
 
-## What execution DAGs are
+## Core Concept
 
-An execution DAG is a directed acyclic graph where each node is a component type from the library. You design the **shape of the work, not the content**. The executing agent navigates the DAG to accomplish the user's goal.
+You design **work structure, not work content**. Choose component types, node count, and connections. The executing agent decides what to do at each node by reading Qdrant notes.
 
-Think of the DAG as **capacity, not prescription**. You provide enough structure for the work to succeed — the number of nodes, their types, their order, and how they connect. The executing agent decides what to actually do at each node. The agent may use nodes differently than you imagined, and that is fine.
+**You control:** component types, node count, connections, branch conditions, rationale (stored to Qdrant)  
+**You don't control:** what agent does at each node, component prompts (static templates)
 
-## What you control and what you don't
+**Common mistake:** Writing prescriptive rationale ("modify config file X"). Wrong. Write intent and context, not steps.
 
-**You control:**
-- Which component types appear in the DAG
-- How many nodes of each type
-- How nodes connect (precedence and branching)
-- Which branches exist and their conditions
-- The rationale you store to Qdrant explaining structural decisions
+---
 
-**You do not control:**
-- What the agent actually does at each node
-- Component prompts are static templates, identical for all nodes of the same type
-- You cannot customize prompts per node — the agent reads planning notes from Qdrant to determine what work is needed at each step
+## Core Rules
 
-This is the most common design mistake. Designers try to "embed" task specifics into the node structure by writing prescriptive rationale. That does not work. The agent chooses what to implement; the DAG provides capacity and ordering.
+1. **Investigate before work.** Place `project-search-and-analysis` before `work-item`. Agent needs current state before changing anything.
 
-## Design principles
+2. **Verify after each change.** Pattern: `work-item → verify`. Don't batch: `work → work → work → verify` makes failures hard to isolate.
 
-These principles are both design guidance and review criteria. Each principle explains why it matters.
+3. **Commit after verified changes.** Pattern: `verify → commit`. Creates stable savepoints.
 
-**Investigation before implementation.** The agent needs to understand the current state before it changes anything. Place project-search-and-analysis nodes before work-item nodes. Investigation nodes establish what exists, what is broken, and what constraints apply.
+4. **Compress at phase boundaries.** Pattern: `write-notes → compress → kickoff-refresher`. Never skip `kickoff-refresher` after `compress` — agent needs to reload skills and context.
 
-**Verify after every significant change.** Every work-item node should be followed by a verify node. Verification batching (multiple work-items before any verify) makes failures hard to isolate. Incremental verification pinpoints which change broke what.
+5. **Branch for real alternatives.** Use `decision-gate` when path depends on discoveries. Use `user-decision-gate` when user chooses.
 
-**Commit at stable checkpoints.** After a verified change is a natural commit point. Commits create savepoints the team can return to. Use commit nodes at stable save points, usually after verification succeeds.
+6. **Converge when paths rejoin.** Multiple branches can point to the same node (multiple parents). Use when all paths need the same next step.
 
-**Compression at context boundaries.** After phases that produced substantial notes, place a compress → kickoff-refresher pair. The pattern is: write-notes → compress → kickoff-refresher. kickoff-refresher must immediately follow compress — it reloads skills and retrieves Qdrant context so the agent re-establishes working understanding. Compression without kickoff-refresher leaves the agent disoriented.
+7. **Fail branches end in plan-fail.** Never end failure paths in `plan-success`. That signals false completion.
 
-**Branching for genuine alternatives.** Use decision-gate when the right path depends on what the agent discovers. Use user-decision-gate when the user must choose. Each branch must have enough nodes to handle its scenario. Do not create branches that share nodes — each branch should be a complete path.
+8. **More nodes is safer.** Extra capacity costs time but prevents replanning. When unsure, include it.
 
-**plan-fail as the default terminal for unresolved paths.** If a branch represents failure, end it in plan-fail. Never end a failure branch in plan-success. plan-success signals successful completion; plan-fail signals work remains or the approach failed.
+---
 
-**Err toward more nodes.** Extra capacity costs time but does not cause harm. Missing capacity causes failures that require replanning. When unsure whether a step is needed, include it.
+## Convergence (Multiple Parents)
 
-## Component selection guidance
+Nodes can have multiple parents. Use when different paths need the same next step.
 
-Use CATALOGUE.md for the full component list. This section addresses non-obvious decisions:
+**When to converge:**
+- After decision branches that all need the same verification
+- After parallel investigations that feed into one analysis
+- After retry loops that rejoin the main path
 
-**project-search-and-analysis vs. sequential-thinking:** Use project-search-and-analysis when the agent needs to understand the current state of the codebase (existing code, structure, tests, configuration). Use sequential-thinking for a pure reasoning step that requires no external input (analyzing notes, planning an approach, reasoning through options).
-
-**write-notes vs. decision-gate for capturing an outcome:** write-notes stores findings to Qdrant so later nodes can retrieve them. decision-gate chooses a branch based on what was discovered. Use write-notes to persist findings; use decision-gate when a branch choice depends on what was learned.
-
-**user-discussion vs. user-decision-gate:** user-decision-gate is for binary or multi-choice branching decisions where the user selects a path. user-discussion is for open-ended conversation that does not drive a branch — the agent continues to the next node afterward.
-
-**autonomous-work:** Only include if the user explicitly approved autonomous work during planning. autonomous-work dispatches an agent with no tool restrictions or step limits. It bypasses all safety constraints the framework provides. Use it only with explicit user consent.
-
-## Node IDs and naming
-
-Good node IDs are descriptive of purpose: work-fix-auth-validation, verify-auth-tokens, investigate-logging-system. Bad IDs are generic: node-1, step-3, work-item-2.
-
-Node IDs appear in decision-gate and user-decision-gate nodes where the agent routes to the next step. Meaningful IDs tell the executor what it is routing to. Descriptive IDs also make DAG diagrams readable and help the reviewer understand intent.
-
-## Structural patterns
-
-These are common, correct shapes for different scenarios.
-
-**Simple linear task:**
+**Example — branches converge to shared commit:**
 ```
-search → work-item → verify → commit → plan-success
+verify → decision-gate
+  ├─ (pass) → commit-changes
+  └─ (fail) → fix-work → verify-fix → commit-changes
+                                          ↓
+                                     write-notes → plan-success
 ```
 
-**Task with research dependency:**
+Both paths point to `commit-changes`. It has 2 parents. Executes when either path reaches it.
+
+**When NOT to converge:**
+- Branches need different next steps (keep separate)
+- Context from different paths conflicts (keep separate)
+- Branches represent fundamentally different outcomes (use separate terminals)
+
+---
+
+## Component Selection
+
+**project-search-and-analysis:** Understand codebase state (files, structure, tests)  
+**sequential-thinking:** Pure reasoning (no external input needed)  
+**write-notes:** Store findings to Qdrant for later retrieval  
+**decision-gate:** Choose branch based on discoveries  
+**user-decision-gate:** User chooses branch  
+**user-discussion:** Open conversation (no branching)  
+**autonomous-work:** Only with explicit user approval. No safety constraints.
+
+---
+
+## Node IDs
+
+**Every node must have a unique ID.** No duplicates allowed, even for the same component type.
+
+Good: `work-fix-auth`, `verify-tokens`, `investigate-logging`, `work-retry-auth`, `verify-retry`  
+Bad: `node-1`, `step-3`, `work-item-2`, reusing `work-item` or `verify` multiple times
+
+When using the same component type multiple times (like retry loops), add suffixes: `verify-initial`, `verify-retry`, `verify-final`.
+
+Descriptive unique IDs help executor understand routing and make diagrams readable.
+
+---
+
+## Common Patterns
+
+Node IDs shown are descriptive examples. Component type is separate (not shown in ASCII).
+
+**Simple linear:**
 ```
-search → research → work-item → verify → commit → plan-success
+investigate-auth → fix-validation → verify-fix → commit-auth → done
 ```
 
-**Multi-step implementation:**
+**With research:**
 ```
-search → work-item → verify → work-item → verify → commit → plan-success
-```
-
-**Branching on verification outcome:**
-```
-search → work-item → verify → decision-gate
-  ├─ (pass) → commit → plan-success
-  └─ (fail) → work-item → verify → decision-gate
-       ├─ (pass) → commit → plan-success
-       └─ (fail) → plan-fail
+investigate-api → research-patterns → implement-handler → verify-handler → commit-api → done
 ```
 
-**Complex task with compression:**
+**Multi-step:**
 ```
-search → search → write-notes → compress → kickoff-refresher → 
-work-item → verify → work-item → verify → commit → 
-write-notes → compress → kickoff-refresher → 
-work-item → verify → commit → plan-success
+investigate-db → add-migration → verify-migration → update-models → verify-models → commit-db → done
 ```
 
-## Writing the rationale — stored to Qdrant
+**Branch with retry:**
+```
+investigate-auth → implement-tokens → verify-tokens → check-tests
+  ├─ (pass) → commit-tokens → done
+  └─ (fail) → fix-token-issues → verify-token-fix → recheck-tests
+       ├─ (pass) → commit-tokens → done
+       └─ (fail) → fail-tokens
+```
+Every node has unique descriptive ID. `verify-tokens` and `verify-token-fix` are different nodes.
 
-The rationale IS the Qdrant notes. It is not a separate document. The designer stores notes about structural decisions to the same Qdrant collection used throughout the planning session. The executing agent retrieves these notes at the execution-kickoff node.
+**Convergent branches (multiple parents):**
+```
+investigate-config → choose-approach
+  ├─ (json) → implement-json-parser → verify-json → finalize-config
+  └─ (yaml) → implement-yaml-parser → verify-yaml → finalize-config
+                                                         ↓
+                                                    commit-config → done
+```
+Both `verify-json` and `verify-yaml` point to `finalize-config`. One node, two parents. This is convergence.
 
-For each significant structural decision, store a note explaining:
-- Why this component type at this position
-- What the executor is expected to use this node for
+**With compression:**
+```
+investigate-large-refactor → analyze-dependencies → store-findings → compress-context → refresh-context → 
+implement-phase-1 → verify-phase-1 → commit-phase-1 → done
+```
+
+---
+
+## Rationale Storage
+
+Store notes to Qdrant explaining structural decisions:
+- Why this component at this position
+- What executor should use this node for
 - What failure scenarios the structure handles
 - What assumptions the structure makes
 
-The executing agent reads the rationale to understand the designer's intentions without being bound by them. The rationale enables the executing agent to make informed decisions when the unexpected happens.
+**For branching nodes:** Store note by exact node ID explaining each branch and when to take it.
 
-**Special handling for branching nodes:** decision-gate and user-decision-gate nodes require explicit rationale notes. Store a note for each conditional node by its exact node ID, explaining what each branch means and when it should be taken. The executing agent retrieves these notes at decision points to make informed branching choices.
+Executor reads rationale to understand intent, not to follow prescriptive steps.
 
-## Anti-patterns
+---
 
-Each anti-pattern is named, shown, and explained. They fail in specific ways.
+## Anti-Patterns
 
-**Investigation-free work**
+**Investigation-free work:** `work-item` without prior `project-search-and-analysis`. Agent lacks context.
 
-What it looks like: work-item as the first or second node, with no project-search-and-analysis preceding it.
+**Verification batching:** `work → work → work → verify`. Can't isolate which change broke.
 
-Why it fails: The agent arrives at the work node without understanding the current state of the codebase, existing structure, or constraints. It will either make unfounded assumptions or spend the work node doing what the investigation node should have done, leading to ineffective or broken changes.
+**Compress without kickoff-refresher:** `compress → work-item`. Agent loses skills and context.
 
-**Verification batching**
+**Prescriptive rationale:** "Modify config file X". Agent decides implementation, not DAG.
 
-What it looks like: work-item → work-item → work-item → verify
+**Failure → plan-success:** Signals false completion. Use `plan-fail` for failure terminals.
 
-Why it fails: When verification finds a problem, it is unclear which work-item caused it. Was it the first change, the second, or an interaction between them? Incremental verification — one work-item followed by one verify — isolates failures to specific changes and makes debugging and rollback possible.
+**autonomous-work by default:** Only with explicit user approval. Bypasses all safety constraints.
 
-**Compress without kickoff-refresher**
-
-What it looks like: compress → work-item (or any node that is not kickoff-refresher)
-
-Why it fails: After compression the agent has lost its methodology skills and working context. The compress node reduces token usage, but it strips the agent's established context. kickoff-refresher restores both the methodology and the Qdrant context. Skipping kickoff-refresher produces disoriented execution — the agent must re-establish understanding instead of proceeding with work.
-
-**Per-node prescription in rationale**
-
-What it looks like: Rationale note says "At the work-item node, modify the config file to add setting X"
-
-Why it fails: The agent decides what to implement, not the DAG. Prescriptive rationale notes create expectations that conflict with the agent's judgment when conditions are different from what the designer assumed. If the config file is missing, locked, or requires a different change, the prescriptive note creates confusion. Write rationale that explains intent and context, not implementation steps.
-
-**Ending failure branches in plan-success**
-
-What it looks like: decision-gate → (fail path) → plan-success
-
-Why it fails: plan-success signals successful completion to the user. A failure path that terminates in plan-success gives false confirmation — the user believes the goal was met when it was not. Use plan-fail for failure terminals so the user and the reviewing agent know the approach did not succeed.
-
-**autonomous-work without user approval**
-
-What it looks like: autonomous-work included as a default fallback or convenience escape hatch when the design is unsure
-
-Why it fails: autonomous-work dispatches an agent with no tool restrictions or step limits. It bypasses every safety constraint the framework provides — no step validation, no context limits, no review. Include autonomous-work only when the user explicitly requested and approved autonomous execution during planning. Treat it as an exception, never as a default.
+**Premature convergence:** Converging before branches are truly ready for shared next step. Keep separate if context differs.

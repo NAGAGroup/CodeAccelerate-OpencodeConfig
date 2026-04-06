@@ -123,6 +123,55 @@ export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void
   if (!ids.has(metadata.entry_node_id)) {
     throw new Error(`Entry node "${metadata.entry_node_id}" not found in DAG nodes`);
   }
+  
+  // Check for unreachable nodes (nodes with no path from entry)
+  const reachable = new Set<string>();
+  const queue = [metadata.entry_node_id];
+  const nodeMap: Record<string, DagNodeV3> = {};
+  for (const node of nodes) nodeMap[node.id] = node;
+  
+  while (queue.length > 0) {
+    const id = queue.shift()!;
+    if (reachable.has(id)) continue;
+    reachable.add(id);
+    const node = nodeMap[id];
+    if (node?.children) {
+      for (const childId of node.children) {
+        if (!reachable.has(childId)) queue.push(childId);
+      }
+    }
+  }
+  
+  const unreachable = nodes.filter(n => !reachable.has(n.id)).map(n => n.id);
+  if (unreachable.length > 0) {
+    throw new Error(`Unreachable nodes (no path from entry): ${unreachable.join(', ')}`);
+  }
+  
+  // Check for cycles using DFS with recursion stack
+  const visited = new Set<string>();
+  const recStack = new Set<string>();
+  
+  function hasCycle(nodeId: string): boolean {
+    if (recStack.has(nodeId)) return true; // cycle detected
+    if (visited.has(nodeId)) return false; // already checked this path
+    
+    visited.add(nodeId);
+    recStack.add(nodeId);
+    
+    const node = nodeMap[nodeId];
+    if (node?.children) {
+      for (const childId of node.children) {
+        if (hasCycle(childId)) return true;
+      }
+    }
+    
+    recStack.delete(nodeId);
+    return false;
+  }
+  
+  if (hasCycle(metadata.entry_node_id)) {
+    throw new Error('DAG contains a cycle (circular dependency detected)');
+  }
 }
 
 export function flattenTreeV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): Record<string, FlatNode> {

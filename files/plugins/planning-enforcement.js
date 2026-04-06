@@ -110087,6 +110087,50 @@ function validateDagV3(metadata, nodes) {
   if (!ids.has(metadata.entry_node_id)) {
     throw new Error(`Entry node "${metadata.entry_node_id}" not found in DAG nodes`);
   }
+  const reachable = new Set;
+  const queue = [metadata.entry_node_id];
+  const nodeMap = {};
+  for (const node of nodes)
+    nodeMap[node.id] = node;
+  while (queue.length > 0) {
+    const id = queue.shift();
+    if (reachable.has(id))
+      continue;
+    reachable.add(id);
+    const node = nodeMap[id];
+    if (node?.children) {
+      for (const childId of node.children) {
+        if (!reachable.has(childId))
+          queue.push(childId);
+      }
+    }
+  }
+  const unreachable = nodes.filter((n) => !reachable.has(n.id)).map((n) => n.id);
+  if (unreachable.length > 0) {
+    throw new Error(`Unreachable nodes (no path from entry): ${unreachable.join(", ")}`);
+  }
+  const visited = new Set;
+  const recStack = new Set;
+  function hasCycle(nodeId) {
+    if (recStack.has(nodeId))
+      return true;
+    if (visited.has(nodeId))
+      return false;
+    visited.add(nodeId);
+    recStack.add(nodeId);
+    const node = nodeMap[nodeId];
+    if (node?.children) {
+      for (const childId of node.children) {
+        if (hasCycle(childId))
+          return true;
+      }
+    }
+    recStack.delete(nodeId);
+    return false;
+  }
+  if (hasCycle(metadata.entry_node_id)) {
+    throw new Error("DAG contains a cycle (circular dependency detected)");
+  }
 }
 function flattenTreeV3(metadata, nodes) {
   const map2 = {};
