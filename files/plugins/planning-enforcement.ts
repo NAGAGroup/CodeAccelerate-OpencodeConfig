@@ -1032,9 +1032,6 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         if (args.task_id !== undefined && typeof args.task_id !== "string") {
           errors.push(`  - "task_id": must be a string if provided, got ${typeof args.task_id}`);
         }
-        if (args.command !== undefined && typeof args.command !== "string") {
-          errors.push(`  - "command": must be a string if provided, got ${typeof args.command}`);
-        }
 
         if (errors.length > 0) {
           throw new Error(
@@ -1044,8 +1041,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             `  "description": "Short task label",   // 3-5 words\n` +
             `  "prompt": "Full instructions...",\n` +
             `  "subagent_type": "context-scout",    // agent type string\n` +
-            `  "task_id": "...",                    // optional: resume prior session\n` +
-            `  "command": "/slash-command"          // optional: slash command trigger\n` +
+            `  "task_id": "..."                     // optional: resume prior session\n` +
             `}`
           );
         }

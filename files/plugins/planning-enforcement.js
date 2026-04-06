@@ -111087,9 +111087,6 @@ ${errors3.join(`
         if (args.task_id !== undefined && typeof args.task_id !== "string") {
           errors3.push(`  - "task_id": must be a string if provided, got ${typeof args.task_id}`);
         }
-        if (args.command !== undefined && typeof args.command !== "string") {
-          errors3.push(`  - "command": must be a string if provided, got ${typeof args.command}`);
-        }
         if (errors3.length > 0) {
           throw new Error(`[task] Invalid arguments:
 ${errors3.join(`
@@ -111100,8 +111097,7 @@ ${errors3.join(`
 ` + `  "description": "Short task label",   // 3-5 words
 ` + `  "prompt": "Full instructions...",
 ` + `  "subagent_type": "context-scout",    // agent type string
-` + `  "task_id": "...",                    // optional: resume prior session
-` + `  "command": "/slash-command"          // optional: slash command trigger
+` + `  "task_id": "..."                     // optional: resume prior session
 ` + `}`);
         }
       }
