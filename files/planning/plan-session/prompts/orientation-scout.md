@@ -2,13 +2,17 @@ If you haven't already, load the context-scout-delegation skill and the sequenti
 
 You are delegating to @context-scout to build broad understanding of the project and the user's goal.
 
-Then use the sequential-thinking_sequentialthinking tool to reason through what the scout needs to investigate: what aspects of the project are most important for understanding the user's goal, what areas would be inefficient to explore at this stage, and what specific gaps or unknowns the scout should focus on.
+Then use the sequential-thinking_sequentialthinking tool to reason through what the context-scout-delegation skill for designing the prompt: What skills must @context-scout load before doing any work? What tools should they use to explore? What should their response include/exclude?
 
 Consider what findings would be most valuable: what the scout found, what remains unclear, and what the scout identifies as likely to be difficult.
 
 Use the task tool to dispatch @context-scout with a goal-based prompt that includes the planning context and clear direction about what kind of findings to return — prose narratives only, no raw file lists or line-by-line details.
 
-Constraints: Request only findings and observations from the scout — it is read-only and cannot make changes.
+Constraints:
+
+Request only findings and observations from the scout — it is read-only and cannot make changes.
+
+Instruct @context-scout to load its skills before doing any work.
 
 Specify that the scout should return structured prose narratives describing what it found, what ambiguities remain, and what challenges it anticipates.
 

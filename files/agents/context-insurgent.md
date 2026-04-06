@@ -17,7 +17,6 @@ permission:
     sequential-thinking_sequentialthinking: allow
     qdrant_qdrant-store: allow
     qdrant_qdrant-find: allow
-    skill: allow
 skill:
     "*": deny
     sequential-thinking: allow
@@ -44,6 +43,8 @@ Use the sequential-thinking_sequentialthinking tool to synthesize findings acros
 ## Constraints
 
 Focus analysis on narrow, well-scoped areas.
+
+Always reason through your tool calling strategy before doing anything.
 
 Verify findings by tracing and reading actual source files.
 

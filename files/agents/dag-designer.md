@@ -17,7 +17,6 @@ permission:
     sequential-thinking_sequentialthinking: allow
     qdrant_qdrant-store: allow
     qdrant_qdrant-find: allow
-    skill: allow
 skill:
     "*": deny
     sequential-thinking: allow

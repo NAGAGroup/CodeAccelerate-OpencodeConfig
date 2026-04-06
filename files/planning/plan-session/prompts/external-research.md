@@ -2,7 +2,7 @@ If you haven't already, load the external-scout-delegation skill, the asking-que
 
 You are formulating an external research plan and obtaining user approval before dispatching research outside this session.
 
-Then use the sequential-thinking_sequentialthinking tool to formulate a concrete external research plan.
+Then use the sequential-thinking_sequentialthinking tool to formulate a concrete external research plan. Think through the findings from loading the external-scout-delegation skill for designing the prompt to the subagent.
 
 You must identify specific research areas — consider what the scout found that raises questions about external requirements, what frameworks, libraries, APIs, or domain knowledge the project depends on, what assumptions are being made that external sources could verify or correct, and how to phrase queries in public, general terms that do not expose private project details.
 
@@ -16,12 +16,14 @@ If the user chooses Deny, use the task tool to dispatch @external-scout with thi
 
 If the user approves or modifies, use the task tool to dispatch @external-scout with the approved research plan and clear expectations about what kind of findings to return.
 
-Constraints: Formulating a research plan is not optional — always produce one before presenting the question.
+Constraints:
+
+Formulating a research plan is not optional — always produce one before presenting the question.
+
+Always instruct the subagent to load its required skills.
 
 Present the exact research plan to the user as plain prose before the approval question.
 
 Use the question tool only for the approval gate.
 
 Only the user can decide to skip research by choosing Deny — you may not skip it unilaterally.
-
-Request only findings and observations from the scout — it is read-only.

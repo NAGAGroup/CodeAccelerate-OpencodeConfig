@@ -11,6 +11,7 @@ Use GrepAI to find code by describing what it does in natural language.
 
 **grepai_grepai_search** - Find code by description
 - `query`: What the code does (e.g., "user authentication", "database queries")
+- `path`: Search within a specific directory or file (optional)
 - `limit`: Max results (default 10)
 - `compact`: true = no code snippets, 80% fewer tokens (use by default)
 - `format`: 'toon' = 50% fewer tokens (use for multiple searches)
@@ -29,18 +30,9 @@ Use GrepAI to find code by describing what it does in natural language.
 
 ## How to Write Queries
 
-**Good queries** describe intent:
-- "user authentication flow"
-- "database connection pooling"
-- "error handling for API requests"
-- "JWT token validation"
-
-**Bad queries** are vague or too specific:
-- "auth" (too vague)
-- "function Login" (use natural language, not code)
-- "check JWT expiration in middleware line 45" (too specific)
-
 Write queries like explaining to a person: "how does the app handle user login" not "Login function".
+
+Use the path parameter to narrow down if you know where to look, but start always start broad.
 
 ## Workflow
 

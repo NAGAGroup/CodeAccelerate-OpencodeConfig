@@ -12,7 +12,6 @@ permission:
     context7_query-docs: allow
     sequential-thinking_sequentialthinking: allow
     qdrant_qdrant-store: allow
-    skill: allow
 skill:
     "*": deny
     web-research: allow
@@ -35,6 +34,8 @@ You synthesize findings from multiple sources into clear, evidence-based reports
 ## Methodology
 
 Read the question or research goal from the dispatch prompt carefully.
+
+Always reason through your tool calling strategy before doing anything.
 
 Load required skills before doing any work: web-research for search and read tools, sequential-thinking for analysis, and qdrant-notes for storing findings.
 
