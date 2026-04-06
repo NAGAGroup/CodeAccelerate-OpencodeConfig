@@ -9,23 +9,9 @@ This skill teaches how to store and retrieve session knowledge using the qdrant_
 
 ## How to Retrieve and Store Knowledge
 
-When your dispatch prompt mentions a Qdrant collection, retrieve accumulated knowledge immediately using qdrant_qdrant-find:
+When your dispatch prompt mentions a Qdrant collection, retrieve accumulated knowledge immediately using qdrant_qdrant-find. Provide the collection_name parameter (from your dispatch prompt) and a query parameter describing what you're looking for in natural language.
 
-```
-qdrant_qdrant-find({
-  collection_name: "rebuild-files-from-spec",
-  query: "authentication token expiration handling"
-})
-```
-
-Store findings immediately after discovering them using qdrant_qdrant-store:
-
-```
-qdrant_qdrant-store({
-  collection_name: "rebuild-files-from-spec",
-  information: "Found that authentication uses JWT tokens with 24-hour expiration. Refresh tokens are implemented in auth/refresh.ts and return a new JWT."
-})
-```
+Store findings immediately after discovering them using qdrant_qdrant-store. Provide the collection_name parameter and an information parameter containing your findings written as prose with enough context to be useful standalone.
 
 ## Rules
 

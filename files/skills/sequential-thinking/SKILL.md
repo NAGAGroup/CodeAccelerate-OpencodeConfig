@@ -9,51 +9,7 @@ This skill teaches how to use the sequential-thinking_sequentialthinking tool fo
 
 ## How to Call the Tool
 
-Call sequential-thinking_sequentialthinking once per thought. Each call advances reasoning by one step. Do not combine multiple thoughts in one call.
-
-```
-sequential-thinking_sequentialthinking({
-  thought: "Your current reasoning step",
-  nextThoughtNeeded: true,
-  thoughtNumber: 1,
-  totalThoughts: 5
-})
-```
-
-For intermediate steps:
-
-```
-sequential-thinking_sequentialthinking({
-  thought: "Based on the previous step, I now know [finding]. This means [implication].",
-  nextThoughtNeeded: true,
-  thoughtNumber: 2,
-  totalThoughts: 5
-})
-```
-
-For final step:
-
-```
-sequential-thinking_sequentialthinking({
-  thought: "I have considered all factors. My conclusion is [answer].",
-  nextThoughtNeeded: false,
-  thoughtNumber: 5,
-  totalThoughts: 5
-})
-```
-
-To revise a previous thought:
-
-```
-sequential-thinking_sequentialthinking({
-  thought: "I was wrong in step 2. The correct understanding is [revised].",
-  nextThoughtNeeded: true,
-  thoughtNumber: 3,
-  totalThoughts: 6,
-  isRevision: true,
-  revisesThought: 2
-})
-```
+Call sequential-thinking_sequentialthinking once per thought. Each call advances reasoning by one step. Do not combine multiple thoughts in one call. Provide these parameters: thought (your current reasoning step), nextThoughtNeeded (true for intermediate steps, false for final step), thoughtNumber (starts at 1, increments by 1), and totalThoughts (your current estimate of total steps needed). To revise a previous thought, set isRevision to true and specify revisesThought with the thought number being reconsidered.
 
 ## Rules
 

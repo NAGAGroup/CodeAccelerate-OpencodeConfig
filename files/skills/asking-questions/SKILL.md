@@ -9,30 +9,7 @@ This skill teaches how to use the question tool to ask users for information, de
 
 ## How to Call the Tool
 
-Call the question tool with a concise question:
-
-```
-question({
-  question: "What is the specific area you want to focus on?"
-})
-```
-
-For approval gates with clear options:
-
-```
-question({
-  question: "Should we refactor existing code or build a new module?",
-  options: ["Refactor existing", "Build new module"]
-})
-```
-
-For clarifications that require quick user input:
-
-```
-question({
-  question: "What is your priority: speed of implementation or flexibility for future changes?"
-})
-```
+Call the question tool with a concise question parameter. For approval gates with clear options, include an options array. For clarifications that require quick user input, provide just the question parameter.
 
 ## Rules
 

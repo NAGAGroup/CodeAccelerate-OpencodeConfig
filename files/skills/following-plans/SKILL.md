@@ -9,26 +9,7 @@ This skill teaches how to execute DAG step sequences exactly as specified. Load 
 
 ## How to Follow the DAG
 
-When the enforcement engine blocks a tool call, read the error — it identifies which tool was expected:
-
-```
-[DAG BLOCKED] Expected sequential-thinking_sequentialthinking but you called task
-Next expected tool: sequential-thinking_sequentialthinking
-```
-
-Call the required tool immediately. When it succeeds, call next_step to determine what comes next:
-
-```
-next_step()
-```
-
-The next_step response tells you the next required tool or indicates the node is complete. If context is lost between steps, call recover_context immediately:
-
-```
-recover_context()
-```
-
-This returns your position in the DAG and the remaining steps. Resume at the indicated step and continue in order.
+When the enforcement engine blocks a tool call, read the error message — it identifies which tool was expected and should be called next. Call the required tool immediately. When it succeeds, call next_step with no parameters to determine what comes next. The next_step response tells you the next required tool or indicates the node is complete. If context is lost between steps, call recover_context with no parameters immediately. This returns your position in the DAG and the remaining steps. Resume at the indicated step and continue in order.
 
 ## Rules
 

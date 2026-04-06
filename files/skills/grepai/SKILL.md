@@ -9,39 +9,13 @@ This skill teaches how to use GrepAI semantic search and code intelligence tools
 
 ## GrepAI Tools and When to Use Them
 
-Use grepai_grepai_search for semantic code search when exploring by intent or behavior:
+Use grepai_grepai_search for semantic code search when exploring by intent or behavior. Provide a natural language query parameter and optionally a limit parameter (defaults to 10).
 
-```
-grepai_grepai_search({
-  query: "authentication token validation",
-  limit: 10
-})
-```
+Use grepai_grepai_trace_callers to find which functions call a specific function. Provide the symbol parameter with the function name.
 
-Use grepai_grepai_trace_callers to find which functions call a specific function:
+Use grepai_grepai_trace_callees to find which functions a specific function calls. Provide the symbol parameter with the function name.
 
-```
-grepai_grepai_trace_callers({
-  symbol: "validateToken"
-})
-```
-
-Use grepai_grepai_trace_callees to find which functions a specific function calls:
-
-```
-grepai_grepai_trace_callees({
-  symbol: "validateToken"
-})
-```
-
-Use grepai_grepai_trace_graph to see both callers and callees for complete dependency analysis:
-
-```
-grepai_grepai_trace_graph({
-  symbol: "validateToken",
-  depth: 2
-})
-```
+Use grepai_grepai_trace_graph to see both callers and callees for complete dependency analysis. Provide the symbol parameter and optionally a depth parameter (defaults to 2).
 
 ## Rules
 
