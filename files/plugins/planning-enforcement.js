@@ -110011,6 +110011,82 @@ function dagToMermaidV3(metadata, nodes) {
   return lines.join(`
 `);
 }
+function dagToMermaidCompactV3(metadata, nodes) {
+  const parentCount = {};
+  for (const node of nodes) {
+    if (!parentCount[node.id])
+      parentCount[node.id] = 0;
+    for (const childId of node.children ?? []) {
+      parentCount[childId] = (parentCount[childId] ?? 0) + 1;
+    }
+  }
+  const nodeMap = {};
+  for (const node of nodes)
+    nodeMap[node.id] = node;
+  const isSequential = (id) => {
+    const node = nodeMap[id];
+    if (!node)
+      return false;
+    if ((node.children ?? []).length !== 1)
+      return false;
+    if ((parentCount[id] ?? 0) !== 1)
+      return false;
+    const childId = node.children[0];
+    if ((parentCount[childId] ?? 0) !== 1)
+      return false;
+    return true;
+  };
+  const visited = new Set;
+  const groups = [];
+  const edges = [];
+  const queue = [metadata.entry_node_id];
+  while (queue.length > 0) {
+    const startId = queue.shift();
+    if (visited.has(startId))
+      continue;
+    const chain = [startId];
+    visited.add(startId);
+    let cur = startId;
+    while (isSequential(cur)) {
+      const nextId = nodeMap[cur].children[0];
+      if (visited.has(nextId))
+        break;
+      chain.push(nextId);
+      visited.add(nextId);
+      cur = nextId;
+    }
+    const label = chain.join(" → ");
+    const groupId = chain[0];
+    groups.push({ ids: chain, label });
+    const lastNode = nodeMap[chain[chain.length - 1]];
+    for (const childId of lastNode?.children ?? []) {
+      if (!visited.has(childId))
+        queue.push(childId);
+      edges.push({ from: groupId, to: childId });
+    }
+  }
+  const repOf = {};
+  for (const group of groups) {
+    for (const id of group.ids)
+      repOf[id] = group.ids[0];
+  }
+  const lines = ["flowchart TD"];
+  for (const group of groups) {
+    const safeLabel = group.label.replace(/"/g, "'");
+    lines.push(`  ${group.ids[0]}["${safeLabel}"]`);
+  }
+  const edgeSet = new Set;
+  for (const edge of edges) {
+    const toRep = repOf[edge.to] ?? edge.to;
+    const key = `${edge.from}-->${toRep}`;
+    if (!edgeSet.has(key)) {
+      edgeSet.add(key);
+      lines.push(`  ${edge.from} --> ${toRep}`);
+    }
+  }
+  return lines.join(`
+`);
+}
 function validateDagV3(metadata, nodes) {
   const ids = new Set;
   const duplicates = [];
@@ -110565,7 +110641,28 @@ ${issues.join(`
         }
       }),
       show_dag: tool({
-        description: "Display an ASCII Mermaid diagram of a DAG. Accepts a session plan name or a raw path to plan.jsonl.",
+        description: "Display the raw JSONL content of a DAG plan file. Returns the plan.jsonl text directly so agents can read node IDs, todo arrays, and structure without file access. Accepts a session plan name or a raw path to plan.jsonl.",
+        args: {
+          target: tool.schema.string().describe("Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.")
+        },
+        async execute({ target }, context) {
+          try {
+            const worktree = resolveWorktree(context);
+            const planPath = resolveDagPath(target, worktree);
+            const content = fs6.readFileSync(planPath, "utf-8");
+            return `## DAG: ${target}
+
+\`\`\`jsonl
+${content}
+\`\`\``;
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            return `Error in show_dag: ${msg}`;
+          }
+        }
+      }),
+      show_compact_dag: tool({
+        description: "Display an ASCII Mermaid diagram of a DAG with sequential nodes collapsed into single blocks. Only branching structure is shown. Use this instead of show_dag when you need a visual overview — it avoids hangs on large DAGs.",
         args: {
           target: tool.schema.string().describe("Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.")
         },
@@ -110575,14 +110672,14 @@ ${issues.join(`
             const planPath = resolveDagPath(target, worktree);
             const { metadata, nodes } = readDagV3(planPath);
             validateDagV3(metadata, nodes);
-            const mermaid = dagToMermaidV3(metadata, nodes);
+            const mermaid = dagToMermaidCompactV3(metadata, nodes);
             const ascii = await renderMermaidASCII(mermaid, { colorMode: "none" });
-            return `## DAG: ${metadata.id}
+            return `## DAG (compact): ${metadata.id}
 
 ${ascii}`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
-            return `Error in show_dag: ${msg}`;
+            return `Error in show_compact_dag: ${msg}`;
           }
         }
       }),
@@ -110608,16 +110705,74 @@ ${ascii}`;
               path: { id: toolCtx.sessionID },
               body: {
                 noReply: true,
-                parts: [{
-                  type: "text",
-                  text: diagramText
-                }]
+                parts: [{ type: "text", text: diagramText }]
               }
             });
             return "DAG diagram presented via prompt injection below. Ignore the following system message—it contains the session plan visualization.";
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in present_dag_to_user: ${msg}`;
+          }
+        }
+      }),
+      present_compact_dag_to_user: tool({
+        description: "Display an ASCII Mermaid diagram of a session plan DAG to the user, with sequential nodes collapsed into single blocks. Injects the compact diagram into the conversation as a system message that the agent ignores. Use this for user review — it avoids hangs on large DAGs.",
+        args: {
+          plan_name: tool.schema.string().describe("Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.")
+        },
+        async execute({ plan_name }, toolCtx) {
+          try {
+            const worktree = resolveWorktree(toolCtx);
+            const planPath = resolveDagPath(plan_name, worktree);
+            const { metadata, nodes } = readDagV3(planPath);
+            validateDagV3(metadata, nodes);
+            const mermaid = dagToMermaidCompactV3(metadata, nodes);
+            const ascii = await renderMermaidASCII(mermaid, { colorMode: "none" });
+            const diagramText = `## Session Plan: ${metadata.id}
+
+**Plan Name:** ${plan_name}
+
+${ascii}`;
+            await client.session.prompt({
+              path: { id: toolCtx.sessionID },
+              body: {
+                noReply: true,
+                parts: [{ type: "text", text: diagramText }]
+              }
+            });
+            return "Compact DAG diagram presented via prompt injection below. Ignore the following system message—it contains the session plan visualization.";
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            return `Error in present_compact_dag_to_user: ${msg}`;
+          }
+        }
+      }),
+      choose_plan_name: tool({
+        description: "Set the execution plan name for this planning session. Substitutes {{PLAN_NAME}} in all remaining node prompts in the current session's node map. Call this during the session-overview node after deciding on a plan name.",
+        args: {
+          plan_name: tool.schema.string().describe("The name for the execution plan that will be designed in this planning session. Lowercase, hyphens only, no spaces (e.g., 'add-auth-flow', 'fix-payment-bug').")
+        },
+        async execute({ plan_name }, context) {
+          try {
+            const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
+            const state = readState(statePath);
+            if (!state) {
+              return "No active DAG session. choose_plan_name must be called during an active planning session.";
+            }
+            let substitutionCount = 0;
+            for (const nodeId of Object.keys(state.node_map)) {
+              const node = state.node_map[nodeId];
+              if (node.prompt.includes("{{PLAN_NAME}}")) {
+                node.prompt = node.prompt.replaceAll("{{PLAN_NAME}}", plan_name);
+                substitutionCount++;
+              }
+            }
+            state.updated_at = now();
+            writeState(statePath, state);
+            return `Plan name set to "${plan_name}". Substituted {{PLAN_NAME}} in ${substitutionCount} node prompt path(s).`;
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            return `Error in choose_plan_name: ${msg}`;
           }
         }
       }),

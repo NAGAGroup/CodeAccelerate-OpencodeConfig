@@ -19,6 +19,97 @@ export function dagToMermaidV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): str
   return lines.join('\n');
 }
 
+/**
+ * Compact Mermaid: collapses sequential (single-child, single-parent) chains
+ * into grouped blocks. Only branching nodes and their immediate children are
+ * shown as individual nodes. This avoids hangs on large DAGs.
+ */
+export function dagToMermaidCompactV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): string {
+  // Build parent-count map
+  const parentCount: Record<string, number> = {};
+  for (const node of nodes) {
+    if (!parentCount[node.id]) parentCount[node.id] = 0;
+    for (const childId of node.children ?? []) {
+      parentCount[childId] = (parentCount[childId] ?? 0) + 1;
+    }
+  }
+
+  const nodeMap: Record<string, DagNodeV3> = {};
+  for (const node of nodes) nodeMap[node.id] = node;
+
+  // A node is "sequential" (collapsible) if it has exactly 1 child and exactly 1 parent
+  // and its single child also has exactly 1 parent.
+  const isSequential = (id: string): boolean => {
+    const node = nodeMap[id];
+    if (!node) return false;
+    if ((node.children ?? []).length !== 1) return false;
+    if ((parentCount[id] ?? 0) !== 1) return false;
+    const childId = node.children![0];
+    if ((parentCount[childId] ?? 0) !== 1) return false;
+    return true;
+  };
+
+  // Find chain starts: nodes that are NOT sequential themselves but have a sequential child
+  // Also include the entry node always.
+  const visited = new Set<string>();
+  const groups: Array<{ ids: string[]; label: string }> = [];
+  const edges: Array<{ from: string; to: string }> = []; // between group representatives
+
+  // Walk from entry node
+  const queue: string[] = [metadata.entry_node_id];
+  while (queue.length > 0) {
+    const startId = queue.shift()!;
+    if (visited.has(startId)) continue;
+
+    // Collect the sequential chain starting here
+    const chain: string[] = [startId];
+    visited.add(startId);
+    let cur = startId;
+    while (isSequential(cur)) {
+      const nextId = nodeMap[cur].children![0];
+      if (visited.has(nextId)) break;
+      chain.push(nextId);
+      visited.add(nextId);
+      cur = nextId;
+    }
+
+    // The group label is the chain of IDs joined by →
+    const label = chain.join(' → ');
+    const groupId = chain[0]; // representative node ID for edges
+    groups.push({ ids: chain, label });
+
+    // Queue children of the last node in the chain
+    const lastNode = nodeMap[chain[chain.length - 1]];
+    for (const childId of lastNode?.children ?? []) {
+      if (!visited.has(childId)) queue.push(childId);
+      edges.push({ from: groupId, to: childId });
+    }
+  }
+
+  // Build group ID → representative map (first node in chain)
+  const repOf: Record<string, string> = {};
+  for (const group of groups) {
+    for (const id of group.ids) repOf[id] = group.ids[0];
+  }
+
+  const lines: string[] = ['flowchart TD'];
+  for (const group of groups) {
+    const safeLabel = group.label.replace(/"/g, "'");
+    lines.push(`  ${group.ids[0]}["${safeLabel}"]`);
+  }
+  // Deduplicate edges and map to representatives
+  const edgeSet = new Set<string>();
+  for (const edge of edges) {
+    const toRep = repOf[edge.to] ?? edge.to;
+    const key = `${edge.from}-->${toRep}`;
+    if (!edgeSet.has(key)) {
+      edgeSet.add(key);
+      lines.push(`  ${edge.from} --> ${toRep}`);
+    }
+  }
+  return lines.join('\n');
+}
+
 export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void {
   const ids = new Set<string>();
   const duplicates: string[] = [];

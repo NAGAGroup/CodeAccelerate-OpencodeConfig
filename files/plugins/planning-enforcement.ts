@@ -8,7 +8,7 @@ import { exemptTools, isExempt } from "./constants";
 import { dagStatePath, writeState, readState, now } from "./state-io";
 import { expandPath, readPrompt, resolveDagPath } from "./path-utils";
 import { readDagV3, writeDagV3 } from "./dag-io";
-import { dagToMermaidV3, validateDagV3, flattenTreeV3 } from "./dag-tree";
+import { dagToMermaidV3, dagToMermaidCompactV3, validateDagV3, flattenTreeV3 } from "./dag-tree";
 import { copyPlanningDag } from "./dag-lifecycle";
 import { ensureOpenCodeIgnore } from "./plugin-utils";
 import { detectDivergence, suggestRecoveryActions } from "./divergence-detection";
@@ -483,7 +483,27 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         }),
 
     show_dag: tool({
-      description: "Display an ASCII Mermaid diagram of a DAG. Accepts a session plan name or a raw path to plan.jsonl.",
+      description: "Display the raw JSONL content of a DAG plan file. Returns the plan.jsonl text directly so agents can read node IDs, todo arrays, and structure without file access. Accepts a session plan name or a raw path to plan.jsonl.",
+      args: {
+        target: tool.schema.string().describe(
+          "Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl."
+        ),
+      },
+      async execute({ target }, context) {
+        try {
+          const worktree = resolveWorktree(context);
+          const planPath = resolveDagPath(target, worktree);
+          const content = fs.readFileSync(planPath, "utf-8");
+          return `## DAG: ${target}\n\n\`\`\`jsonl\n${content}\n\`\`\``;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          return `Error in show_dag: ${msg}`;
+        }
+      },
+    }),
+
+    show_compact_dag: tool({
+      description: "Display an ASCII Mermaid diagram of a DAG with sequential nodes collapsed into single blocks. Only branching structure is shown. Use this instead of show_dag when you need a visual overview — it avoids hangs on large DAGs.",
       args: {
         target: tool.schema.string().describe(
           "Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl."
@@ -495,12 +515,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const planPath = resolveDagPath(target, worktree);
           const { metadata, nodes } = readDagV3(planPath);
           validateDagV3(metadata, nodes);
-          const mermaid = dagToMermaidV3(metadata, nodes);
+          const mermaid = dagToMermaidCompactV3(metadata, nodes);
           const ascii = await renderMermaidASCII(mermaid, { colorMode: 'none' });
-          return `## DAG: ${metadata.id}\n\n${ascii}`;
+          return `## DAG (compact): ${metadata.id}\n\n${ascii}`;
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
-          return `Error in show_dag: ${msg}`;
+          return `Error in show_compact_dag: ${msg}`;
         }
       },
     }),
@@ -522,16 +542,11 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
            const ascii = await renderMermaidASCII(mermaid, { colorMode: 'none' });
            const diagramText = `## Session Plan: ${metadata.id}\n\n**Plan Name:** ${plan_name}\n\n${ascii}`;
           
-          // Inject the diagram into the conversation as a system message.
-          // Must await so the prompt is written before the tool returns.
           await client.session.prompt({
             path: { id: toolCtx.sessionID },
             body: {
               noReply: true,
-              parts: [{
-                type: "text",
-                text: diagramText
-              }]
+              parts: [{ type: "text", text: diagramText }]
             }
           });
           
@@ -539,6 +554,76 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           return `Error in present_dag_to_user: ${msg}`;
+        }
+      },
+    }),
+
+    present_compact_dag_to_user: tool({
+      description: "Display an ASCII Mermaid diagram of a session plan DAG to the user, with sequential nodes collapsed into single blocks. Injects the compact diagram into the conversation as a system message that the agent ignores. Use this for user review — it avoids hangs on large DAGs.",
+      args: {
+        plan_name: tool.schema.string().describe(
+          "Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl."
+        ),
+      },
+      async execute({ plan_name }, toolCtx) {
+        try {
+          const worktree = resolveWorktree(toolCtx);
+          const planPath = resolveDagPath(plan_name, worktree);
+          const { metadata, nodes } = readDagV3(planPath);
+          validateDagV3(metadata, nodes);
+          const mermaid = dagToMermaidCompactV3(metadata, nodes);
+          const ascii = await renderMermaidASCII(mermaid, { colorMode: 'none' });
+          const diagramText = `## Session Plan: ${metadata.id}\n\n**Plan Name:** ${plan_name}\n\n${ascii}`;
+
+          await client.session.prompt({
+            path: { id: toolCtx.sessionID },
+            body: {
+              noReply: true,
+              parts: [{ type: "text", text: diagramText }]
+            }
+          });
+
+          return "Compact DAG diagram presented via prompt injection below. Ignore the following system message—it contains the session plan visualization.";
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          return `Error in present_compact_dag_to_user: ${msg}`;
+        }
+      },
+    }),
+
+    choose_plan_name: tool({
+      description: "Set the execution plan name for this planning session. Substitutes {{PLAN_NAME}} in all remaining node prompts in the current session's node map. Call this during the session-overview node after deciding on a plan name.",
+      args: {
+        plan_name: tool.schema.string().describe(
+          "The name for the execution plan that will be designed in this planning session. Lowercase, hyphens only, no spaces (e.g., 'add-auth-flow', 'fix-payment-bug')."
+        ),
+      },
+      async execute({ plan_name }, context) {
+        try {
+          const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
+          const state = readState(statePath);
+
+          if (!state) {
+            return "No active DAG session. choose_plan_name must be called during an active planning session.";
+          }
+
+          // Substitute {{PLAN_NAME}} in all node prompts in the node_map
+          let substitutionCount = 0;
+          for (const nodeId of Object.keys(state.node_map)) {
+            const node = state.node_map[nodeId];
+            if (node.prompt.includes("{{PLAN_NAME}}")) {
+              node.prompt = node.prompt.replaceAll("{{PLAN_NAME}}", plan_name);
+              substitutionCount++;
+            }
+          }
+
+          state.updated_at = now();
+          writeState(statePath, state);
+
+          return `Plan name set to "${plan_name}". Substituted {{PLAN_NAME}} in ${substitutionCount} node prompt path(s).`;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          return `Error in choose_plan_name: ${msg}`;
         }
       },
     }),
