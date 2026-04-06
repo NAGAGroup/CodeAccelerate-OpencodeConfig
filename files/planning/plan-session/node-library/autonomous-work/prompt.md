@@ -1,8 +1,8 @@
 You are dispatching a fully autonomous agent to complete a self-contained task.
 
-Use the question tool to confirm that the user still approves autonomous work before the autonomous agent is dispatched. Retrieve relevant context from the semantic notes if needed to clarify the scope and boundaries.
+Use the skill tool to load the autonomous-agent-delegation skill, which teaches you how to scope and dispatch autonomous work.
 
-Use the skill tool to load the autonomous-agent-delegation skill.
+Use the question tool to confirm that the user still approves autonomous work before the autonomous agent is dispatched. Retrieve relevant context from the semantic notes if needed to clarify the scope and boundaries.
 
 Use the sequential-thinking_sequentialthinking tool to compose the autonomous task brief. Consider what the autonomous agent needs to accomplish, what acceptance criteria apply, what boundaries or constraints exist, and what the agent should report back.
 

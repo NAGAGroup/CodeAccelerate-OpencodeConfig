@@ -19,9 +19,18 @@ Call the task tool with subagent_type set to "context-scout", a short descriptio
 
 State the goal and describe what areas to explore in terms of concepts, not file paths. When working within a plan session, include the plan name (the Qdrant collection name) in the dispatch prompt. Instruct @context-scout to use qdrant_qdrant-find to retrieve accumulated session knowledge from that collection before starting, and to store new findings to the same collection as it discovers them. Ask for prose findings with an uncertainties section. Let @context-scout choose appropriate tools based on the goal rather than prescribing search queries or investigative methods. Specify off-limits areas if there are specific domains the scout should not investigate.
 
+## Skill-Loading Instructions for @context-scout
+
+Include explicit skill-loading instructions in your dispatch prompt so @context-scout loads necessary skills before starting work. Add these instructions near the top of the dispatch prompt:
+
+- **Before searching code:** Include "Load the grepai skill for semantic code search and exploration tools."
+- **Before storing findings:** Include "Load the qdrant-notes skill for persisting discoveries to the plan session collection."
+
+Skill-loading instructions should appear early in the dispatch prompt so the subagent loads skills before beginning exploration. This ensures @context-scout has access to semantic search and knowledge persistence from the start.
+
 ## Examples
 
-**Good:** "Goal: understand how the system handles user authentication. Explore what exists, how parts relate, and what constraints matter. Before starting, retrieve any previous findings on this topic from Qdrant collection 'rebuild-files-from-spec' using qdrant_qdrant-find. Store new findings to the same collection. Report prose findings with uncertainties section."
+**Good:** "Load the grepai skill for semantic code search. Load the qdrant-notes skill for persisting findings. Goal: understand how the system handles user authentication. Explore what exists, how parts relate, and what constraints matter. Before starting, retrieve any previous findings on this topic from Qdrant collection 'rebuild-files-from-spec' using qdrant_qdrant-find. Store new findings to the same collection. Report prose findings with uncertainties section."
 
 **Bad — missing Qdrant instruction:** "Goal: explore the authentication system." Does not tell scout to retrieve previous findings or where to store new ones. When in a plan session, include the plan name and Qdrant instructions in the dispatch prompt.
 
@@ -34,3 +43,42 @@ State the goal and describe what areas to explore in terms of concepts, not file
 **Bad — vague scope:** "Investigate the project." Does not specify what part, what question, or what you want to understand. Provide a specific area or concept to explore.
 
 **Bad — out of scope for scout:** "Explore the authentication system and make recommendations for improvement." @context-scout explores and reports, not prescribes. Design decisions belong to planning.
+
+## When to Use @context-scout vs Other Scouts
+
+Use @context-scout when you have a broad exploration goal — understand what exists, how parts relate, what constraints matter. Dispatch @context-insurgent for deep technical analysis of specific mechanisms. Use @junior-dev for code changes, not investigation. Architectural design decisions belong in the planning phase, not with @context-scout.
+
+## Exploration Depth vs Breadth
+
+@context-scout is wide-shallow. It maps what exists and relationships quickly across many files but does not trace deep into mechanisms. It produces landscape understanding and identifies areas that need deeper investigation.
+
+@context-insurgent is narrow-deep. It traces specific mechanisms in detail, synthesizes findings into logical chains, and audits constraints. It moves slower but produces deep understanding of specific areas.
+
+Choose your scout based on your need:
+- **Need landscape overview of what exists?** Use @context-scout for breadth.
+- **Need deep understanding of a specific mechanism?** Use @context-insurgent for depth.
+- **Need to make a specific narrow-scope code change?** Use @junior-dev after investigation.
+
+## Qdrant Integration in Exploration
+
+When using @context-scout within a plan session, the dispatch prompt should include Qdrant instructions. @context-scout retrieves prior findings before starting (to avoid re-exploring what is known) and stores new findings as it discovers them (to accumulate knowledge for later use).
+
+This creates a continuous knowledge thread through the session. Each agent can build on what prior agents discovered, avoiding duplication and building coherent understanding across the entire planning process.
+
+## Dispatch Prompt Quality Checklist
+
+Before dispatching @context-scout, verify your prompt includes:
+- ✓ Exploration goal (what to understand, what areas to explore)
+- ✓ Concepts or domains to explore (not file paths)
+- ✓ Context about why this exploration matters
+- ✓ Plan name and Qdrant collection name
+- ✓ Instructions to retrieve prior findings from the collection
+- ✓ Instructions to store new findings to the collection
+- ✓ Request for prose findings with uncertainties section
+- ✓ Any off-limits areas that should not be explored
+
+## Anti-pattern: Confusing Scouts with Investigation Tasks
+
+**Anti-pattern: Using scouts for implementation investigation.** You dispatch @context-scout to explore "how to implement user authentication", expecting implementation guidance. Scouts investigate what exists; they don't prescribe solutions. Use @context-scout to explore existing authentication patterns, then use planning or other mechanisms to decide on changes.
+
+**Anti-pattern: Using scouts for root cause analysis.** You dispatch @context-scout to "investigate why the system is slow". This mixes exploration with diagnosis. Use @context-scout to explore architecture and constraints, then use @context-insurgent or other tools for detailed performance analysis if needed.

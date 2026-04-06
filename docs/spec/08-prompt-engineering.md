@@ -22,6 +22,21 @@ These apply across all three prompt types.
 
 ---
 
+## Skill-Loading Recency Principle
+
+Skills are loaded into recent context — the agent's current focus area — where attention is highest on small models. This is true regardless of model size, but small models benefit disproportionately.
+
+**How attention works across contexts:**
+- System prompt: Low attention (read once, established early)
+- Conversation history: Medium attention (recent messages get more attention)
+- Recent content (skills, dispatch prompts, current node prompts): High attention (agent focuses here)
+
+**Implication for skill design:** Detailed tool-call guidance, anti-patterns, and methodology examples placed in skills receive more agent attention than the same content placed in system prompts. This is why skill files contain explicit examples and are 50–100 lines — they carry detailed content that will be attended to.
+
+**For small-model reliability:** Skills contain step-by-step tool guidance, bad-example demonstrations, and anti-pattern explanations because this content gets read carefully when it's recent. If the same content appeared only in system prompts, small models would miss it.
+
+---
+
 ## Node Prompts (Component Library)
 
 Node prompts are static templates — every node of the same component type uses the identical prompt. They are the most constrained prompt type because they must work for any task, any project, and any DAG context.
@@ -160,6 +175,55 @@ This grounds the agent's self-model without listing tool names. Tool instruction
 
 ---
 
+## Small-Model Optimization Across the Spec
+
+This document contains small-model guidance for prompt authorship. Related optimization decisions are documented throughout the spec:
+
+- **Doc 00**: `reasoningEffort: none` configuration requirement (F6), DAG_EXECUTOR_MODE injection (F8)
+- **Doc 01**: Next_step enforcement status clarification (C1)
+- **Doc 02**: Temperature tuning rationale (F7, NEW-5) — 0.6 for tool-calling agents, 0.2 for analysis agents
+- **Doc 03**: Small-model motivation for enforcement sequences (F1), globally-exempt tools rationale (F5)
+- **Doc 05**: Planning-for-small-models characteristics (F12, F13); mandatory-formulation principle for external research (Node 3)
+- **Doc 06**: Qdrant query construction guidance (F15)
+
+These decisions collectively reflect research into small-model tool-calling reliability and the specific characteristics of models in the 9B–14B range. The spec is designed from the ground up to work on small models, not to compromise for them — all design choices serve both small and large models.
+
+### Mandatory Work Steps and User Control
+
+Small models have a tendency to assume they know enough and silently skip steps that seem optional. External research is a key example: a small model presented with "conduct research if needed" will frequently conclude it doesn't need to and move forward without research, losing critical context.
+
+**Pattern: Make work mandatory at the step level; let the user decide whether to use it.**
+
+If a step's work matters for execution correctness (e.g., external research during planning, verification after implementation), the agent must always perform the work. Formulation or planning cannot be skipped. However, the user retains control: they approve, modify, or explicitly deny the work. Only a user choice to deny skips execution.
+
+For planning's external-research node (doc 05, Node 3): the agent must always formulate a research plan. User options are Approve, Modify, or Deny — never Skip. This ensures research is always on the table and never silently dismissed by the model.
+
+**Application:** This principle applies wherever a step's results determine subsequent execution paths. Do not provide agents with unilateral skip paths on critical steps. Always require the formulation or plan; always give users the choice.
+
+---
+
+## Temperature Tuning in Agent System Prompts
+
+Agents are configured with temperature values that optimize for their specific role:
+
+**Tool-calling agents use temperature 0.6** for structured syntax determinism:
+- headwrench (primary orchestrator)
+- junior-dev, documentation-expert, tailwrench (file and shell operations)
+- dag-designer, dag-reviewer (DAG construction tools)
+- autonomous-agent (full tool access)
+- external-scout (structured research tool parameters)
+
+The 0.6 setting improves reliability of tool-call syntax and parameter formatting. When a model makes decisions about which tool to call and how to format its parameters, higher temperature doesn't add beneficial variety — it adds syntax errors.
+
+**Analysis-only agents use temperature 0.2** to reduce hallucination:
+- context-scout, context-insurgent (read-only investigation)
+
+These agents primarily reason and search, not construct tool calls. Lower temperature reduces fabricated findings and false positives in analysis.
+
+The specific 0.6 → 0.2 difference reflects research on small-model behavior, but the principle applies broadly: temperature should match agent role, not follow a one-size-fits-all setting. See **doc 02** for full agent temperature table.
+
+---
+
 ## Skill Files
 
 Skills teach methodology — how to perform a specific type of work or how to use a specific tool effectively. They are loaded at runtime via the `skill` tool and appear in the agent's context as recent content, receiving high attention.
@@ -217,7 +281,7 @@ Every skill file follows this four-part structure:
 | `sequential-thinking` | How to use the reasoning tool effectively, including anti-patterns to avoid |
 | `asking-questions` | How to use the `question` tool without overloading it |
 | `qdrant-notes` | How to store and retrieve session knowledge effectively |
-| `grepai` | How to use semantic search and code intelligence tools (to be created) |
+| `grepai` | How to use semantic search and code intelligence tools |
 
 **Delegation skills** teach how to dispatch a specific subagent. Each maps to exactly one `subagent_type`.
 
@@ -242,11 +306,8 @@ Two template variables appear in planning node prompts. They are substituted by 
 | Variable | Value | When resolved |
 |---|---|---|
 | `{{PLAN_NAME}}` | The human-chosen execution plan name | At `choose_plan_name` (Node 1 of planning DAG) |
-| `{{PLANNING_SESSION_ID}}` | `planning-session_{opencode-session-id}` | When HeadWrench calls `plan_session` in response to `/plan-session` |
 
 `{{PLAN_NAME}}` fills all remaining planning node prompts immediately when `choose_plan_name` is called. It also fills the execution DAG's prompts when HeadWrench calls `activate_plan` in response to the `/activate-plan` slash command — the execution prompts already contain the correct name from the `add_node` calls made during planning (when the planning agent passed `{{PLAN_NAME}}` as the `plan_name` parameter to `init_dag`).
-
-`{{PLANNING_SESSION_ID}}` is available from the moment HeadWrench calls `plan_session`. It identifies the planning session's directory and is used for disambiguation when multiple planning sessions for the same plan exist.
 
 Template variables appear only in planning node prompts. Component library prompts (execution DAG) are static and contain no template variables.
 

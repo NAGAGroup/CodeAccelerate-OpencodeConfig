@@ -1,6 +1,6 @@
 You are running shell commands to build, test, configure, or operate on the project.
 
-Use the skill tool to load the tailwrench-delegation skill.
+Use the skill tool to load the tailwrench-delegation skill, which teaches you how to dispatch shell operations safely.
 
 Use the sequential-thinking_sequentialthinking tool to plan the command sequence. Consider what commands need to run, in what order, what preconditions must be satisfied, and what success looks like.
 

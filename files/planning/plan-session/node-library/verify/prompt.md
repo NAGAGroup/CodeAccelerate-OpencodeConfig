@@ -1,6 +1,6 @@
 You are verifying that the most recent implementation meets acceptance criteria.
 
-Use the skill tool to load the tailwrench-delegation skill.
+Use the skill tool to load the tailwrench-delegation skill, which teaches you how to dispatch verification and testing.
 
 Use the sequential-thinking_sequentialthinking tool to reason through what verification means for the change that was just made. Consider what the acceptance criteria are, what verification approach is appropriate, and what success looks like.
 

@@ -109,7 +109,146 @@ The skip path is intentional: it avoids requiring a branch in the DAG for what i
 
 ---
 
-## Skill Design Requirements
+## Delegation Guidance by Subagent Type
+
+### Wide-Shallow Investigation: context-scout
+
+**What it does:** Fast, broad investigation across many areas. Surveys the codebase, identifies relationships, returns prose briefings with uncertainties sections.
+
+**When to dispatch:** When you need a quick understanding of what exists and how it relates. Before detailed problem analysis. When you need to know what's unclear before asking the user. Use this early and often in investigations.
+
+**What makes a good dispatch prompt:**
+- Clear scope: "Investigate the authentication module and its dependencies" not "Investigate the project"
+- Specific question: "How does the session token flow through the request lifecycle?" not just "Look at the session module"
+- Relevant context: "The user reports login failures on Safari. The team suspects a cookie-domain issue."
+- What to report: "Return findings about the auth flow, any cross-browser issues you spot, and uncertainties we need to clarify with the user"
+
+**What scout cannot do:** Read files directly, trace deep call chains, edit files. Scout is read-only and fast — it trades depth for speed.
+
+---
+
+### Narrow-Deep Analysis: context-insurgent
+
+**What it does:** Traces cross-file dependencies, audits constraints, synthesizes complex findings across many sources. Returns detailed analytical reports.
+
+**When to dispatch:** When you need thorough understanding of a complex area before implementing. When scout's breadth isn't enough. When you need specific dependency chains or cross-module logic traced. Use this when investigation directly blocks the implementation.
+
+**What makes a good dispatch prompt:**
+- Specific investigation goal: "Understand all callers of the `handleRequest` function to ensure our change won't break them" not "Trace all the dependencies"
+- Context from prior findings: "Scout found three modules that call the auth flow. Investigate their specific use cases."
+- Scope boundaries: "Focus on the request lifecycle in these three modules. Don't investigate logging or monitoring."
+- What to report: "For each caller, explain what request types it sends and what token formats it expects. Flag any edge cases."
+
+**What insurgent cannot do:** Edit files, create changes. Insurgent is pure analysis — depth without mutation.
+
+---
+
+### Goal-Oriented Implementation: junior-dev
+
+**What it does:** Investigates to understand context, then makes targeted code edits to achieve the goal. Returns a summary of what changed and what was found.
+
+**When to dispatch:** When you have a clear implementation goal. When investigation is complete and direction is decided. When the goal is narrowly scoped (affects 1–3 files, 1–2 functions, or a small feature area).
+
+**What makes a good dispatch prompt:**
+- Clear goal: "Add a new field `requestId` to the request context object and ensure it persists through the request lifecycle" not "Update the auth flow"
+- Relevant context: "Scout found that request context is passed through these three modules. Here's what the current structure looks like."
+- Scope: "Focus on the request object definition and the three modules that pass it. Don't modify logging or monitoring."
+- What to report: "What files you changed, what you changed in each, any issues you encountered, and any follow-up work this created"
+
+**What junior-dev cannot do:** Shell operations, git commits, verification. Junior-dev writes code; other agents verify and integrate.
+
+---
+
+### Documentation and Config: documentation-expert
+
+**What it does:** Writes and edits documentation, configuration files, prompt files, and structured text. Returns confirmation of what was changed.
+
+**When to dispatch:** When you need to document changes, update configuration, or write new documentation. When content is primarily prose or structured configuration.
+
+**What makes a good dispatch prompt:**
+- Clear goal: "Document the new requestId field in the API contract documentation and add an example to the request-handling guide" not "Update the docs"
+- File paths if known: "The API contract is in `docs/api-contract.md`. The request-handling guide is in `docs/guides/request-handling.md`."
+- Style or format constraints: "Keep examples concise (3–4 lines). Follow the existing parameter documentation format."
+- What to report: "What files you edited, what you added or changed, and whether anything needs follow-up."
+
+**What documentation-expert cannot do:** Edit code files (in the implementation sense), run shell commands, verify changes. Expert handles documentation and configuration only.
+
+---
+
+### External Research: external-scout
+
+**What it does:** Searches public web sources and reads documentation. Returns research findings with links and citations.
+
+**When to dispatch:** When you need external information not in the codebase. Library documentation, framework best practices, SDK specifications, third-party APIs, dependency compatibility information.
+
+**What makes a good dispatch prompt:**
+- Exact research query: "Find the Node.js cookie RFC specifications for SameSite attribute restrictions" not "Look up cookie information"
+- Context: "We're implementing custom cookie handling and need to understand SameSite constraints for Safari"
+- Scope: "Return the relevant RFC sections, browser compatibility matrix, and at least two examples of correct implementation"
+- What to report: "The key findings, relevant links, and implementation examples"
+
+**What external-scout cannot do:** Access project files, examine codebase, make changes. Scout is external-only — it cannot see your code.
+
+---
+
+### Verification and Operations: tailwrench
+
+**What it does:** Runs shell commands, verifies implementations, manages git operations. Returns success/failure confirmation and operation logs.
+
+**When to dispatch:** For verification after implementation, running tests, adding dependencies, running build scripts, committing changes, checking system state.
+
+**What makes a good dispatch prompt:**
+- Clear goal: "Verify that the new requestId field is correctly populated in all three modules by running the test suite with verbose output" not "Run tests"
+- What success looks like: "All tests pass. No new warnings or errors compared to the baseline."
+- Specific commands if needed: "Run `npm test -- --verbose` first, then `npm run lint` to check for any new linting issues"
+- Scope: "30 steps max — if tests take longer than that, summarize and report what's blocking"
+
+**What tailwrench cannot do:** Design changes, make editorial decisions. Tailwrench executes specific commands and reports results — it doesn't decide what to do next.
+
+---
+
+### Fully Autonomous Work: autonomous-agent
+
+**What it does:** Takes any action with no tool restrictions or step limits. Use only with explicit user approval during planning.
+
+**When to dispatch:** Only when the user has explicitly requested autonomous work during planning. This is an escape hatch for complex multi-phase work that doesn't fit standard components. Use very sparingly.
+
+**What makes a good dispatch prompt:**
+- Full context: The autonomous agent doesn't have the planning context that dag-designer has. Include goal, scope, constraints, investigation findings, and user decisions.
+- Clear success criteria: What does "done" look like? When should the agent stop?
+- What to report: "What was accomplished, what failed, what follow-up work exists"
+
+**What autonomous-agent is:** Powerful but unrestricted. Use only when you need unrestricted capability and the user has approved it.
+
+---
+
+### DAG Design: dag-designer
+
+**What it does:** Builds execution DAGs from the component library, adding nodes one by one, validating structure, investigating the codebase to inform decisions.
+
+**When to dispatch:** During planning Node 9, after all investigation and user questions are complete. Never dispatch multiple times in the same planning session — dag-designer runs once during planning to build the initial DAG, then dag-reviewer evaluates it, then optional dag-revision requests modifications.
+
+**What makes a good dispatch prompt:**
+- Full planning context: The designer has no access to the conversation or planning discoveries. Include: user goal, scope boundaries, investigation findings, user decisions, any constraints (e.g., "must support easy deployment in Docker").
+- Design constraints: "If the authentication module needs updates, include a separate verification node after the implementation node for the auth changes."
+- What to report: "A summary of the DAG structure created, the reasoning for the node sequence, and any deferred decisions or future work identified"
+
+**What dag-designer cannot do:** Modify planning context, ask questions, commit code. Designer designs — execution agents implement.
+
+---
+
+### DAG Review: dag-reviewer
+
+**What it does:** Evaluates execution DAGs against review criteria. Critiques structure, identifies risks, suggests improvements. Does not revise — only critique.
+
+**When to dispatch:** During planning Node 10, after dag-designer completes the initial DAG.
+
+**What makes a good dispatch prompt:**
+- Plan name: Include the `{{PLAN_NAME}}` so the reviewer can load and analyze the DAG
+- Task context: "The user goal is to fix the authentication flow. The investigation found that the flow crosses three modules. Watch for structural issues that might make verification difficult."
+- What to report: "Critique of the DAG structure, specific risk areas, any nodes that seem out of order or missing, and suggestions for improvement"
+
+**What dag-reviewer cannot do:** Modify the DAG, make design decisions. Reviewer critiques — dag-designer revises based on feedback.
 
 These requirements govern the authorship of new skills.
 

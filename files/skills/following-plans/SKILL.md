@@ -42,3 +42,34 @@ Why it fails: Each DAG is unique. Enforcement sequences differ based on conditio
 **Bad — skips next_step:** You complete sequential-thinking_sequentialthinking and call task immediately without calling next_step. The enforcement engine blocks your call: "Expected question but you called task". You wasted a step and now must backtrack.
 
 **Bad — assumes sequence without confirmation:** You remember that planning nodes have [skill, sequential-thinking, task]. You are now in a different context where the sequence is [skill, sequential-thinking, question, task]. You skip question and call task. The enforcement engine blocks your call and specifies question is required. You wasted a step on the wrong assumption.
+
+## Understanding Enforcement Errors
+
+The enforcement engine maintains the correct order of tool calls in a DAG node. When it returns an error, the error message is authoritative — it specifies the exact tool that should be called next.
+
+**Error messages follow this pattern:** "Expected X but you called Y". Read this as "the required next tool is X; you called Y instead".
+
+The tool mentioned first (X) is the correct tool to call. Always call the tool the error specifies, not the one you assumed should come next.
+
+## recover_context for Context Loss
+
+If your context is lost between steps (system outage, connection loss, etc.), call recover_context immediately with no parameters.
+
+**recover_context returns:**
+- Your current position in the DAG (node ID)
+- The remaining enforcement steps for your current node
+- All steps already completed in this session
+- Flags for any divergence between your session state and the DAG structure
+
+Resume at the indicated step and continue the enforcement sequence. This restores your position and prevents re-executing completed steps.
+
+## Using next_step Strategically
+
+After each required tool call completes, always call next_step immediately. This serves multiple purposes:
+
+- **Confirms tool success:** next_step only works if the previous tool call succeeded. If it fails, next_step will error, alerting you to the problem.
+- **Determines what comes next:** The next_step response tells you the next required tool or indicates the node is complete.
+- **Detects conditional branches:** Some DAGs have branching paths. next_step confirms which branch you are on.
+- **Progresses the node:** Calling next_step advances your position and eventually completes the node.
+
+Always use next_step as the source of truth for what comes next. Do not assume or predict based on prior DAGs.

@@ -1,6 +1,6 @@
 You are conducting external research with IP approval required before dispatch.
 
-Use the skill tool to load the external-scout-delegation skill.
+Use the skill tool to load the external-scout-delegation skill, which teaches you how to dispatch and scope external research.
 
 Use the sequential-thinking_sequentialthinking tool to compose a focused research query. Consider what external information is most valuable, what scope makes sense, and what boundaries protect proprietary information.
 

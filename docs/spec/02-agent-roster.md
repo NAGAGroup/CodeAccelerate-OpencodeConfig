@@ -2,11 +2,86 @@
 
 Every agent in the system is defined as an agent file with YAML frontmatter specifying its tool permissions, step limit, and mode. **Permissions are exhaustive — everything not explicitly permitted is denied.** The permission system is enforced by the OpenCode framework independently of the DAG enforcement engine (see doc 03).
 
+---
+
+## Agent YAML Schema
+
+Every agent file contains a YAML frontmatter block with the following fields:
+
+```yaml
+name: <string>                          # Human-readable agent name
+description: <string>                   # Brief description of the agent's role
+mode: <subagent | primary>              # "subagent" for restricted agents, "primary" for headwrench
+model: <string>                         # Model identifier (deployment-dependent; not in spec)
+temperature: <float>                    # Temperature for model inference (0.0–2.0)
+color: <hex-color>                      # Hex color code for UI (e.g., "#818cf8")
+permission:
+  "*": <allow | deny>                   # Default permission for unlisted tools
+  <tool-name>: <allow | deny>           # Explicit grant or denial for specific tools
+skills:
+  "*": <allow | deny>                   # Default permission for skills
+  <skill-name>: <allow | deny>           # Explicit grant or denial for specific skills
+  (optional block if no skills needed)
+step_limit: <integer | null>            # Max conversation steps (null for unlimited)
+```
+
+**Key principles:**
+- Permissions use an allowlist model: everything not explicitly permitted is denied.
+- The `permission` block controls tool access. Each tool name is an exact callable identifier.
+- The `skills` block controls which skills can be loaded. If omitted, the agent cannot load skills.
+- `temperature` affects model behavior. See "Temperature Tuning" below.
+- `color` is a UI affordance and does not affect system behavior.
+
+---
+
+## Temperature Tuning
+
+Temperature values are calibrated for two distinct agent roles:
+
+**Tool-calling agents (temperature: 0.6):** Agents that make frequent file edits, bash calls, or DAG tool calls benefit from higher determinism of tool-call syntax. These include:
+- headwrench (primary agent, orchestrates all tool calls)
+- junior-dev (makes file edits constantly)
+- documentation-expert (reads and writes files)
+- tailwrench (bash and git operations)
+- autonomous-agent (full tool access)
+- dag-designer (DAG construction tools)
+- dag-reviewer (DAG inspection tools)
+- external-scout (web research tools with structured parameters)
+
+**Analysis-only agents (temperature: 0.2):** Agents that perform read-only investigation benefit from lower temperature to reduce hallucination and false positives:
+- context-scout (semantic search and file discovery)
+- context-insurgent (deep analysis and cross-file tracing)
+
+The 0.6 → 0.2 difference reflects research findings from small-model tool-calling: higher temperature improves syntax reliability in structured calls, while lower temperature reduces hallucination in analysis tasks. This is not a general best-practice recommendation — it reflects the specific characteristics of the CodeAccelerate system's tool mix.
+
+---
+
+## Color Assignments
+
+Each agent has a UI color for differentiation in multi-agent contexts:
+
+| Agent | Color | Rationale |
+|-------|-------|-----------|
+| headwrench | (no specific color — primary agent) | — |
+| context-scout | #6366f1 (indigo) | Investigation role |
+| context-insurgent | #f59e0b (amber) | Deep analysis role |
+| junior-dev | #10b981 (emerald) | Implementation/code changes |
+| documentation-expert | #8b5cf6 (violet) | Documentation specialization |
+| external-scout | #f43f5e (rose) | External research (distinct from context-scout's indigo) |
+| tailwrench | #ec4899 (pink) | Verification and operations |
+| autonomous-agent | #6366f1 (indigo, inherited) | Matches junior-dev class |
+| dag-designer | #06b6d4 (cyan) | DAG construction specialization |
+| dag-reviewer | #06b6d4 (cyan, shared with dag-designer) | DAG review specialization |
+
+Colors were chosen to avoid collisions while grouping related agent types (context-scouts in cool tones, implementers in warm tones, specialists in distinct colors). The system is not color-dependent — colors are UI affordances only.
+
+---
+
 `todowrite` is denied to all agents. It is an OpenCode built-in todo list tool that interferes with how subagent responses are presented to the primary agent, and the DAG system handles all task sequencing more effectively than a todo list.
 
 `grepai_grepai_list_projects` and `grepai_grepai_list_workspaces` are denied to all agents. The system operates within a single project; cross-project access is not permitted.
 
-Agents that have `qdrant_qdrant-store` and `qdrant_qdrant-find` in their permission list have persistent access to the current plan's Qdrant collection through their tool permissions. For headwrench executing DAG nodes, these tools are globally exempt from DAG enforcement and can be called at any time. For subagents dispatched via the `task` tool, Qdrant access is available through their agent permissions (DAG enforcement does not apply to subagents). **Agents' system prompts do not instruct them to use Qdrant** — that instruction comes from dispatch prompts written by the dispatching agent (typically headwrench or a planning subagent). The reason: agents can be used in free-form mode outside DAG sessions where Qdrant is irrelevant. Tool availability and usage instruction are separate concerns.
+**Qdrant grants are intentional.** Agents listed in the tool reference below with `qdrant_qdrant-store` and `qdrant_qdrant-find` in their permission list have persistent access to the current plan's Qdrant collection. For headwrench executing DAG nodes, these tools are globally exempt from DAG enforcement and can be called at any time. For subagents dispatched via the `task` tool, Qdrant access is available through their agent permissions (DAG enforcement does not apply to subagents). **Agents' system prompts do not instruct them to use Qdrant** — that instruction comes from dispatch prompts written by the dispatching agent (typically headwrench or a planning subagent). The reason: agents can be used in free-form mode outside DAG sessions where Qdrant is irrelevant. Tool availability and usage instruction are separate concerns.
 
 Agents that have access to both GrepAI tools and file operation tools (`read`, `glob`, `grep`) must use GrepAI tools first for any project search or file discovery. File operation tools are a fallback for cases where GrepAI cannot satisfy the need — for example, reading a specific file at a known path after GrepAI has identified it, or writing and editing files. This applies to headwrench, junior-dev, documentation-expert, and tailwrench. Context-scout has GrepAI search plus `glob` for file discovery. Context-insurgent has GrepAI search, GrepAI trace tools, plus `read`, `glob`, and `grep` for direct file access when needed.
 
@@ -39,6 +114,7 @@ These agents are dispatched via the `task` tool. Each has a purpose-specific, mi
 **Tools:**
 - `glob` — file discovery
 - `grepai_grepai_search` — semantic code search
+- `grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph` — high-level call tracing to understand cross-module relationships
 - `grepai_grepai_index_status` — index health check
 - `sequential-thinking_sequentialthinking`
 - `qdrant_qdrant-store`, `qdrant_qdrant-find`
@@ -46,7 +122,9 @@ These agents are dispatched via the `task` tool. Each has a purpose-specific, mi
 
 **Skills:** sequential-thinking, qdrant-notes, grepai
 
-**Denied:** `read`, `write`, `edit`, `grep`, `bash`, `task`, `question`, `compress`, all DAG tools, all web tools, all GrepAI trace tools (`grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph`), all GrepAI RPG tools, `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
+**Denied:** `read`, `write`, `edit`, `grep`, `bash`, `task`, `question`, `compress`, all DAG tools, all web tools, all GrepAI RPG tools (`grepai_grepai_rpg_explore`, `grepai_grepai_rpg_search`, `grepai_grepai_rpg_fetch`), `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
+
+**Note on GrepAI trace tools:** Context-scout has access to the call-tracing tools (`grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph`) as a deliberate grant — these are different from the deep structural analysis tools (RPG tools) which remain denied. The trace tools help the scout understand which functions call which others across modules, which is valuable for wide-shallow "what relates to what" investigation. This grant is intentional and supports the scout's role.
 
 **Step limit:** 20. Context-scout must stay quick and shallow — it surveys, it does not investigate.
 
@@ -76,6 +154,7 @@ These agents are dispatched via the `task` tool. Each has a purpose-specific, mi
 - `read`, `write`, `edit`, `glob`, `grep` — file operations
 - `grepai_grepai_search` — semantic code search
 - `grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph` — understanding code before changing it
+- `grepai_grepai_index_status` — index health check
 - `sequential-thinking_sequentialthinking`
 - `skill`
 
@@ -94,6 +173,7 @@ These agents are dispatched via the `task` tool. Each has a purpose-specific, mi
 **Tools:**
 - `read`, `write`, `edit`, `glob`, `grep` — file operations
 - `grepai_grepai_search` — semantic search for finding relevant docs
+- `grepai_grepai_index_status` — index health check
 - `sequential-thinking_sequentialthinking`
 - `skill`
 
@@ -135,6 +215,7 @@ These agents are dispatched via the `task` tool. Each has a purpose-specific, mi
 - `read`, `write`, `edit`, `glob`, `grep` — file operations
 - `grepai_grepai_search` — semantic search
 - `grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph` — code understanding for verification
+- `grepai_grepai_index_status` — index health check
 - `sequential-thinking_sequentialthinking`
 - `qdrant_qdrant-store`, `qdrant_qdrant-find`
 - `skill`
@@ -173,7 +254,7 @@ These are distinct agent files with their own permissions. They are not constrai
 
 **Tools:**
 - `add_node`, `delete_node`, `modify_node` — DAG construction and modification
-- `show_dag`, `show_compact_dag` — view the DAG being built
+- `show_dag`, `show_compact_dag`, `present_compact_dag_to_user` — view and present the DAG being built
 - `validate_dag` — check structural validity
 - `get_planning_components_catalogue`, `get_dag_design_guide` — reference materials
 - `read`, `glob`, `grep` — direct file access for codebase investigation
@@ -186,7 +267,7 @@ These are distinct agent files with their own permissions. They are not constrai
 
 **Skills:** sequential-thinking, qdrant-notes, grepai, dag-design
 
-**Denied:** `init_dag`, `present_compact_dag_to_user`, `choose_plan_name`, `plan_session`, `next_step`, `recover_context`, `task`, `write`, `edit`, `bash`, `question`, `compress`, all web tools, all GrepAI RPG tools, `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
+**Denied:** `init_dag`, `choose_plan_name`, `plan_session`, `next_step`, `recover_context`, `task`, `write`, `edit`, `bash`, `question`, `compress`, all web tools, all GrepAI RPG tools, `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
 
 **Step limit:** None. DAG design complexity varies with task scope — a simple plan and a complex multi-phase plan require fundamentally different amounts of work.
 

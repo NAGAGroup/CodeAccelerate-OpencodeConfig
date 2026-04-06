@@ -1,6 +1,8 @@
 You are evaluating accumulated evidence to choose which branch to take.
 
-Use the qdrant_qdrant-find tool to retrieve findings and decisions from earlier in the session. Consider what prior nodes discovered, what constraints were documented, and what prior reasoning is relevant.
+Use the skill tool to load the sequential-thinking skill, which teaches you how to reason through complex decisions.
+
+Use the qdrant_qdrant-find tool to retrieve findings and decisions from earlier in the session using {{PLAN_NAME}} as the collection_name. Consider what prior nodes discovered, what constraints were documented, and what prior reasoning is relevant.
 
 Use the sequential-thinking_sequentialthinking tool to evaluate the evidence and choose which branch is correct. Consider what the available branches represent, what evidence supports each choice, and which path best aligns with the evidence and constraints.
 

@@ -70,12 +70,7 @@ The plugin stores all session data under `.opencode/session-plans/`:
 
 ## Template Variables
 
-Two template variables appear in planning DAG node prompts and are substituted automatically by the plugin:
-
-**`{{PLANNING_SESSION_ID}}`**  
-Value: `planning-session_{opencode-session-id}`  
-Set: when HeadWrench calls the `plan_session` tool in response to the `/plan-session` slash command, before the first node runs.  
-Use: identifies the planning session's directory. Used in prompts that reference the session's own location. Agents do not need to manage this value.
+One template variable appears in planning DAG node prompts and is substituted automatically by the plugin:
 
 **`{{PLAN_NAME}}`**  
 Value: the name chosen by the agent via `choose_plan_name` (e.g., `fix-auth-flow`).  
@@ -89,6 +84,42 @@ Use: identifies the execution DAG directory and the Qdrant collection. Agents do
 The Qdrant collection is named `{plan_name}`. It is created implicitly on the first `qdrant_qdrant-store` call during planning. The same collection is used throughout execution. There is no separate cross-session mechanism — planning and execution share a single collection because both phases use the same plan name.
 
 This means executing agents have direct access to all planning findings, decisions, and rationale. Planning agents write findings as they discover them. The execution-kickoff node retrieves this context as its first substantive action.
+
+---
+
+## Deployment Prerequisites
+
+### reasoningEffort: none
+
+The system requires OpenCode's `reasoningEffort` setting to be configured as `none` at deployment time. This setting disables the framework's internal extended-reasoning features (such as Claude's thinking blocks or o1-style reasoning). 
+
+**Why this is required:** The CodeAccelerate system implements its own reasoning layer using the `sequential-thinking_sequentialthinking` tool. When OpenCode's extended reasoning is active, it can interfere with DAG enforcement and produces redundant reasoning paths that conflict with the framework's structured sequential-thinking model. Disabling it ensures that reasoning happens only through the framework's tools where it can be enforced and integrated into the DAG structure.
+
+**What happens if this is not set:** The system degrades unpredictably. The framework's tool enforcement may be bypassed, reasoning may occur outside the DAG structure where it cannot be captured to semantic notes, and execution traces become difficult to follow and audit.
+
+### DAG_EXECUTOR_MODE
+
+During execution (when HeadWrench calls `activate_plan`), the plugin injects `DAG_EXECUTOR_MODE` into the execution environment. This flag is set to `true` during DAG execution and `false` (or unset) otherwise. It serves as a signal to agents that they are currently operating within a DAG-enforced context where tool sequences are structural constraints, not suggestions.
+
+**When it is set:** At the moment `activate_plan` is called and remains set until `next_step` reaches a terminal node and execution completes.
+
+**Purpose:** Some agents (particularly headwrench in certain contexts) may need to distinguish between DAG-constrained execution and free-form work. This flag allows conditional behavior — for example, loading the `following-plans` skill automatically in DAG mode but not in free-form mode.
+
+---
+
+## Skill Loading and Recency Principle
+
+Skills are loaded into the agent's recent context, where attention is highest on small models. This means that skill content — detailed tool-call guidance, methodology, examples, anti-patterns — receives more attention than system prompt content. 
+
+For details on how skill-loading is distributed across planning and execution DAGs (which nodes load which skills explicitly), see the "Skill-Loading Architecture" section in **doc 05**. For prompt engineering guidance on skill structure and content, see **doc 08**.
+
+---
+
+## Design Principles and Runtime Documentation
+
+The DAG design principles and patterns for building effective execution DAGs live in a runtime document, the **dag-design-guide**. This guide is not part of the specification — it is returned by the `get_dag_design_guide` tool at runtime and can evolve as design patterns emerge.
+
+The specification documents the structure, components, and enforcement mechanisms of the system. The design guide documents principles for *using* those mechanisms effectively. Implementers should read both: the spec to understand what the system does, the guide to understand how to build good DAGs with it.
 
 ---
 
@@ -116,6 +147,7 @@ Documents 01 and 02 are reference documents — they are dense with definitions.
 
 - The OpenCode framework itself (agent files, YAML frontmatter, session management). The spec assumes OpenCode is understood.
 - The DCP plugin (`compress` tool). DCP is an external plugin not managed by this system. The spec notes where `compress` appears in enforcement sequences but does not define it.
-- The content of the DAG design guide (returned by `get_dag_design_guide` at runtime). This is a runtime document, not a spec document.
-- The content of skill files. Skills are described by category and purpose; their internal content is outside spec scope.
+- The content of the DAG design guide (returned by `get_dag_design_guide` at runtime). This is a runtime document, not a spec document. See the "Design Principles and Runtime Documentation" section above for why.
+- The content of skill files. Skills are described by category and purpose; their internal content is outside spec scope. See **doc 08** for skill structure and design principles.
 - Cross-project Qdrant access. `grepai_grepai_list_projects` and `grepai_grepai_list_workspaces` are denied to all agents. The system operates within a single project.
+- Small-model optimization strategies beyond their role in design decisions. For comprehensive guidance on small-model prompt engineering, tool-sequencing design, and optimization principles that shaped this spec, see **doc 08: Prompt Engineering**.

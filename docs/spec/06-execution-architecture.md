@@ -98,6 +98,66 @@ The `following-plans` skill teaches the agent to read these error messages and c
 
 ---
 
+## Infrastructure Stack
+
+The CodeAccelerate system depends on a configured infrastructure stack:
+
+**Qdrant (Local Instance)**
+- Running locally with FastEmbed embeddings (no external embeddings service)
+- Collections named by plan name (`{{PLAN_NAME}}`)
+- Session-scoped persistence — collections created at first `qdrant_qdrant-store` call, remain for full planning + execution lifecycle
+- Accessed via `qdrant_qdrant-store` and `qdrant_qdrant-find` tools
+- Contains planning notes, execution findings, decision context, failure information (if execution fails)
+
+**MCP Servers Configured**
+- Sequential Thinking (builtin) — provides `sequential-thinking_sequentialthinking`
+- GrepAI — provides semantic code search and RPG graph traversal
+- SearXNG — provides external web search and URL reading (for external-scout)
+- Context7 — provides library documentation queries (for external-scout)
+
+**Component Library**
+- Located at `.opencode/config/planning/plan-session/node-library/` (global, shared across projects)
+- Each component has `prompt.md` (static template) and `node-spec.json` (enforcement sequence)
+- Referenced by dag-designer during planning; never directly read by executing agents
+
+**Session Storage**
+- Planning DAGs: `.opencode/session-plans/planning-session_{id}/plan.jsonl` and prompts
+- Execution DAGs: `.opencode/session-plans/{{PLAN_NAME}}/plan.jsonl` and prompts
+- Qdrant collections: persisted locally, retrieved via `qdrant_qdrant-find` calls
+
+**How pieces connect:**
+- Agent calls `qdrant_qdrant-find` with a collection name (always `{{PLAN_NAME}}`) and a semantic query
+- FastEmbed embeddings are computed locally for both the query and all stored notes
+- Relevant notes are returned by semantic similarity
+- Agent calls `qdrant_qdrant-store` to write new findings to the same collection
+- Execution agents query the same collection used by planning agents — no separate cross-session mechanism
+
+---
+
+## Qdrant Query Construction
+
+Agents retrieve session knowledge using `qdrant_qdrant-find` with semantic queries. The quality of retrieval depends on query phrasing.
+
+**Good query characteristics:**
+- **Specific enough to distinguish from unrelated findings.** Bad: "implementation" (matches every work node). Good: "authentication token validation implementation details"
+- **Use domain terms from the codebase.** Bad: "the thing that breaks." Good: "request timeout error in database queries"
+- **Include context about what you're trying to do.** Bad: "decision." Good: "verification results from authentication changes to decide next steps"
+- **One semantic concept per query.** Multiple queries beat one complex query. Bad: "all findings about implementation, verification, and deployment." Good: Make three calls: (1) "implementation of auth changes", (2) "verification results for auth", (3) "deployment considerations"
+
+**What works well:**
+- Queries that reference actual findings/decisions stored in notes ("What did the scout find about request handling?")
+- Queries that use task-relevant language ("What constraints did the user set for the API changes?")
+- Multiple focused queries ("What was implemented?", "Were there any issues?") rather than one broad query
+
+**What doesn't work well:**
+- Vague queries ("tell me about the project", "any issues?")
+- Queries that assume note structure ("get note ID 5")
+- Queries phrased as questions to humans ("Why didn't the scout find X?") rather than semantic search ("scout findings about X")
+
+**For implementers writing dispatch prompts:** Include guidance like: "Retrieve what prior findings exist about this area from the semantic notes system. Use queries like: 'What did investigation find about X module?' and 'What verification challenges emerged?'"
+
+---
+
 ## Compression During Execution
 
 Long execution DAGs accumulate conversation context that can exceed the model's effective attention window. `compress` nodes exist in the execution DAG specifically to manage this — they reduce closed conversation sections without losing session knowledge, because the semantic notes system has already captured everything important.

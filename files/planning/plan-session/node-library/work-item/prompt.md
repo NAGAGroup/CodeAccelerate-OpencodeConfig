@@ -1,8 +1,8 @@
 You are implementing a scoped goal that requires investigating the project before making changes.
 
-Use the task tool to dispatch @context-scout to investigate the current state of the area that needs to change. Ask the scout to report on existing patterns, what will be affected by changes, and any pain points to watch for.
+Use the skill tool to load the juniordev-delegation skill, which teaches you how to dispatch implementation work.
 
-Use the skill tool to load the delegation skill matching the type of work the scout described. For code or configuration changes, load the juniordev-delegation skill. For documentation changes, load the documentation-expert-delegation skill.
+Use the task tool to dispatch @context-scout to investigate the current state of the area that needs to change. Ask the scout to report on existing patterns, what will be affected by changes, and any pain points to watch for.
 
 Use the sequential-thinking_sequentialthinking tool to reason through what the scout found and what it means for the implementation approach. Consider what boundaries are important, what the implementation subagent needs to know, and whether your task brief will be clear enough to avoid back-and-forth.
 

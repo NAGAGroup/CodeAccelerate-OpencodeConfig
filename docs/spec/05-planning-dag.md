@@ -38,13 +38,13 @@ The `skill` call loads the `context-scout-delegation` skill. Thinking reasons th
 
 ## Node 3: External Research
 
-**Intent:** Delegate to external-scout to gather information from external sources. Present the exact research query to the user for IP approval before dispatching.
+**Intent:** Delegate to external-scout to gather information from external sources. Formulate a concrete external research plan and present it to the user for approval.
 
 **Enforcement:** `[skill, skill, sequential-thinking_sequentialthinking, question, task]`
 
-The first `skill` loads the `asking-questions` skill (this is the first node where `question` is enforced — the skill teaches how to use it well). The second `skill` loads the `external-scout-delegation` skill. Thinking composes the research query. `question` presents the exact query to the user for IP approval. `task` dispatches external-scout.
+The first `skill` loads the `asking-questions` skill (this is the first node where `question` is enforced — the skill teaches how to use it well). The second `skill` loads the `external-scout-delegation` skill. Thinking composes the research query and formulates a concrete plan for what will be researched and why. `question` presents the exact research plan to the user with three explicit options: **Approve** (execute the plan as formulated), **Modify** (user specifies changes to the plan), or **Deny** (skip external research entirely). `task` dispatches external-scout.
 
-If the user chooses to skip external research, the agent dispatches external-scout with a prompt instructing it to return immediately without doing any work. This satisfies the enforcement sequence without requiring a branch.
+**Mandatory formulation principle:** The agent must always produce a research plan at this node — formulation is not optional. The user retains control through the Approve/Modify/Deny options. If the user chooses Deny, the agent dispatches external-scout with a prompt instructing it to return immediately without doing any work. This satisfies the enforcement sequence without requiring a branch. This mandatory-formulation pattern prevents small models from silently assuming they know enough and skipping research unilaterally.
 
 ---
 
@@ -92,7 +92,9 @@ The first `skill` loads `following-plans`. The second loads `sequential-thinking
 
 **Enforcement:** `[skill, sequential-thinking_sequentialthinking, qdrant_qdrant-find, sequential-thinking_sequentialthinking]`
 
-The `skill` loads `qdrant-notes`. The first thinking step reasons through what needs to be retrieved and how to query for it. `qdrant_qdrant-find` retrieves the stored findings. The second thinking step synthesizes the retrieved context into a coherent understanding ready for DAG design.
+The `skill` loads `qdrant-notes`. The first thinking step reasons through what needs to be retrieved and how to query for it. `qdrant_qdrant-find` retrieves the stored findings (multiple calls may be made if needed to gather all relevant context). The second thinking step synthesizes the retrieved context into a coherent understanding ready for DAG design.
+
+**Note:** This node performs the mandatory retrieval for planning. Additional optional Qdrant calls may be made during DAG design (Node 9) or later nodes to refine understanding — those optional calls do not appear in the enforcement sequence.
 
 ---
 
@@ -179,3 +181,112 @@ Node 12: User Review  [branch]
 ```
 
 Nodes 1–11 are linear. Node 12 branches. Node 14 is the terminal for both paths.
+
+---
+
+## Skill-Loading Architecture
+
+Skill loading has been restructured with a new foundational principle: **every library node (execution DAG component) and every planning prompt is responsible for loading its own relevant skill(s) at the start of its enforcement sequence**. This ensures domain-specific methodology is always fresh in context, regardless of what prior nodes established.
+
+**Planning nodes skill loads:**
+
+| Node | Skill loads | Rationale |
+|---|---|---|
+| Node 1: Session Overview | `following-plans`, `sequential-thinking` | Establish plan-following and reasoning methodology for the entire planning session |
+| Node 2: Orientation Scout | `context-scout-delegation` | Load delegation methodology before dispatching the scout |
+| Node 3: External Research | `asking-questions`, `external-scout-delegation` | Load question-formulation and delegation methodology before asking the user and dispatching |
+| Node 4: User Questions | None | User questions do not require new methodology; both `question` and `sequential-thinking_sequentialthinking` tools are already established by prior nodes |
+| Node 5: Store Notes | None | Note storage does not require new methodology |
+| Node 6: Compress | None | Compression is a structural operation without methodology requirements |
+| Node 7: Session Overview Refresher | `following-plans`, `sequential-thinking` | Re-establish methodology after context compression for the remaining planning nodes |
+| Node 8: Retrieve Notes | `qdrant-notes` | Load notes-retrieval methodology before querying the semantic notes system |
+| Node 9: DAG Design | `dag-design` | Load design-specific criteria before dispatching the designer |
+| Node 10: DAG Review | `dag-review` | Load review-specific criteria before dispatching the reviewer |
+| Node 11: DAG Revision | `dag-design` | Load design criteria again for the revision dispatch |
+| Node 12: User Review | None | User review does not require new methodology |
+| Node 13: Final Revision | `dag-design` | Load design criteria for the final revision dispatch |
+| Node 14: Plan Success | None | Terminal node with no methodology requirements |
+
+**Execution nodes skill loads:**
+
+| Node type | Skill loads | Rationale |
+|---|---|---|
+| `execution-kickoff` | `following-plans` | Establish execution-phase plan-following methodology |
+| `work-item` | `context-scout-delegation` then `juniordev-delegation` or `documentation-expert-delegation` | Load scout methodology, then load the appropriate implementation methodology based on investigation results |
+| `project-search-and-analysis` | `context-scout-delegation` or `context-insurgent-delegation` | Load the appropriate investigation methodology based on session context |
+| `research` | `external-scout-delegation` | Load research methodology before composing and presenting the research query |
+| `deep-research` | `external-scout-delegation` | Load research methodology for extended investigation |
+| All other execution nodes | Relevant skill per node (e.g., `qdrant-notes` for retrieval, `tailwrench-delegation` for verification/operations) | Each node loads its required methodology at the start |
+
+**Why this pattern changed:** Library nodes execute in arbitrary order — execution is not guaranteed to follow any fixed sequence. The prior architecture assumed methodology established at kickoff would carry through. This works for foundational methodology (`following-plans`, `sequential-thinking`), but domain-specific skills (delegation skills, `qdrant-notes`, operations skills) must be fresh at the node where they are needed. Making each node load its own skill ensures no gaps and works regardless of DAG shape.
+
+**Critical distinction:** This per-node loading rule is **distinct from** the kickoff-establishes-session-wide-methodology principle. Session-wide methodology (`following-plans`, `sequential-thinking` in planning; `following-plans` in execution) is established once at the start and carries forward. Domain-specific methodologies (delegation, notes-handling, operations) are loaded fresh at every node that needs them. `skill` appears first in all enforcement sequences for nodes that use a skill, ensuring methodology is in context before any task is dispatched.
+
+---
+
+## Planning for Small Models
+
+The planning DAG is structured specifically to work with small models (9B–14B), addressing their strengths and accommodating their common limitations.
+
+### Small-Model Planning Characteristics
+
+**What small models do well in planning:**
+- Follow explicit sequences and structural constraints (the enforcement sequences)
+- Investigate systematically when given a clear goal and scope
+- Synthesize findings from multiple sources when context is compressed and well-organized
+- Generate reasonable task-level decisions when the decision criteria are explicit
+
+**Where small models struggle in planning:**
+- Maintaining complex context across many conversation turns without compression (solved by Node 6 compress + Node 7/8 refresher pattern)
+- Inferring implicit decision criteria (solved by forcing explicit user questions in Node 4)
+- Balancing architectural concerns with implementation details (solved by separating dag-designer's planning context from execution — designer never sees implementation details)
+- Recovering coherent state after context loss (solved by Qdrant notes + recover_context mechanism)
+
+### Planning Limitations
+
+These are design boundaries, not bugs. The planning DAG does not:
+- Generate completely autonomous DAGs without user input. Node 4 requires explicit user questions, forcing the agent to surface unknowns before dag-designer builds structure.
+- Support unlimited scope breadth. Node 3 limits external research to one approved query. Node 2's scout is intentionally shallow (step-limited). If scope is truly broad, it will be surfaced in Node 4 for user clarification.
+- Handle revisions beyond one round. Node 11 is the final revision round — if changes are needed after that, it's a signal that planning was insufficient and a new session should start.
+
+These limitations are not small-model accommodations — they apply regardless of model size. They reflect design intent: planning should be thorough and bounded, not endless.
+
+---
+
+## Planning Notes Quality Standards
+
+Notes stored to the Qdrant collection during planning determine the quality of execution. Well-formed planning notes:
+
+**Capture explicit decision context, not just findings.** Good note: "During investigation, we found three modules that handle requests. Scout was uncertain whether module C's request handling is still used. User clarified: Module C is deprecated and can be ignored. This matters for DAG structure: don't include verification for Module C." Bad note: "Found three modules, scout wasn't sure about one, user clarified."
+
+**Use specific references when decision-critical.** Good note: "DAG decision point: If verify-auth passes, advance to verify-integration. If verify-auth fails, advance to plan-fail. See plan.jsonl for node IDs." Bad note: "Verification depends on auth passing."
+
+**Distinguish investigation findings from scope decisions.** Good note: "Investigation: The codebase has logging in three places (app.js, auth.js, utils.js). Scope decision: Don't modify logging during implementation." Bad note: "Logging is in three places."
+
+**Phrase notes for retrieval by later queries.** Good note: "Breaking change risk: If we modify the request context object, all three modules that depend on it need verification. This is why the DAG includes separate verify nodes for each module." Bad note: "Modules depend on request context."
+
+**Store notes per discovery, not per session recap.** Good: Multiple individual notes, one per finding. Bad: A single giant note with all findings in it. The Qdrant search system retrieves notes by semantic similarity — multiple specific notes retrieve better than one combined note.
+
+---
+
+## Full 4-Step Autonomous-Work Flow
+
+When `autonomous-work` component nodes are executed (only with explicit user approval):
+
+1. **question** — The agent confirms explicit user approval for autonomous execution. This is a structural gate — autonomous work cannot proceed without this confirmation.
+2. **skill** — The `autonomous-agent-delegation` skill is loaded, which explains the autonomous agent's capabilities, constraints, and expected behavior.
+3. **sequential-thinking_sequentialthinking** — The executing agent reasons through the dispatch prompt: what context does autonomous-agent need, what are success criteria, what constraints apply.
+4. **task** — The autonomous agent is dispatched.
+
+This 4-step flow mirrors the standard delegation flow (`skill` → `thinking` → `task`) but adds an explicit user-approval gate before autonomous work begins. The `question` call serves as a structural requirement that no dispatch of autonomous-agent can occur without returning to the user for approval.
+
+---
+
+## Cursor State Persistence Through recover_context
+
+If HeadWrench experiences context loss after `activate_plan` is called (e.g., due to autocompaction), calling `recover_context` returns:
+- The current node ID (the agent's position in the DAG)
+- The list of completed nodes
+- Session state including the plan name
+
+The DAG position is restored. The agent resumes at the current node with its enforcement sequence reset, allowing completion of any partial work and subsequent advancement. This is why `recover_context` is globally exempt — it can be called at any time to restore session state without triggering enforcement errors.

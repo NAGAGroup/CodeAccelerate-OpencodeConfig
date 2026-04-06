@@ -1,6 +1,6 @@
 You are conducting extended external research to explore a domain broadly and deeply.
 
-Use the skill tool to load the external-scout-delegation skill.
+Use the skill tool to load the external-scout-delegation skill, which teaches you how to dispatch comprehensive research.
 
 Use the sequential-thinking_sequentialthinking tool to plan the scope of investigation. Consider what domain or topic needs exploration, what angles or sub-questions are most valuable to cover, and what external research would best serve the plan.
 

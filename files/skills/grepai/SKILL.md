@@ -15,8 +15,6 @@ GrepAI provides multiple tool categories for different investigation needs.
 
 **Trace Tools (Call Graph Analysis):** Use grepai_grepai_trace_callers to find all functions that call a specific symbol. Use grepai_grepai_trace_callees to find all functions called by a specific symbol. Use grepai_grepai_trace_graph to build complete call graph showing both callers and callees. Parameters: symbol (required), depth (default 2 for graph), workspace, project, compact (default false).
 
-**Refs Tools (Property/State Tracking):** Use grepai_grepai_refs_readers to find where a property or state is read. Use grepai_grepai_refs_writers to find where a property or state is written. Use grepai_grepai_refs_graph to build complete property usage graph. Useful for Vue/Pinia state tracking.
-
 **Workspace Tools:** Use grepai_grepai_list_workspaces to list all available workspace names. Use grepai_grepai_list_projects to list projects within a workspace (requires workspace parameter).
 
 **Status Tools:** Use grepai_grepai_index_status to check index health and statistics. Parameters: verbose (optional), workspace.
@@ -61,11 +59,9 @@ Before refactoring workflow: Use grepai_grepai_trace_callers to find all functio
 
 Cross-project search in workspace mode: Use grepai_grepai_list_workspaces to see available workspaces. Use grepai_grepai_search with workspace parameter to search across all projects. Optionally filter by specific projects using the project parameter. Use path parameter to narrow results to specific directories.
 
-Property/state tracking for Vue/Pinia: Use grepai_grepai_refs_readers to find where state is accessed. Use grepai_grepai_refs_writers to find where state is modified. Use grepai_grepai_refs_graph to see complete usage patterns.
-
 ## Rules
 
-Start with grepai_grepai_search for broad exploration and code discovery. Use trace tools when you need to understand a specific function's dependencies and callers before making changes. Use refs tools for property and state tracking, especially in reactive frameworks. Rely on GrepAI tools first for investigation — file operation tools (read, glob, grep) are fallbacks only after GrepAI has identified the specific files you need. Once GrepAI identifies relevant files, read those files using the read tool to understand their full context. Use the grep tool for exact string matching only when semantic search has narrowed the scope to specific files. Always use compact mode or TOON format for token efficiency unless you need to see code snippets in results.
+Start with grepai_grepai_search for broad exploration and code discovery. Use trace tools when you need to understand a specific function's dependencies and callers before making changes. Rely on GrepAI tools first for investigation — file operation tools (read, glob, grep) are fallbacks only after GrepAI has identified the specific files you need. Once GrepAI identifies relevant files, read those files using the read tool to understand their full context. Use the grep tool for exact string matching only when semantic search has narrowed the scope to specific files. Always use compact mode or TOON format for token efficiency unless you need to see code snippets in results.
 
 ## Anti-patterns
 
@@ -99,11 +95,11 @@ What it looks like: You make multiple grepai_grepai_search calls without setting
 
 Why it fails: Token usage adds up quickly. Use compact mode by default unless you specifically need to see code snippets in the results.
 
-**Anti-pattern: Using trace when you need refs**
+**Anti-pattern: Using trace when you need different queries**
 
-What it looks like: You try to use grepai_grepai_trace_callers to find where a Vue store property is accessed, but get no results because it's not a function call.
+What it looks like: You try to use grepai_grepai_trace_callers to find where an application state is accessed, but get no results because it's not a function call.
 
-Why it fails: Trace tools work on function calls. For property and state access patterns, use refs tools instead (grepai_grepai_refs_readers, grepai_grepai_refs_writers).
+Why it fails: Trace tools work on function and method symbols. For other types of investigation, use grepai_grepai_search with semantic queries describing what you're looking for.
 
 ## Good and Bad Examples
 
@@ -111,7 +107,7 @@ Why it fails: Trace tools work on function calls. For property and state access 
 
 **Good:** Before refactoring a critical function, you call grepai_grepai_trace_graph with symbol "processPayment" and depth 3 to understand the complete dependency chain. This reveals 8 callers across 4 files that you need to consider.
 
-**Good:** You need to find where a Pinia store property is being modified. You call grepai_grepai_refs_writers with the property name to see all write locations.
+**Good:** You need to find where a configuration state is being accessed and modified. You call grepai_grepai_search with query "configuration state updates" to locate relevant code sections.
 
 **Bad — uses glob first:** You need to find authentication code, so you call glob with pattern matching auth files and read 15 files trying to find validation logic. Use grepai_grepai_search instead.
 
@@ -121,4 +117,4 @@ Why it fails: Trace tools work on function calls. For property and state access 
 
 **Bad — wastes tokens:** You make 10 grepai_grepai_search calls without compact mode, getting back full code snippets each time when you only needed file paths and scores.
 
-**Bad — wrong tool for the job:** You try to use grepai_grepai_trace_callers to find where a Vue reactive property is accessed. Use grepai_grepai_refs_readers instead.
+**Bad — wrong tool for the job:** You try to use grepai_grepai_trace_callers to find where a reactive property is accessed. Use grepai_grepai_search with a semantic query describing the property and its usage instead.

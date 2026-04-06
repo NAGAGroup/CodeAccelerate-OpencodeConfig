@@ -1,6 +1,6 @@
 You are staging and committing changes at a meaningful save point.
 
-Use the skill tool to load the tailwrench-delegation skill.
+Use the skill tool to load the tailwrench-delegation skill, which teaches you how to dispatch shell and git operations.
 
 Use the sequential-thinking_sequentialthinking tool to compose the commit message and scope. Consider what changes were made since the last commit, whether the project is in a stable committable state, and what the commit message should describe.
 

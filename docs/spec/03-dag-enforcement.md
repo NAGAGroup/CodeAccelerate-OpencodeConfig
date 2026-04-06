@@ -23,17 +23,49 @@ These tools are never blocked by the enforcement engine. They can be called at a
 - `qdrant_qdrant-find` — retrieve from semantic notes
 - `recover_context` — recover DAG session context
 
+**Rationale for global exemption:** These tools enable agents to think, communicate, remember, and recover — fundamental capabilities that should never be constrained by enforcement sequences. This is not a small-model accommodation (though small models do benefit). It is a universal design principle: the enforcement engine constrains tool *sequences* to ensure structural invariants, not the *use* of metadata, reasoning, and communication tools. An agent that needs to think through a problem should never be blocked from calling the thinking tool by an enforcement sequence. An agent that needs to store findings should never be blocked from calling the store tool. Exempting these globally keeps them always available as agent judgment warrants.
+
 **Note on Qdrant availability:** The Qdrant tools (`qdrant_qdrant-store` and `qdrant_qdrant-find`) are available to all agents and subagents that include them in their permission list. For headwrench executing DAG nodes, these tools are globally exempt and never blocked by DAG enforcement. For subagents dispatched via the `task` tool, Qdrant access is governed only by their agent permissions — DAG enforcement does not apply to subagents.
 
 Exempt tools can also appear in enforcement sequences as **positional requirements** (see below). When they do, calling them is never blocked — but a call made before that position in the sequence does not satisfy the positional requirement.
 
 ### Special case: next_step
 
-`next_step` is treated as implicitly required at the end of every node. It does not appear in enforcement sequences. Its blocking behavior is unique: `next_step` is blocked until every position in the current node's enforcement sequence has been satisfied. Once the sequence is fully satisfied, `next_step` is the only valid DAG-advancing action — calling other non-exempt tools after the sequence is complete will result in a `[DAG BLOCKED]` error directing the agent to call `next_step`.
+`next_step` is treated as implicitly required at the end of every node. It does not appear in enforcement sequences and is not part of the enforcement sequence. Its blocking behavior is unique: `next_step` is blocked until every position in the current node's enforcement sequence has been satisfied. Once the sequence is fully satisfied, `next_step` is the only valid DAG-advancing action — calling other non-exempt tools after the sequence is complete will result in a `[DAG BLOCKED]` error directing the agent to call `next_step`.
+
+**Clarity on enforcement status:** `next_step` is not part of enforcement sequences. It is implicit and always available for calling once prerequisites are met. This ensures that agents can always advance the DAG after completing their work, while preventing premature advancement before all required work is done. The enforcement engine blocks `next_step` only while the sequence is incomplete — never due to something being "required" in the sequence itself.
 
 ---
 
-## Enforcement Sequences
+## Enforcement Pattern: Minimum + Optional Enrichment
+
+The enforcement sequence specifies the **minimum required work** for a node to be considered complete. Calling `next_step` is possible only after every position in the enforcement sequence has been satisfied. However, the enforcement sequence does not prohibit additional work.
+
+**Key principle:** Enforcement is a floor, not a ceiling. An agent may call additional exempt tools, may dispatch subagents beyond what is enforced, or may perform other reasoning steps that the enforcement sequence does not require. The enforcement sequence ensures essential work occurs; optional enrichment remains the agent's choice.
+
+For example, a `work-item` node's enforcement sequence is `[task, skill, sequential-thinking_sequentialthinking, task]` — scout first, then implement. An agent satisfies this by calling these four tools in order. The agent may also:
+- Call `question` multiple times (exempt tool, can be called anytime)
+- Call `qdrant_qdrant-find` to retrieve context (exempt tool)
+- Call `sequential-thinking_sequentialthinking` additional times beyond the one enforced position (exempt tool)
+- Dispatch additional subagents after the second `task` but before calling `next_step` (not prohibited by enforcement)
+
+The enforcement engine is a structural gate, not a behavioral ceiling. It ensures essential invariants are met without constraining optional work beyond those invariants.
+
+---
+
+## Small-Model Motivation for Enforcement Sequences
+
+Small language models (9B–14B) excel at following explicit structural constraints but struggle with implicit expectations. A prompt saying "investigate before implementing" is guidance. An enforcement sequence that blocks implementation calls until investigation is complete is a structural guarantee.
+
+This is not a limitation accommodation — it is a design principle that improves reliability across all model sizes. Large models can infer the intended sequence from prose. Small models need the sequence made explicit. By encoding the sequence as an enforcement gate, both large and small models benefit:
+- Small models: guaranteed correctness through structure, not inference
+- Large models: freed from the overhead of reasoning about which step comes next — they can focus on what to do at the current step
+
+**For implementers:** Enforcement sequences exist to catch deviations early and provide actionable error messages. They are not present to distrust agents — they are present to make correct behavior the path of least resistance.
+
+---
+
+## Enforcement Sequences (Detailed)
 
 Each node has an enforcement sequence — an ordered list of tool identifiers that must be called to complete the node. Sequences are stored in `plan.jsonl` as arrays of exact callable tool identifiers (not shorthands).
 

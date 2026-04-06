@@ -1,8 +1,8 @@
 You are investigating the project to understand the current state without making changes.
 
-Use the qdrant_qdrant-find tool to retrieve relevant findings from earlier in this session. Consider what has already been discovered, what uncertainties remain, and what investigation might resolve them.
+Use the skill tool to load the context-scout-delegation skill, which teaches you how to dispatch project investigation.
 
-Use the skill tool to load an investigator delegation skill based on what you need to learn. For wide and shallow understanding of a broad area, load the context-scout-delegation skill. For narrow and targeted analysis of a specific mechanism, load the context-insurgent-delegation skill.
+Use the qdrant_qdrant-find tool to retrieve relevant findings from earlier in this session using {{PLAN_NAME}} as the collection_name. Consider what has already been discovered, what uncertainties remain, and what investigation might resolve them.
 
 Use the sequential-thinking_sequentialthinking tool to compose your investigation prompt. Consider what specific questions the investigator should answer, what context they need, and whether your prompt will guide them toward useful findings.
 

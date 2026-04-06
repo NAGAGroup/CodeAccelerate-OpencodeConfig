@@ -4,6 +4,33 @@ The component library provides static prompt templates for execution DAGs. Every
 
 ---
 
+## Representative Content Examples
+
+### Component Node Structure
+
+A typical component in the library contains:
+
+**`prompt.md` (Static Template):**
+Starts with a one-sentence role statement ("You are investigating the project to understand what needs to change"), followed by prose instructions that reference tools explicitly ("Use the task tool to dispatch @context-scout to investigate..."), and ends with constraints ("Focus on investigation only — implementation happens at the next step").
+
+**`node-spec.json` (Enforcement Sequence):**
+A single JSON object with an `enforcement` field containing an ordered array of exact tool identifiers, e.g.:
+```json
+{
+  "enforcement": ["skill", "sequential-thinking_sequentialthinking", "task"]
+}
+```
+
+### Planning Node Example
+
+Planning node prompts follow the same three-part structure but are hand-authored for their specific position. Example: Node 3 (External Research) begins with a role statement, includes prose that explains the research flow, references the external-scout-delegation skill and the question tool, and ends with constraints about scope and query formulation.
+
+### Skill File Example
+
+Skills teach methodology in 50–100 lines. A delegation skill like `juniordev-delegation` explains: what junior-dev is (goal-oriented implementer, makes code changes), what it can do (investigate and edit), what it cannot do (shell operations, verification), and includes good/bad dispatch prompt examples showing what information to provide and what information to omit.
+
+---
+
 ## How the Component Library Works
 
 Each component type is a directory in the global component library containing two files:
@@ -32,7 +59,9 @@ A fully written node in `plan.jsonl` contains:
 **Filled automatically by the plugin:**
 - `prompt` — relative path from the working directory to the copied prompt file (e.g., `.opencode/session-plans/my-plan/prompts/work-fix-build.md`)
 - `enforcement` — the enforcement sequence array, copied from the component's `node-spec.json`
-- `children` — populated incrementally as subsequent nodes declare this node as their parent
+- `children` — array of child node IDs. Populated incrementally as subsequent nodes declare this node as their parent.
+
+**File format:** JSONL (JSON lines) — one complete node entry per line. Each line is a valid JSON object containing all fields above plus the `enforcement` and `children` arrays.
 
 ---
 
@@ -254,6 +283,59 @@ The `skill` loads the `tailwrench-delegation` skill. `sequential-thinking_sequen
 | `commit` | Ops | `[skill, sequential-thinking_sequentialthinking, task]` | No |
 | `user-discussion` | General | `[question]` | No |
 | `autonomous-work` | General | `[question, task]` | No |
+
+---
+
+## Graceful Degradation Principle
+
+When a small model does not follow every instruction in a prompt or misses a detail in the enforcement sequence, the system degrades gracefully rather than failing catastrophically.
+
+**Examples of graceful degradation:**
+- Agent forgets to call a non-exempt tool in the sequence → enforcement engine blocks further progress and returns an error naming the expected tool. Agent reads the error and corrects course.
+- Agent over-investigates and calls dispatch more times than prompted → enforcement engine allows it (optional enrichment pattern). Extra work doesn't break anything.
+- Agent misunderstands a constraint → semantic notes + refusal by other agents catches the issue; it doesn't propagate silently.
+
+**What this is not:** The system does not assume agents will make mistakes and provide elaborate error recovery. It means the system is designed so that when deviations happen, they are caught early with actionable messages rather than silently producing wrong results.
+
+This principle applies to all model sizes. Enforcement sequences exist to make correct behavior the path of least resistance, so even when agents deviate, the deviation is visible and correctable.
+
+---
+
+## Imperative Error Message Phrasing
+
+Error messages use imperative language to redirect behavior immediately. Rather than explaining a violation, they tell the agent what to do next.
+
+**Patterns:**
+- `[DAG BLOCKED] Cannot call X — prerequisite not met. Call Y first to continue.` (tells agent exactly what to call)
+- `[BRANCH REQUIRED] Node "node-id" has multiple children. Call next_step with the next parameter. Valid options: [child-1, child-2].` (names valid options)
+
+Error messages are part of the enforcement mechanism's pedagogical design. They don't scold — they redirect. An agent reading `[DAG BLOCKED]` should immediately understand what to call and why. The `following-plans` skill teaches agents to read these messages and act on them.
+
+---
+
+## Skill-Loading Architecture
+
+Every library node (execution DAG component) is responsible for loading its own relevant skill(s) at the start of its enforcement sequence. This ensures domain-specific methodology is always fresh in context, regardless of prior nodes or DAG shape.
+
+| Node type | Skill loads | When | Rationale |
+|---|---|---|---|
+| `execution-kickoff` | `following-plans` | At node start | Establish execution-phase plan-following methodology for the entire execution phase |
+| `work-item` | `context-scout-delegation`, then `juniordev-delegation` or `documentation-expert-delegation` | Scout at node start, then implementation after investigation | Load investigation and appropriate implementation methodology |
+| `project-search-and-analysis` | `context-scout-delegation` or `context-insurgent-delegation` | At node start | Load the appropriate investigation methodology (wide-shallow or narrow-deep) |
+| `research` | `external-scout-delegation` | At node start | Load research methodology before composing and presenting the query |
+| `deep-research` | `external-scout-delegation` | At node start | Load research methodology for extended investigation |
+| `verify` | `tailwrench-delegation` | At node start | Load verification and operations methodology |
+| `run-project-commands` | `tailwrench-delegation` | At node start | Load operations methodology |
+| `commit` | `tailwrench-delegation` | At node start | Load git/operations methodology |
+| `kickoff-refresher` | `following-plans`, `sequential-thinking` | At node start | Re-establish methodology after context compression |
+| `decision-gate` | None | N/A | Logic node without methodology requirements |
+| `user-decision-gate` | None | N/A | Logic node without methodology requirements |
+
+**Why this pattern:** Library nodes execute in arbitrary order within a DAG — the shape of the graph is determined by the planner, not by a fixed sequence. Because execution order is not fixed, nodes cannot assume that methodology established at kickoff will be fresh in context by the time they execute. Each node that needs domain-specific methodology (delegation skills, operations skills, notes-handling skills) must load it fresh. This ensures correct behavior regardless of DAG topology.
+
+**Skill position in enforcement sequences:** Every component that loads a skill places `skill` first in its enforcement sequence. This ensures methodology is in context before any task dispatch, semantic notes retrieval, or complex reasoning occurs.
+
+**Relationship to kickoff methodology:** This per-node loading is **distinct from** the session-wide methodology established at `execution-kickoff`. The `following-plans` skill loaded at kickoff establishes how the executor reads and follows the DAG structure. That methodology persists across all nodes. Domain-specific skills (delegation, operations, notes-handling) are loaded additionally as needed at specific nodes. Both types of skill load can coexist: a node might have already absorbed the `following-plans` skill from kickoff but still needs to load `tailwrench-delegation` for the work it's about to dispatch.
 
 ---
 

@@ -22,7 +22,25 @@
           // satisfying tool calls internally without emitting them.
           // Non-thinking-capable models (Llama, Mistral, Phi, etc.) silently ignore this.
           "options": {
-            "reasoningEffort": "none"
+            // Disable thinking mode for Qwen3 and other reasoning models.
+            // reasoning_effort: "none" maps to think=false on Ollama's OpenAI-compatible
+            // /v1/chat/completions endpoint (the native think:false field is silently ignored
+            // on /v1 — only reasoning_effort works there).
+            // Prevents the ~60% tool-execution failure rate caused by reasoning models
+            // satisfying tool calls internally without emitting them.
+            // Non-thinking-capable models (Llama, Mistral, Phi, etc.) silently ignore this.
+            //
+            // NOTE: If your Ollama version is 0.17.5+ (parser fix for think+tool coexistence),
+            // you may remove reasoningEffort to enable thinking mode. Pair with the sampling
+            // params below for best results. Expect ~70-85% tool-call reliability vs 100% here.
+            "reasoningEffort": "none",
+            // Sampling params verified to improve tool-call syntax reliability:
+            // temperature 0.6 — more deterministic structured output vs default 1.0
+            // num_predict 4096 — prevents token starvation; thinking traces consume budget fast
+            // presence_penalty 0.0 — default 1.5 corrupts tool-call JSON syntax
+            "temperature": 0.6,
+            "num_predict": 4096,
+            "presence_penalty": 0.0
           }
         }
       }

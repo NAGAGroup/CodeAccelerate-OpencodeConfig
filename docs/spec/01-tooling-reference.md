@@ -75,6 +75,33 @@ These tools are provided by the planning-enforcement plugin — the plugin this 
 
 ---
 
+### activate_plan
+
+**Purpose:** Activate an execution DAG for execution. Locates the execution DAG created during planning, performs template variable substitution in all node prompts (filling in `{{PLAN_NAME}}`), and begins execution at the execution-kickoff root node.
+
+**Called by:** HeadWrench (the primary agent), in response to the user invoking the `/activate-plan <plan_name>` slash command.
+
+**Parameters:**
+- `plan_name` — the name of the plan to execute. Must match a plan created by a prior `choose_plan_name` call.
+
+**Returns on success:** Confirmation that the execution DAG was activated, including the plan name, the path to the plan's `plan.jsonl`, and the session context.
+
+**Returns on failure:** 
+- Error if no plan with that name exists under `.opencode/session-plans/`.
+- Error if `plan.jsonl` is not found at the expected path.
+- Error if `plan.jsonl` is malformed or cannot be parsed.
+
+**Side effects:** 
+- Locates and reads `.opencode/session-plans/{{PLAN_NAME}}/plan.jsonl`.
+- Substitutes `{{PLAN_NAME}}` into all node prompt files.
+- Sets the DAG enforcement engine to active mode.
+- Activates the execution-kickoff node as the current node.
+- Initializes the Qdrant collection name to `{{PLAN_NAME}}` (the collection created during planning remains active and accumulates execution notes).
+
+**Session recovery:** If HeadWrench experiences context loss after `activate_plan` is called but before execution completes, calling `recover_context` will restore the DAG position and session state. The Qdrant collection persists independently.
+
+---
+
 ### init_dag
 
 **Purpose:** Initialize the execution DAG. Creates `.opencode/session-plans/{plan_name}/plan.jsonl` with the execution-kickoff node pre-populated as the root.
@@ -268,6 +295,10 @@ These tools are provided by the planning-enforcement plugin — the plugin this 
 - On success: loads the next node's prompt and activates its enforcement sequence.
 
 **Returns on success:** Confirmation that the DAG advanced to the next node.
+
+**Terminal node behavior:** If the current node is a terminal node (a node with `children: []` in `plan.jsonl`, typically `plan-success` or `plan-fail`), calling `next_step` causes the session to transition to the `complete` status and execution ends. No further nodes are activated. The Qdrant collection and session history remain available for reference by future sessions.
+
+**Note on enforcement status:** `next_step` is not globally exempt. However, it is implicitly required at the end of every node and receives special handling by the enforcement engine — it is the only valid DAG-advancing action once the current node's enforcement sequence is fully satisfied. This special handling ensures that agents complete all required work before advancing, while the implicit requirement at every node ensures termination.
 
 ---
 

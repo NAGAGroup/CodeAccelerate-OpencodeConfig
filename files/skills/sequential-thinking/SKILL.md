@@ -32,3 +32,46 @@ Why it fails: Filler thoughts waste tool calls and clutter your reasoning chain.
 **Locking in totalThoughts too early.** Setting a fixed count at the start and never adjusting it as understanding deepens.
 
 Why it fails: Reasoning is exploratory. As you work through a problem, complexity or clarity may shift your estimate. Locked estimates force artificial stopping points or unnecessary extra thoughts.
+
+## When to Use Sequential Thinking
+
+Use sequential thinking whenever you encounter complex problems or decisions that benefit from step-by-step reasoning:
+
+- **Complex multi-step problems:** Problems with multiple dependencies or branches where you need to work through each step carefully
+- **Decision gates:** When you need to reason through options and decide between alternatives
+- **Ambiguous requirements:** When instructions are unclear and need interpretation; thinking clarifies what is meant
+- **Verification of logic:** When you want to verify that your reasoning is sound before acting
+- **Error investigation:** When you need to understand why something failed or what went wrong
+
+Do not use sequential thinking for simple, straightforward work. If you immediately understand what to do, take action directly.
+
+## How Sequential Thinking Improves Output
+
+Sequential thinking provides several benefits:
+
+- **Catches false assumptions:** Each step validates the previous reasoning. If an assumption is wrong, it is detected early.
+- **Handles complexity:** Breaking reasoning into steps makes complex problems manageable
+- **Creates audit trail:** Each thought is recorded, so you can trace how you reached a conclusion
+- **Enables revision:** If a previous thought was wrong, you can revise and continue from that point
+- **Improves accuracy:** Step-by-step reasoning produces fewer errors than trying to reason through everything at once
+
+Use sequential thinking as a thinking tool to reason carefully before acting. Use the results to inform your actions.
+
+## Revision as a Core Feature
+
+Sequential thinking is designed to support revision. If you realize a previous thought was wrong, you do not restart from the beginning — you revise that specific thought and continue from there.
+
+To revise:
+1. Set isRevision to true
+2. Set revisesThought to the thought number you want to reconsider
+3. Provide your corrected thinking
+4. Continue with additional thoughts if needed
+
+This keeps your reasoning efficient by allowing you to correct errors without redoing all prior work.
+
+## Good Uses of Sequential Thinking
+
+- **Planning a complex task:** Reason through what steps are needed, dependencies, and what could go wrong. Then execute the plan.
+- **Deciding between options:** Reason through pros and cons of each option, their implications, and constraints. Then choose.
+- **Interpreting ambiguous requirements:** Reason through what the requirement might mean, which interpretation makes sense, and what assumptions you are making. Then act on your interpretation.
+- **Debugging a problem:** Reason through what could cause the problem, what you've verified, what remains to check. Then investigate what remains.
