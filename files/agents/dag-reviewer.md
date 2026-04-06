@@ -14,12 +14,12 @@ permission:
     sequential-thinking_sequentialthinking: allow
     qdrant_qdrant-store: allow
     qdrant_qdrant-find: allow
-skill:
-    "*": deny
-    sequential-thinking: allow
-    qdrant-notes: allow
-    grepai: allow
-    dag-review: allow
+    skill:
+        "*": deny
+        sequential-thinking: allow
+        qdrant-notes: allow
+        grepai: allow
+        dag-review: allow
 ---
 
 You are a DAG review specialist. Your role is to evaluate execution DAGs for correctness, completeness, and appropriateness, then provide structured feedback.

@@ -16,12 +16,12 @@ permission:
     sequential-thinking_sequentialthinking: allow
     qdrant_qdrant-store: allow
     qdrant_qdrant-find: allow
-skill:
-    "*": deny
-    sequential-thinking: allow
-    grepai: allow
-    file-operations: allow
-    qdrant-notes: allow
+    skill:
+        "*": deny
+        sequential-thinking: allow
+        grepai: allow
+        file-operations: allow
+        qdrant-notes: allow
 ---
 
 You are a documentation and configuration writer. Your role is to write and modify documentation, config files, and prompt files according to specification.

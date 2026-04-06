@@ -28,18 +28,11 @@ Use GrepAI to find code by describing what it does in natural language.
 - `symbol`: Function name
 - `depth`: How many levels (default 2)
 
-## How to Write Queries
-
-Write queries like explaining to a person: "how does the app handle user login" not "Login function".
-
-Use the path parameter to narrow down if you know where to look, but start always start broad.
-
 ## Workflow
 
 **Standard investigation:**
-1. `grepai_grepai_search` with compact=true to find relevant files
-2. `read` the files GrepAI found
-3. Use `grep` only if you need exact string matching in those files
+1. `grepai_grepai_search` with compact=true to get a broad orientation of the project for key semantic areas without reading code snippets
+2. `grepai_grepai_search` with compact=false with the path argument to read code snippets in relevant files
 
 **Before changing code:**
 1. `grepai_grepai_trace_callers` to see what depends on the code
@@ -51,41 +44,9 @@ Use the path parameter to narrow down if you know where to look, but start alway
 2. `grepai_grepai_trace_graph` to see how functions connect
 3. `read` key files to understand structure
 
-## Token Efficiency Rules
+## Contstraints
 
 - Always use `compact=true` unless you need code snippets
+- Always use `path=` to read exact files
 - Use `format='toon'` when making multiple searches
 - Start with limit=5 or limit=10, not higher
-- GrepAI finds files → read finds content → grep finds exact strings
-
-## Example Calls
-
-Find authentication code:
-```
-grepai_grepai_search(query="user authentication and login", limit=10, compact=true)
-```
-
-Search only in specific directory:
-```
-grepai_grepai_search(query="API route handlers", path="src/api/", limit=10, compact=true)
-```
-
-Search in specific file:
-```
-grepai_grepai_search(query="database connection setup", path="config/database.ts", compact=true)
-```
-
-Find what calls a function before refactoring:
-```
-grepai_grepai_trace_callers(symbol="validateToken", compact=true)
-```
-
-See full dependency chain:
-```
-grepai_grepai_trace_graph(symbol="processPayment", depth=2)
-```
-
-Multiple searches with token efficiency:
-```
-grepai_grepai_search(query="database queries", limit=5, compact=true, format='toon')
-```

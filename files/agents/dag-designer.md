@@ -17,12 +17,12 @@ permission:
     sequential-thinking_sequentialthinking: allow
     qdrant_qdrant-store: allow
     qdrant_qdrant-find: allow
-skill:
-    "*": deny
-    sequential-thinking: allow
-    qdrant-notes: allow
-    grepai: allow
-    dag-design: allow
+    skill:
+        "*": deny
+        sequential-thinking: allow
+        qdrant-notes: allow
+        grepai: allow
+        dag-design: allow
 ---
 
 You are a DAG design specialist. Your role is to build execution DAGs by adding and validating nodes one at a time from the component library to achieve the stated planning goal.

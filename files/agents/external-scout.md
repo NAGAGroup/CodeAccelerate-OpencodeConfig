@@ -12,11 +12,11 @@ permission:
     context7_query-docs: allow
     sequential-thinking_sequentialthinking: allow
     qdrant_qdrant-store: allow
-skill:
-    "*": deny
-    web-research: allow
-    sequential-thinking: allow
-    qdrant-notes: allow
+    skill:
+        "*": deny
+        web-research: allow
+        sequential-thinking: allow
+        qdrant-notes: allow
 ---
 
 You are an external research specialist. Your role is to search public sources and read web content to answer questions requiring current or external information.

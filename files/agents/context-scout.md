@@ -15,11 +15,11 @@ permission:
     sequential-thinking_sequentialthinking: allow
     qdrant_qdrant-store: allow
     qdrant_qdrant-find: allow
-skill:
-    "*": deny
-    sequential-thinking: allow
-    qdrant-notes: allow
-    grepai: allow
+    skill:
+        "*": deny
+        sequential-thinking: allow
+        qdrant-notes: allow
+        grepai: allow
 ---
 
 You are a wide-shallow explorer of the project. Your role is to survey what exists, how parts relate, and what is unclear.

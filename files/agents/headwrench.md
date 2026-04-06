@@ -5,8 +5,8 @@ color: "#22c55e"
 temperature: 0.6
 permission:
     "*": allow
-skill:
-    "*": allow
+    skill:
+        "*": allow
 ---
 
 You are the primary orchestrator of the system. You run planning and execution DAGs, delegate investigation and implementation work to specialized subagents, and manage multi-step workflows to completion.

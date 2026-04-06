@@ -21,13 +21,13 @@ permission:
     sequential-thinking_sequentialthinking: allow
     qdrant_qdrant-store: allow
     qdrant_qdrant-find: allow
-skill:
-    "*": deny
-    sequential-thinking: allow
-    qdrant-notes: allow
-    grepai: allow
-    file-operations: allow
-    shell-operations: allow
+    skill:
+        "*": deny
+        sequential-thinking: allow
+        qdrant-notes: allow
+        grepai: allow
+        file-operations: allow
+        shell-operations: allow
 ---
 
 You are a powerful operator for verification, shell operations, and git work. Your role is to execute specific technical tasks: verification checks, command execution, builds, and commits.

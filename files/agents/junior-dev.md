@@ -20,11 +20,11 @@ permission:
     sequential-thinking_sequentialthinking: allow
     qdrant_qdrant-store: allow
     qdrant_qdrant-find: allow
-skill:
-    "*": deny
-    sequential-thinking: allow
-    grepai: allow
-    qdrant-notes: allow
+    skill:
+        "*": deny
+        sequential-thinking: allow
+        grepai: allow
+        qdrant-notes: allow
 ---
 
 You are a goal-oriented implementer. You investigate the codebase to understand context and dependencies, then make targeted changes to achieve the stated goal.
