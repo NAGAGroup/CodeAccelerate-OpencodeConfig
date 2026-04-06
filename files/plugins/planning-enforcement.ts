@@ -935,9 +935,121 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
     // ── Hooks ────────────────────────────────────────────────────────────────
 
-    // Block tool calls that don't match the expected todo item.
+    // Validate arguments for tools that small models frequently misuse.
+    // This runs before OpenCode's own zod validation to produce a clear,
+    // actionable error instead of a raw schema dump.
     "tool.execute.before": async (input, output) => {
       if (!input.tool || !input.sessionID) return;
+
+      if (input.tool === "question") {
+        const args = (input as any).args ?? {};
+        const questions = args.questions;
+        const errors: string[] = [];
+
+        if (questions === undefined || questions === null) {
+          errors.push(
+            `  - "questions" is missing. Did you pass a single question object instead of wrapping it in a "questions" array?`
+          );
+        } else if (!Array.isArray(questions)) {
+          errors.push(
+            `  - "questions" must be an array but got ${typeof questions}. Wrap your question object(s) in an array: { "questions": [ ... ] }`
+          );
+        } else if (questions.length === 0) {
+          errors.push(`  - "questions" array must not be empty.`);
+        } else {
+          questions.forEach((q: any, i: number) => {
+            const prefix = `  - questions[${i}]`;
+            if (typeof q !== "object" || q === null) {
+              errors.push(`${prefix}: must be an object, got ${typeof q}`);
+              return;
+            }
+            if (typeof q.question !== "string" || q.question.trim() === "") {
+              errors.push(`${prefix}.question: required string (the full question text)`);
+            }
+            if (typeof q.header !== "string" || q.header.trim() === "") {
+              errors.push(`${prefix}.header: required string (very short label, max 30 chars)`);
+            } else if (q.header.length > 30) {
+              errors.push(`${prefix}.header: must be ≤30 chars, got ${q.header.length} ("${q.header}")`);
+            }
+            if (!Array.isArray(q.options)) {
+              errors.push(`${prefix}.options: required array of { label: string, description: string }`);
+            } else if (q.options.length === 0) {
+              errors.push(`${prefix}.options: must have at least one option`);
+            } else {
+              q.options.forEach((opt: any, j: number) => {
+                if (typeof opt !== "object" || opt === null) {
+                  errors.push(`${prefix}.options[${j}]: must be an object`);
+                  return;
+                }
+                if (typeof opt.label !== "string" || opt.label.trim() === "") {
+                  errors.push(`${prefix}.options[${j}].label: required string (1-5 words)`);
+                }
+                if (typeof opt.description !== "string" || opt.description.trim() === "") {
+                  errors.push(`${prefix}.options[${j}].description: required string (explanation of this choice)`);
+                }
+              });
+            }
+            if (q.multiple !== undefined && typeof q.multiple !== "boolean") {
+              errors.push(`${prefix}.multiple: must be boolean if provided, got ${typeof q.multiple}`);
+            }
+          });
+        }
+
+        if (errors.length > 0) {
+          throw new Error(
+            `[question] Invalid arguments:\n${errors.join("\n")}\n\n` +
+            `Correct schema:\n` +
+            `{\n` +
+            `  "questions": [\n` +
+            `    {\n` +
+            `      "question": "Full question text?",\n` +
+            `      "header": "Short label",          // max 30 chars\n` +
+            `      "options": [\n` +
+            `        { "label": "Option A", "description": "Explanation of A" },\n` +
+            `        { "label": "Option B", "description": "Explanation of B" }\n` +
+            `      ],\n` +
+            `      "multiple": false                 // optional boolean\n` +
+            `    }\n` +
+            `  ]\n` +
+            `}`
+          );
+        }
+      }
+
+      if (input.tool === "task") {
+        const args = (input as any).args ?? {};
+        const errors: string[] = [];
+
+        if (typeof args.description !== "string" || args.description.trim() === "") {
+          errors.push(`  - "description": required string (3-5 words describing the task, e.g. "Explore auth module")`);
+        }
+        if (typeof args.prompt !== "string" || args.prompt.trim() === "") {
+          errors.push(`  - "prompt": required string (full task instructions for the subagent)`);
+        }
+        if (typeof args.subagent_type !== "string" || args.subagent_type.trim() === "") {
+          errors.push(`  - "subagent_type": required string (the agent type to dispatch, e.g. "context-scout", "junior-dev")`);
+        }
+        if (args.task_id !== undefined && typeof args.task_id !== "string") {
+          errors.push(`  - "task_id": must be a string if provided, got ${typeof args.task_id}`);
+        }
+        if (args.command !== undefined && typeof args.command !== "string") {
+          errors.push(`  - "command": must be a string if provided, got ${typeof args.command}`);
+        }
+
+        if (errors.length > 0) {
+          throw new Error(
+            `[task] Invalid arguments:\n${errors.join("\n")}\n\n` +
+            `Correct schema:\n` +
+            `{\n` +
+            `  "description": "Short task label",   // 3-5 words\n` +
+            `  "prompt": "Full instructions...",\n` +
+            `  "subagent_type": "context-scout",    // agent type string\n` +
+            `  "task_id": "...",                    // optional: resume prior session\n` +
+            `  "command": "/slash-command"          // optional: slash command trigger\n` +
+            `}`
+          );
+        }
+      }
 
       if (isExempt(input.tool)) return;
 

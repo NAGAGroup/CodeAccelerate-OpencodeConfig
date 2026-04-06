@@ -38,7 +38,7 @@
         "planning/plan-session/prompts/orientation-scout.md",
         "planning/plan-session/prompts/external-research.md",
         "planning/plan-session/prompts/user-questions.md",
-        "planning/plan-session/prompts/write-notes.md",
+        "planning/plan-session/prompts/store-notes.md",
         "planning/plan-session/prompts/compress.md",
         "planning/plan-session/prompts/session-overview-refresher.md",
         "planning/plan-session/prompts/dag-design.md",
@@ -82,7 +82,28 @@
         "planning/plan-session/node-library/autonomous-work/prompt.md",
         // Node library: user-discussion
         "planning/plan-session/node-library/user-discussion/node-spec.json",
-        "planning/plan-session/node-library/user-discussion/prompt.md"
+        "planning/plan-session/node-library/user-discussion/prompt.md",
+        // Node library: plan-success
+        "planning/plan-session/node-library/plan-success/node-spec.json",
+        "planning/plan-session/node-library/plan-success/prompt.md",
+        // Node library: plan-fail
+        "planning/plan-session/node-library/plan-fail/node-spec.json",
+        "planning/plan-session/node-library/plan-fail/prompt.md",
+        // Node library: decision-gate
+        "planning/plan-session/node-library/decision-gate/node-spec.json",
+        "planning/plan-session/node-library/decision-gate/prompt.md",
+        // Node library: user-decision-gate
+        "planning/plan-session/node-library/user-decision-gate/node-spec.json",
+        "planning/plan-session/node-library/user-decision-gate/prompt.md",
+        // Node library: verify
+        "planning/plan-session/node-library/verify/node-spec.json",
+        "planning/plan-session/node-library/verify/prompt.md",
+        // Node library: commit
+        "planning/plan-session/node-library/commit/node-spec.json",
+        "planning/plan-session/node-library/commit/prompt.md",
+        // Node library: run-project-commands
+        "planning/plan-session/node-library/run-project-commands/node-spec.json",
+        "planning/plan-session/node-library/run-project-commands/prompt.md"
       ]
     },
     {

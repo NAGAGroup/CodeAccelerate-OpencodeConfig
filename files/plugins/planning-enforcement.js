@@ -111003,6 +111003,108 @@ ${ascii}`;
     "tool.execute.before": async (input, output) => {
       if (!input.tool || !input.sessionID)
         return;
+      if (input.tool === "question") {
+        const args = input.args ?? {};
+        const questions = args.questions;
+        const errors3 = [];
+        if (questions === undefined || questions === null) {
+          errors3.push(`  - "questions" is missing. Did you pass a single question object instead of wrapping it in a "questions" array?`);
+        } else if (!Array.isArray(questions)) {
+          errors3.push(`  - "questions" must be an array but got ${typeof questions}. Wrap your question object(s) in an array: { "questions": [ ... ] }`);
+        } else if (questions.length === 0) {
+          errors3.push(`  - "questions" array must not be empty.`);
+        } else {
+          questions.forEach((q, i) => {
+            const prefix = `  - questions[${i}]`;
+            if (typeof q !== "object" || q === null) {
+              errors3.push(`${prefix}: must be an object, got ${typeof q}`);
+              return;
+            }
+            if (typeof q.question !== "string" || q.question.trim() === "") {
+              errors3.push(`${prefix}.question: required string (the full question text)`);
+            }
+            if (typeof q.header !== "string" || q.header.trim() === "") {
+              errors3.push(`${prefix}.header: required string (very short label, max 30 chars)`);
+            } else if (q.header.length > 30) {
+              errors3.push(`${prefix}.header: must be ≤30 chars, got ${q.header.length} ("${q.header}")`);
+            }
+            if (!Array.isArray(q.options)) {
+              errors3.push(`${prefix}.options: required array of { label: string, description: string }`);
+            } else if (q.options.length === 0) {
+              errors3.push(`${prefix}.options: must have at least one option`);
+            } else {
+              q.options.forEach((opt, j) => {
+                if (typeof opt !== "object" || opt === null) {
+                  errors3.push(`${prefix}.options[${j}]: must be an object`);
+                  return;
+                }
+                if (typeof opt.label !== "string" || opt.label.trim() === "") {
+                  errors3.push(`${prefix}.options[${j}].label: required string (1-5 words)`);
+                }
+                if (typeof opt.description !== "string" || opt.description.trim() === "") {
+                  errors3.push(`${prefix}.options[${j}].description: required string (explanation of this choice)`);
+                }
+              });
+            }
+            if (q.multiple !== undefined && typeof q.multiple !== "boolean") {
+              errors3.push(`${prefix}.multiple: must be boolean if provided, got ${typeof q.multiple}`);
+            }
+          });
+        }
+        if (errors3.length > 0) {
+          throw new Error(`[question] Invalid arguments:
+${errors3.join(`
+`)}
+
+` + `Correct schema:
+` + `{
+` + `  "questions": [
+` + `    {
+` + `      "question": "Full question text?",
+` + `      "header": "Short label",          // max 30 chars
+` + `      "options": [
+` + `        { "label": "Option A", "description": "Explanation of A" },
+` + `        { "label": "Option B", "description": "Explanation of B" }
+` + `      ],
+` + `      "multiple": false                 // optional boolean
+` + `    }
+` + `  ]
+` + `}`);
+        }
+      }
+      if (input.tool === "task") {
+        const args = input.args ?? {};
+        const errors3 = [];
+        if (typeof args.description !== "string" || args.description.trim() === "") {
+          errors3.push(`  - "description": required string (3-5 words describing the task, e.g. "Explore auth module")`);
+        }
+        if (typeof args.prompt !== "string" || args.prompt.trim() === "") {
+          errors3.push(`  - "prompt": required string (full task instructions for the subagent)`);
+        }
+        if (typeof args.subagent_type !== "string" || args.subagent_type.trim() === "") {
+          errors3.push(`  - "subagent_type": required string (the agent type to dispatch, e.g. "context-scout", "junior-dev")`);
+        }
+        if (args.task_id !== undefined && typeof args.task_id !== "string") {
+          errors3.push(`  - "task_id": must be a string if provided, got ${typeof args.task_id}`);
+        }
+        if (args.command !== undefined && typeof args.command !== "string") {
+          errors3.push(`  - "command": must be a string if provided, got ${typeof args.command}`);
+        }
+        if (errors3.length > 0) {
+          throw new Error(`[task] Invalid arguments:
+${errors3.join(`
+`)}
+
+` + `Correct schema:
+` + `{
+` + `  "description": "Short task label",   // 3-5 words
+` + `  "prompt": "Full instructions...",
+` + `  "subagent_type": "context-scout",    // agent type string
+` + `  "task_id": "...",                    // optional: resume prior session
+` + `  "command": "/slash-command"          // optional: slash command trigger
+` + `}`);
+        }
+      }
       if (isExempt(input.tool))
         return;
       const worktree = resolveWorktree(_ctx);
