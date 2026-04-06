@@ -110779,8 +110779,12 @@ ${ascii}`;
               return `Error in init_dag: execution-kickoff node-spec.json not found at ${kickoffSpecPath}.`;
             }
             const kickoffSpec = JSON.parse(fs6.readFileSync(kickoffSpecPath, "utf-8"));
-            const kickoffPromptPath = path7.join(nodeLibRelBase, "execution-kickoff", "prompt.md");
-            fs6.mkdirSync(planDir, { recursive: true });
+            const sourcePromptPath = path7.join(CONFIG_ROOT, nodeLibRelBase, "execution-kickoff", "prompt.md");
+            const sessionPromptsDir = path7.join(planDir, "prompts");
+            fs6.mkdirSync(sessionPromptsDir, { recursive: true });
+            const destPromptPath = path7.join(sessionPromptsDir, "execution-kickoff.md");
+            fs6.copyFileSync(sourcePromptPath, destPromptPath);
+            const promptPath = path7.join(".opencode", "session-plans", plan_name, "prompts", "execution-kickoff.md");
             const metadata = {
               schema_version: "3.0",
               id: plan_name,
@@ -110788,7 +110792,7 @@ ${ascii}`;
             };
             const entryNode = {
               id: "execution-kickoff",
-              prompt: kickoffPromptPath,
+              prompt: promptPath,
               enforcement: kickoffSpec.enforcement
             };
             writeDagV3(planPath, metadata, [entryNode]);

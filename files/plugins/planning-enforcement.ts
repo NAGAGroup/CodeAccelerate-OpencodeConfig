@@ -635,9 +635,16 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                return `Error in init_dag: execution-kickoff node-spec.json not found at ${kickoffSpecPath}.`;
              }
              const kickoffSpec = JSON.parse(fs.readFileSync(kickoffSpecPath, "utf-8"));
-             const kickoffPromptPath = path.join(nodeLibRelBase, "execution-kickoff", "prompt.md");
+             const sourcePromptPath = path.join(CONFIG_ROOT, nodeLibRelBase, "execution-kickoff", "prompt.md");
 
-            fs.mkdirSync(planDir, { recursive: true });
+            // Create session prompts directory and copy prompt file
+            const sessionPromptsDir = path.join(planDir, 'prompts');
+            fs.mkdirSync(sessionPromptsDir, { recursive: true });
+            const destPromptPath = path.join(sessionPromptsDir, 'execution-kickoff.md');
+            fs.copyFileSync(sourcePromptPath, destPromptPath);
+
+            // Store worktree-relative path in plan.jsonl
+            const promptPath = path.join('.opencode', 'session-plans', plan_name, 'prompts', 'execution-kickoff.md');
 
             const metadata: DagMetadataV3 = {
               schema_version: "3.0",
@@ -647,7 +654,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
              const entryNode: DagNodeV3 = {
                id: "execution-kickoff",
-               prompt: kickoffPromptPath,
+               prompt: promptPath,
                enforcement: kickoffSpec.enforcement,
              };
 
