@@ -109884,7 +109884,7 @@ var MONO_FONT_STACK = `${MONO_FONT}, 'SF Mono', 'Fira Code', ui-monospace, monos
 
 // planning-enforcement.ts
 import * as fs6 from "fs";
-import * as path7 from "path";
+import * as path6 from "path";
 
 // constants.ts
 import * as path from "path";
@@ -109996,24 +109996,6 @@ function writeDagV3(planPath, metadata, nodes) {
 }
 
 // dag-tree.ts
-import * as path4 from "path";
-function dagToMermaidV3(metadata, nodes) {
-  const lines = ["flowchart TD"];
-  for (const node of nodes) {
-    const promptFile = path4.basename(node.prompt);
-    const enforcementStr = node.enforcement.length > 0 ? node.enforcement.join(", ") : "none";
-    lines.push(`  ${node.id}["${node.id}<br/>${promptFile} | [${enforcementStr}]"]`);
-  }
-  for (const node of nodes) {
-    if (!node.children || node.children.length === 0)
-      continue;
-    for (const childId of node.children) {
-      lines.push(`  ${node.id} --> ${childId}`);
-    }
-  }
-  return lines.join(`
-`);
-}
 function dagToMermaidCompactV3(metadata, nodes) {
   const parentCount = {};
   for (const node of nodes) {
@@ -110124,13 +110106,13 @@ function flattenTreeV3(metadata, nodes) {
 
 // dag-lifecycle.ts
 import * as fs4 from "fs";
-import * as path5 from "path";
+import * as path4 from "path";
 function copyPlanningDag(planType, sessionId, worktree, configRoot = CONFIG_ROOT) {
-  const srcDir = path5.join(configRoot, "planning", planType);
+  const srcDir = path4.join(configRoot, "planning", planType);
   const destDirName = `${planType}-${sessionId}`;
-  const destDir = path5.join(worktree, ".opencode", "session-plans", destDirName);
-  const srcPromptsDir = path5.join(srcDir, "prompts");
-  const destPromptsDir = path5.join(destDir, "prompts");
+  const destDir = path4.join(worktree, ".opencode", "session-plans", destDirName);
+  const srcPromptsDir = path4.join(srcDir, "prompts");
+  const destPromptsDir = path4.join(destDir, "prompts");
   fs4.mkdirSync(destPromptsDir, { recursive: true });
   const sessionPath = `.opencode/session-plans/${destDirName}`;
   function copyPromptFile(src, dest) {
@@ -110139,19 +110121,19 @@ function copyPlanningDag(planType, sessionId, worktree, configRoot = CONFIG_ROOT
   }
   if (fs4.existsSync(srcPromptsDir)) {
     for (const file2 of fs4.readdirSync(srcPromptsDir)) {
-      copyPromptFile(path5.join(srcPromptsDir, file2), path5.join(destPromptsDir, file2));
+      copyPromptFile(path4.join(srcPromptsDir, file2), path4.join(destPromptsDir, file2));
     }
   }
-  const refDir = path5.join(configRoot, "planning", "reference");
+  const refDir = path4.join(configRoot, "planning", "reference");
   if (fs4.existsSync(refDir)) {
-    const destRefDir = path5.join(destDir, "reference");
+    const destRefDir = path4.join(destDir, "reference");
     fs4.mkdirSync(destRefDir, { recursive: true });
     for (const file2 of fs4.readdirSync(refDir)) {
-      copyPromptFile(path5.join(refDir, file2), path5.join(destRefDir, file2));
+      copyPromptFile(path4.join(refDir, file2), path4.join(destRefDir, file2));
     }
   }
-  const srcPlanPath = path5.join(srcDir, "plan.jsonl");
-  const localPlanPath = path5.join(destDir, "plan.jsonl");
+  const srcPlanPath = path4.join(srcDir, "plan.jsonl");
+  const localPlanPath = path4.join(destDir, "plan.jsonl");
   const { metadata, nodes } = readDagV3(srcPlanPath);
   writeDagV3(localPlanPath, metadata, nodes);
   return { localPlanPath, metadata, nodes };
@@ -110159,10 +110141,10 @@ function copyPlanningDag(planType, sessionId, worktree, configRoot = CONFIG_ROOT
 
 // plugin-utils.ts
 import * as fs5 from "fs";
-import * as path6 from "path";
+import * as path5 from "path";
 function ensureOpenCodeIgnore(worktree) {
   try {
-    const ignorePath = path6.join(worktree, ".opencodeignore");
+    const ignorePath = path5.join(worktree, ".opencodeignore");
     const patterns = ["!.opencode/", "!.opencode/**"];
     if (fs5.existsSync(ignorePath)) {
       const content = fs5.readFileSync(ignorePath, "utf-8");
@@ -110309,7 +110291,7 @@ var PlanningEnforcementPlugin = async (_ctx) => {
         },
         async execute({ plan_name }, context) {
           const worktree = resolveWorktree(context);
-          const planPath = path7.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
+          const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
           try {
             const { metadata, nodes } = readDagV3(planPath);
             const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
@@ -110565,7 +110547,7 @@ ${choices}
         async execute({ plan_name }, context) {
           try {
             const worktree = resolveWorktree(context);
-            const planPath = path7.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
+            const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
             if (!fs6.existsSync(planPath)) {
               return `## validate_dag Report: ${plan_name}
 
@@ -110611,10 +110593,10 @@ ${choices}
                 }
               }
             }
-            const promptsDir = path7.join(worktree, ".opencode", "session-plans", plan_name, "prompts");
+            const promptsDir = path6.join(worktree, ".opencode", "session-plans", plan_name, "prompts");
             for (const node of nodes) {
-              const resolvedPrompt = node.prompt.includes("/") ? expandPath(node.prompt) : path7.join(promptsDir, node.prompt);
-              const fullPromptPath = path7.isAbsolute(resolvedPrompt) ? resolvedPrompt : path7.join(worktree, resolvedPrompt);
+              const resolvedPrompt = node.prompt.includes("/") ? expandPath(node.prompt) : path6.join(promptsDir, node.prompt);
+              const fullPromptPath = path6.isAbsolute(resolvedPrompt) ? resolvedPrompt : path6.join(worktree, resolvedPrompt);
               if (!fs6.existsSync(fullPromptPath)) {
                 issues.push(`- [${node.id}] check-prompt-exists: prompt file not found at ${node.prompt}`);
               } else {
@@ -110742,10 +110724,10 @@ ${ascii}`;
             if (!name || name.trim().length === 0) {
               return "Error in choose_plan_name: name must not be empty.";
             }
-            const sessionPlansDir = path7.join(worktree, ".opencode", "session-plans");
+            const sessionPlansDir = path6.join(worktree, ".opencode", "session-plans");
             let confirmedName = name.trim();
             let suffix = 2;
-            while (fs6.existsSync(path7.join(sessionPlansDir, confirmedName))) {
+            while (fs6.existsSync(path6.join(sessionPlansDir, confirmedName))) {
               confirmedName = `${name.trim()}-${suffix}`;
               suffix++;
             }
@@ -110768,23 +110750,23 @@ ${ascii}`;
         async execute({ plan_name }, context) {
           try {
             const worktree = resolveWorktree(context);
-            const planDir = path7.join(worktree, ".opencode", "session-plans", plan_name);
-            const planPath = path7.join(planDir, "plan.jsonl");
+            const planDir = path6.join(worktree, ".opencode", "session-plans", plan_name);
+            const planPath = path6.join(planDir, "plan.jsonl");
             if (fs6.existsSync(planPath)) {
               return `Error in init_dag: plan.jsonl already exists at ${planPath}. Use add_node to extend the existing DAG, or delete the file manually to start fresh.`;
             }
-            const nodeLibRelBase = path7.join("planning", "plan-session", "node-library");
-            const kickoffSpecPath = path7.join(CONFIG_ROOT, nodeLibRelBase, "execution-kickoff", "node-spec.json");
+            const nodeLibRelBase = path6.join("planning", "plan-session", "node-library");
+            const kickoffSpecPath = path6.join(CONFIG_ROOT, nodeLibRelBase, "execution-kickoff", "node-spec.json");
             if (!fs6.existsSync(kickoffSpecPath)) {
               return `Error in init_dag: execution-kickoff node-spec.json not found at ${kickoffSpecPath}.`;
             }
             const kickoffSpec = JSON.parse(fs6.readFileSync(kickoffSpecPath, "utf-8"));
-            const sourcePromptPath = path7.join(CONFIG_ROOT, nodeLibRelBase, "execution-kickoff", "prompt.md");
-            const sessionPromptsDir = path7.join(planDir, "prompts");
+            const sourcePromptPath = path6.join(CONFIG_ROOT, nodeLibRelBase, "execution-kickoff", "prompt.md");
+            const sessionPromptsDir = path6.join(planDir, "prompts");
             fs6.mkdirSync(sessionPromptsDir, { recursive: true });
-            const destPromptPath = path7.join(sessionPromptsDir, "execution-kickoff.md");
+            const destPromptPath = path6.join(sessionPromptsDir, "execution-kickoff.md");
             fs6.copyFileSync(sourcePromptPath, destPromptPath);
-            const promptPath = path7.join(".opencode", "session-plans", plan_name, "prompts", "execution-kickoff.md");
+            const promptPath = path6.join(".opencode", "session-plans", plan_name, "prompts", "execution-kickoff.md");
             const metadata = {
               schema_version: "3.0",
               id: plan_name,
@@ -110818,7 +110800,7 @@ ${ascii}`;
         async execute({ plan_name, parentId, nodeId, component_name }, context) {
           try {
             const worktree = resolveWorktree(context);
-            const planPath = path7.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
+            const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
             if (!fs6.existsSync(planPath)) {
               return `Error in add_node: plan.jsonl not found for "${plan_name}". Initialize with init_dag first.`;
             }
@@ -110830,18 +110812,18 @@ ${ascii}`;
             if (!parent) {
               return `Error in add_node: Parent node "${parentId}" not found in DAG.`;
             }
-            const nodeLibRelBase = path7.join("planning", "plan-session", "node-library");
-            const specPath = path7.join(CONFIG_ROOT, nodeLibRelBase, component_name, "node-spec.json");
+            const nodeLibRelBase = path6.join("planning", "plan-session", "node-library");
+            const specPath = path6.join(CONFIG_ROOT, nodeLibRelBase, component_name, "node-spec.json");
             if (!fs6.existsSync(specPath)) {
               return `Error in add_node: Component "${component_name}" not found in node library at ${specPath}. Use get_planning_components_catalogue() to see available types.`;
             }
             const spec = JSON.parse(fs6.readFileSync(specPath, "utf-8"));
-            const sourcePromptPath = path7.join(CONFIG_ROOT, nodeLibRelBase, component_name, "prompt.md");
-            const sessionPromptsDir = path7.join(worktree, ".opencode", "session-plans", plan_name, "prompts");
+            const sourcePromptPath = path6.join(CONFIG_ROOT, nodeLibRelBase, component_name, "prompt.md");
+            const sessionPromptsDir = path6.join(worktree, ".opencode", "session-plans", plan_name, "prompts");
             fs6.mkdirSync(sessionPromptsDir, { recursive: true });
-            const destPromptPath = path7.join(sessionPromptsDir, `${nodeId}.md`);
+            const destPromptPath = path6.join(sessionPromptsDir, `${nodeId}.md`);
             fs6.copyFileSync(sourcePromptPath, destPromptPath);
-            const promptPath = path7.join(".opencode", "session-plans", plan_name, "prompts", `${nodeId}.md`);
+            const promptPath = path6.join(".opencode", "session-plans", plan_name, "prompts", `${nodeId}.md`);
             const newNode = {
               id: nodeId,
               prompt: promptPath,
@@ -110852,6 +110834,7 @@ ${ascii}`;
             parent.children.push(nodeId);
             nodes.push(newNode);
             writeDagV3(planPath, metadata, nodes);
+            const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: "none" });
             return `## add_node: Added "${nodeId}" (${component_name}) to "${parentId}"
 
 ` + `Node: ${nodeId}
@@ -110859,7 +110842,9 @@ ${ascii}`;
 ` + `Enforcement items: ${spec.enforcement.length}
 ` + `Prompt: ${destPromptPath}
 
-` + `**DAG now contains ${nodes.length} nodes.**`;
+` + `**DAG now contains ${nodes.length} nodes.**
+
+${ascii}`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in add_node: ${msg}`;
@@ -110877,7 +110862,6 @@ ${ascii}`;
             const worktree = resolveWorktree(context);
             const planPath = resolveDagPath(target, worktree);
             const { metadata, nodes } = readDagV3(planPath);
-            const beforeAscii = await renderMermaidASCII(dagToMermaidV3(metadata, nodes), { colorMode: "none" });
             if (nodeId === metadata.entry_node_id) {
               return `Error in delete_node: Cannot delete the entry node "${nodeId}". The entry node is required.`;
             }
@@ -110904,24 +110888,18 @@ ${ascii}`;
             }
             const remaining = nodes.filter((n) => !toRemove.has(n.id));
             writeDagV3(planPath, metadata, remaining);
-            const planDir = path7.dirname(planPath);
-            const sessionPromptsDir = path7.join(planDir, "prompts");
+            const planDir = path6.dirname(planPath);
+            const sessionPromptsDir = path6.join(planDir, "prompts");
             for (const removedId of toRemove) {
-              const promptFile = path7.join(sessionPromptsDir, `${removedId}.md`);
+              const promptFile = path6.join(sessionPromptsDir, `${removedId}.md`);
               if (fs6.existsSync(promptFile)) {
                 fs6.unlinkSync(promptFile);
               }
             }
-            const afterAscii = await renderMermaidASCII(dagToMermaidV3(metadata, remaining), { colorMode: "none" });
+            const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, remaining), { colorMode: "none" });
             return `## delete_node: Deleted "${nodeId}" and its subtree (${toRemove.size} node(s))
 
-### Before
-
-${beforeAscii}
-
-### After
-
-${afterAscii}`;
+${ascii}`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in delete_node: ${msg}`;
@@ -110977,7 +110955,7 @@ ${afterAscii}`;
               newParent.children = [];
             newParent.children.push(nodeId);
             writeDagV3(planPath, metadata, nodes);
-            const ascii = await renderMermaidASCII(dagToMermaidV3(metadata, nodes), { colorMode: "none" });
+            const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: "none" });
             return `## modify_node: Reparented "${nodeId}" to "${new_parent_id}"
 
 ${ascii}`;
@@ -110992,7 +110970,7 @@ ${ascii}`;
         args: {},
         async execute(_args, _context) {
           try {
-            const cataloguePath = path7.join(CONFIG_ROOT, "planning", "plan-session", "node-library", "CATALOGUE.md");
+            const cataloguePath = path6.join(CONFIG_ROOT, "planning", "plan-session", "node-library", "CATALOGUE.md");
             if (!fs6.existsSync(cataloguePath)) {
               return `CATALOGUE.md not found at ${cataloguePath}. ` + `Ensure the planning components are installed correctly via OCX.`;
             }
@@ -111009,7 +110987,7 @@ ${ascii}`;
         args: {},
         async execute(_args, _context) {
           try {
-            const guidePath = path7.join(CONFIG_ROOT, "planning", "plan-session", "dag-design-guide.md");
+            const guidePath = path6.join(CONFIG_ROOT, "planning", "plan-session", "dag-design-guide.md");
             if (!fs6.existsSync(guidePath)) {
               return `dag-design-guide.md not found at ${guidePath}. ` + `Ensure the planning components are installed correctly via OCX.`;
             }

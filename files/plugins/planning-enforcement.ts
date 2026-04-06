@@ -738,12 +738,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             nodes.push(newNode);
             writeDagV3(planPath, metadata, nodes);
 
-             return `## add_node: Added "${nodeId}" (${component_name}) to "${parentId}"\n\n` +
-               `Node: ${nodeId}\n` +
-               `Component: ${component_name}\n` +
-               `Enforcement items: ${spec.enforcement.length}\n` +
-               `Prompt: ${destPromptPath}\n\n` +
-               `**DAG now contains ${nodes.length} nodes.**`;
+            const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: 'none' });
+            return `## add_node: Added "${nodeId}" (${component_name}) to "${parentId}"\n\n` +
+              `Node: ${nodeId}\n` +
+              `Component: ${component_name}\n` +
+              `Enforcement items: ${spec.enforcement.length}\n` +
+              `Prompt: ${destPromptPath}\n\n` +
+              `**DAG now contains ${nodes.length} nodes.**\n\n${ascii}`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in add_node: ${msg}`;
@@ -761,61 +762,59 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           "ID of the node to delete. The node and its entire subtree are removed."
         ),
       },
-       async execute({ target, nodeId }, context) {
-        try {
-          const worktree = resolveWorktree(context);
-          const planPath = resolveDagPath(target, worktree);
-          const { metadata, nodes } = readDagV3(planPath);
+        async execute({ target, nodeId }, context) {
+         try {
+           const worktree = resolveWorktree(context);
+           const planPath = resolveDagPath(target, worktree);
+           const { metadata, nodes } = readDagV3(planPath);
 
-          const beforeAscii = await renderMermaidASCII(dagToMermaidV3(metadata, nodes), { colorMode: 'none' });
+           if (nodeId === metadata.entry_node_id) {
+             return `Error in delete_node: Cannot delete the entry node "${nodeId}". The entry node is required.`;
+           }
 
-          if (nodeId === metadata.entry_node_id) {
-            return `Error in delete_node: Cannot delete the entry node "${nodeId}". The entry node is required.`;
-          }
+           if (!nodes.some(n => n.id === nodeId)) {
+             return `Error in delete_node: Node "${nodeId}" not found in DAG.`;
+           }
 
-          if (!nodes.some(n => n.id === nodeId)) {
-            return `Error in delete_node: Node "${nodeId}" not found in DAG.`;
-          }
+           // Collect all node IDs reachable from nodeId (the subtree to remove)
+           const toRemove = new Set<string>();
+           const queue = [nodeId];
+           while (queue.length > 0) {
+             const id = queue.pop()!;
+             if (toRemove.has(id)) continue;
+             toRemove.add(id);
+             const n = nodes.find(x => x.id === id);
+             if (n?.children) queue.push(...n.children);
+           }
 
-          // Collect all node IDs reachable from nodeId (the subtree to remove)
-          const toRemove = new Set<string>();
-          const queue = [nodeId];
-          while (queue.length > 0) {
-            const id = queue.pop()!;
-            if (toRemove.has(id)) continue;
-            toRemove.add(id);
-            const n = nodes.find(x => x.id === id);
-            if (n?.children) queue.push(...n.children);
-          }
+           // Detach from parent: remove nodeId from any parent's children array
+           for (const n of nodes) {
+             if (n.children) {
+               n.children = n.children.filter(c => !toRemove.has(c));
+               if (n.children.length === 0) delete n.children;
+             }
+           }
 
-          // Detach from parent: remove nodeId from any parent's children array
-          for (const n of nodes) {
-            if (n.children) {
-              n.children = n.children.filter(c => !toRemove.has(c));
-              if (n.children.length === 0) delete n.children;
-            }
-          }
+           const remaining = nodes.filter(n => !toRemove.has(n.id));
+           writeDagV3(planPath, metadata, remaining);
 
-          const remaining = nodes.filter(n => !toRemove.has(n.id));
-          writeDagV3(planPath, metadata, remaining);
+           // Remove prompt files from session prompts folder for all deleted nodes
+           const planDir = path.dirname(planPath);
+           const sessionPromptsDir = path.join(planDir, 'prompts');
+           for (const removedId of toRemove) {
+             const promptFile = path.join(sessionPromptsDir, `${removedId}.md`);
+             if (fs.existsSync(promptFile)) {
+               fs.unlinkSync(promptFile);
+             }
+           }
 
-          // Remove prompt files from session prompts folder for all deleted nodes
-          const planDir = path.dirname(planPath);
-          const sessionPromptsDir = path.join(planDir, 'prompts');
-          for (const removedId of toRemove) {
-            const promptFile = path.join(sessionPromptsDir, `${removedId}.md`);
-            if (fs.existsSync(promptFile)) {
-              fs.unlinkSync(promptFile);
-            }
-          }
-
-          const afterAscii = await renderMermaidASCII(dagToMermaidV3(metadata, remaining), { colorMode: 'none' });
-          return `## delete_node: Deleted "${nodeId}" and its subtree (${toRemove.size} node(s))\n\n### Before\n\n${beforeAscii}\n\n### After\n\n${afterAscii}`;
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          return `Error in delete_node: ${msg}`;
-        }
-      },
+           const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, remaining), { colorMode: 'none' });
+           return `## delete_node: Deleted "${nodeId}" and its subtree (${toRemove.size} node(s))\n\n${ascii}`;
+         } catch (err) {
+           const msg = err instanceof Error ? err.message : String(err);
+           return `Error in delete_node: ${msg}`;
+         }
+       },
     }),
 
     modify_node: tool({
@@ -880,7 +879,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           newParent.children.push(nodeId);
 
           writeDagV3(planPath, metadata, nodes);
-          const ascii = await renderMermaidASCII(dagToMermaidV3(metadata, nodes), { colorMode: 'none' });
+          const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: 'none' });
           return `## modify_node: Reparented "${nodeId}" to "${new_parent_id}"\n\n${ascii}`;
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
