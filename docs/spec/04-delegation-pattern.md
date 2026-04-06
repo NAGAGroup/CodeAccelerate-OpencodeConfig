@@ -90,9 +90,9 @@ When dispatching within a plan session, the prompt must also include:
 
 **For external-scout:** Provide the exact research query. The IP approval gate (the `question` call before dispatch, enforced in research component nodes) ensures the user has approved this query before it is sent.
 
-**For dag-designer:** Provide the full planning context: user goal, scope boundaries, investigation findings, user decisions, and any constraints on the DAG structure. The designer has access to the component catalogue and design guide but does not have access to the planning session's conversation — everything relevant must be in the dispatch prompt. Also specify the `plan_name` so the designer can call `add_node` with the correct identifier.
+**For dag-designer:** Provide the full planning context: user goal, scope boundaries, investigation findings, user decisions, and any constraints on the DAG structure. The designer has access to the component catalogue, design guide, and direct codebase investigation tools — but does not have access to the planning session's conversation, so everything relevant must be in the dispatch prompt. Also specify the `plan_name` so the designer can call `add_node` with the correct identifier.
 
-**For dag-reviewer:** Provide the `plan_name` to review. The reviewer loads the `dag-review` skill which contains the review criteria. HeadWrench must include the plan name and any context about the intended task that would help the reviewer assess whether the DAG structure is appropriate.
+**For dag-reviewer:** Provide the `plan_name` to review. The reviewer loads the `dag-review` skill which contains the review criteria. HeadWrench must include the plan name and any context about the intended task that would help the reviewer assess whether the DAG structure is appropriate. The reviewer investigates the codebase directly — no delegation is needed in the dispatch prompt.
 
 ---
 
@@ -115,7 +115,7 @@ These requirements govern the authorship of new skills.
 
 **Length:** 50–100 lines. Skills are loaded into recent context where attention is high. Excessive length dilutes the critical instructions. A skill exceeding 100 lines is probably teaching too many things and should be split.
 
-**Concrete examples required:** Skills must include examples with exact tool syntax. Small models need to see exact parameter names and values, not abstract descriptions.
+**Concrete examples required:** Skills must include examples that demonstrate correct and incorrect usage with enough specificity to distinguish good from bad dispatch prompts. Do not use code blocks or exact tool call syntax in examples — prose examples with inline parameter values work better for small models than structured syntax blocks.
 
 **Delegation skills must document limits:** What the target agent can do, what it cannot do. The dispatching agent needs the subagent's limits to write a sound prompt. "context-scout is read-only — it cannot make changes" prevents dispatch prompts that ask the scout to fix things.
 

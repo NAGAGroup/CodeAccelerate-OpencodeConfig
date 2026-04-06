@@ -186,7 +186,7 @@ Every skill file follows this four-part structure:
 
 **Keep them 50 to 100 lines.** Skills are loaded into recent context where attention is high, but excessive length dilutes the critical instructions. If a skill exceeds 100 lines, it is probably teaching too many things and should be split into two skills.
 
-**Include concrete examples with exact tool syntax.** Small models need to see the exact parameter names and values, not abstract descriptions. Show the tool call, not a description of the tool call.
+**Include concrete examples with prose, not exact tool syntax.** Small models need to see good and bad dispatch prompts with enough specificity to distinguish correct from incorrect usage. Do not use code blocks or structured tool call syntax in examples — prose examples with inline parameter values are more effective for small models than syntax blocks.
 
 **Delegation skills must document what the target agent can and cannot do.** The dispatching agent needs to know the subagent's limits to write a good dispatch prompt.
 
@@ -279,5 +279,6 @@ Use this checklist when reviewing any prompt before finalizing it.
 - [ ] Purpose paragraph explains when to use the skill
 - [ ] Exact tool syntax shown, not described abstractly
 - [ ] Bad examples present for delegation skills
+- [ ] Examples use prose, not code blocks or exact tool call syntax
 - [ ] Anti-pattern format used for failure modes
 - [ ] No duplication of agent prompt content

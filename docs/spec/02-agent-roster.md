@@ -169,23 +169,24 @@ These are distinct agent files with their own permissions. They are not constrai
 
 ### dag-designer
 
-**Role:** Builds execution DAGs from the component library. Adds nodes one by one using `add_node`, validates structure, and may delegate to scouts or insurgents for codebase investigation during design.
+**Role:** Builds execution DAGs from the component library. Adds nodes one by one using `add_node`, validates structure, and investigates the codebase directly to inform design decisions.
 
 **Tools:**
 - `add_node`, `delete_node`, `modify_node` — DAG construction and modification
 - `show_dag`, `show_compact_dag` — view the DAG being built
 - `validate_dag` — check structural validity
 - `get_planning_components_catalogue`, `get_dag_design_guide` — reference materials
-- `task` — delegation to context-scout and context-insurgent only
+- `read`, `glob`, `grep` — direct file access for codebase investigation
 - `grepai_grepai_search` — semantic code search
+- `grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph` — call chain and dependency tracing
 - `grepai_grepai_index_status` — index health check
 - `sequential-thinking_sequentialthinking`
 - `qdrant_qdrant-store`, `qdrant_qdrant-find`
 - `skill`
 
-**Skills:** context-scout-delegation, context-insurgent-delegation, sequential-thinking, qdrant-notes, grepai
+**Skills:** sequential-thinking, qdrant-notes, grepai, dag-design
 
-**Denied:** `init_dag`, `present_compact_dag_to_user`, `choose_plan_name`, `plan_session`, `next_step`, `recover_context`, `read`, `write`, `edit`, `glob`, `grep`, `bash`, `question`, `compress`, all web tools, all GrepAI trace tools (`grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph`), all GrepAI RPG tools, `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
+**Denied:** `init_dag`, `present_compact_dag_to_user`, `choose_plan_name`, `plan_session`, `next_step`, `recover_context`, `task`, `write`, `edit`, `bash`, `question`, `compress`, all web tools, all GrepAI RPG tools, `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
 
 **Step limit:** None. DAG design complexity varies with task scope — a simple plan and a complex multi-phase plan require fundamentally different amounts of work.
 
@@ -193,21 +194,23 @@ These are distinct agent files with their own permissions. They are not constrai
 
 ### dag-reviewer
 
-**Role:** Evaluates execution DAGs against the review criteria. Critiques only — does not revise. Can delegate to context-scout for spot-checking specific areas of the codebase against DAG assumptions.
+**Role:** Evaluates execution DAGs against the review criteria. Critiques only — does not revise. Investigates the codebase directly to spot-check design assumptions.
 
 **Tools:**
 - `show_dag`, `show_compact_dag` — view the DAG being reviewed
 - `validate_dag` — check structural validity
-- `get_planning_components_catalogue`, `get_dag_design_guide` — reference materials (design guide for understanding design intent during spot-checking)
-- `task` — delegation to context-scout only
+- `get_planning_components_catalogue`, `get_dag_design_guide` — reference materials
+- `read`, `glob`, `grep` — direct file access for spot-checking codebase assumptions
 - `grepai_grepai_search` — semantic search for spot-checking
+- `grepai_grepai_trace_callees`, `grepai_grepai_trace_callers`, `grepai_grepai_trace_graph` — call chain and dependency tracing
+- `grepai_grepai_index_status` — index health check
 - `sequential-thinking_sequentialthinking`
 - `qdrant_qdrant-store`, `qdrant_qdrant-find`
 - `skill`
 
-**Skills:** context-scout-delegation, sequential-thinking, qdrant-notes, grepai
+**Skills:** sequential-thinking, qdrant-notes, grepai, dag-review
 
-**Denied:** `add_node`, `delete_node`, `modify_node`, `init_dag`, `present_compact_dag_to_user`, `choose_plan_name`, `plan_session`, `next_step`, `recover_context`, `read`, `write`, `edit`, `glob`, `grep`, `bash`, `question`, `compress`, all web tools, all GrepAI trace tools, all GrepAI RPG tools, `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
+**Denied:** `add_node`, `delete_node`, `modify_node`, `init_dag`, `present_compact_dag_to_user`, `choose_plan_name`, `plan_session`, `next_step`, `recover_context`, `task`, `write`, `edit`, `bash`, `question`, `compress`, all web tools, all GrepAI RPG tools, `grepai_grepai_list_projects`, `grepai_grepai_list_workspaces`, `grepai_grepai_stats`, `todowrite`
 
 **Step limit:** None. Review depth scales with plan complexity — a reviewer must be free to trace as many nodes and check as many codebase areas as the plan requires.
 
