@@ -16,6 +16,18 @@ The system has two phases:
 
 ---
 
+## Minimum Viable Model Target
+
+This system was designed from the ground up to function on small models. The minimum viable target is **Qwen 3.5 9B** (or equivalent capability at that parameter scale). Every design decision in this spec — enforcement sequences, prose-based prompts, explicit tool naming, GrepAI-first search, skill-based methodology teaching, semantic notes for cross-node memory — exists because it measurably improves small model reliability.
+
+This does not mean large models are unwanted. Frontier models run the system better. But the spec does not assume frontier capability, and no design decision requires it. When a choice exists between an approach that works well on large models and one that works well on both large and small models, this spec always chooses the latter.
+
+**Practical implication for prompt authors and implementers:** If a design choice would only work reliably on a frontier model, it is wrong for this system. Prompts must be explicit. Methodology must be taught, not assumed. Structure must be enforced, not trusted. The system's robustness on small models is not a constraint to work around — it is the goal.
+
+**Model assignment is not defined in agent files.** Which model runs each agent is a profile-level configuration choice made outside the spec. Profiles (such as frontier/Sonnet, frontier/Haiku, Ollama, and others) determine model assignment at runtime. The spec is model-agnostic at the agent level; the minimum viable target governs design intent only.
+
+---
+
 ## Major Components
 
 ### The DAG Enforcement Engine
