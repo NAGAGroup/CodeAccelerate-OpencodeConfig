@@ -3,7 +3,7 @@
 ## Core
 
 ### execution-kickoff
-The hardcoded entry node for every project DAG. Loads the `following-plans` skill and reads session notes to orient the executing agent before beginning work. Every DAG starts here.
+The hardcoded entry node for every project DAG. Loads the `following-plans` skill, views the plan structure (compact then full), retrieves planning context from semantic notes, reasons through execution strategy, and stores executor-framed orientation notes. Every DAG starts here.
 
 ### work-item
 A project mutation node. The agent reads notes, scouts the accumulated context, then delegates to either `@juniordev` (code/configuration changes) or `@documentation-expert` (documentation changes). Use for any discrete unit of work that changes files.
@@ -18,13 +18,13 @@ An external research node. The agent reads notes, scouts context, then delegates
 An extended external research node. Like `research`, but scoped for broad domain exploration across multiple angles. Use when the user requests comprehensive coverage of a topic, not a single targeted query.
 
 ### write-notes
-A notes-writing node. The agent writes findings, decisions, and open questions to `{{SESSION_PATH}}/notes/`. Use after investigation or implementation phases to capture what was learned before compressing.
+A notes-writing node. The agent stores findings, decisions, and open questions to the semantic notes system. Use after investigation or implementation phases to capture what was learned before compressing.
 
 ### compress
 A context compression node. The agent compresses closed sections of the conversation. Use after a phase that produced substantial notes and before moving to the next major phase.
 
 ### session-overview-refresher
-A re-orientation node. The agent reads all notes files and reasons through what has been accomplished and what remains. Use after every `compress` node.
+A re-orientation node (kickoff-refresher in the spec). The agent loads methodology skills, retrieves accumulated session context from semantic notes, and synthesizes understanding of what has been accomplished and what remains. Use after every `compress` node.
 
 ### sequential-thinking
 A pure reasoning node. The agent works through a problem using sequential thinking before continuing. Use when a decision or analysis step is needed that does not require a subagent.
@@ -40,10 +40,10 @@ A branching node where the agent assesses accumulated evidence and chooses a pat
 A branching node where the user chooses a path. The agent presents the options via the `question` tool and routes based on the answer. Use when the choice requires user judgment.
 
 ### plan-fail
-A terminal failure node. The agent writes a failure summary explaining what failed, what was tried, and what a future attempt should do differently. Use when an unresolvable problem is encountered or verification fails after retries.
+A terminal failure node. The agent stores a failure summary to semantic notes explaining what failed, what was tried, and what a future attempt should do differently. Use when an unresolvable problem is encountered or verification fails after retries.
 
 ### plan-success
-A terminal success node. The agent writes a success summary of what was accomplished. Use as the final node when the plan completes successfully.
+A terminal success node. The agent provides a success summary of what was accomplished and notes any deferred items or follow-up work. Use as the final node when the plan completes successfully.
 
 ---
 
@@ -63,7 +63,7 @@ A git checkpoint node. The agent reads notes, scouts context, then delegates to 
 ## General
 
 ### agentic-loop
-A fully autonomous execution node. The agent delegates to `@autonomous-agent`, which has full tool access and works without interruption until its goal is complete. Use only when the user has explicitly approved autonomous execution.
+A fully autonomous execution node (autonomous-work in the spec). The agent confirms the user's explicit approval before delegating to `@autonomous-agent`, which has full tool access and works without interruption until its goal is complete. Use only when the user has explicitly approved autonomous execution during planning.
 
 ### user-discussion
 A free-form conversation node. The agent presents a topic to the user via the `question` tool and collects their input. Use when user input is needed mid-execution that does not require a branching decision.

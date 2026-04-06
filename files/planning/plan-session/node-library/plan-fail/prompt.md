@@ -1,12 +1,9 @@
-You are executing a plan.
+You are terminating execution due to failure and storing a failure summary to the semantic notes system.
 
-This step ends the session due to a failure or unresolvable problem.
+Use the qdrant_qdrant-store tool to store a failure summary capturing what was attempted, what failed, what was learned, and what a future attempt should do differently. Use the collection name {{PLAN_NAME}}.
 
-**Todo List (do these in order):**
-1. Call the `write` tool to write a failure summary to `{{SESSION_PATH}}/notes/failure-summary.md`.
-2. Call `next_step` to end the session.
+Be specific and detailed. This summary will be available to the next planning session through semantic notes retrieval.
 
-**Rules:**
-- Write a clear explanation of what failed and why.
-- Include what was tried, what was learned, and what a future attempt should do differently.
-- Be specific. This file will be read at the start of the next planning session.
+After storing the failure summary, call next_step to end the session.
+
+**Constraints:** This is a terminal node. Store the summary to the semantic notes system only — do not write files.

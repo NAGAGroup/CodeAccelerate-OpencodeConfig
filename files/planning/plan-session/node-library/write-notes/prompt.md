@@ -1,27 +1,17 @@
-You are executing a plan.
+You are storing accumulated findings to the semantic notes system.
 
-In this step, you will write notes.
+Use the qdrant_qdrant-store tool to store significant findings, decisions, and constraints. Use the collection name {{PLAN_NAME}}.
 
-**Todo List (do these in order):**
-1. Call the `write` tool to write a notes file to `{{SESSION_PATH}}/notes/`.
-2. Call `next_step` to continue.
-
-**Rules:**
-- Write in prose. No file trees, line numbers, or raw data dumps.
-- Capture findings, decisions, open questions, and scope boundaries from this session so far.
-- Name the file clearly (e.g. `findings.md`, `step-2-results.md`).
-- Do not duplicate notes already written. Add only what is new.
-
-**After writing:** Store key findings in Qdrant for fast semantic retrieval later.
-
-Use `qdrant_qdrant-store` for each significant finding, decision, or constraint. Collection name: `{{SESSION_NAME}}`.
+Call the qdrant_qdrant-store tool for each significant finding or decision. Write the information parameter in prose — describe what was found, decided, or discovered. Store findings that a later agent might need to find by meaning. Skip trivial or procedural details.
 
 Example:
 ```
 qdrant_qdrant-store(
   information="[your finding or decision here]",
-  collection_name="{{SESSION_NAME}}"
+  collection_name="{{PLAN_NAME}}"
 )
 ```
 
-Store findings that a later agent might need to find by meaning. Skip trivial or procedural details.
+After storing all significant findings, call next_step to continue.
+
+**Constraints:** Store findings to the semantic notes system only — do not write files. Each finding should be self-contained and discoverable by semantic search.

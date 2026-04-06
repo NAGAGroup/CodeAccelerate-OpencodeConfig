@@ -17,12 +17,12 @@ In this step, you will store planning notes capturing everything learned so far 
 - Write findings in prose. No file trees, line numbers, or raw data dumps.
 - Each call stores one finding, decision, or constraint.
 - Store immediately after discovery — do not batch.
-- Use `qdrant_qdrant-store` with collection name: `{{SESSION_NAME}}`.
+- Use `qdrant_qdrant-store` with collection name: `{{PLAN_NAME}}`.
 
 ```
 qdrant_qdrant-store(
   information="[your finding or decision here]",
-  collection_name="{{SESSION_NAME}}"
+  collection_name="{{PLAN_NAME}}"
 )
 ```
 

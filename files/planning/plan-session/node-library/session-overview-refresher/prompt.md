@@ -3,7 +3,7 @@ You are executing a plan.
 In this step, you will re-establish context after compression.
 
 **Todo List (do these in order):**
-1. Use `qdrant_qdrant-find` to surface prior findings from this session. Collection name: `{{SESSION_NAME}}`.
+1. Use `qdrant_qdrant-find` to surface prior findings from this session. Collection name: `{{PLAN_NAME}}`.
 2. Use `sequential-thinking_sequentialthinking` to orient yourself before continuing.
 3. Call `next_step` to continue.
 
@@ -15,7 +15,7 @@ In this step, you will re-establish context after compression.
 ```
 qdrant_qdrant-find(
   query="key findings, decisions, and constraints from this session",
-  collection_name="{{SESSION_NAME}}"
+  collection_name="{{PLAN_NAME}}"
 )
 ```
 Run multiple queries if needed to cover different topics.
