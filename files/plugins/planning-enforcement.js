@@ -110896,10 +110896,10 @@ ${ascii}`;
         }
       }),
       delete_node: tool({
-        description: "Delete a node and its entire subtree from a DAG. Returns before-and-after ASCII diagrams.",
+        description: "Delete a node from the DAG. The node's children become orphaned and must be re-parented using set_parent or add_parent. Returns list of orphaned nodes.",
         args: {
           target: tool.schema.string().describe("Session plan name or raw path to plan.jsonl."),
-          nodeId: tool.schema.string().describe("ID of the node to delete. The node and its entire subtree are removed.")
+          nodeId: tool.schema.string().describe("ID of the node to delete. Its children will become orphaned.")
         },
         async execute({ target, nodeId }, context) {
           try {
@@ -110909,49 +110909,50 @@ ${ascii}`;
             if (nodeId === metadata.entry_node_id) {
               return `Error in delete_node: Cannot delete the entry node "${nodeId}". The entry node is required.`;
             }
-            if (!nodes.some((n) => n.id === nodeId)) {
+            const nodeToDelete = nodes.find((n) => n.id === nodeId);
+            if (!nodeToDelete) {
               return `Error in delete_node: Node "${nodeId}" not found in DAG.`;
             }
-            const toRemove = new Set;
-            const queue = [nodeId];
-            while (queue.length > 0) {
-              const id = queue.pop();
-              if (toRemove.has(id))
-                continue;
-              toRemove.add(id);
-              const n = nodes.find((x) => x.id === id);
-              if (n?.children)
-                queue.push(...n.children);
-            }
+            const orphanedChildren = nodeToDelete.children ?? [];
             for (const n of nodes) {
               if (n.children) {
-                n.children = n.children.filter((c) => !toRemove.has(c));
-                if (n.children.length === 0)
-                  delete n.children;
+                const idx = n.children.indexOf(nodeId);
+                if (idx !== -1) {
+                  n.children.splice(idx, 1);
+                  if (n.children.length === 0)
+                    delete n.children;
+                }
               }
             }
-            const remaining = nodes.filter((n) => !toRemove.has(n.id));
+            const remaining = nodes.filter((n) => n.id !== nodeId);
             writeDagV3(planPath, metadata, remaining);
             const planDir = path6.dirname(planPath);
             const sessionPromptsDir = path6.join(planDir, "prompts");
-            for (const removedId of toRemove) {
-              const promptFile = path6.join(sessionPromptsDir, `${removedId}.md`);
-              if (fs6.existsSync(promptFile)) {
-                fs6.unlinkSync(promptFile);
-              }
+            const promptFile = path6.join(sessionPromptsDir, `${nodeId}.md`);
+            if (fs6.existsSync(promptFile)) {
+              fs6.unlinkSync(promptFile);
             }
             const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, remaining), { colorMode: "none" });
-            return `## delete_node: Deleted "${nodeId}" and its subtree (${toRemove.size} node(s))
+            let result = `## delete_node: Deleted "${nodeId}"
 
-${ascii}`;
+`;
+            if (orphanedChildren.length > 0) {
+              result += `**Orphaned nodes (need re-parenting):** ${orphanedChildren.join(", ")}
+`;
+              result += `Use set_parent or add_parent to reconnect these nodes.
+
+`;
+            }
+            result += ascii;
+            return result;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in delete_node: ${msg}`;
           }
         }
       }),
-      modify_node: tool({
-        description: "Change the parent of a node. Used to restructure the DAG without deleting surviving children. Prompt content is immutable — to change a node's prompt or enforcement sequence, delete it and add a new one.",
+      set_parent: tool({
+        description: "Set a node's parent, replacing all existing parents. Removes the node from all current parents' children arrays and adds it to the new parent. Use this to move a node to a single new parent.",
         args: {
           target: tool.schema.string().describe("Session plan name or raw path to plan.jsonl."),
           nodeId: tool.schema.string().describe("ID of the node to reparent."),
@@ -110963,15 +110964,15 @@ ${ascii}`;
             const planPath = resolveDagPath(target, worktree);
             const { metadata, nodes } = readDagV3(planPath);
             if (nodeId === metadata.entry_node_id) {
-              return `Error in modify_node: Cannot reparent the entry node "${nodeId}".`;
+              return `Error in set_parent: Cannot reparent the entry node "${nodeId}".`;
             }
             const node = nodes.find((n) => n.id === nodeId);
             if (!node) {
-              return `Error in modify_node: Node "${nodeId}" not found in DAG.`;
+              return `Error in set_parent: Node "${nodeId}" not found in DAG.`;
             }
             const newParent = nodes.find((n) => n.id === new_parent_id);
             if (!newParent) {
-              return `Error in modify_node: New parent node "${new_parent_id}" not found in DAG.`;
+              return `Error in set_parent: New parent node "${new_parent_id}" not found in DAG.`;
             }
             const descendants = new Set;
             const queue = [nodeId];
@@ -110983,7 +110984,7 @@ ${ascii}`;
                 queue.push(...n.children);
             }
             if (descendants.has(new_parent_id)) {
-              return `Error in modify_node: Reparenting "${nodeId}" to "${new_parent_id}" would create a cycle.`;
+              return `Error in set_parent: Reparenting "${nodeId}" to "${new_parent_id}" would create a cycle.`;
             }
             for (const n of nodes) {
               if (n.children) {
@@ -110997,15 +110998,72 @@ ${ascii}`;
             }
             if (!newParent.children)
               newParent.children = [];
-            newParent.children.push(nodeId);
+            if (!newParent.children.includes(nodeId)) {
+              newParent.children.push(nodeId);
+            }
             writeDagV3(planPath, metadata, nodes);
             const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: "none" });
-            return `## modify_node: Reparented "${nodeId}" to "${new_parent_id}"
+            return `## set_parent: Reparented "${nodeId}" to "${new_parent_id}"
 
 ${ascii}`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
-            return `Error in modify_node: ${msg}`;
+            return `Error in set_parent: ${msg}`;
+          }
+        }
+      }),
+      add_parent: tool({
+        description: "Add an additional parent to a node, creating convergence (multiple parents). The node keeps its existing parents and gains a new one. Use this to make branches converge to a shared node.",
+        args: {
+          target: tool.schema.string().describe("Session plan name or raw path to plan.jsonl."),
+          nodeId: tool.schema.string().describe("ID of the node to add a parent to."),
+          new_parent_id: tool.schema.string().describe("ID of the additional parent node. Must already exist in the DAG.")
+        },
+        async execute({ target, nodeId, new_parent_id }, context) {
+          try {
+            const worktree = resolveWorktree(context);
+            const planPath = resolveDagPath(target, worktree);
+            const { metadata, nodes } = readDagV3(planPath);
+            if (nodeId === metadata.entry_node_id) {
+              return `Error in add_parent: Cannot add parent to the entry node "${nodeId}".`;
+            }
+            const node = nodes.find((n) => n.id === nodeId);
+            if (!node) {
+              return `Error in add_parent: Node "${nodeId}" not found in DAG.`;
+            }
+            const newParent = nodes.find((n) => n.id === new_parent_id);
+            if (!newParent) {
+              return `Error in add_parent: New parent node "${new_parent_id}" not found in DAG.`;
+            }
+            if (newParent.children?.includes(nodeId)) {
+              return `Error in add_parent: "${new_parent_id}" is already a parent of "${nodeId}".`;
+            }
+            const descendants = new Set;
+            const queue = [nodeId];
+            while (queue.length > 0) {
+              const id = queue.pop();
+              descendants.add(id);
+              const n = nodes.find((x) => x.id === id);
+              if (n?.children)
+                queue.push(...n.children);
+            }
+            if (descendants.has(new_parent_id)) {
+              return `Error in add_parent: Adding "${new_parent_id}" as parent of "${nodeId}" would create a cycle.`;
+            }
+            if (!newParent.children)
+              newParent.children = [];
+            newParent.children.push(nodeId);
+            const parentCount = nodes.filter((n) => n.children?.includes(nodeId)).length;
+            writeDagV3(planPath, metadata, nodes);
+            const ascii = await renderMermaidASCII(dagToMermaidCompactV3(metadata, nodes), { colorMode: "none" });
+            return `## add_parent: Added "${new_parent_id}" as parent of "${nodeId}"
+
+` + `"${nodeId}" now has ${parentCount} parent(s) (convergence node).
+
+${ascii}`;
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            return `Error in add_parent: ${msg}`;
           }
         }
       }),

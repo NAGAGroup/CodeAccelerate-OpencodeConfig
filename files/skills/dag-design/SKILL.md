@@ -13,7 +13,7 @@ Call the task tool with subagent_type set to "dag-designer", a short description
 
 ## What @dag-designer Does
 
-@dag-designer designs execution DAGs by selecting appropriate component nodes from the library and arranging them to accomplish a goal. It validates structure, checks dependencies, and ensures ordering is correct. When it needs codebase context to inform design decisions, it investigates directly—it does not delegate to scouts. It focuses on DAG design only, not implementation. Code changes and execution are handled by component nodes.
+@dag-designer designs execution DAGs by selecting appropriate component nodes from the library and arranging them to accomplish the goal. It validates structure, checks dependencies, and ensures ordering is correct.
 
 ## Rules for Good Dispatch Prompts
 
@@ -33,3 +33,5 @@ After loading skills and before starting design work, instruct @dag-designer to 
 
 - **Component catalogue:** "Call get_planning_components_catalogue to see all available component types and their purposes."
 - **Design guide:** "Call get_dag_design_guide to understand DAG design principles and patterns."
+- **Qdrant context:** "Call qdrant_qdrant-search with the current plan name to retrieve all relevant planning context and findings accumulated so far."
+- **Storing design decisions:** "When you have completed the DAG design, call qdrant_qdrant-store to save your design decisions and rationale to the plan session collection for future reference."

@@ -13,7 +13,7 @@ Call the task tool with subagent_type set to "dag-reviewer", a short description
 
 ## What @dag-reviewer Does
 
-@dag-reviewer evaluates execution DAGs against design criteria and produces structured critiques. It reads the DAG structure, understands the intended goal and scope, and assesses the design against multiple dimensions: completeness, dependency ordering, component fit, verification coverage, scope discipline, failure handling, and efficiency. When it needs to spot-check codebase assumptions, it investigates directly—it does not delegate to scouts. @dag-reviewer reviews and critiques DAGs thoroughly but does not revise them—revisions are separate work.
+@dag-reviewer evaluates execution DAGs against design criteria and produces structured critiques. It reads the DAG structure, understands the intended goal and scope, and assesses the design against multiple dimensions: completeness, dependency ordering, component fit, verification coverage, scope discipline, failure handling, and efficiency.
 
 ## Rules for Good Dispatch Prompts
 
@@ -27,9 +27,16 @@ Include explicit skill-loading instructions near the top of the dispatch prompt:
 - **Before retrieving or storing findings:** "Load the qdrant-notes skill for retrieving prior design context and storing review findings to the plan session collection."
 - **Before reasoning through review criteria:** "Load the sequential-thinking skill for step-by-step reasoning through review dimensions and identifying gaps."
 
+
+## Loading the DAG to be Reviewed
+
+To load the DAG written by @dag-writer, @dag-reviewer must be instructed to immediately call the `show_compact_dag` and `show_dag` tools before doing any review work.
+
 ## Reference Material Instructions for @dag-reviewer
 
 After loading skills and before starting the review, instruct @dag-reviewer to retrieve reference materials:
 
 - **Component catalogue:** "Call get_planning_components_catalogue to understand available component types and their intended purposes."
 - **Design guide:** "Call get_dag_design_guide to reference DAG design principles and patterns for evaluating the design."
+- **Qdrant context:** "Call qdrant_qdrant-search with the current plan name to retrieve all relevant planning context and the rationale behind the current DAG design."
+- **Storing design decisions:** "When you have completed the DAG design, call qdrant_qdrant-store to save your design decisions and rationale to the plan session collection for future reference."

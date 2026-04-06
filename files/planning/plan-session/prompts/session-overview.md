@@ -10,6 +10,8 @@ The name will immediately populate all remaining planning node prompts.
 
 Constraints: Load the skill before choosing the plan name.
 
+Complete these instructions without asking the user any questions, that will come in a later step.
+
 Choose a name that clearly describes what the plan will accomplish, not what planning session it belongs to.
 
 Use only lowercase letters, numbers, and hyphens in the plan name.

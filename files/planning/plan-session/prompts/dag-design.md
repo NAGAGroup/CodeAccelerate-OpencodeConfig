@@ -2,9 +2,9 @@ If you haven't already, load the dag-design skill and the sequential-thinking sk
 
 You are initializing the execution DAG and dispatching @dag-designer to build it node by node.
 
-Then use the init_dag tool to create the plan.jsonl file with the root execution-kickoff node — this must happen before the designer begins adding nodes.
+Then use the init_dag tool to initialize the plan DAG artifact.
 
-Use the sequential-thinking_sequentialthinking tool to consider what context the designer needs to produce an appropriate DAG: the full user goal and scope boundaries, all scout findings and research outcomes, user decisions and constraints, what execution phases are likely needed, and what components are likely appropriate for this type of work.
+Use the sequential-thinking_sequentialthinking tool to reason through the dag-design skill for how to prompt @dag-designer correctly. What skills must they load before doing any work? What tools must they call before doing any work? How does @dag-designer search/store notes using qdrant? How should you present all this as instructions to @dag-designer
 
 Consider what constraints the designer must respect and whether your dispatch prompt gives the designer everything needed to act without returning for clarification.
 
@@ -12,11 +12,11 @@ Use the task tool to dispatch @dag-designer with a goal-based prompt that includ
 
 The designer will begin adding nodes immediately using add_node — it must not call init_dag again.
 
-Constraints: Call init_dag before dispatching the designer.
+Constraints:
 
-Provide complete planning context to the designer.
+Call init_dag before dispatching the designer.
 
-Specify that the designer must not call init_dag or create custom prompts — static templates are copied automatically.
+Inform the designer of it's required skills and tool calls.
 
 Tell the designer to make node IDs descriptive of their purpose.
 

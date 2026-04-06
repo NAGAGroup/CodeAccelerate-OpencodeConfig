@@ -3,50 +3,97 @@ name: grepai
 description: Teaches how to use GrepAI semantic search and code intelligence tools for code investigation and dependency tracing.
 ---
 
-# GrepAI Semantic Search and Code Intelligence
+# GrepAI: Semantic Code Search
 
-Use GrepAI semantic search and code intelligence tools for investigating code, locating files, understanding dependencies, and tracing function calls.
+Use GrepAI to find code by describing what it does in natural language.
 
-## GrepAI Tools Overview
+## Core Tools
 
-**Search Tools:** grepai_grepai_search for semantic code search using natural language queries. Parameters: query (required), limit (default 10), compact, workspace, project, path, format.
+**grepai_grepai_search** - Find code by description
+- `query`: What the code does (e.g., "user authentication", "database queries")
+- `limit`: Max results (default 10)
+- `compact`: true = no code snippets, 80% fewer tokens (use by default)
+- `format`: 'toon' = 50% fewer tokens (use for multiple searches)
 
-**Trace Tools:** grepai_grepai_trace_callers to find all functions calling a symbol. grepai_grepai_trace_callees to find all functions called by a symbol. grepai_grepai_trace_graph to build complete call graph. Parameters: symbol (required), depth (default 2 for graph), workspace, project, compact.
+**grepai_grepai_trace_callers** - Find what calls a function
+- `symbol`: Function name to trace
+- `compact`: true = locations only, no code
 
-**Workspace Tools:** grepai_grepai_list_workspaces to list available workspaces. grepai_grepai_list_projects to list projects within a workspace.
+**grepai_grepai_trace_callees** - Find what a function calls
+- `symbol`: Function name to trace
+- `compact`: true = locations only, no code
 
-**Status Tools:** grepai_grepai_index_status to check index health. Parameters: verbose (optional), workspace.
+**grepai_grepai_trace_graph** - Full call graph around a function
+- `symbol`: Function name
+- `depth`: How many levels (default 2)
 
-## Query Best Practices
+## How to Write Queries
 
-Use English for queries. Describe **intent, not implementation** — write "handles user login" instead of "func Login". Be specific with terminology. "JWT token validation" is better than just "token". Natural language works best: "how are errors handled in API requests" is more effective than "error handler".
+**Good queries** describe intent:
+- "user authentication flow"
+- "database connection pooling"
+- "error handling for API requests"
+- "JWT token validation"
 
-Good queries: "user authentication flow", "database connection pooling", "error handling middleware".
-Bad queries: "auth" (vague), "function Login" (implementation), "JWT expiration check implementation" (overly specific).
+**Bad queries** are vague or too specific:
+- "auth" (too vague)
+- "function Login" (use natural language, not code)
+- "check JWT expiration in middleware line 45" (too specific)
 
-## Output Format and Efficiency
+Write queries like explaining to a person: "how does the app handle user login" not "Login function".
 
-Default format provides human-readable results with file paths, line numbers, scores, and code snippets.
+## Workflow
 
-**Compact mode** (compact=true) omits content, reducing tokens by ~80%. Use when you only need locations and scores, not code snippets.
+**Standard investigation:**
+1. `grepai_grepai_search` with compact=true to find relevant files
+2. `read` the files GrepAI found
+3. Use `grep` only if you need exact string matching in those files
 
-**TOON format** (format='toon') uses ~50% fewer tokens. Use for high-volume operations or token efficiency.
+**Before changing code:**
+1. `grepai_grepai_trace_callers` to see what depends on the code
+2. `read` those caller files to understand usage
+3. Make changes knowing the impact
 
-For AI agent operations, use compact=true by default unless you specifically need code snippets. Use format='toon' for many search calls.
+**Finding related code:**
+1. `grepai_grepai_search` for the feature area
+2. `grepai_grepai_trace_graph` to see how functions connect
+3. `read` key files to understand structure
 
-## Workflow Patterns
+## Token Efficiency Rules
 
-**Standard investigation:** Start with grepai_grepai_search by describing what code does. Use trace tools to understand dependencies. Use read to examine identified files. Use grep only for exact string matching within narrowed scope.
+- Always use `compact=true` unless you need code snippets
+- Use `format='toon'` when making multiple searches
+- Start with limit=5 or limit=10, not higher
+- GrepAI finds files → read finds content → grep finds exact strings
 
-**Before refactoring:** Use grepai_grepai_trace_callers to find all functions depending on code you plan to change. Use grepai_grepai_trace_graph to visualize the complete dependency chain. Read caller files to understand usage patterns.
+## Example Calls
 
-**Cross-project search:** Use grepai_grepai_list_workspaces to see available workspaces. Use grepai_grepai_search with workspace parameter to search across projects. Optionally filter by project or path.
+Find authentication code:
+```
+grepai_grepai_search(query="user authentication and login", limit=10, compact=true)
+```
 
-## Rules
+Search only in specific directory:
+```
+grepai_grepai_search(query="API route handlers", path="src/api/", limit=10, compact=true)
+```
 
-- Start with grepai_grepai_search for broad exploration
-- Use trace tools when you need to understand specific function dependencies before making changes
-- Rely on GrepAI first for investigation; use file tools (read, glob, grep) as fallbacks after GrepAI identifies specific files
-- Once GrepAI identifies relevant files, read them with the read tool to understand context
-- Use grep only for exact string matching within files identified by GrepAI
-- Always use compact mode or TOON format for token efficiency unless you need code snippets
+Search in specific file:
+```
+grepai_grepai_search(query="database connection setup", path="config/database.ts", compact=true)
+```
+
+Find what calls a function before refactoring:
+```
+grepai_grepai_trace_callers(symbol="validateToken", compact=true)
+```
+
+See full dependency chain:
+```
+grepai_grepai_trace_graph(symbol="processPayment", depth=2)
+```
+
+Multiple searches with token efficiency:
+```
+grepai_grepai_search(query="database queries", limit=5, compact=true, format='toon')
+```

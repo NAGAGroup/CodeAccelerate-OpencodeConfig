@@ -13,3 +13,5 @@ Constraints: Request only findings and observations from the scout — it is rea
 Specify that the scout should return structured prose narratives describing what it found, what ambiguities remain, and what challenges it anticipates.
 
 Guide without prescribing what the scout will find.
+
+Proceed without any questions to the user, you will get the opportunity in a later step.
