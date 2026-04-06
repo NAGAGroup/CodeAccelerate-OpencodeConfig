@@ -111005,7 +111005,7 @@ ${ascii}`;
         args: {},
         async execute(_args, _context) {
           try {
-            const guidePath = path7.join(process.cwd(), "files", "planning", "plan-session", "dag-design-guide.md");
+            const guidePath = path7.join(CONFIG_ROOT, "planning", "plan-session", "dag-design-guide.md");
             if (!fs6.existsSync(guidePath)) {
               return `dag-design-guide.md not found at ${guidePath}. ` + `Ensure the planning components are installed correctly via OCX.`;
             }

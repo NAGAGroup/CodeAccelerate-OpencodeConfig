@@ -908,17 +908,17 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
        description:
          "Retrieve the DAG design guide. Returns the guide verbatim from the global plan-session installation.",
        args: {},
-       async execute(_args, _context) {
-         try {
-            const guidePath = path.join(process.cwd(), "files", "planning", "plan-session", "dag-design-guide.md");
+        async execute(_args, _context) {
+          try {
+             const guidePath = path.join(CONFIG_ROOT, "planning", "plan-session", "dag-design-guide.md");
 
-           if (!fs.existsSync(guidePath)) {
-             return `dag-design-guide.md not found at ${guidePath}. ` +
-               `Ensure the planning components are installed correctly via OCX.`;
-           }
+            if (!fs.existsSync(guidePath)) {
+              return `dag-design-guide.md not found at ${guidePath}. ` +
+                `Ensure the planning components are installed correctly via OCX.`;
+            }
 
-           const guide = fs.readFileSync(guidePath, "utf-8");
-           return guide;
+            const guide = fs.readFileSync(guidePath, "utf-8");
+            return guide;
          } catch (err) {
            const msg = err instanceof Error ? err.message : String(err);
            return `Error retrieving DAG design guide: ${msg}`;
