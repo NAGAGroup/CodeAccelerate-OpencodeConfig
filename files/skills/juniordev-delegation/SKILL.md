@@ -9,20 +9,7 @@ This skill teaches how to dispatch @junior-dev for goal-oriented implementation.
 
 ## How to Dispatch the Agent
 
-Call the task tool with subagent_type junior-dev:
-
-```
-task(
-  subagent_type="junior-dev",
-  description="Add error logging configuration",
-  prompt="Goal: add verbose error logging to the debug configuration. This helps troubleshoot connection issues. Context: the logging framework is configured in src/config/logging.ts. Scope: modify only the debug config, do not touch production configuration. Constraints: do not change test files or modify the logging framework itself. Before starting, retrieve accumulated session knowledge from Qdrant collection 'project-implementation' using qdrant_qdrant-find. Investigate the current logging configuration and the patterns used, then make the change. Store findings and changes to the same collection when done. Report what file changed and any issues encountered."
-)
-```
-
-**Parameters:**
-- `subagent_type`: always the string "junior-dev"
-- `description`: 3–5 word label for logging
-- `prompt`: your full goal-based dispatch prompt
+Call the task tool with subagent_type set to "junior-dev", a short description (3-5 words) for logging purposes, and a complete goal-based prompt. The prompt should state the goal clearly, explain why it matters, provide relevant context about where the code lives, describe scope boundaries (what to change and what to leave alone), list constraints, include instructions to retrieve accumulated session knowledge from the appropriate Qdrant collection using qdrant_qdrant-find before starting, and store findings and changes when done.
 
 ## What @junior-dev Does
 

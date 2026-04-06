@@ -9,20 +9,7 @@ This skill teaches how to dispatch @external-scout for external research on publ
 
 ## How to Dispatch the Agent
 
-Call the task tool with subagent_type external-scout:
-
-```
-task(
-  subagent_type="external-scout",
-  description="Research JWT implementation patterns",
-  prompt="Research question: does the JWT specification support custom claim types? We know JWT is a standard token format used widely. What we need to verify: whether custom claims are part of the standard or non-standard practice. Search the official JWT documentation and published guides. Read actual sources rather than relying on search snippets. Before starting, retrieve any previous research findings from Qdrant collection 'research-findings' using qdrant_qdrant-find. Store new findings to the same collection when done. Report what you found with distinctions: verified (read from source), inferred (from summaries), and uncertain. End with what you searched for but could not confirm from primary sources."
-)
-```
-
-**Parameters:**
-- `subagent_type`: always the string "external-scout"
-- `description`: 3–5 word label for logging
-- `prompt`: your full goal-based dispatch prompt
+Call the task tool with subagent_type set to "external-scout", a short description (3-5 words) for logging purposes, and a complete goal-based prompt. The prompt should state the research question clearly, describe what you already know and what needs verification, specify what sources to search (official documentation, published guides), emphasize reading actual sources rather than relying on search snippets, include instructions to retrieve previous research findings from the appropriate Qdrant collection using qdrant_qdrant-find before starting, store new findings when done, and specify the reporting format (verified from source, inferred from summaries, uncertain, and what could not be confirmed).
 
 ## What @external-scout Does
 

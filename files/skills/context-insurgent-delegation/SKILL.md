@@ -9,20 +9,7 @@ This skill teaches how to dispatch @context-insurgent for narrow-deep analysis o
 
 ## How to Dispatch the Agent
 
-Call the task tool with subagent_type context-insurgent:
-
-```
-task(
-  subagent_type="context-insurgent",
-  description="Trace token validation logic",
-  prompt="Goal: understand how token validation works across the codebase. Trace the flow from request entry through validation and identify all constraints. Before starting, retrieve any previous findings on token validation from Qdrant collection 'rebuild-files-from-spec' using qdrant_qdrant-find. Store new findings to the same collection as you discover them. Report prose findings with specific code evidence and explain what you examined but could not fully verify."
-)
-```
-
-**Parameters:**
-- `subagent_type`: always the string "context-insurgent"
-- `description`: 3–5 word label for logging
-- `prompt`: your full goal-based dispatch prompt
+Call the task tool with subagent_type set to "context-insurgent", a short description (3-5 words) for logging purposes, and a complete goal-based prompt. The prompt should state the analysis goal, describe what mechanism to trace or understand, include instructions to retrieve previous findings from the appropriate Qdrant collection using qdrant_qdrant-find before starting, store new findings as they're discovered, and report prose findings with specific code evidence and explanations of what was examined but could not be fully verified.
 
 ## What @context-insurgent Does
 

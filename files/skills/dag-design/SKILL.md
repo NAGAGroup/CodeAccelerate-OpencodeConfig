@@ -9,20 +9,7 @@ This skill teaches how to dispatch @dag-designer to build execution DAGs from th
 
 ## How to Dispatch the Agent
 
-Call the task tool with subagent_type dag-designer:
-
-```
-task(
-  subagent_type="dag-designer",
-  description="Design execution DAG",
-  prompt="Goal: design an execution DAG for adding comprehensive logging throughout the authentication system. Scope: authentication module only, do not add logging to other systems. Plan name: logging-auth-module. Call init_dag with the plan_name parameter. You have accumulated planning findings from investigation. Use the tools init_dag, add_node, validate_dag, show_compact_dag as needed to design the DAG. Call get_planning_components_catalogue and get_dag_design_guide to reference available node types and design principles. Before starting, retrieve any previous design context from Qdrant collection 'dag-designs' using qdrant_qdrant-find. Store your design decisions and rationale to Qdrant collection 'dag-designs' when done. Provide the complete DAG structure and explain why each node choice fits the goal."
-)
-```
-
-**Parameters:**
-- `subagent_type`: always the string "dag-designer"
-- `description`: 3–5 word label for logging
-- `prompt`: your full goal-based dispatch prompt
+Call the task tool with subagent_type set to "dag-designer", a short description (3-5 words) for logging purposes, and a complete goal-based prompt that includes the plan name, accumulated planning findings, scope boundaries, and what the DAG should accomplish. The prompt should instruct the designer to retrieve previous design context from Qdrant, use the available DAG tools (init_dag, add_node, validate_dag, show_compact_dag), reference the component catalogue and design guide, store design decisions to Qdrant when done, and provide the complete DAG structure with rationale for each node choice.
 
 ## Tools Available to @dag-designer
 

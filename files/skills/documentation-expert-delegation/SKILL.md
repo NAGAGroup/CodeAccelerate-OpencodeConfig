@@ -9,20 +9,7 @@ This skill teaches how to dispatch @documentation-expert for writing and editing
 
 ## How to Dispatch the Agent
 
-Call the task tool with subagent_type documentation-expert:
-
-```
-task(
-  subagent_type="documentation-expert",
-  description="Write API configuration guide",
-  prompt="Goal: write a configuration guide for the API module. File: docs/guides/api-configuration.md. Before starting, retrieve any previous findings or context from Qdrant collection 'project-docs' using qdrant_qdrant-find. The guide should cover: available configuration options, environment variable setup, and common patterns. Use docs/guides/database-setup.md as a formatting reference for structure and tone. Keep it practical and include at least one complete example. Do not create additional files. Store your work summary to Qdrant collection 'project-docs' when done."
-)
-```
-
-**Parameters:**
-- `subagent_type`: always the string "documentation-expert"
-- `description`: 3–5 word label for logging
-- `prompt`: your full goal-based dispatch prompt
+Call the task tool with subagent_type set to "documentation-expert", a short description (3-5 words) for logging purposes, and a complete goal-based prompt. The prompt should state the documentation goal, specify the target file path, describe what topics to cover, point to formatting reference files for structure and tone, include instructions to retrieve previous findings from the appropriate Qdrant collection using qdrant_qdrant-find before starting, specify any constraints (like not creating additional files), and store the work summary when done.
 
 ## What @documentation-expert Does
 

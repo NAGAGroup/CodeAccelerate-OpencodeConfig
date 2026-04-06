@@ -9,20 +9,7 @@ This skill teaches how to dispatch @autonomous-agent for fully autonomous execut
 
 ## How to Dispatch the Agent
 
-Call the task tool with subagent_type autonomous-agent:
-
-```
-task(
-  subagent_type="autonomous-agent",
-  description="Autonomous feature implementation",
-  prompt="Goal: implement support for custom authentication providers in the system. Acceptance criteria: new providers can be registered and used without modifying existing provider code. Constraints: do not break existing OAuth provider, preserve all existing tests. Before starting, retrieve any previous session knowledge from Qdrant collection 'session-progress' using qdrant_qdrant-find. Store progress notes as you work and the final outcome when complete. Report what was done, what works, what remains, and any issues encountered."
-)
-```
-
-**Parameters:**
-- `subagent_type`: always the string "autonomous-agent"
-- `description`: 3–5 word label for logging
-- `prompt`: your full goal-based dispatch prompt
+Call the task tool with subagent_type set to "autonomous-agent", a short description (3-5 words) for logging purposes, and a complete goal-based prompt. The prompt should state the goal clearly, define acceptance criteria, list constraints and boundaries, include instructions to retrieve previous session knowledge from the appropriate Qdrant collection using qdrant_qdrant-find before starting, store progress notes during work and final outcome when complete, and specify what to report back (what was done, what works, what remains, any issues encountered).
 
 ## What @autonomous-agent Does
 

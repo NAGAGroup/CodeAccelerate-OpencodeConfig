@@ -9,20 +9,7 @@ This skill teaches how to dispatch @tailwrench for shell operations, verificatio
 
 ## How to Dispatch the Agent
 
-Call the task tool with subagent_type tailwrench:
-
-```
-task(
-  subagent_type="tailwrench",
-  description="Run build and tests",
-  prompt="Run: npm run build. Report the full output and exit code. A pass means exit code 0 with no errors. If it fails, report the exact error message. Then run: npm test. Report the test output and pass/fail result. Do not attempt to fix failures. Before starting, retrieve any previous verification results from Qdrant collection 'build-verification' using qdrant_qdrant-find. Store the final results to the same collection when done."
-)
-```
-
-**Parameters:**
-- `subagent_type`: always the string "tailwrench"
-- `description`: 3–5 word label for logging
-- `prompt`: your full goal-based dispatch prompt
+Call the task tool with subagent_type set to "tailwrench", a short description (3-5 words) for logging purposes, and a complete goal-based prompt. The prompt should specify what commands to run in order, what to report back for each, what success criteria look like, and should include instructions to retrieve previous results from the appropriate Qdrant collection using qdrant_qdrant-find before starting and store final results when done.
 
 ## What @tailwrench Can Do
 

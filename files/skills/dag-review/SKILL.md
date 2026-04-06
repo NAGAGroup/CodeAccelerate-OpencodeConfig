@@ -9,20 +9,7 @@ This skill teaches how to dispatch @dag-reviewer to review execution DAGs agains
 
 ## How to Dispatch the Agent
 
-Call the task tool with subagent_type dag-reviewer:
-
-```
-task(
-  subagent_type="dag-reviewer",
-  description="Review execution DAG",
-  prompt="Review the execution DAG for plan name: logging-auth-module. The user's goal is: add comprehensive logging to the authentication system. Call get_dag_design_guide and get_planning_components_catalogue to reference design principles and component types. Show the DAG and review it against these dimensions: Is the DAG complete for the goal — does it cover all work needed? Are dependencies in the right order — do nodes execute in logical sequence? Does each node use the appropriate component type for its purpose? Is verification comprehensive — does every work node have a verification check? Does the DAG maintain scope discipline — does it stay within stated boundaries? Are failure paths appropriate — are there recovery or handling nodes where needed? Is the design efficient — as lean as possible without skipping necessary work? Before starting, retrieve any previous review findings from Qdrant collection 'dag-reviews' using qdrant_qdrant-find. Store your findings and critique to Qdrant when done."
-)
-```
-
-**Parameters:**
-- `subagent_type`: always the string "dag-reviewer"
-- `description`: 3–5 word label for logging
-- `prompt`: your full goal-based dispatch prompt
+Call the task tool with subagent_type set to "dag-reviewer", a short description (3-5 words) for logging purposes, and a complete goal-based prompt. The prompt should specify the plan name to review, state the user's goal, instruct the reviewer to call get_dag_design_guide and get_planning_components_catalogue for reference, list the review dimensions to evaluate (completeness, dependency ordering, component fit, verification coverage, scope discipline, failure handling, efficiency), include instructions to retrieve previous review findings from the appropriate Qdrant collection using qdrant_qdrant-find before starting, and store findings and critique when done.
 
 ## Tools Available to @dag-reviewer
 

@@ -9,20 +9,7 @@ This skill teaches how to dispatch @context-scout for wide-shallow project explo
 
 ## How to Dispatch the Agent
 
-Call the task tool with subagent_type context-scout:
-
-```
-task(
-  subagent_type="context-scout",
-  description="Survey authentication flow",
-  prompt="Goal: understand how the system handles user authentication. Explore what exists, how parts relate, and what constraints matter. Before starting, retrieve any previous findings on this topic from Qdrant collection 'rebuild-files-from-spec' using qdrant_qdrant-find. Store new findings to the same collection as you discover them. Report in prose with an uncertainties section explaining what you investigated but could not fully determine."
-)
-```
-
-**Parameters:**
-- `subagent_type`: always the string "context-scout"
-- `description`: 3–5 word label for logging
-- `prompt`: your full goal-based dispatch prompt
+Call the task tool with subagent_type set to "context-scout", a short description (3-5 words) for logging purposes, and a complete goal-based prompt. The prompt should state the exploration goal, describe what to understand (what exists, how parts relate, what constraints matter), include instructions to retrieve previous findings from the appropriate Qdrant collection using qdrant_qdrant-find before starting, store new findings as they're discovered, and report in prose with an uncertainties section for anything investigated but not fully determined.
 
 ## What @context-scout Does
 
