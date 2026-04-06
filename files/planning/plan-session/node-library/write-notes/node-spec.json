@@ -1,1 +1,1 @@
-{"enforcement": ["skill", "qdrant_qdrant-store"]}
+{"enforcement": ["qdrant_qdrant-store"]}

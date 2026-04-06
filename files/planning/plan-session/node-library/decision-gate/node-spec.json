@@ -1,1 +1,1 @@
-{"enforcement": ["skill", "qdrant_qdrant-find", "sequential-thinking_sequentialthinking"]}
+{"enforcement": ["qdrant_qdrant-find", "sequential-thinking_sequentialthinking"]}
