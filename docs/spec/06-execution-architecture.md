@@ -81,6 +81,12 @@ Later nodes query this accumulated context. A verification node can retrieve wha
 
 ---
 
+## Execution Model: Sequential Only
+
+**All execution is sequential. There is no parallelism.** At any point in time, exactly one node is executing. The DAG is a directed graph of sequential steps — not a parallel workflow, not a task queue with concurrent workers.
+
+Branches are not parallel paths. They are mutually exclusive execution paths. When a decision gate chooses one branch, the other branch is permanently unreachable in that execution. Only one complete path through the DAG executes per session.
+
 ## Branching and Convergence
 
 At `decision-gate` and `user-decision-gate` nodes, the agent must choose which child node to advance to. The `next` parameter to `next_step` is the child node's ID as it appears in `plan.jsonl`.
@@ -96,18 +102,35 @@ Call next_step with the next parameter. Valid options: [<child_id_1>, <child_id_
 
 The `following-plans` skill teaches the agent to read these error messages and call `next_step` again with the correct parameter.
 
+### Valid Reasons to Branch
+
+Branches exist for three purposes only:
+
+1. **Execution decisions** — the outcome of a verification or check determines which path to take (pass vs. fail). The failing path typically leads to a fix attempt or `plan-fail`.
+2. **User decisions** — the user chooses between meaningfully different work paths at a `user-decision-gate`.
+3. **Verification failure retries** — a fix path that performs extra work and reconverges to the main path after the fix passes verification.
+
+If two things both need to happen, they are sequential nodes on the same path — not branches.
+
 ### Multiple Parents (Convergence)
 
 Nodes can have multiple parents. When multiple branches point to the same node, that node is a convergence point. The node executes when any parent path reaches it — whichever branch was taken, the convergent node is the next step.
 
-**Example:** After a decision gate, both success and retry paths might converge to a shared commit node:
+**Example — verification failure retry:**
 ```
-verify → decision-gate
-  ├─ (pass) → commit-changes
-  └─ (fail) → fix-work → verify-fix → commit-changes
+work-item → verify → decision-gate
+                         ├─ (pass) → commit-changes
+                         └─ (fail) → fix-work → verify-fix → commit-changes  [convergence]
 ```
 
-The `commit-changes` node has two parents. It executes once, when either path reaches it. The execution state tracks which path was taken (via the decision log), but the convergent node itself doesn't distinguish between parents — it performs the same work regardless of which path arrived.
+**Example — extra work decision:**
+```
+decision-gate
+    ├─ (needs-migration) → run-migration → verify-migration → deploy  [convergence]
+    └─ (no-migration) → deploy
+```
+
+The convergent node has two parents. It executes once, when either path reaches it. The convergent node performs the same work regardless of which path arrived — it does not distinguish between parents.
 
 Convergence reduces node duplication and makes DAG structure clearer. Use it when different paths genuinely need the same next step.
 

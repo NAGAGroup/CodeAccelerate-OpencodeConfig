@@ -1,29 +1,19 @@
-If you haven't already, load the external-scout-delegation skill, the asking-questions skill, and the sequential-thinking skill before doing anything else.
+# DAG Node: External Research
+**Skills:** external-scout-delegation, sequential-thinking
+**Thinking Required:** Yes
+**Questions Allowed:** No
+**Required Tools:** sequential-thinking_sequentialthinking, task
+**Optional Tools:** None
+**Delegated Subagent:** @external-scout
 
-You are formulating an external research plan and obtaining user approval before dispatching research outside this session.
+# Goal
+Research external public information that the project depends on or that scout findings raised questions about.
 
-Then use the sequential-thinking_sequentialthinking tool to formulate a concrete external research plan. Think through the findings from loading the external-scout-delegation skill for designing the prompt to the subagent.
+## Instructions
+Use sequential-thinking to identify specific research areas — frameworks, libraries, APIs, domain knowledge, assumptions to verify from the scout findings. Dispatch @external-scout with a clear research goal in public, general terms. Ask for findings categorized as verified (read from source), inferred (from summaries), or uncertain.
 
-You must identify specific research areas — consider what the scout found that raises questions about external requirements, what frameworks, libraries, APIs, or domain knowledge the project depends on, what assumptions are being made that external sources could verify or correct, and how to phrase queries in public, general terms that do not expose private project details.
-
-You are required to produce a research plan regardless of how confident you feel — formulating the plan is mandatory, not optional.
-
-Once you have composed the research plan, present it clearly to the user in prose form, then use the question tool to ask for approval with options: Approve / Modify / Deny.
-
-If the user chooses Modify, update the plan based on their feedback and present the revised version before proceeding.
-
-If the user chooses Deny, use the task tool to dispatch @external-scout with this minimal message: "No external research needed for this session." This no-op call satisfies the task enforcement requirement. Then call next_step to proceed.
-
-If the user approves or modifies, use the task tool to dispatch @external-scout with the approved research plan and clear expectations about what kind of findings to return.
-
-Constraints:
-
-Formulating a research plan is not optional — always produce one before presenting the question.
-
-Always instruct the subagent to load its required skills.
-
-Present the exact research plan to the user as plain prose before the approval question.
-
-Use the question tool only for the approval gate.
-
-Only the user can decide to skip research by choosing Deny — you may not skip it unilaterally.
+## Constraints
+- use only public terms in the dispatch prompt
+- no private project details
+- always dispatch even if research need seems minimal
+- ask for verification distinctions in findings

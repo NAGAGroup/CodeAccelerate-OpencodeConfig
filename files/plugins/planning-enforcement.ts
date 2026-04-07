@@ -8,7 +8,7 @@ import { exemptTools, isExempt, CONFIG_ROOT } from "./constants";
 import { dagStatePath, writeState, readState, now } from "./state-io";
 import { expandPath, readPrompt, resolveDagPath } from "./path-utils";
 import { readDagV3, writeDagV3 } from "./dag-io";
-import { dagToMermaidV3, dagToMermaidCompactV3, validateDagV3, flattenTreeV3 } from "./dag-tree";
+import { dagToMermaidCompactV3, validateDagV3, flattenTreeV3 } from "./dag-tree";
 import { copyPlanningDag } from "./dag-lifecycle";
 import { ensureOpenCodeIgnore } from "./plugin-utils";
 import { detectDivergence, suggestRecoveryActions } from "./divergence-detection";

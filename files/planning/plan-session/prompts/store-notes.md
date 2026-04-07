@@ -1,23 +1,19 @@
-If you haven't already, load the qdrant-notes skill before doing anything else.
+# DAG Node: Store Notes
+**Skills:** qdrant-notes
+**Thinking Required:** No
+**Questions Allowed:** No
+**Required Tools:** qdrant_qdrant-store
+**Optional Tools:** None
+**Delegated Subagent:** None
 
-You are storing all significant findings, decisions, and constraints from the investigation phases to semantic notes before context compression.
+# Goal
+Persist all significant findings, decisions, and constraints from the investigation phases to semantic notes before context compression.
 
-Use the qdrant_qdrant-store tool to store each significant finding, decision, or constraint from the investigation phases.
+## Instructions
+Store each significant finding, decision, or constraint as a separate `qdrant_qdrant-store` call. Use collection_name `{{PLAN_NAME}}`. Write findings in natural language prose. Store: user's goal and scope boundaries, scout findings, research outcomes, critical constraints that will affect plan design. Make as many calls as needed — one per distinct finding.
 
-The enforcement requires at least one store call; you should make as many calls as needed — one per distinct finding, decision, scope boundary, or user clarification.
-
-Write all findings in prose form, not as file lists or raw data.
-
-Store: the user's goal and scope boundaries, key scout findings and research outcomes, user decisions and answers to clarifying questions, and any critical constraints that will affect plan design.
-
-For each call to qdrant_qdrant-store, pass an information parameter containing your finding or decision in natural language prose, and set collection_name to {{PLAN_NAME}}.
-
-Store findings as you extract them — one call per finding keeps entries discrete and retrievable.
-
-Constraints: Write findings in natural language prose.
-
-Store one significant finding, decision, or constraint per call.
-
-Include the exact collection name {{PLAN_NAME}} in each call.
-
-Focus on the findings that shape plan structure and scope, not procedural details.
+## Constraints
+- one finding per call
+- prose form only
+- collection_name must be `{{PLAN_NAME}}`
+- focus on findings that shape plan structure not procedural details

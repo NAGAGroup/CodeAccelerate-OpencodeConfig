@@ -1,5 +1,17 @@
-You are re-establishing your planning methodology after context compression to prepare for DAG design.
+# DAG Node: Session Overview Refresher
+**Skills:** following-plans
+**Thinking Required:** No
+**Questions Allowed:** No
+**Required Tools:** (none)
+**Optional Tools:** None
+**Delegated Subagent:** None
 
-Use the skill tool to load the following-plans skill to restore your understanding of how to follow the planning sequence and manage enforcement constraints. Your planning context was stored to semantic notes in the previous phase and will be retrieved in the next node — this node restores your methodology only.
+# Goal
+Re-establish planning methodology after context compression before DAG design begins.
 
-Constraints: Load the skill fully before advancing. This is a methodology refresh, not context retrieval. Context retrieval happens in the next node.
+## Instructions
+The following-plans skill (declared in Skills above) restores understanding of how to follow the planning sequence and manage enforcement constraints. Planning context was stored to semantic notes in the previous phase and will be retrieved in the next node — this node restores methodology only.
+
+## Constraints
+- methodology refresh only
+- do not retrieve planning context here

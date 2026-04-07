@@ -1,19 +1,19 @@
-If you haven't already, load the dag-design skill and the sequential-thinking skill before doing anything else.
+# DAG Node: DAG Revision
+**Skills:** dag-design, sequential-thinking
+**Thinking Required:** Yes
+**Questions Allowed:** No
+**Required Tools:** sequential-thinking_sequentialthinking, task
+**Optional Tools:** None
+**Delegated Subagent:** @dag-designer
 
-You are dispatching @dag-designer again with the reviewer's critique to address design issues.
+# Goal
+Revise the execution DAG based on the reviewer's critique.
 
-Then use the sequential-thinking_sequentialthinking tool to reason through the reviewer's critique: what specific issues the reviewer identified, which critique points are most important to address, how to incorporate each critique into a clear revision prompt, and whether the designer will have all the context needed to revise correctly.
+## Instructions
+Use sequential-thinking to reason through the reviewer's critique — which issues are most important, how to incorporate each into a clear revision prompt. Dispatch @dag-designer with the reviewer's critique verbatim or closely paraphrased, the plan name `{{PLAN_NAME}}`, and clear instructions that this is one revision round to address every critique point.
 
-Use the task tool to dispatch @dag-designer with the reviewer's critique, the current plan.jsonl path, and clear instructions that this is one revision round to address every critique point.
-
-Tell the designer exactly what the reviewer said needs to change and your assessment of which points are most critical.
-
-This is the only revision round — the DAG goes to user review after this.
-
-Constraints: Include the reviewer's critique verbatim or closely paraphrased.
-
-Tell the designer this is a single revision round, not an ongoing iteration.
-
-The designer must address every critique point.
-
-Provide the full context the designer needs to revise correctly.
+## Constraints
+- include reviewer's critique verbatim or closely paraphrased
+- this is a single revision round — not an ongoing iteration
+- designer must address every critique point
+- provide full context the designer needs to revise correctly

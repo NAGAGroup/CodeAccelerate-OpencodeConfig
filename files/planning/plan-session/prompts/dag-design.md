@@ -1,23 +1,19 @@
-If you haven't already, load the dag-design skill and the sequential-thinking skill before doing anything else.
+# DAG Node: DAG Design
+**Skills:** dag-design, sequential-thinking
+**Thinking Required:** Yes
+**Questions Allowed:** No
+**Required Tools:** init_dag, sequential-thinking_sequentialthinking, task
+**Optional Tools:** None
+**Delegated Subagent:** @dag-designer
 
-You are initializing the execution DAG and dispatching @dag-designer to build it node by node.
+# Goal
+Initialize the execution DAG and dispatch @dag-designer to build it node by node from the component library.
 
-Then use the init_dag tool to initialize the plan DAG artifact.
+## Instructions
+Call `init_dag` first with the plan name `{{PLAN_NAME}}`. Use sequential-thinking to reason through what the DAG should accomplish structurally — what phases of work are needed, what decision points exist, what could fail and need a retry path. Dispatch @dag-designer with the plan name, all accumulated planning context, and a description of what the DAG should accomplish in terms of phases and decision gates — not specific files or commands. The designer adds nodes immediately using `add_node` and must not call `init_dag` again.
 
-Use the sequential-thinking_sequentialthinking tool to reason through the dag-design skill for how to prompt @dag-designer correctly. What skills must they load before doing any work? What tools must they call before doing any work? How does @dag-designer search/store notes using qdrant? How should you present all this as instructions to @dag-designer
-
-Consider what constraints the designer must respect and whether your dispatch prompt gives the designer everything needed to act without returning for clarification.
-
-Use the task tool to dispatch @dag-designer with a goal-based prompt that includes the plan name ({{PLAN_NAME}}), all planning context from this session, and a clear description of what the execution DAG should accomplish.
-
-The designer will begin adding nodes immediately using add_node — it must not call init_dag again.
-
-Constraints:
-
-Call init_dag before dispatching the designer.
-
-Inform the designer of it's required skills and tool calls.
-
-Tell the designer to make node IDs descriptive of their purpose.
-
-Provide the plan name for use in all add_node calls.
+## Constraints
+- call init_dag before dispatching
+- provide plan name `{{PLAN_NAME}}` explicitly in dispatch prompt
+- describe work as phases and decision points not implementation steps
+- executor discovers specifics from planning notes at runtime

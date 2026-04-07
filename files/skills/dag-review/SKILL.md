@@ -9,7 +9,7 @@ Load this skill before writing a dispatch prompt to understand what @dag-reviewe
 
 ## How to Dispatch the Agent
 
-Call the task tool with subagent_type set to "dag-reviewer", a short description (3-5 words) for logging, and a complete goal-based prompt. The prompt must specify the plan name to review, state the user's goal, list the review dimensions to evaluate, include instructions to retrieve previous findings from Qdrant using qdrant_qdrant-find before starting, and store findings and critique when done.
+Call the task tool with subagent_type set to "dag-reviewer", a short description (3-5 words) for logging, and a complete goal-based prompt. The prompt must specify the plan name to review, state the user's goal, and list the review dimensions to evaluate.
 
 ## What @dag-reviewer Does
 
@@ -17,26 +17,8 @@ Call the task tool with subagent_type set to "dag-reviewer", a short description
 
 ## Rules for Good Dispatch Prompts
 
-State the plan_name explicitly so the reviewer knows which DAG to evaluate. Provide the user's goal so the reviewer can assess whether the DAG fits the intention and scope. Describe the review dimensions: completeness, dependency order, component fit, verification coverage, scope discipline, failure handling, and efficiency. When working within a plan session, include the plan name (Qdrant collection name) and instruct @dag-reviewer to use qdrant_qdrant-find to retrieve prior findings before starting and store review findings when done. The prompt must be self-contained.
-
-## Skill-Loading Instructions for @dag-reviewer
-
-Include explicit skill-loading instructions near the top of the dispatch prompt:
-
-- **Before inspecting or validating the DAG:** "Load the dag-tools skill for reading, inspecting, and validating DAG structures."
-- **Before retrieving or storing findings:** "Load the qdrant-notes skill for retrieving prior design context and storing review findings to the plan session collection."
-- **Before reasoning through review criteria:** "Load the sequential-thinking skill for step-by-step reasoning through review dimensions and identifying gaps."
-
+State the plan_name explicitly so the reviewer knows which DAG to evaluate. Provide the user's goal so the reviewer can assess whether the DAG fits the intention and scope. Describe the review dimensions: completeness, dependency order, component fit, verification coverage, scope discipline, failure handling, and efficiency. The prompt must be self-contained.
 
 ## Loading the DAG to be Reviewed
 
-To load the DAG written by @dag-writer, @dag-reviewer must be instructed to immediately call the `show_compact_dag` and `show_dag` tools before doing any review work.
-
-## Reference Material Instructions for @dag-reviewer
-
-After loading skills and before starting the review, instruct @dag-reviewer to retrieve reference materials:
-
-- **Component catalogue:** "Call get_planning_components_catalogue to understand available component types and their intended purposes."
-- **Design guide:** "Call get_dag_design_guide to reference DAG design principles and patterns for evaluating the design."
-- **Qdrant context:** "Call qdrant_qdrant-search with the current plan name to retrieve all relevant planning context and the rationale behind the current DAG design."
-- **Storing design decisions:** "When you have completed the DAG design, call qdrant_qdrant-store to save your design decisions and rationale to the plan session collection for future reference."
+Instruct the reviewer to immediately call the `show_compact_dag` and `show_dag` tools before doing any review work.

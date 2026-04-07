@@ -9,7 +9,7 @@ Load this skill before writing a dispatch prompt to understand what @dag-designe
 
 ## How to Dispatch the Agent
 
-Call the task tool with subagent_type set to "dag-designer", a short description (3-5 words) for logging, and a complete goal-based prompt. The prompt must include the plan name, accumulated planning findings, scope boundaries, and what the DAG should accomplish. Instruct the designer to retrieve previous design context from Qdrant before starting, use the component catalogue and design guide for reference, store design decisions to Qdrant when done, and provide the complete DAG structure with rationale for each node choice.
+Call the task tool with subagent_type set to "dag-designer", a short description (3-5 words) for logging, and a complete goal-based prompt. The prompt must include the plan name, accumulated planning findings, scope boundaries, and what the DAG should accomplish.
 
 ## What @dag-designer Does
 
@@ -19,19 +19,6 @@ Call the task tool with subagent_type set to "dag-designer", a short description
 
 Include the plan_name explicitly—it is required for all add_node calls and must be consistent throughout. Provide all accumulated planning findings so the designer understands what was discovered and what constraints were identified. State scope boundaries clearly—what the DAG should accomplish and what is out of scope. The prompt must be self-contained; the designer will not ask questions or return for clarification.
 
-## Skill-Loading Instructions for @dag-designer
+**Describe problems, not tasks.** The dispatch prompt must describe what kinds of work are needed and in what order — not specific files to edit, commands to run, or implementation steps to follow. The executor discovers specifics from planning notes at runtime. The planner's job is to shape the structure: what phases exist, what could fail and needs a retry path, what decisions require a gate. Wrong: "Edit auth.js, add the JWT library, update middleware." Right: "The auth system needs to be changed. We need to understand its current state before touching it, implement the change, verify it, and have a retry path if verification fails."
 
-Include explicit skill-loading instructions near the top of the dispatch prompt:
-
-- **Before using DAG construction tools:** "Load the dag-tools skill for working with DAG construction, validation, and inspection tools."
-- **Before retrieving or storing context:** "Load the qdrant-notes skill for retrieving planning context and storing design decisions to the plan session collection."
-- **Before reasoning through design decisions:** "Load the sequential-thinking skill for step-by-step reasoning through design decisions and trade-offs."
-
-## Reference Material Instructions for @dag-designer
-
-After loading skills and before starting design work, instruct @dag-designer to retrieve reference materials:
-
-- **Component catalogue:** "Call get_planning_components_catalogue to see all available component types and their purposes."
-- **Design guide:** "Call get_dag_design_guide to understand DAG design principles and patterns."
-- **Qdrant context:** "Call qdrant_qdrant-search with the current plan name to retrieve all relevant planning context and findings accumulated so far."
-- **Storing design decisions:** "When you have completed the DAG design, call qdrant_qdrant-store to save your design decisions and rationale to the plan session collection for future reference."
+**Branches are exclusive paths, not parallel work.** The DAG is sequential — one node runs at a time. Branches represent mutually exclusive execution paths chosen at a decision gate. If two things both need to happen, they are sequential nodes, not branches. Make this clear in the dispatch prompt so the designer doesn't create parallel-looking structures.

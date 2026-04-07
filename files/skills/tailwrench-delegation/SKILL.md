@@ -5,14 +5,14 @@ description: Teaches how to dispatch @tailwrench for shell operations, verificat
 
 # Delegating to @tailwrench
 
-Dispatch @tailwrench for shell commands, verification, builds, tests, and git operations using the task tool with subagent_type="tailwrench". Include a clear goal, specific commands in order, success criteria, what to report, and Qdrant instructions (retrieve before starting, store when done).
+Dispatch @tailwrench for shell commands, verification, builds, tests, and git operations using the task tool with subagent_type="tailwrench". Include a clear goal, specific commands in order, and success criteria.
 
 ## How to Dispatch
 
 Call the task tool with:
 - subagent_type: "tailwrench"
 - description: 3-5 word summary for logging
-- prompt: Complete, goal-based instruction including what commands to run, what to report for each, success criteria, plan name (collection name) if in a plan session, and instructions to use qdrant_qdrant-find to retrieve prior results and qdrant_qdrant-store to save final results
+- prompt: Complete, goal-based instruction including what commands to run, what to report for each, and success criteria
 
 ## What @tailwrench Does
 
@@ -20,10 +20,4 @@ Call the task tool with:
 
 ## Rules for Good Dispatch Prompts
 
-State the task clearly: verify, run, build, test, or commit. For verification, describe what to check and what passes. For commands, list them in order with reporting requirements for each. For commits, describe what changed and the scope. Write compact, specific language — @tailwrench has 30 steps and cannot pursue uncertain work. Use imperative language. Specify success criteria explicitly. Include plan name and Qdrant collection name if in a plan session. Instruct @tailwrench to retrieve prior results from Qdrant using qdrant_qdrant-find before starting and store final results after finishing using qdrant_qdrant-store.
-
-## Skill-Loading Instructions for @tailwrench
-
-Include explicit skill-loading instructions near the top of the dispatch prompt:
-
-- **Before retrieving or storing verification results:** "Load the qdrant-notes skill for retrieving prior verification results and storing final outcomes to the plan session collection."
+State the task clearly: verify, run, build, test, or commit. For verification, describe what to check and what passes. For commands, list them in order with reporting requirements for each. For commits, describe what changed and the scope. Write compact, specific language — @tailwrench has 30 steps and cannot pursue uncertain work. Use imperative language. Specify success criteria explicitly.

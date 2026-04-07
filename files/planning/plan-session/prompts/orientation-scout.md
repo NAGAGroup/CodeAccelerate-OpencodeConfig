@@ -1,21 +1,19 @@
-If you haven't already, load the context-scout-delegation skill and the sequential-thinking skill before doing anything else.
+# DAG Node: Orientation Scout
+**Skills:** context-scout-delegation, sequential-thinking
+**Thinking Required:** Yes
+**Questions Allowed:** No
+**Required Tools:** sequential-thinking_sequentialthinking, task
+**Optional Tools:** None
+**Delegated Subagent:** @context-scout
 
-You are delegating to @context-scout to build broad understanding of the project and the user's goal.
+# Goal
+Build broad understanding of the project and user's goal through wide-shallow exploration.
 
-Then use the sequential-thinking_sequentialthinking tool to reason through what the context-scout-delegation skill for designing the prompt: What skills must @context-scout load before doing any work? What tools should they use to explore? What should their response include/exclude?
+## Instructions
+Use sequential-thinking to reason through what areas to explore and what questions the scout should answer — what the scout should understand about the project structure, relationships, and constraints. Dispatch @context-scout with a goal-based prompt describing what to understand. Ask for structured prose findings with an uncertainties section covering what remains unclear and what challenges are anticipated.
 
-Consider what findings would be most valuable: what the scout found, what remains unclear, and what the scout identifies as likely to be difficult.
-
-Use the task tool to dispatch @context-scout with a goal-based prompt that includes the planning context and clear direction about what kind of findings to return — prose narratives only, no raw file lists or line-by-line details.
-
-Constraints:
-
-Request only findings and observations from the scout — it is read-only and cannot make changes.
-
-Instruct @context-scout to load its skills before doing any work.
-
-Specify that the scout should return structured prose narratives describing what it found, what ambiguities remain, and what challenges it anticipates.
-
-Guide without prescribing what the scout will find.
-
-Proceed without any questions to the user, you will get the opportunity in a later step.
+## Constraints
+- request only findings (read-only agent)
+- ask for prose narratives not raw file lists
+- surface what remains unclear
+- no questions to user

@@ -1,19 +1,19 @@
-You are establishing your planning methodology and choosing an execution plan name based on the user's goal.
+# DAG Node: Session Overview
+**Skills:** following-plans
+**Thinking Required:** No
+**Questions Allowed:** No
+**Required Tools:** choose_plan_name
+**Optional Tools:** None
+**Delegated Subagent:** None
 
-Use the skill tool to load the following-plans skill to understand how to follow the planning sequence and recover from enforcement errors.
+# Goal
+Establish plan identity by choosing a descriptive execution plan name that will be used as the Qdrant collection and execution plan identifier.
 
-Once you understand your methodology, use the choose_plan_name tool to select a short, descriptive, hyphenated name reflecting the user's goal.
+## Instructions
+Use `choose_plan_name` to select a short, hyphenated, lowercase name that describes what the plan will accomplish — not what planning session it belongs to. The name populates all remaining node prompts and becomes the Qdrant collection identifier for this session.
 
-This name becomes the collection name for semantic notes and the execution plan identifier.
-
-The name will immediately populate all remaining planning node prompts.
-
-Constraints: Load the skill before choosing the plan name.
-
-Complete these instructions without asking the user any questions, that will come in a later step.
-
-Choose a name that clearly describes what the plan will accomplish, not what planning session it belongs to.
-
-Use only lowercase letters, numbers, and hyphens in the plan name.
-
-You must call next_step immediately after loading the skill and choosing the plan name.
+## Constraints
+- lowercase letters, numbers, hyphens only
+- name describes the goal not the session
+- call next_step immediately after choosing the name
+- do not ask the user any questions
