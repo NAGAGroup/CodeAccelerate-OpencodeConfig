@@ -128,13 +128,13 @@ Store your critique to Qdrant when done. Critiques only — no proposed fixes.`,
     agentId: "junior-dev",
     successDescription: "Loads grepai/sequential-thinking/qdrant-notes/file-operations skills first. Investigates codebase before modifying. Every edit preceded by read on same file. Changes limited to stated goal — no adjacent refactoring. Does NOT use bash or shell operations. Conservative on ambiguity. Clear statement of what changed and why.",
     prompts: [
-      `Add a \`multiply\` function to the math library. It should follow the same patterns as the existing functions — same namespace, same documentation style, same header/source split. Do not modify anything outside the library files.`,
+      `There's a math utility function in this project that performs integer division. It currently doesn't handle the case where the divisor is zero. Find it, understand how other functions in the same library handle error conditions, and add appropriate error handling consistent with the existing patterns. Do not modify anything outside the function itself.`,
 
-      `The \`factorial\` function in the math library has a note saying no overflow checking is performed. Add a compile-time or runtime guard that throws \`std::overflow_error\` when the result would overflow a \`long long\`. Follow the existing error handling patterns in the file. Do not modify anything else.`,
+      `The project has a demo application that exercises the math library. It's missing a demonstration of at least one library function that exists in the library but isn't shown in the demo. Find which function is missing from the demo, understand the demo's existing style and conventions, and add a demonstration of that function. Do not add more than one new demonstration.`,
 
-      `Add a \`clamp\` usage example to the main application file. It should demonstrate clamping a value outside the valid range. Follow the existing style of the file exactly. Do not modify anything else.`,
+      `There is a function in this codebase whose documentation comment in the header file does not accurately describe its current behavior — the implementation has changed but the comment wasn't updated. Find it, verify the discrepancy by reading both the comment and the implementation, and update the comment to match the actual behavior. Do not modify the implementation or any other file.`,
 
-      `The math library header file has brief one-line doc comments while the source file has full Doxygen blocks. Bring the header comments up to the same Doxygen style as the source file. Do not modify the source file or anything else.`,
+      `The test suite in this project is missing coverage for at least one function that exists in the math library. Find which function has no test, understand the existing test patterns and conventions, and add a minimal test for that function following the same style. Do not modify any existing tests or any file other than the test file.`,
     ],
   },
 
@@ -142,13 +142,13 @@ Store your critique to Qdrant when done. Critiques only — no proposed fixes.`,
     agentId: "documentation-expert",
     successDescription: "Loads file-operations/sequential-thinking/grepai/qdrant-notes skills first. Reads target file before editing to understand structure and tone. Changes limited to named scope. Does NOT modify source code. Edits match existing formatting conventions. Uses grepai for reference materials when relevant.",
     prompts: [
-      `The README for this project is sparse. Add a section explaining the project structure — what each top-level directory contains and how the libraries relate to the application. Read the existing README first to match its tone and formatting.`,
+      `The project's README is missing documentation about the project structure. Investigate the project to understand what directories and components exist, then add a section to the README explaining how the project is organized. Match the existing README's tone and formatting exactly. Do not modify any source files.`,
 
-      `Add a contributing guide section to the README explaining how to add a new function to the math library: where the declaration goes, where the implementation goes, and how to add a test. Base it on the existing code patterns. Do not modify any source files.`,
+      `One of the libraries in this project has header documentation that is inconsistent with the other library's documentation style. Find which one is less documented, investigate the better-documented library's style as a reference, and bring the underdocumented one up to the same standard. Do not modify any implementation files.`,
 
-      `The header-only library is missing any usage documentation. Add a doc comment block at the top of its header file explaining what the library provides and when to use it over the source library. Read the file first to match its existing style. Do not modify any other files.`,
+      `The project is missing a section in its README explaining how to build and run it. Investigate the build system to understand what commands are needed, then add accurate build and run instructions to the README. Do not modify any CMake files or source code.`,
 
-      `Add a section to the README explaining the build system: what preset to use, how to run tests, and how to run the application. Do not modify any CMake files or source code.`,
+      `A developer wants to contribute a new function to this project's math library. Write a contributing guide section in the README that explains exactly how to do this — where files go, what conventions to follow, how to add a test. Investigate the existing code to make the instructions accurate. Do not modify any source files.`,
     ],
   },
 

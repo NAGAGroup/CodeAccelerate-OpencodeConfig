@@ -3,8 +3,55 @@ import { QdrantClient } from "@qdrant/js-client-rest";
 
 interface ToolCallEvent {
   name: string;
+  // Key parameter extracted per tool type (e.g. skill name, file path, query text)
   args_summary: string;
   status: "pending" | "running" | "completed" | "failed";
+  // Unique invocation ID from the event — allows tracking repeated calls to the same tool
+  invocation_id: string;
+}
+
+/**
+ * Extract the most meaningful parameter from a tool call's input for evaluation.
+ * Generic heuristic: prefer well-known primary-intent keys, then fall back to
+ * the longest string value in the input. Works for any tool without hardcoding names.
+ */
+function extractArgsSummary(_toolName: string, input: unknown): string {
+  if (!input || typeof input !== "object") return "";
+  const args = input as Record<string, unknown>;
+
+  // Ordered list of keys that typically carry the primary intent of a tool call.
+  // First match wins.
+  const preferredKeys = [
+    "name",       // skill name, agent name
+    "query",      // search queries, qdrant queries
+    "command",    // shell commands
+    "symbol",     // trace targets
+    "filePath",   // file operations
+    "path",       // file operations (alternate key)
+    "thought",    // sequential thinking
+    "information",// qdrant store content
+    "description",// task descriptions
+    "text",       // text content
+  ];
+
+  for (const key of preferredKeys) {
+    const val = args[key];
+    if (val && typeof val === "string" && val.trim().length > 0) {
+      return val.substring(0, 120);
+    }
+  }
+
+  // Fallback: pick the longest string value among all top-level keys
+  let longest = "";
+  for (const val of Object.values(args)) {
+    if (typeof val === "string" && val.length > longest.length) {
+      longest = val;
+    }
+  }
+  if (longest) return longest.substring(0, 120);
+
+  // Last resort: compact JSON
+  return JSON.stringify(args).substring(0, 120);
 }
 
 interface TestResult {
@@ -33,6 +80,29 @@ const QDRANT_URL = "http://localhost:6333";
 const QDRANT_COLLECTION = "prompt-engineering-test-harness";
 const EVENT_TIMEOUT_MS = 120000; // 2 min per trial — local model is slow
 const TRIALS_PER_ARTIFACT = 3;
+
+// Project directory the server runs in — reset git state between agent trials
+// to prevent file changes from one trial bleeding into the next.
+const PROJECT_DIR = process.env.OPENCODE_PROJECT_DIR ?? process.cwd();
+
+/**
+ * Reset the project directory to a clean git state between trials.
+ * Discards all uncommitted changes and removes untracked files.
+ * Only called for agent tests where the agent may modify files.
+ */
+async function resetProjectDir(): Promise<void> {
+  try {
+    // Stash any changes (tracked + untracked) so they're recoverable, not just nuked
+    const stash = Bun.spawnSync(["git", "stash", "--include-untracked", "-m", "test-runner-reset"], { cwd: PROJECT_DIR });
+    if (stash.exitCode !== 0) {
+      console.warn(`  ⚠️  git stash in ${PROJECT_DIR} exited with non-zero code`);
+    } else {
+      console.log(`  🔄 Stashed changes in ${PROJECT_DIR} (recoverable with git stash pop)`);
+    }
+  } catch (err) {
+    console.warn(`  ⚠️  Could not stash project dir: ${err}`);
+  }
+}
 
 interface ParsedArgs {
   artifactType: ArtifactType;
@@ -125,9 +195,10 @@ function parseToolCallsFromEvents(events: Record<string, unknown>[]): {
   sequence: string[];
   details: ToolCallEvent[];
 } {
-  const sequence: string[] = [];
-  const details: ToolCallEvent[] = [];
-  const toolStates = new Map<string, ToolCallEvent>();
+  // Track by invocation ID (part.id) so repeated calls to the same tool
+  // are recorded as separate entries rather than collapsed into one.
+  const invocationOrder: string[] = []; // ordered list of invocation IDs
+  const invocationMap = new Map<string, ToolCallEvent>(); // id → event
 
   for (const event of events) {
     try {
@@ -140,6 +211,7 @@ function parseToolCallsFromEvents(events: Record<string, unknown>[]): {
       if (!part || part.type !== "tool") continue;
 
       const toolName = (part.tool as string) || "unknown";
+      const invocationId = (part.id as string) || `${toolName}-${invocationOrder.length}`;
       const state = part.state as Record<string, unknown> | undefined;
       const stateStatus = state?.status as string | undefined;
 
@@ -148,21 +220,31 @@ function parseToolCallsFromEvents(events: Record<string, unknown>[]): {
       else if (stateStatus === "completed") status = "completed";
       else if (stateStatus === "error" || stateStatus === "failed") status = "failed";
 
-      if (!toolStates.has(toolName)) {
-        const argsRaw = state?.input ?? {};
+      if (!invocationMap.has(invocationId)) {
+        // New invocation — record it
+        // Only extract args if input has actual keys (pending events have empty input)
+        const inputHasKeys = state?.input && typeof state.input === "object" && Object.keys(state.input as object).length > 0;
         const detail: ToolCallEvent = {
           name: toolName,
-          args_summary: JSON.stringify(argsRaw).substring(0, 100),
+          args_summary: inputHasKeys ? extractArgsSummary(toolName, state!.input) : "",
           status,
+          invocation_id: invocationId,
         };
-        toolStates.set(toolName, detail);
-        sequence.push(toolName);
+        invocationMap.set(invocationId, detail);
+        invocationOrder.push(invocationId);
       } else {
-        const existing = toolStates.get(toolName)!;
+        // Status update for existing invocation
+        const existing = invocationMap.get(invocationId)!;
         if (status === "completed" || status === "failed") {
           existing.status = status;
         } else if (status === "running" && existing.status === "pending") {
           existing.status = status;
+        }
+        // Update args_summary when input becomes available (pending event has empty input,
+        // running/completed events have the actual args populated)
+        if (state?.input && typeof state.input === "object" && Object.keys(state.input as object).length > 0) {
+          const newSummary = extractArgsSummary(toolName, state.input);
+          if (newSummary) existing.args_summary = newSummary;
         }
       }
     } catch {
@@ -170,14 +252,17 @@ function parseToolCallsFromEvents(events: Record<string, unknown>[]): {
     }
   }
 
-  for (const toolName of sequence) {
-    if (toolStates.has(toolName)) {
-      details.push(toolStates.get(toolName)!);
-    }
-  }
+  const sequence = invocationOrder.map((id) => invocationMap.get(id)!.name);
+  const details = invocationOrder.map((id) => invocationMap.get(id)!);
 
   return { sequence, details };
 }
+
+// How long the session must stay idle before we consider it truly done.
+// Multi-turn agents (e.g. junior-dev) can go idle briefly between tool calls
+// before becoming busy again. We wait this long after the last idle event
+// to confirm the session has actually settled.
+const IDLE_SETTLE_MS = 15000;
 
 async function collectSessionEvents(
   sessionId: string,
@@ -186,70 +271,107 @@ async function collectSessionEvents(
   const events: Record<string, unknown>[] = [];
   const controller = new AbortController();
 
-  const timeout = setTimeout(() => {
+  // Hard deadline — abort the whole stream if nothing finishes in time
+  const hardTimeout = setTimeout(() => {
     controller.abort();
   }, timeoutMs);
 
-  try {
-    const response = await fetch(`${OPENCODE_SERVER_URL}/event`, {
-      headers: {
-        Accept: "text/event-stream",
-        "Cache-Control": "no-cache",
-      },
-      signal: controller.signal,
-    });
+  // Settle timer — fires IDLE_SETTLE_MS after the last idle event if no
+  // busy event arrives in the meantime. Cleared whenever busy is seen.
+  let settleTimer: ReturnType<typeof setTimeout> | null = null;
+  let resolveSettle: (() => void) | null = null;
+  const settlePromise = new Promise<void>((resolve) => {
+    resolveSettle = resolve;
+  });
 
-    if (!response.ok || !response.body) {
-      clearTimeout(timeout);
-      return events;
-    }
+  function onIdle() {
+    // Cancel any existing settle timer and start a fresh one
+    if (settleTimer) clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      // Session has been idle for IDLE_SETTLE_MS with no busy event — truly done
+      clearTimeout(hardTimeout);
+      controller.abort();
+      resolveSettle?.();
+    }, IDLE_SETTLE_MS);
+  }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() ?? "";
-
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        const jsonStr = line.substring(6).trim();
-        if (!jsonStr || jsonStr === "[DONE]") continue;
-
-        try {
-          const data = JSON.parse(jsonStr) as Record<string, unknown>;
-          const properties = data.properties as Record<string, unknown> | undefined;
-          const eventSessionId = properties?.sessionID as string | undefined;
-
-          if (eventSessionId && eventSessionId !== sessionId) continue;
-
-          events.push(data);
-
-          if (data.type === "session.status") {
-            const status = properties?.status as Record<string, unknown> | undefined;
-            if (status?.type === "idle") {
-              clearTimeout(timeout);
-              controller.abort();
-              return events;
-            }
-          }
-        } catch {
-          // skip unparseable events
-        }
-      }
-    }
-  } catch (err) {
-    if (err instanceof Error && err.name !== "AbortError") {
-      console.error("SSE stream error:", err.message);
+  function onBusy() {
+    // Session became active again — cancel the settle timer
+    if (settleTimer) {
+      clearTimeout(settleTimer);
+      settleTimer = null;
     }
   }
 
-  clearTimeout(timeout);
+  const streamDone = (async () => {
+    try {
+      const response = await fetch(`${OPENCODE_SERVER_URL}/event`, {
+        headers: {
+          Accept: "text/event-stream",
+          "Cache-Control": "no-cache",
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok || !response.body) {
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.substring(6).trim();
+          if (!jsonStr || jsonStr === "[DONE]") continue;
+
+          try {
+            const data = JSON.parse(jsonStr) as Record<string, unknown>;
+            const properties = data.properties as Record<string, unknown> | undefined;
+            const eventSessionId = properties?.sessionID as string | undefined;
+
+            // Only process events that belong to our session — skip events with no sessionID
+            // or a different sessionID (could be stale events from previous sessions)
+            if (eventSessionId !== sessionId) continue;
+
+            events.push(data);
+
+            if (data.type === "session.status") {
+              const status = properties?.status as Record<string, unknown> | undefined;
+              if (status?.type === "idle") {
+                onIdle();
+              } else if (status?.type === "busy" || status?.type === "running") {
+                onBusy();
+              }
+            }
+          } catch {
+            // skip unparseable events
+          }
+        }
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name !== "AbortError") {
+        console.error("SSE stream error:", err.message);
+      }
+    }
+  })();
+
+  // Wait for either the stream to end (aborted) or settle promise to resolve
+  await Promise.race([streamDone, settlePromise]);
+
+  if (settleTimer) clearTimeout(settleTimer);
+  clearTimeout(hardTimeout);
+  controller.abort(); // ensure stream is closed if settle fired first
+
   return events;
 }
 
@@ -434,6 +556,62 @@ async function verifyServer(): Promise<void> {
   }
 }
 
+/**
+ * Verify that the installed global profile agent files match the source files.
+ * Compares a key line (e.g. temperature) between source and installed file.
+ * Warns if they differ — means deploy/update-profiles hasn't propagated yet.
+ */
+async function verifyAgentPropagation(agentIds: string[]): Promise<void> {
+  const home = process.env.HOME ?? "/home/jack";
+  const profileDir = `${home}/.config/opencode/profiles/naga-ollama/agents`;
+  const sourceDir = `${import.meta.dir}/../files/agents`;
+
+  let allMatch = true;
+  for (const agentId of agentIds) {
+    const sourcePath = `${sourceDir}/${agentId}.md`;
+    const installedPath = `${profileDir}/${agentId}.md`;
+
+    try {
+      const sourceFile = Bun.file(sourcePath);
+      const installedFile = Bun.file(installedPath);
+
+      if (!(await installedFile.exists())) {
+        console.warn(`  ⚠️  No installed file for agent: ${agentId} (${installedPath})`);
+        allMatch = false;
+        continue;
+      }
+
+      const sourceText = await sourceFile.text();
+      const installedText = await installedFile.text();
+
+      // Compare full content — if they differ, changes haven't propagated
+      if (sourceText !== installedText) {
+        console.warn(`  ⚠️  Agent ${agentId}: installed file differs from source — run deploy + update-profiles`);
+        // Show first differing line for quick diagnosis
+        const srcLines = sourceText.split("\n");
+        const instLines = installedText.split("\n");
+        for (let i = 0; i < Math.min(srcLines.length, instLines.length); i++) {
+          if (srcLines[i] !== instLines[i]) {
+            console.warn(`     First diff at line ${i + 1}:`);
+            console.warn(`     source:    ${srcLines[i]}`);
+            console.warn(`     installed: ${instLines[i]}`);
+            break;
+          }
+        }
+        allMatch = false;
+      } else {
+        console.log(`  ✅ Agent ${agentId}: installed matches source`);
+      }
+    } catch {
+      console.warn(`  ⚠️  Could not verify agent ${agentId}`);
+    }
+  }
+
+  if (!allMatch) {
+    console.warn("\n  ⚠️  Some agents may not have propagated. Consider: bun run build && bun run deploy && bash scripts/update-profiles.sh\n");
+  }
+}
+
 async function main() {
   const { artifactType, promptIndices, agentFilter, trials } = parseArgs();
 
@@ -467,6 +645,14 @@ async function main() {
 
   console.log(`✅ Found ${artifacts.length} artifacts\n`);
 
+  // Verify that agent files have propagated to the installed global profile
+  if (artifactType === "agents") {
+    const agentIds = artifacts.map((a) => a.agentId).filter(Boolean) as string[];
+    console.log("🔍 Verifying agent propagation...");
+    await verifyAgentPropagation(agentIds);
+    console.log("");
+  }
+
   let successCount = 0;
   let failureCount = 0;
 
@@ -486,6 +672,10 @@ async function main() {
     for (let trial = 1; trial <= trials; trial++) {
       const promptIndex = selectedIndices[trial - 1] ?? null;
       try {
+        // Reset project dir before each agent trial so file changes don't bleed across trials
+        if (artifact.type === "agents") {
+          await resetProjectDir();
+        }
         console.log(`  Trial ${trial}/${TRIALS_PER_ARTIFACT} (prompt index: ${promptIndex ?? "n/a"})...`);
         const result = await runTrial(artifact, trial, promptIndex);
         await storeResult(qdrant, result);

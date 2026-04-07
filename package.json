@@ -5,9 +5,16 @@
 	"scripts": {
 		"build": "(cd files/plugins && bun build planning-enforcement.ts --outfile planning-enforcement.js --target node --bundle) && bunx ocx build . --out dist",
 		"deploy": "bun run build && wrangler deploy",
-		"dev": "bun run build && wrangler dev"
+		"dev": "bun run build && wrangler dev",
+		"test:setup": "bun run test/setup.ts",
+		"test:runner": "bun run test/runner.ts",
+		"test:full": "bun run test/setup.ts && bun run test/runner.ts",
+		"test:e2e": "bun run test/e2e-runner.ts",
+		"test:e2e:full": "bun run test/setup.ts && bun run test/e2e-runner.ts"
 	},
 	"devDependencies": {
+		"@opencode-ai/sdk": "latest",
+		"@qdrant/js-client-rest": "latest",
 		"wrangler": "^4.76.0"
 	}
 }

@@ -37,15 +37,12 @@
         "planning/plan-session/prompts/session-overview.md",
         "planning/plan-session/prompts/orientation-scout.md",
         "planning/plan-session/prompts/external-research.md",
-        "planning/plan-session/prompts/user-questions.md",
         "planning/plan-session/prompts/store-notes.md",
         "planning/plan-session/prompts/compress.md",
         "planning/plan-session/prompts/session-overview-refresher.md",
         "planning/plan-session/prompts/dag-design.md",
         "planning/plan-session/prompts/dag-review.md",
         "planning/plan-session/prompts/dag-revision.md",
-        "planning/plan-session/prompts/user-review.md",
-        "planning/plan-session/prompts/final-revision.md",
         "planning/plan-session/prompts/retrieve-notes.md",
         "planning/plan-session/prompts/plan-success.md",
         // Node library catalogue
@@ -161,6 +158,26 @@
         {
           "path": "profiles/default/ocx.jsonc",
           "target": "ocx.jsonc"
+        },
+        {
+          "path": "profiles/default/dcp.jsonc",
+          "target": "dcp.jsonc"
+        },
+        {
+          "path": "profiles/default/dcp-prompts/overrides/system.md",
+          "target": "dcp-prompts/overrides/system.md"
+        },
+        {
+          "path": "profiles/default/dcp-prompts/overrides/context-limit-nudge.md",
+          "target": "dcp-prompts/overrides/context-limit-nudge.md"
+        },
+        {
+          "path": "profiles/default/dcp-prompts/overrides/turn-nudge.md",
+          "target": "dcp-prompts/overrides/turn-nudge.md"
+        },
+        {
+          "path": "profiles/default/dcp-prompts/overrides/iteration-nudge.md",
+          "target": "dcp-prompts/overrides/iteration-nudge.md"
         }
       ],
       "dependencies": [
@@ -179,6 +196,26 @@
         {
           "path": "profiles/copilot/ocx.jsonc",
           "target": "ocx.jsonc"
+        },
+        {
+          "path": "profiles/copilot/dcp.jsonc",
+          "target": "dcp.jsonc"
+        },
+        {
+          "path": "profiles/copilot/dcp-prompts/overrides/system.md",
+          "target": "dcp-prompts/overrides/system.md"
+        },
+        {
+          "path": "profiles/copilot/dcp-prompts/overrides/context-limit-nudge.md",
+          "target": "dcp-prompts/overrides/context-limit-nudge.md"
+        },
+        {
+          "path": "profiles/copilot/dcp-prompts/overrides/turn-nudge.md",
+          "target": "dcp-prompts/overrides/turn-nudge.md"
+        },
+        {
+          "path": "profiles/copilot/dcp-prompts/overrides/iteration-nudge.md",
+          "target": "dcp-prompts/overrides/iteration-nudge.md"
         }
       ],
       "dependencies": [
@@ -197,6 +234,26 @@
         {
           "path": "profiles/haiku/ocx.jsonc",
           "target": "ocx.jsonc"
+        },
+        {
+          "path": "profiles/haiku/dcp.jsonc",
+          "target": "dcp.jsonc"
+        },
+        {
+          "path": "profiles/haiku/dcp-prompts/overrides/system.md",
+          "target": "dcp-prompts/overrides/system.md"
+        },
+        {
+          "path": "profiles/haiku/dcp-prompts/overrides/context-limit-nudge.md",
+          "target": "dcp-prompts/overrides/context-limit-nudge.md"
+        },
+        {
+          "path": "profiles/haiku/dcp-prompts/overrides/turn-nudge.md",
+          "target": "dcp-prompts/overrides/turn-nudge.md"
+        },
+        {
+          "path": "profiles/haiku/dcp-prompts/overrides/iteration-nudge.md",
+          "target": "dcp-prompts/overrides/iteration-nudge.md"
         }
       ],
       "dependencies": [
@@ -215,6 +272,26 @@
         {
           "path": "profiles/haiku-copilot/ocx.jsonc",
           "target": "ocx.jsonc"
+        },
+        {
+          "path": "profiles/haiku-copilot/dcp.jsonc",
+          "target": "dcp.jsonc"
+        },
+        {
+          "path": "profiles/haiku-copilot/dcp-prompts/overrides/system.md",
+          "target": "dcp-prompts/overrides/system.md"
+        },
+        {
+          "path": "profiles/haiku-copilot/dcp-prompts/overrides/context-limit-nudge.md",
+          "target": "dcp-prompts/overrides/context-limit-nudge.md"
+        },
+        {
+          "path": "profiles/haiku-copilot/dcp-prompts/overrides/turn-nudge.md",
+          "target": "dcp-prompts/overrides/turn-nudge.md"
+        },
+        {
+          "path": "profiles/haiku-copilot/dcp-prompts/overrides/iteration-nudge.md",
+          "target": "dcp-prompts/overrides/iteration-nudge.md"
         }
       ],
       "dependencies": [
@@ -233,6 +310,26 @@
         {
           "path": "profiles/free/ocx.jsonc",
           "target": "ocx.jsonc"
+        },
+        {
+          "path": "profiles/free/dcp.jsonc",
+          "target": "dcp.jsonc"
+        },
+        {
+          "path": "profiles/free/dcp-prompts/overrides/system.md",
+          "target": "dcp-prompts/overrides/system.md"
+        },
+        {
+          "path": "profiles/free/dcp-prompts/overrides/context-limit-nudge.md",
+          "target": "dcp-prompts/overrides/context-limit-nudge.md"
+        },
+        {
+          "path": "profiles/free/dcp-prompts/overrides/turn-nudge.md",
+          "target": "dcp-prompts/overrides/turn-nudge.md"
+        },
+        {
+          "path": "profiles/free/dcp-prompts/overrides/iteration-nudge.md",
+          "target": "dcp-prompts/overrides/iteration-nudge.md"
         }
       ],
       "dependencies": [
@@ -245,7 +342,12 @@
       "description": "NAGAGroup's Ollama local profile — run 'ollama cp <model> opencode-model' to set your model",
       "files": [
         { "path": "profiles/ollama/opencode.jsonc", "target": "opencode.jsonc" },
-        { "path": "profiles/ollama/ocx.jsonc", "target": "ocx.jsonc" }
+        { "path": "profiles/ollama/ocx.jsonc", "target": "ocx.jsonc" },
+        { "path": "profiles/ollama/dcp.jsonc", "target": "dcp.jsonc" },
+        { "path": "profiles/ollama/dcp-prompts/overrides/system.md", "target": "dcp-prompts/overrides/system.md" },
+        { "path": "profiles/ollama/dcp-prompts/overrides/context-limit-nudge.md", "target": "dcp-prompts/overrides/context-limit-nudge.md" },
+        { "path": "profiles/ollama/dcp-prompts/overrides/turn-nudge.md", "target": "dcp-prompts/overrides/turn-nudge.md" },
+        { "path": "profiles/ollama/dcp-prompts/overrides/iteration-nudge.md", "target": "dcp-prompts/overrides/iteration-nudge.md" }
       ],
       "dependencies": ["ocx-bundle"]
     }

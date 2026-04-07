@@ -32,6 +32,7 @@ async function main() {
     stdout: Bun.file("/tmp/opencode-serve.log"),
     stderr: Bun.file("/tmp/opencode-serve-err.log"),
     detached: true,
+    cwd: process.env.OPENCODE_PROJECT_DIR ?? process.cwd(),
   });
   proc.unref();
   console.log(`Started PID: ${proc.pid}`);
