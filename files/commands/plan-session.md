@@ -14,5 +14,9 @@ Load all required skills.
 
 Do not attempt to manually parse or execute plan files yourself. The plan_session tool will handle the entire planning process.
 
-After loading your skills, use `sequential-thinking_sequentialthinking` to reason through and explain the `plan-following` skill to the user. Then call `plan_session` without waiting for a response.
+After loading your skills, use `sequential-thinking_sequentialthinking` the `following-plans`.
+
+Explain to the user what node prompts look like, how they work and where to look for required skills and tools for each prompt.
+
+Then call `plan_session` without waiting for a response.
 
