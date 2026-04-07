@@ -3,7 +3,6 @@
 {"id":"orientation-scout","prompt":"orientation-scout.md","enforcement":["sequential-thinking_sequentialthinking","task"],"children":["external-research"]}
 {"id":"external-research","prompt":"external-research.md","enforcement":["sequential-thinking_sequentialthinking","task"],"children":["write-notes"]}
 {"id":"write-notes","prompt":"store-notes.md","enforcement":["qdrant_qdrant-store"],"children":["compress"]}
-{"id":"compress","prompt":"compress.md","enforcement":["compress"],"children":["session-overview-refresher"]}
 {"id":"session-overview-refresher","prompt":"session-overview-refresher.md","enforcement":[],"children":["retrieve-notes"]}
 {"id":"retrieve-notes","prompt":"retrieve-notes.md","enforcement":["sequential-thinking_sequentialthinking","qdrant_qdrant-find","sequential-thinking_sequentialthinking"],"children":["dag-design"]}
 {"id":"dag-design","prompt":"dag-design.md","enforcement":["init_dag","sequential-thinking_sequentialthinking","task"],"children":["dag-review"]}
