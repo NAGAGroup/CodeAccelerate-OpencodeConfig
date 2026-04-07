@@ -2,7 +2,7 @@
 name: dag-designer
 description: "DAG Designer — builds execution DAGs from the component library one node at a time."
 color: "#8b5cf6"
-temperature: 0.6
+temperature: 0.2
 permission:
     "*": deny
     add_node: allow
