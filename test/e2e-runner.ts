@@ -21,6 +21,14 @@ import { E2E_TESTS, type E2ETest } from "./e2e-prompts";
 const OPENCODE_SERVER_URL = "http://localhost:4096";
 const QDRANT_URL = "http://localhost:6333";
 const QDRANT_COLLECTION = "e2e-test-harness";
+const STATUS_FILE = "/tmp/e2e-status.json";
+
+/** Write live progress to a status file so it can be monitored externally. */
+function writeStatus(status: Record<string, unknown>): void {
+  try {
+    Bun.write(STATUS_FILE, JSON.stringify({ ...status, updated_at: new Date().toISOString() }, null, 2));
+  } catch { /* non-fatal */ }
+}
 
 // How long to wait for the session to go idle between turns (model is slow)
 const TURN_TIMEOUT_MS = 300_000; // 5 min per turn
@@ -423,6 +431,8 @@ async function runE2ETrial(test: E2ETest, trialNumber: number): Promise<E2EResul
   let planName: string | null = null;
   let nudgeCount = 0;
 
+  writeStatus({ phase: "starting", test_id: test.id, trial: trialNumber, session_id: sessionId, nodes_reached: [], current_turn: 0 });
+
   // ── Turn 1: initial prompt ──────────────────────────────────────────────────
   const eventsPromise = collectTurnEvents(sessionId, TURN_TIMEOUT_MS);
   await new Promise((r) => setTimeout(r, 300)); // brief delay before sending
@@ -473,6 +483,21 @@ async function runE2ETrial(test: E2ETest, trialNumber: number): Promise<E2EResul
     if (!nodesReached.includes(nodeId)) nodesReached.push(nodeId);
     if (advanced) completedNodes.push(nodeId);
 
+    // Write live status after every turn
+    writeStatus({
+      phase: "running",
+      test_id: test.id,
+      trial: trialNumber,
+      session_id: sessionId,
+      current_turn: turnNumber,
+      current_node: nodeId,
+      nodes_reached: nodesReached,
+      last_tools: sequence,
+      last_skills: skillsLoaded,
+      enforcement_satisfied: enforcementSatisfied,
+      elapsed_ms: Date.now() - startTime,
+    });
+
     // Check if we reached plan-success
     if (nodeId === "plan-success" || sequence.includes("plan_session") && nodesReached.length === 1) {
       // plan_session itself is the kickoff — not a node completion
@@ -482,6 +507,7 @@ async function runE2ETrial(test: E2ETest, trialNumber: number): Promise<E2EResul
       completed = true;
       planName = extractPlanName(responseText);
       console.log(`  ✅ Reached plan-success! Plan name: ${planName ?? "(not extracted)"}`);
+      writeStatus({ phase: "complete", test_id: test.id, trial: trialNumber, session_id: sessionId, nodes_reached: nodesReached, plan_name: planName, elapsed_ms: Date.now() - startTime });
       break;
     }
 

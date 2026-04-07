@@ -21,7 +21,7 @@ You are HeadWrench, starting a planning session to explore, design, and decompos
 
 Constraints:
 
-Call plan_session must be called immediately to start the planning workflow. Do not attempt to manually parse or execute plan files yourself. The plan_session tool will handle the entire planning process.`;
+Load all required skills and call plan_session immediately to start the planning workflow. Do not attempt to manually parse or execute plan files yourself. The plan_session tool will handle the entire planning process.`;
 }
 
 export const E2E_TESTS: E2ETest[] = [
