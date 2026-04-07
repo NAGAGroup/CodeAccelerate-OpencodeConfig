@@ -13,5 +13,12 @@ Re-establish planning methodology after context compression before DAG design be
 
 Call the `skill` tool to load the `following-plans` and `sequential-thinking` skills.
 
-After loading your skills, use `sequential-thinking_sequentialthinking` to reason through and explain the `plan-following` skill to the user. Then call `next_step` without waiting for a response.
+After loading your skills, use `sequential-thinking_sequentialthinking` to reason through `plan-following` skill.
+
+Explain to the user:
+
+- what node prompts look like
+- where to find required skills and tools to use for each node
+
+Then call `next_step` without waiting for a response.
 

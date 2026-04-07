@@ -23,4 +23,4 @@ Call task tool with: `subagent_type="context-insurgent"`, description (3-5 words
 - Ask for prose findings with supporting evidence and uncertainties section
 - Let agent choose files and tools based on goal
 - Provide context about why question matters and what decisions depend on answer
-- Require reporting what was examined but could not be fully verified
+- **Always require an explicit unknowns section** — what was examined but could not be fully verified, what assumptions were made, what would require deeper investigation to confirm. This is non-negotiable in every dispatch prompt.

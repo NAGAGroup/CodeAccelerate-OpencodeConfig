@@ -24,3 +24,4 @@ Call task tool with: `subagent_type="external-scout"`, description (3-5 words), 
 - State what is already known so agent focuses on new information
 - Instruct it to search and read sources rather than answer from memory
 - Ask for verification distinctions: verified (from source), inferred (from summaries), uncertain
+- **Always require an explicit unknowns section** — what was searched for but could not be confirmed, contradictions between sources, gaps in available information. This is non-negotiable in every dispatch prompt.
