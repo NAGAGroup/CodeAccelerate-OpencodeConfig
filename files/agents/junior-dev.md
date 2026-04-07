@@ -4,6 +4,7 @@ description: "JuniorDev — goal-oriented implementer. Investigates the codebase
 steps: 50
 color: "#22c55e"
 temperature: 0.2
+mode: subagent
 permission:
     "*": deny
     read: allow

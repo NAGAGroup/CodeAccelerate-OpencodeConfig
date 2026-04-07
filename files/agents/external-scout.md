@@ -3,6 +3,7 @@ name: external-scout
 description: "Research subagent. Searches external sources and reports findings with confidence levels."
 color: "#f43f5e"
 temperature: 0.6
+mode: subagent
 permission:
     "*": deny
     searxng_searxng_web_search: allow

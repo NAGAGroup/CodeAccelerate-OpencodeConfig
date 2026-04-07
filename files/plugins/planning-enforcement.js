@@ -109897,8 +109897,9 @@ function isExempt(toolName) {
 // state-io.ts
 import * as fs from "fs";
 import * as path2 from "path";
-function dagStatePath(planPath) {
-  return path2.join(path2.dirname(planPath), ".opencode", "dag-state", "embedded.json");
+function dagStatePath(planPath, sessionID) {
+  const safeId = sessionID.replace(/[^a-zA-Z0-9_-]/g, "_");
+  return path2.join(path2.dirname(planPath), ".opencode", "dag-state", `${safeId}.json`);
 }
 function writeState(statePath, state) {
   fs.mkdirSync(path2.dirname(statePath), { recursive: true });

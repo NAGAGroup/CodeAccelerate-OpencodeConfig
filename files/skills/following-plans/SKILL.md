@@ -5,28 +5,43 @@ description: Teaches how to execute DAG step sequences exactly as specified, han
 
 # Following Plans
 
-Execute DAG step sequences exactly as specified.
+Execute DAG nodes exactly as their prompts specify.
+
+## Node Prompt Structure
+
+Every DAG node prompt follows this template:
+
+```markdown
+# DAG Node: <Name>
+**Skills:** <load these before doing the node's work>
+**Thinking Required:** Yes/No
+**Questions Allowed:** Yes/No
+**Required Tools:** <enforcement sequence — call these in order>
+**Optional Tools:** <available but not enforced>
+**Delegated Subagent:** <None or @agent-name>
+
+# Goal
+<what this node accomplishes>
+
+## Instructions
+<how to do it>
+
+## Constraints
+<hard limits>
+```
 
 ## Tools
-**next_step** — Determine what comes next. Key params: none.
 
-**recover_context** — Resume at correct position after context loss. Key params: none.
+**next_step** — Advance to the next node. Call after completing required tools. Key params: `next` (branch ID, only needed at decision gates).
+
+**recover_context** — Resume after context loss. Returns current node and remaining enforcement steps. Key params: none.
 
 ## Rules
-- Call next_step after completing each required tool call
-- When enforcement engine returns error, read it to identify required tool and call immediately
-- Use recover_context when context is lost
-- Treat enforcement errors as authoritative
-- Load relevant skills when instructed (asking-questions, sequential-thinking)
-- Questions are always asked using the question tool
 
-## Understanding Enforcement Errors
+- Load node Skills before doing any work
+- Call Required Tools in the listed order — do not skip or reorder
+- Call next_step after completing each node's required tools
+- When enforcement engine returns an error, read it — it names the exact tool to call next
+- Use recover_context when context is lost to find your position
 
-The enforcement engine maintains correct tool call order. Error message is authoritative and specifies the exact next tool.
-
-**Error pattern:** "Expected X but you called Y" means call tool X, not Y.
-
-## Anti-patterns
-- Skipping next_step and assuming you know which tool comes next — DAGs have conditional branches
-- Retrying a blocked tool — the error names the required tool; call that instead
-- Predicting enforcement sequences — each DAG is unique; always use next_step
+> [ATTENTION] You **must** call the `skill` tool to load all `**Skills**` at the start of each node

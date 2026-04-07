@@ -4,6 +4,7 @@ description: "Tailwrench — powerful operator for verification, shell operation
 steps: 30
 color: "#f97316"
 temperature: 0.2
+mode: subagent
 permission:
     "*": deny
     bash: allow

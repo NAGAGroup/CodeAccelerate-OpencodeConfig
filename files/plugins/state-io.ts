@@ -3,11 +3,13 @@ import * as path from "path";
 import type { DagSessionStateV3 } from "./types";
 
 /**
- * Get the path to the embedded state file within the DAG JSONL
- * In the new format, state is stored at the end of the JSONL file
+ * Get the path to the DAG state file for a specific session.
+ * Each session gets its own state file keyed by sessionID to prevent
+ * cross-session state bleed when multiple sessions run concurrently.
  */
-export function dagStatePath(planPath: string): string {
-  return path.join(path.dirname(planPath), ".opencode", "dag-state", "embedded.json");
+export function dagStatePath(planPath: string, sessionID: string): string {
+  const safeId = sessionID.replace(/[^a-zA-Z0-9_-]/g, "_");
+  return path.join(path.dirname(planPath), ".opencode", "dag-state", `${safeId}.json`);
 }
 
 /**

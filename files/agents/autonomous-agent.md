@@ -3,6 +3,7 @@ name: autonomous-agent
 description: "AutonomousAgent — fully autonomous execution. All tools. User-gated."
 color: "#e11d48"
 temperature: 0.6
+mode: subagent
 permission:
     "*": allow
     bash:

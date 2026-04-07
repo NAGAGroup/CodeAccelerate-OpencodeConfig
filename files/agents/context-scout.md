@@ -4,6 +4,7 @@ description: "Read-only explorer. Surveys available materials and reports findin
 steps: 20
 color: "#06b6d4"
 temperature: 0.2
+mode: subagent
 permission:
     "*": deny
     read: deny

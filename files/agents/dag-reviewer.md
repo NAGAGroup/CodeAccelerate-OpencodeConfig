@@ -3,6 +3,7 @@ name: dag-reviewer
 description: "DAG Reviewer — evaluates execution DAGs for correctness and completeness."
 color: "#10b981"
 temperature: 0.2
+mode: subagent
 permission:
     "*": deny
     show_dag: allow
