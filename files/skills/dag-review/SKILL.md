@@ -5,20 +5,21 @@ description: Teaches how to dispatch @dag-reviewer to review execution DAGs agai
 
 # Delegating to @dag-reviewer
 
-Load this skill before writing a dispatch prompt to understand what @dag-reviewer needs to produce a thorough critique.
+Dispatch @dag-reviewer to evaluate execution DAGs against design criteria.
 
-## How to Dispatch the Agent
+## How to Dispatch
 
-Call the task tool with subagent_type set to "dag-reviewer", a short description (3-5 words) for logging, and a complete goal-based prompt. The prompt must specify the plan name to review, state the user's goal, and list the review dimensions to evaluate.
+Call task tool with: `subagent_type="dag-reviewer"`, description (3-5 words), goal-based prompt with plan name, user's goal, and review dimensions.
 
 ## What @dag-reviewer Does
 
-@dag-reviewer evaluates execution DAGs against design criteria and produces structured critiques. It reads the DAG structure, understands the intended goal and scope, and assesses the design against multiple dimensions: completeness, dependency ordering, component fit, verification coverage, scope discipline, failure handling, and efficiency.
+- Evaluates DAGs against design criteria
+- Assesses completeness, dependency ordering, component fit, verification coverage, scope discipline, failure handling, efficiency
+- Produces structured critiques
 
-## Rules for Good Dispatch Prompts
-
-State the plan_name explicitly so the reviewer knows which DAG to evaluate. Provide the user's goal so the reviewer can assess whether the DAG fits the intention and scope. Describe the review dimensions: completeness, dependency order, component fit, verification coverage, scope discipline, failure handling, and efficiency. The prompt must be self-contained.
-
-## Loading the DAG to be Reviewed
-
-Instruct the reviewer to immediately call the `show_compact_dag` and `show_dag` tools before doing any review work.
+## Rules
+- State plan_name explicitly
+- Provide user's goal so reviewer can assess fit
+- List review dimensions to evaluate
+- Prompt must be self-contained
+- Instruct reviewer to call `show_compact_dag` and `show_dag` before starting review

@@ -5,16 +5,20 @@ description: Teaches how to dispatch @context-scout for wide-shallow project exp
 
 # Delegating to @context-scout
 
-Load this skill before writing a dispatch prompt to understand what @context-scout does and what goals work well for this agent.
+Dispatch @context-scout for broad understanding, initial exploration, and landscape overview.
 
-## How to Dispatch the Agent
+## How to Dispatch
 
-Call the task tool with subagent_type set to "context-scout", a short description (3-5 words) for logging, and a complete goal-based prompt. The prompt must state the exploration goal, describe what to understand (what exists, how parts relate, what constraints matter), and report in prose with an uncertainties section for anything investigated but not fully determined.
+Call task tool with: `subagent_type="context-scout"`, description (3-5 words), goal-based prompt stating exploration goal and what to understand.
 
 ## What @context-scout Does
 
-@context-scout is a wide-shallow explorer. It surveys available materials, maps what exists and how parts relate, and reports findings in prose. It is effective for broad understanding, initial exploration, and landscape overview. Use it when you need a wide survey before narrowing into specific mechanisms.
+- Wide-shallow explorer for project surveys
+- Maps what exists and how parts relate
+- Effective for broad understanding and initial exploration
 
-## Rules for Good Dispatch Prompts
-
-State the goal and describe what areas to explore in terms of concepts, not file paths. Ask for prose findings with an uncertainties section. Let @context-scout choose tools based on the goal rather than prescribing search queries or methods. Explicitly request that the scout surface what it could not determine—areas investigated but remaining ambiguous, questions raised but unanswered, and what deeper investigation should follow up on.
+## Rules
+- State goal and describe areas to explore in terms of concepts, not file paths
+- Ask for prose findings with uncertainties section
+- Let agent choose tools based on goal
+- Require surfacing what could not be determined: ambiguous areas, unanswered questions, follow-up investigation needs

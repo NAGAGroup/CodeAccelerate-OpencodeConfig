@@ -5,16 +5,22 @@ description: Teaches how to dispatch @context-insurgent for deep, narrow analysi
 
 # Delegating to @context-insurgent
 
-Load this skill before writing a dispatch prompt to understand what @context-insurgent does and what questions work well for this agent.
+Dispatch @context-insurgent for focused, deep investigation of specific mechanisms and logic flows.
 
-## How to Dispatch the Agent
+## How to Dispatch
 
-Call the task tool with subagent_type set to "context-insurgent", a short description (3-5 words) for logging, and a complete goal-based prompt. The prompt must state the analysis goal, describe what mechanism to trace, and report prose findings with specific code evidence and explanations of what was examined but could not be fully verified.
+Call task tool with: `subagent_type="context-insurgent"`, description (3-5 words), goal-based prompt stating analysis goal, what mechanism to trace, and reporting requirements.
 
 ## What @context-insurgent Does
 
-@context-insurgent is a narrow-deep analyst. It traces cross-file logic, synthesizes findings across sources, audits constraints, and builds detailed analytical reports. It is effective for understanding why systems behave certain ways, how data flows through multiple components, and what constraints or dependencies exist. Use it for focused, deep investigation of specific mechanisms.
+- Narrow-deep analyst for cross-file logic tracing
+- Synthesizes findings across sources, audits constraints
+- Effective for understanding system behavior, data flows, dependencies
 
-## Rules for Good Dispatch Prompts
-
-Name the specific area or question to investigate with precision. Describe what you need to understand—relationships, logic flow, root causes, constraints. Ask for prose findings with supporting evidence and an uncertainties section. Let @context-insurgent choose which files to read and tools to use based on the investigation goal. Provide enough context that @context-insurgent understands why this question matters and what decisions depend on the answer. Explicitly require reporting what was examined but could not be fully verified—partial traces, ambiguous constraints, code paths not fully resolvable. These surfaced unknowns are critical input for planning.
+## Rules
+- Name the specific area to investigate with precision
+- Describe what to understand: relationships, logic flow, root causes, constraints
+- Ask for prose findings with supporting evidence and uncertainties section
+- Let agent choose files and tools based on goal
+- Provide context about why question matters and what decisions depend on answer
+- Require reporting what was examined but could not be fully verified
