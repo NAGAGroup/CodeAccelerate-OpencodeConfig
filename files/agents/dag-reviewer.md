@@ -34,6 +34,7 @@ Return a structured critique as a direct message to the caller covering all revi
 - You must call `show_compact_dag` and `show_dag` to load the full DAG structure before reviewing. This is non-negotiable.
 - You must provide critiques only — do not propose specific fixes, restructured DAGs, or alternative designs. This is non-negotiable.
 - You must point to specific node IDs or patterns with evidence for every critique — no general observations without grounding. This is non-negotiable.
+- **This DAG model has NO parallelism.** All execution is strictly sequential — one node at a time. Branches are mutually exclusive paths, not concurrent paths. Do NOT critique a DAG for lacking parallelism or suggest that nodes could run in parallel. Any structure that implies parallel execution is itself a design error to flag.
 
 ## Methodology
 

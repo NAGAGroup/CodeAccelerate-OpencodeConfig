@@ -6,7 +6,7 @@ Unique and descriptive. Never `node-1`, `step-3`, or bare component names. Add s
 
 ## Execution Model
 
-All execution is sequential — one node at a time. Branches are mutually exclusive paths. When a decision-gate picks branch A, branch B is permanently unreachable. Never use branches for work that both needs to happen — that is sequential nodes on the same path.
+**All execution is strictly sequential — one node at a time. There is no parallelism.** Branches are mutually exclusive paths: when a decision-gate picks branch A, branch B is permanently unreachable in that execution. Branches are not concurrent — they are alternative futures, only one of which ever runs. Never use branches for work that both needs to happen — that is sequential nodes on the same path.
 
 ## Construction Procedure
 
