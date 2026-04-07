@@ -4,15 +4,17 @@
         // Enable prompt overrides so the dcp-prompts/overrides files are picked up
         "customPrompts": true,
     },
-    // Disable autonomous context management — compress tool still available for explicit use
+    // Keep manualMode OFF so the compress tool remains available for explicit use
+    // Nudging is disabled via maxContextLimit set very high and pruneNotification off
     "manualMode": {
-        "enabled": true,
-        // Keep automatic deduplication and error pruning running
+        "enabled": false,
         "automaticStrategies": true,
     },
+    "pruneNotification": "off",
     "compress": {
-        // Set high so nudges never fire (manual mode suppresses them anyway)
-        "nudgeFrequency": 999,
-        "iterationNudgeThreshold": 999,
+        "permission": "allow",
+        // Set maxContextLimit very high so automatic nudges never fire
+        "maxContextLimit": 9999999,
+        "minContextLimit": 9999998,
     },
 }

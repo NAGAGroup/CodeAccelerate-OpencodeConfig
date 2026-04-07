@@ -12,6 +12,8 @@ Establish plan identity by choosing a descriptive execution plan name that will 
 ## Instructions
 Use `choose_plan_name` to select a short, hyphenated, lowercase name that describes what the plan will accomplish — not what planning session it belongs to. The name populates all remaining node prompts and becomes the Qdrant collection identifier for this session.
 
+Call `next_step` immediately.
+
 ## Constraints
 - lowercase letters, numbers, hyphens only
 - name describes the goal not the session

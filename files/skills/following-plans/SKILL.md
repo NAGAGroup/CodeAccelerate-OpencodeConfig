@@ -30,18 +30,10 @@ Every DAG node prompt follows this template:
 <hard limits>
 ```
 
-## Tools
-
-**next_step** — Advance to the next node. Call after completing required tools. Key params: `next` (branch ID, only needed at decision gates).
-
-**recover_context** — Resume after context loss. Returns current node and remaining enforcement steps. Key params: none.
-
 ## Rules
 
-- Load node Skills before doing any work
-- Call Required Tools in the listed order — do not skip or reorder
-- Call next_step after completing each node's required tools
-- When enforcement engine returns an error, read it — it names the exact tool to call next
-- Use recover_context when context is lost to find your position
+- Always load skills, this is non-negotiable.
+- Always call required tools, this is non-negotiable.
+- Always call `next_step` immediately after completing the goal, this is non-negotiable.
 
-> [ATTENTION] You **must** call the `skill` tool to load all `**Skills**` at the start of each node
+> [ATTENTION] You **must** call the `skill` tool to load all `**Skills**` at the start of each node. Always ask yourself: "Are there skills I need to load for this DAG Node?". This is non-negotiable. If you don't load the required skills, you won't be able to complete the node's goal, and you'll likely encounter errors when trying to call required tools. Always check the node prompt for the `**Skills**` section and load them before doing anything else.

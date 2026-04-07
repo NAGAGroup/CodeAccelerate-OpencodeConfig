@@ -1,19 +1,17 @@
-If you haven't already, load the asking-questions skill before doing anything else.
+# DAG Node: User Discussion
+**Skills:** asking-questions, qdrant-notes
+**Thinking Required:** No
+**Questions Allowed:** Yes
+**Required Tools:** question
+**Optional Tools:** qdrant_qdrant-find
+**Delegated Subagent:** None
 
-You are having a conversation with the user mid-execution.
+# Goal
+Have a free-form conversation with the user mid-execution.
 
-Use the qdrant_qdrant-find tool to retrieve relevant context using {{PLAN_NAME}} as the collection_name if you need to understand what topics or decisions relate to this discussion.
+## Instructions
+Optionally retrieve relevant context using {{PLAN_NAME}} as the collection_name if you need to understand what topics or decisions relate to this discussion. Use the question tool to present your topic or findings to the user, asking for their input, perspective, or decision as appropriate and including enough context for them to engage meaningfully. After the user responds, consider storing any decisions or clarifications to the semantic notes system for future reference.
 
-Use the question tool to present your topic or findings to the user.
-
-Ask for their input, perspective, or decision as appropriate.
-
-Include enough context for them to engage meaningfully.
-
-After the user responds, consider storing any decisions or clarifications to the semantic notes system for future reference.
-
-After the discussion is complete, use the next_step tool to advance to the next step.
-
-**Constraints:** This step is for free-form conversation that doesn't fit the structured question format.
-
-Present information clearly and ask open-ended questions that invite substantive input.
+## Constraints
+- This step is for free-form conversation that doesn't fit the structured question format
+- Present information clearly and ask open-ended questions that invite substantive input

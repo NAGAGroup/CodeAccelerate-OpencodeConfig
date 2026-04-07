@@ -1,9 +1,17 @@
-You are re-establishing context after compression.
+# DAG Node: Kickoff Refresher
+**Skills:** following-plans, qdrant-notes
+**Thinking Required:** No
+**Questions Allowed:** No
+**Required Tools:** qdrant_qdrant-find
+**Optional Tools:** None
+**Delegated Subagent:** None
 
-Use the skill tool to load the following-plans skill.
+# Goal
+Re-establish context after compression.
 
-Use the qdrant_qdrant-find tool to retrieve accumulated session findings using {{PLAN_NAME}} as the collection_name. Consider what has been discovered so far, what decisions have been made, and what constraints must carry forward.
+## Instructions
+Retrieve accumulated session findings using {{PLAN_NAME}} as the collection_name, considering what has been discovered so far, what decisions have been made, and what constraints must carry forward.
 
-After both tools have been called, use the next_step tool to advance to the next execution step.
-
-**Constraints:** This step is reorientation only. Load the skill fully and retrieve comprehensive context before advancing.
+## Constraints
+- This step is reorientation only
+- Retrieve comprehensive context before advancing

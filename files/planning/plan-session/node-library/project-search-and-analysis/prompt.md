@@ -1,21 +1,18 @@
-If you haven't already, load the context-scout-delegation skill and the sequential-thinking skill before doing anything else.
+# DAG Node: Project Search and Analysis
+**Skills:** context-scout-delegation, sequential-thinking, qdrant-notes
+**Thinking Required:** Yes
+**Questions Allowed:** No
+**Required Tools:** sequential-thinking_sequentialthinking, task
+**Optional Tools:** qdrant_qdrant-find
+**Delegated Subagent:** @context-scout
 
-You are investigating the project to understand the current state without making changes.
+# Goal
+Investigate the project without making changes.
 
-Use the qdrant_qdrant-find tool to retrieve relevant findings from earlier in this session using {{PLAN_NAME}} as the collection_name.
+## Instructions
+Use sequential-thinking_sequentialthinking to compose your investigation prompt, considering what specific questions the investigator should answer, what context they need, and whether your prompt will guide them toward useful findings. Optionally retrieve relevant findings from earlier in this session using {{PLAN_NAME}} as the collection_name if you need to understand what has already been discovered and what uncertainties remain. Dispatch the investigation subagent with a clear focus and scope — tell the subagent to store findings to Qdrant collection `{{PLAN_NAME}}`.
 
-Consider what has already been discovered, what uncertainties remain, and what investigation might resolve them.
-
-Use the sequential-thinking_sequentialthinking tool to compose your investigation prompt.
-
-Consider what specific questions the investigator should answer, what context they need, and whether your prompt will guide them toward useful findings.
-
-Use the task tool to dispatch the investigation subagent with a clear focus and scope.
-
-After the investigator returns, use the next_step tool to advance to the next step.
-
-**Constraints:** Request investigation only, not changes from the investigator.
-
-Make sure your investigator knows what kind of answer you are looking for.
-
-Direct investigators toward GrepAI for code search rather than file enumeration.
+## Constraints
+- Request investigation only, not changes from the investigator
+- Make sure your investigator knows what kind of answer you are looking for
+- Direct investigators toward GrepAI for code search rather than file enumeration
