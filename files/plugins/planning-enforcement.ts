@@ -672,13 +672,10 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       }),
 
      add_node: tool({
-         description: "Add a new node to a JSONL DAG (plan.jsonl, schema_version 3.0). Looks up the component type in the node library for its fixed enforcement array and prompt. Adds the node and appends its ID to the parent's children array.",
+         description: "Create a new node in the DAG without wiring it. Looks up the component type in the node library for its fixed enforcement array and prompt. Use add_child to wire it to a parent after creation.",
          args: {
           plan_name: tool.schema.string().describe(
             "Name of the session plan (directory under .opencode/session-plans/)."
-          ),
-          parentId: tool.schema.string().describe(
-            "ID of the existing node to attach the new node to."
           ),
           nodeId: tool.schema.string().describe(
             "ID for the new node. Must be unique across all existing node IDs."
@@ -687,7 +684,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             "Component type name from the node library (e.g., 'work-item', 'research', 'plan-fail'). Use get_planning_components_catalogue() to see available types."
           ),
         },
-        async execute({ plan_name, parentId, nodeId, component_name }, context) {
+        async execute({ plan_name, nodeId, component_name }, context) {
           try {
             const worktree = resolveWorktree(context);
             const planPath = path.join(worktree, '.opencode', 'session-plans', plan_name, 'plan.jsonl');
@@ -700,11 +697,6 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
             if (nodes.some(n => n.id === nodeId)) {
               return `Error in add_node: Node ID "${nodeId}" already exists in DAG.`;
-            }
-
-            const parent = nodes.find(n => n.id === parentId);
-            if (!parent) {
-              return `Error in add_node: Parent node "${parentId}" not found in DAG.`;
             }
 
             // Load component spec from the node library
@@ -731,20 +723,16 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                enforcement: spec.enforcement,
              };
 
-            // Append to parent's children array
-            if (!parent.children) parent.children = [];
-            parent.children.push(nodeId);
-
             nodes.push(newNode);
             writeDagV3(planPath, metadata, nodes);
 
-            return `## add_node: Added "${nodeId}" (${component_name}) to "${parentId}"\n\n` +
+            return `## add_node: Created "${nodeId}" (${component_name})\n\n` +
               `Node: ${nodeId}\n` +
               `Component: ${component_name}\n` +
               `Enforcement items: ${spec.enforcement.length}\n` +
               `Prompt: ${destPromptPath}\n\n` +
               `**DAG now contains ${nodes.length} nodes.**\n\n` +
-              `Call show_compact_dag to visualize the current DAG diagram.`;
+              `Use add_child to wire this node to a parent.`;
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             return `Error in add_node: ${msg}`;
@@ -752,20 +740,78 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
+     add_child: tool({
+       description: "Wire an edge from parentId to childId. Works whether childId is newly created or already exists elsewhere in the DAG (shared terminals like plan-fail and plan-success). Use this to connect any two nodes.",
+       args: {
+         plan_name: tool.schema.string().describe(
+           "Name of the session plan (directory under .opencode/session-plans/)."
+         ),
+         parentId: tool.schema.string().describe(
+           "ID of the parent node. Must already exist in the DAG."
+         ),
+         childId: tool.schema.string().describe(
+           "ID of the child node. Must already exist in the DAG."
+         ),
+       },
+       async execute({ plan_name, parentId, childId }, context) {
+         try {
+           const worktree = resolveWorktree(context);
+           const planPath = path.join(worktree, '.opencode', 'session-plans', plan_name, 'plan.jsonl');
+           const { metadata, nodes } = readDagV3(planPath);
+
+           const parent = nodes.find(n => n.id === parentId);
+           if (!parent) {
+             return `Error in add_child: Parent node "${parentId}" not found in DAG.`;
+           }
+
+           const child = nodes.find(n => n.id === childId);
+           if (!child) {
+             return `Error in add_child: Child node "${childId}" not found in DAG. Create it first with add_node.`;
+           }
+
+           if (parent.children?.includes(childId)) {
+             return `Error in add_child: "${childId}" is already a child of "${parentId}".`;
+           }
+
+           // Cycle detection: parentId must not be a descendant of childId
+           const descendants = new Set<string>();
+           const queue = [childId];
+           while (queue.length > 0) {
+             const id = queue.pop()!;
+             descendants.add(id);
+             const n = nodes.find(x => x.id === id);
+             if (n?.children) queue.push(...n.children);
+           }
+           if (descendants.has(parentId)) {
+             return `Error in add_child: Adding "${childId}" as child of "${parentId}" would create a cycle.`;
+           }
+
+           if (!parent.children) parent.children = [];
+           parent.children.push(childId);
+
+           writeDagV3(planPath, metadata, nodes);
+           return `## add_child: Wired "${parentId}" → "${childId}"\n\nCall show_compact_dag to visualize the current DAG diagram.`;
+         } catch (err) {
+           const msg = err instanceof Error ? err.message : String(err);
+           return `Error in add_child: ${msg}`;
+         }
+       },
+     }),
+
     delete_node: tool({
-      description: "Delete a node from the DAG. The node's children become orphaned and must be re-parented using set_parent or add_parent. Returns list of orphaned nodes.",
+      description: "Delete a node from the DAG and remove all edges to/from it. The node's children become orphaned — use add_child to reconnect them. Returns list of orphaned nodes.",
       args: {
-        target: tool.schema.string().describe(
-          "Session plan name or raw path to plan.jsonl."
+        plan_name: tool.schema.string().describe(
+          "Name of the session plan (directory under .opencode/session-plans/)."
         ),
         nodeId: tool.schema.string().describe(
           "ID of the node to delete. Its children will become orphaned."
         ),
       },
-        async execute({ target, nodeId }, context) {
+        async execute({ plan_name, nodeId }, context) {
          try {
            const worktree = resolveWorktree(context);
-           const planPath = resolveDagPath(target, worktree);
+           const planPath = path.join(worktree, '.opencode', 'session-plans', plan_name, 'plan.jsonl');
            const { metadata, nodes } = readDagV3(planPath);
 
            if (nodeId === metadata.entry_node_id) {
@@ -806,7 +852,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
            let result = `## delete_node: Deleted "${nodeId}"\n\n`;
            if (orphanedChildren.length > 0) {
              result += `**Orphaned nodes (need re-parenting):** ${orphanedChildren.join(', ')}\n`;
-             result += `Use set_parent or add_parent to reconnect these nodes.\n\n`;
+             result += `Use add_child to reconnect these nodes to a new parent.\n\n`;
            }
            result += `Call show_compact_dag to visualize the current DAG diagram.`;
            return result;
@@ -817,146 +863,49 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
        },
     }),
 
-    set_parent: tool({
-      description: "Set a node's parent, replacing all existing parents. Removes the node from all current parents' children arrays and adds it to the new parent. Use this to move a node to a single new parent.",
+    delete_child: tool({
+      description: "Remove an edge between parentId and childId without deleting either node. Use this to disconnect a child from a parent when restructuring the DAG.",
       args: {
-        target: tool.schema.string().describe(
-          "Session plan name or raw path to plan.jsonl."
+        plan_name: tool.schema.string().describe(
+          "Name of the session plan (directory under .opencode/session-plans/)."
         ),
-        nodeId: tool.schema.string().describe(
-          "ID of the node to reparent."
+        parentId: tool.schema.string().describe(
+          "ID of the parent node."
         ),
-        new_parent_id: tool.schema.string().describe(
-          "ID of the new parent node. Must already exist in the DAG."
+        childId: tool.schema.string().describe(
+          "ID of the child node to disconnect from the parent."
         ),
       },
-      async execute({ target, nodeId, new_parent_id }, context) {
+      async execute({ plan_name, parentId, childId }, context) {
         try {
           const worktree = resolveWorktree(context);
-          const planPath = resolveDagPath(target, worktree);
+          const planPath = path.join(worktree, '.opencode', 'session-plans', plan_name, 'plan.jsonl');
           const { metadata, nodes } = readDagV3(planPath);
 
-          if (nodeId === metadata.entry_node_id) {
-            return `Error in set_parent: Cannot reparent the entry node "${nodeId}".`;
+          const parent = nodes.find(n => n.id === parentId);
+          if (!parent) {
+            return `Error in delete_child: Parent node "${parentId}" not found in DAG.`;
           }
 
-          const node = nodes.find(n => n.id === nodeId);
-          if (!node) {
-            return `Error in set_parent: Node "${nodeId}" not found in DAG.`;
+          if (!parent.children?.includes(childId)) {
+            return `Error in delete_child: "${childId}" is not a child of "${parentId}".`;
           }
 
-          const newParent = nodes.find(n => n.id === new_parent_id);
-          if (!newParent) {
-            return `Error in set_parent: New parent node "${new_parent_id}" not found in DAG.`;
-          }
-
-          // Cycle detection: new_parent_id must not be a descendant of nodeId
-          const descendants = new Set<string>();
-          const queue = [nodeId];
-          while (queue.length > 0) {
-            const id = queue.pop()!;
-            descendants.add(id);
-            const n = nodes.find(x => x.id === id);
-            if (n?.children) queue.push(...n.children);
-          }
-          if (descendants.has(new_parent_id)) {
-            return `Error in set_parent: Reparenting "${nodeId}" to "${new_parent_id}" would create a cycle.`;
-          }
-
-          // Remove nodeId from ALL current parents' children arrays
-          for (const n of nodes) {
-            if (n.children) {
-              const idx = n.children.indexOf(nodeId);
-              if (idx !== -1) {
-                n.children.splice(idx, 1);
-                if (n.children.length === 0) delete n.children;
-              }
-            }
-          }
-
-          // Add nodeId to new parent's children (only if not already present)
-          if (!newParent.children) newParent.children = [];
-          if (!newParent.children.includes(nodeId)) {
-            newParent.children.push(nodeId);
-          }
+          parent.children = parent.children.filter(id => id !== childId);
+          if (parent.children.length === 0) delete parent.children;
 
           writeDagV3(planPath, metadata, nodes);
-          return `## set_parent: Reparented "${nodeId}" to "${new_parent_id}"\n\nCall show_compact_dag to visualize the current DAG diagram.`;
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          return `Error in set_parent: ${msg}`;
-        }
-       },
-     }),
-
-     add_parent: tool({
-      description: "Add an additional parent to a node, creating convergence (multiple parents). The node keeps its existing parents and gains a new one. Use this to make branches converge to a shared node.",
-      args: {
-        target: tool.schema.string().describe(
-          "Session plan name or raw path to plan.jsonl."
-        ),
-        nodeId: tool.schema.string().describe(
-          "ID of the node to add a parent to."
-        ),
-        new_parent_id: tool.schema.string().describe(
-          "ID of the additional parent node. Must already exist in the DAG."
-        ),
-      },
-      async execute({ target, nodeId, new_parent_id }, context) {
-        try {
-          const worktree = resolveWorktree(context);
-          const planPath = resolveDagPath(target, worktree);
-          const { metadata, nodes } = readDagV3(planPath);
-
-          if (nodeId === metadata.entry_node_id) {
-            return `Error in add_parent: Cannot add parent to the entry node "${nodeId}".`;
-          }
-
-          const node = nodes.find(n => n.id === nodeId);
-          if (!node) {
-            return `Error in add_parent: Node "${nodeId}" not found in DAG.`;
-          }
-
-          const newParent = nodes.find(n => n.id === new_parent_id);
-          if (!newParent) {
-            return `Error in add_parent: New parent node "${new_parent_id}" not found in DAG.`;
-          }
-
-          // Check if already a parent
-          if (newParent.children?.includes(nodeId)) {
-            return `Error in add_parent: "${new_parent_id}" is already a parent of "${nodeId}".`;
-          }
-
-          // Cycle detection: new_parent_id must not be a descendant of nodeId
-          const descendants = new Set<string>();
-          const queue = [nodeId];
-          while (queue.length > 0) {
-            const id = queue.pop()!;
-            descendants.add(id);
-            const n = nodes.find(x => x.id === id);
-            if (n?.children) queue.push(...n.children);
-          }
-          if (descendants.has(new_parent_id)) {
-            return `Error in add_parent: Adding "${new_parent_id}" as parent of "${nodeId}" would create a cycle.`;
-          }
-
-          // Add nodeId to new parent's children
-          if (!newParent.children) newParent.children = [];
-          newParent.children.push(nodeId);
-
-          // Count current parents
-          const parentCount = nodes.filter(n => n.children?.includes(nodeId)).length;
-
-          writeDagV3(planPath, metadata, nodes);
-          return `## add_parent: Added "${new_parent_id}" as parent of "${nodeId}"\n\n` +
-            `"${nodeId}" now has ${parentCount} parent(s) (convergence node).\n\n` +
+          return `## delete_child: Removed edge "${parentId}" → "${childId}"\n\n` +
+            `Note: "${childId}" still exists in the DAG — use add_child to reconnect it if needed.\n\n` +
             `Call show_compact_dag to visualize the current DAG diagram.`;
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
-          return `Error in add_parent: ${msg}`;
+          return `Error in delete_child: ${msg}`;
         }
-       },
-     }),
+      },
+    }),
+
+
 
      get_planning_components_catalogue: tool({
        description:

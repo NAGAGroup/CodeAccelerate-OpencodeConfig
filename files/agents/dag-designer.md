@@ -7,9 +7,9 @@ mode: subagent
 permission:
     "*": deny
     add_node: allow
+    add_child: allow
     delete_node: allow
-    add_parent: allow
-    set_parent: allow
+    delete_child: allow
     show_dag: allow
     show_compact_dag: allow
     validate_dag: allow

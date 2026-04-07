@@ -12,13 +12,13 @@ Use DAG tools to create, modify, validate, and visualize execution DAGs.
 
 **get_dag_design_guide** — Retrieve design principles. Key params: none.
 
-**add_node** — Add component node to DAG. Key params: `plan_name`, `parentId`, `nodeId`, `component_name`.
+**add_node** — Create a new node (no wiring). Key params: `plan_name`, `nodeId`, `component_name`.
 
-**set_parent** — Remove all parents and set new one. Key params: `target`, `nodeId`, `new_parent_id`.
+**add_child** — Wire an edge from parent to child. Works whether child is new or already exists (e.g. shared `plan-fail`). Key params: `plan_name`, `parentId`, `childId`.
 
-**add_parent** — Add another parent node (for converging pathways). Key params: `target`, `nodeId`, `parent_id`.
+**delete_child** — Remove an edge between parent and child without deleting either node. Key params: `plan_name`, `parentId`, `childId`.
 
-**delete_node** — Remove node and subtree. Key params: `target`, `nodeId`.
+**delete_node** — Remove a node and all its edges. Key params: `plan_name`, `nodeId`.
 
 **show_dag** — View complete JSONL content. Key params: `target`.
 
@@ -28,7 +28,7 @@ Use DAG tools to create, modify, validate, and visualize execution DAGs.
 
 ## Rules
 - Get catalogue and design guide before designing
-- Select components deliberately based on design intent
+- Create all nodes with add_node first, then wire them with add_child
 - Component prompts are static — never customize per node
 - Use DAG shape to express intent
 - Use sequential-thinking_sequentialthinking to reason through tool calls

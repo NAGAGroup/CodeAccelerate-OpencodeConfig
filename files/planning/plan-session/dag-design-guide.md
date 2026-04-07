@@ -19,10 +19,10 @@ Every node maps to its children. Example:
 execution-kickoff → [node-A]
 node-A → [node-B]
 node-B → [decision-gate-1]
-decision-gate-1 → [node-C, node-D]
-node-C → [plan-success]
-node-D → [node-E]
-node-E → [plan-fail]
+decision-gate-1 → [node-C, plan-fail]       ← decision-gate always has exactly 2 children
+node-C → [decision-gate-2]
+decision-gate-2 → [node-D, plan-fail]       ← plan-fail appears again (shared terminal)
+node-D → [plan-success]
 ```
 
 Constraints for a valid adjacency list:
@@ -33,35 +33,62 @@ Constraints for a valid adjacency list:
 
 **Step 2: Mark convergence nodes.**
 
-A convergence node appears as a child of two different parents. Mark it — it needs `add_parent` for the second parent connection.
+A convergence node appears as a child of two different parents. In the example above, `plan-fail` is a child of both `decision-gate-1` and `decision-gate-2` — mark it.
 
-**Step 3: Execute DFS from execution-kickoff.**
+**Step 3: Create all nodes first, then wire all edges.**
 
-For each edge in the adjacency list, traversing depth-first:
-- Child does not yet exist → `add_node(parentId, nodeId, component_name)`
-- Child already exists (convergence) → `add_parent(nodeId, new_parent_id)`
-
-Example:
+First create every node with `add_node`:
 ```
-add_node(execution-kickoff, node-A, ...)
-add_node(node-A, node-B, ...)
-add_node(node-B, decision-gate-1, decision-gate)
-add_node(decision-gate-1, node-C, ...)          ← happy path branch
-add_node(node-C, plan-success, plan-success)
-add_node(decision-gate-1, node-D, ...)          ← alternate branch
-add_node(node-D, node-E, ...)
-add_parent(plan-success, new_parent_id=node-E)  ← plan-success already exists, use add_parent
+add_node(plan_name, node-A, work-item)
+add_node(plan_name, node-B, verify)
+add_node(plan_name, decision-gate-1, decision-gate)
+add_node(plan_name, node-C, work-item)
+add_node(plan_name, plan-fail, plan-fail)
+add_node(plan_name, decision-gate-2, decision-gate)
+add_node(plan_name, node-D, commit)
+add_node(plan_name, plan-success, plan-success)
 ```
 
-`add_parent` is called only when the target node already exists in the DAG.
+Then wire every edge with `add_child`:
+```
+add_child(plan_name, execution-kickoff, node-A)
+add_child(plan_name, node-A, node-B)
+add_child(plan_name, node-B, decision-gate-1)
+add_child(plan_name, decision-gate-1, node-C)
+add_child(plan_name, decision-gate-1, plan-fail)     ← plan-fail wired like any other child
+add_child(plan_name, node-C, decision-gate-2)
+add_child(plan_name, decision-gate-2, node-D)
+add_child(plan_name, decision-gate-2, plan-fail)     ← plan-fail already exists, same call pattern
+add_child(plan_name, node-D, plan-success)
+```
+
+`add_child` works whether the child already exists or not — no special cases for shared terminals.
 
 **Step 4: Validate.**
 
 Run `validate_dag` when construction is complete.
 
+## Revision Procedure
+
+When revising an existing DAG (e.g. after a review):
+
+1. Call `show_dag` to read the current structure
+2. Write the target adjacency list in sequential-thinking — what the DAG should look like after revision
+3. Identify the diff: what nodes to add, delete, or rewire
+4. Execute changes:
+   - New nodes → `add_node` then `add_child`
+   - Remove an edge → `delete_child(plan_name, parentId, childId)`
+   - Remove a node → `delete_node(plan_name, nodeId)` (children become orphaned — rewire with `add_child` immediately)
+5. After each `delete_node`, immediately rewire orphaned nodes before continuing
+6. Call `show_compact_dag` after each structural change to verify
+7. Run `validate_dag` when done
+
 ## Rules
 
 - Write the full adjacency list in sequential-thinking before calling any DAG tool
+- Create all nodes with `add_node` first, then wire all edges with `add_child`
 - Every `decision-gate` must have exactly 2 children
 - `plan-fail` and `plan-success` are terminals — never add children to them
+- `plan-fail` and `plan-success` are shared — wire them to multiple parents with `add_child`, same as any other node
 - Retry paths are bounded — never chain multiple retry loops
+- After `delete_node`, rewire orphaned nodes immediately before any other operation
