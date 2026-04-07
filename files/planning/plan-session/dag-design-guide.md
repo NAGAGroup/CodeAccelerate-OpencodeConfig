@@ -68,6 +68,48 @@ add_child(plan_name, node-D, plan-success)
 
 Run `validate_dag` when construction is complete.
 
+## Verify-Retry Pattern
+
+Every verify node must be followed by a decision-gate with exactly 2 children: the next step (pass) and a bounded retry path (fail). The retry path fixes the issue, re-verifies once, then either converges back to the next step (pass) or terminates at plan-fail (fail). Never wire a verify node directly to plan-fail without a retry opportunity, and never chain more than one retry loop.
+
+```
+work-A
+  └─ verify-A
+       └─ decision-gate-A
+            ├─ (pass) → work-B                    ← continues main path
+            └─ (fail) → fix-A
+                          └─ verify-A-retry
+                               ├─ (pass) → work-B ← converges back to main path
+                               └─ (fail) → plan-fail
+
+work-B
+  └─ verify-B
+       └─ decision-gate-B
+            ├─ (pass) → commit                    ← continues main path
+            └─ (fail) → plan-fail                 ← no retry needed here (designer's choice)
+
+commit → plan-success
+```
+
+`work-B` is a convergence node — it has two parents: `decision-gate-A` (pass) and `verify-A-retry` (pass). Wire it with `add_child` from both parents.
+
+**With two retries (one work item gets two fix attempts):**
+```
+work-C
+  └─ verify-C
+       └─ decision-gate-C
+            ├─ (pass) → next-step
+            └─ (fail) → fix-C-1
+                          └─ verify-C-retry-1
+                               ├─ (pass) → next-step   ← converges
+                               └─ (fail) → fix-C-2
+                                             └─ verify-C-retry-2
+                                                  ├─ (pass) → next-step  ← converges again
+                                                  └─ (fail) → plan-fail
+```
+
+`next-step` is a convergence node with three parents: `decision-gate-C`, `verify-C-retry-1`, and `verify-C-retry-2`.
+
 ## Revision Procedure
 
 When revising an existing DAG (e.g. after a review):

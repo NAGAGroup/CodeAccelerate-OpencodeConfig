@@ -23,16 +23,16 @@
 
 | Component | Description |
 |-----------|-------------|
-| `decision-gate` | Executor assesses accumulated evidence and chooses which branch to take. Must have exactly 2 children. |
+| `verify` | Branching verification node. Always placed after work-item. Must have exactly 2 children: the next step (pass) and a fix path or plan-fail (fail). Use this — not decision-gate — for verifying implementation outcomes. |
+| `decision-gate` | Executor assesses accumulated evidence and chooses which branch to take. Must have exactly 2 children. Use for runtime decisions based on prior findings, not for verifying implementation. |
 | `user-decision-gate` | User chooses which branch to take. Must have exactly 2 children. |
 | `plan-fail` | Terminal failure node. Failure branches always end here. |
 | `plan-success` | Terminal success node. Only reachable from commit or the final happy path node. |
 
-## Verification and Operations
+## Operations
 
 | Component | Description |
 |-----------|-------------|
-| `verify` | Verification of the most recent change. Always placed after work-item. |
 | `run-project-commands` | Shell operations — installing dependencies, running build scripts, running tests. |
 | `commit` | Git checkpoint at a meaningful save point. Placed after successful verify. |
 
