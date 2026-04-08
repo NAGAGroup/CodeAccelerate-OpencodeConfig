@@ -110077,12 +110077,31 @@ function flattenTreeV3(metadata, nodes) {
 }
 function dagToMermaidCompactV3(metadata, nodes) {
   const warnings = [];
-  const nodeMap = {};
-  for (const node of nodes)
-    nodeMap[node.id] = node;
+  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+  const kickoff = nodes.find((n) => n.id === "execution-kickoff");
+  const effectiveEntryId = kickoff?.children?.[0] ?? metadata.entry_node_id;
+  const exitAnnotations = {};
   for (const node of nodes) {
+    if (PROTECTED_IDS.has(node.id))
+      continue;
     for (const childId of node.children ?? []) {
-      if (!nodeMap[childId]) {
+      if (childId === "plan-success")
+        exitAnnotations[node.id] = "success";
+      if (childId === "plan-fail")
+        exitAnnotations[node.id] = "failure";
+    }
+  }
+  const filteredNodes = nodes.filter((n) => !PROTECTED_IDS.has(n.id)).map((n) => ({
+    ...n,
+    children: n.children?.filter((c) => !PROTECTED_IDS.has(c))
+  }));
+  const virtualMetadata = { ...metadata, entry_node_id: effectiveEntryId };
+  const nodeMap = {};
+  for (const node of filteredNodes)
+    nodeMap[node.id] = node;
+  for (const node of filteredNodes) {
+    for (const childId of node.children ?? []) {
+      if (!nodeMap[childId] && !PROTECTED_IDS.has(childId)) {
         warnings.push(`Node "${node.id}" references missing child "${childId}"`);
       }
     }
@@ -110105,14 +110124,14 @@ function dagToMermaidCompactV3(metadata, nodes) {
     };
     const visited2 = new Set;
     const recStack = new Set;
-    if (nodeMap[metadata.entry_node_id] && detectCycle(metadata.entry_node_id)) {
+    if (nodeMap[virtualMetadata.entry_node_id] && detectCycle(virtualMetadata.entry_node_id)) {
       hasCycle = true;
       warnings.push("DAG contains a cycle — diagram may not render correctly");
     }
   }
   const depth = {};
-  if (nodeMap[metadata.entry_node_id]) {
-    const queue = [{ id: metadata.entry_node_id, d: 0 }];
+  if (nodeMap[virtualMetadata.entry_node_id]) {
+    const queue = [{ id: virtualMetadata.entry_node_id, d: 0 }];
     while (queue.length > 0) {
       const { id, d } = queue.shift();
       if (depth[id] !== undefined)
@@ -110126,7 +110145,7 @@ function dagToMermaidCompactV3(metadata, nodes) {
     }
   }
   const orphans = new Set;
-  for (const node of nodes) {
+  for (const node of filteredNodes) {
     if (depth[node.id] === undefined) {
       orphans.add(node.id);
       depth[node.id] = Infinity;
@@ -110134,7 +110153,7 @@ function dagToMermaidCompactV3(metadata, nodes) {
     }
   }
   const parentCount = {};
-  for (const node of nodes) {
+  for (const node of filteredNodes) {
     if (!parentCount[node.id])
       parentCount[node.id] = 0;
     for (const childId of node.children ?? []) {
@@ -110161,7 +110180,7 @@ function dagToMermaidCompactV3(metadata, nodes) {
   const visited = new Set;
   const groups = [];
   const edges = [];
-  const bfsQueue = nodeMap[metadata.entry_node_id] ? [metadata.entry_node_id] : [];
+  const bfsQueue = nodeMap[virtualMetadata.entry_node_id] ? [virtualMetadata.entry_node_id] : [];
   while (bfsQueue.length > 0) {
     const startId = bfsQueue.shift();
     if (visited.has(startId))
@@ -110217,8 +110236,17 @@ function dagToMermaidCompactV3(metadata, nodes) {
     const isOrphan = orphans.has(group.ids[0]) || group.ids.some((id) => orphans.has(id));
     const label = group.ids.join("<br/>");
     const safeLabel = label.replace(/"/g, "'");
+    const groupExitType = group.ids.reduce((acc, id) => {
+      if (exitAnnotations[id] === "success")
+        return acc ?? "SUCCESS EXIT";
+      if (exitAnnotations[id] === "failure")
+        return acc ?? "FAILURE EXIT";
+      return acc;
+    }, null);
     if (isOrphan) {
       lines.push(`  ${group.ids[0]}(["[ORPHAN] ${safeLabel}"])`);
+    } else if (groupExitType) {
+      lines.push(`  ${group.ids[0]}(["${safeLabel}<br/>[${groupExitType}]"])`);
     } else {
       lines.push(`  ${group.ids[0]}["${safeLabel}"]`);
     }
@@ -110248,6 +110276,7 @@ function formatCompactDagDraft(metadata, nodes) {
     if (n?.children)
       queue.push(...n.children);
   }
+  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
   const nodeMap = {};
   for (const n of nodes)
     nodeMap[n.id] = n;
@@ -110273,7 +110302,7 @@ function formatCompactDagDraft(metadata, nodes) {
         const node = nodeMap[currentId];
         if (!node)
           break;
-        const children = node.children ?? [];
+        const children = (node.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
         if (children.length === 0) {
           parts.push(`(${currentId})`);
           currentId = null;
@@ -110281,7 +110310,7 @@ function formatCompactDagDraft(metadata, nodes) {
           parts.push(`(${currentId})`);
           currentId = children[0];
         } else {
-          const childList = children.map((c) => c).join(", ");
+          const childList = children.join(", ");
           parts.push(`(${currentId}) → [${childList}]`);
           currentId = null;
           for (const childId of children) {
@@ -110291,7 +110320,7 @@ function formatCompactDagDraft(metadata, nodes) {
           }
         }
       }
-      if (currentId && !rendered.has(currentId)) {
+      if (currentId && !rendered.has(currentId) && !PROTECTED_IDS.has(currentId)) {
         parts.push(`(${currentId})`);
       }
       return parts.join(" → ");
@@ -110304,21 +110333,35 @@ function formatCompactDagDraft(metadata, nodes) {
     return chains.filter((c) => c.length > 0).join(`
 `);
   }
-  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
   const workNodes = nodes.filter((n) => !PROTECTED_IDS.has(n.id));
   const connectedWork = workNodes.filter((n) => reachable.has(n.id));
   const orphanedWork = workNodes.filter((n) => !reachable.has(n.id));
   const BANNER = "// ═══════════════════════════════════════════════════";
+  const kickoffNode = nodes.find((n) => n.id === "execution-kickoff");
+  const entryNodeId = kickoffNode?.children?.[0] ?? null;
+  const successExits = [];
+  const failureExits = [];
+  for (const n of workNodes) {
+    for (const childId of n.children ?? []) {
+      if (childId === "plan-success" && !successExits.includes(n.id))
+        successExits.push(n.id);
+      if (childId === "plan-fail" && !failureExits.includes(n.id))
+        failureExits.push(n.id);
+    }
+  }
+  const allExits = new Set([...successExits, ...failureExits]);
+  const unsetLeaves = workNodes.filter((n) => (!n.children || n.children.filter((c) => !PROTECTED_IDS.has(c)).length === 0) && !allExits.has(n.id));
   const lines = [];
   lines.push(`plan: ${metadata.id}`);
   lines.push("");
   lines.push(BANNER);
-  lines.push("// PROTECTED NODES — wire last");
+  lines.push("// ENTRY / EXIT STATUS");
   lines.push(BANNER);
-  for (const id of ["execution-kickoff", "plan-success", "plan-fail"]) {
-    const n = nodes.find((x) => x.id === id);
-    if (n)
-      lines.push(`(${id})`);
+  lines.push(`// entry: ${entryNodeId ?? "(not set)"}`);
+  lines.push(`// success exits: ${successExits.length > 0 ? successExits.join(", ") : "(none)"}`);
+  lines.push(`// failure exits: ${failureExits.length > 0 ? failureExits.join(", ") : "(none)"}`);
+  if (unsetLeaves.length > 0) {
+    lines.push(`// unset leaf nodes: ${unsetLeaves.map((n) => n.id).join(", ")}`);
   }
   lines.push("");
   lines.push(BANNER);
@@ -110908,7 +110951,7 @@ ${ascii}`;
         }
       }),
       init_dag: tool({
-        description: "Initialize a new project DAG plan.jsonl (JSONL format, schema_version 3.0). Creates the session plan directory and plan.jsonl with the hardcoded execution-kickoff entry node, plus auto-added plan-success and plan-fail terminal nodes.",
+        description: "Initialize a new project DAG. Creates the session plan directory and plan.jsonl. Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.",
         args: {
           plan_name: tool.schema.string().describe("Name for the session plan (e.g., 'my-feature-delivery'). Used as the directory name under .opencode/session-plans/ and as the DAG id. Lowercase, hyphens only, no spaces.")
         },
@@ -110950,11 +110993,9 @@ ${ascii}`;
           return `## init_dag: Created DAG "${plan_name}"
 
 ` + `Plan directory: ${planDir}
-` + `Plan file: ${planPath}
-` + `Entry node: execution-kickoff
-` + `Terminal nodes auto-added: plan-success, plan-fail
 
-` + `Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.`;
+` + `Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.
+` + `When all work nodes are connected, use set_entry_point and set_exit_point to finalize the DAG.`;
         }
       }),
       add_node: tool({
@@ -110962,7 +111003,7 @@ ${ascii}`;
         args: {
           plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
           nodeId: tool.schema.string().describe("ID for the new node. Must be unique across all existing node IDs."),
-          component_name: tool.schema.string().describe("Component type name from the node library (e.g., 'work-item', 'research'). Use get_planning_components_catalogue() to see available types. The terminal nodes 'execution-kickoff', 'plan-success', and 'plan-fail' cannot be added manually — they are auto-managed by init_dag.")
+          component_name: tool.schema.string().describe("Component type name from the node library (e.g., 'work-item', 'research'). Use get_planning_components_catalogue() to see available types.")
         },
         async execute({ plan_name, nodeId, component_name }, context) {
           const PROTECTED_NODES = [
@@ -111019,7 +111060,7 @@ ${ascii}`;
         }
       }),
       add_nodes_to_dag: tool({
-        description: "Add multiple nodes to a DAG in a single batch call. Accepts a dictionary of nodeId→componentType pairs. All nodes are created without edges — use connect_nodes to wire them. The terminal nodes 'execution-kickoff', 'plan-success', and 'plan-fail' are protected and cannot be added manually.",
+        description: "Add multiple nodes to a DAG in a single batch call. Accepts a dictionary of nodeId→componentType pairs. All nodes are created without edges — use connect_nodes to wire them.",
         args: {
           plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
           nodes: tool.schema.string().describe(`JSON object mapping nodeId to component_name. Example: '{"investigate": "research", "implement": "work-item", "verify": "verify"}'. Use get_planning_components_catalogue() to see available component types.`)
@@ -111170,60 +111211,29 @@ ${errors3.join(`
 ${errors3.map((e) => `- ${e}`).join(`
 `)}`);
           }
-          const PROTECTED_NODES = [
-            "execution-kickoff",
-            "plan-success",
-            "plan-fail"
-          ];
-          const touchesProtected = edgePairs.some(({ from, to }) => PROTECTED_NODES.includes(from) || PROTECTED_NODES.includes(to));
-          if (touchesProtected) {
-            const workNodes = nodes.filter((n) => !PROTECTED_NODES.includes(n.id));
-            if (workNodes.length > 0) {
-              const adj = new Map;
-              for (const n of workNodes) {
-                if (!adj.has(n.id))
-                  adj.set(n.id, new Set);
-                for (const childId of n.children ?? []) {
-                  if (PROTECTED_NODES.includes(childId))
-                    continue;
-                  if (!adj.has(childId))
-                    adj.set(childId, new Set);
-                  adj.get(n.id).add(childId);
-                  adj.get(childId).add(n.id);
-                }
-              }
-              const visited = new Set;
-              let componentCount = 0;
-              for (const n of workNodes) {
-                if (visited.has(n.id))
-                  continue;
-                componentCount++;
-                const bfsQueue = [n.id];
-                while (bfsQueue.length > 0) {
-                  const id = bfsQueue.pop();
-                  if (visited.has(id))
-                    continue;
-                  visited.add(id);
-                  for (const neighbor of adj.get(id) ?? []) {
-                    if (!visited.has(neighbor))
-                      bfsQueue.push(neighbor);
-                  }
-                }
-              }
-              if (componentCount > 1) {
-                for (const { from, to } of edgePairs) {
-                  const parent = nodes.find((n) => n.id === from);
-                  if (parent?.children) {
-                    const idx = parent.children.indexOf(to);
-                    if (idx !== -1)
-                      parent.children.splice(idx, 1);
-                  }
-                }
-                throw new Error(`Cannot wire protected nodes yet — ` + `work nodes still form ${componentCount} disconnected groups. ` + `Wire all work nodes into a single connected structure first, then wire execution-kickoff, plan-success, and plan-fail last.
-
-` + formatCompactDagDraft(metadata, nodes));
+          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+          const protectedErrors = [];
+          for (const { from, to } of edgePairs) {
+            if (PROTECTED_IDS.has(from)) {
+              protectedErrors.push(`Cannot wire from "${from}" — use set_entry_point to set the DAG entry.`);
+            }
+            if (PROTECTED_IDS.has(to) && (to === "plan-success" || to === "plan-fail")) {
+              protectedErrors.push(`Cannot wire to "${to}" — use set_exit_point to mark "${from}" as an exit.`);
+            }
+          }
+          if (protectedErrors.length > 0) {
+            for (const { from, to } of edgePairs) {
+              const parent = nodes.find((n) => n.id === from);
+              if (parent?.children) {
+                const idx = parent.children.indexOf(to);
+                if (idx !== -1)
+                  parent.children.splice(idx, 1);
               }
             }
+            throw new Error(protectedErrors.join(`
+`) + `
+
+` + formatCompactDagDraft(metadata, nodes));
           }
           writeDagV3(planPath, metadata, nodes);
           let result = `## connect_nodes: Wired ${wired.length} edge(s)
@@ -111244,7 +111254,7 @@ ${errors3.map((e) => `- ${e}`).join(`
         }
       }),
       delete_node: tool({
-        description: "Delete a node from the DAG and remove all edges to/from it. The node's children become orphaned — use connect_nodes to reconnect them. Returns list of orphaned nodes. The terminal nodes 'execution-kickoff', 'plan-success', and 'plan-fail' cannot be deleted.",
+        description: "Delete a node from the DAG and remove all edges to/from it. The node's children become orphaned — use connect_nodes to reconnect them. Returns list of orphaned nodes.",
         args: {
           plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
           nodeId: tool.schema.string().describe("ID of the node to delete. Its children will become orphaned.")
@@ -111325,6 +111335,76 @@ ${errors3.map((e) => `- ${e}`).join(`
 ` + formatCompactDagDraft(metadata, nodes);
         }
       }),
+      set_entry_point: tool({
+        description: "Set the DAG's entry point — the first node that executes when the plan starts. Call this once in the final wiring step after all work nodes are connected.",
+        args: {
+          plan_name: tool.schema.string().describe("Name of the session plan."),
+          node_id: tool.schema.string().describe("ID of the node that should execute first when the plan starts.")
+        },
+        async execute({ plan_name, node_id }, context) {
+          const worktree = resolveWorktree(context);
+          const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
+          const { metadata, nodes } = readDagV3(planPath);
+          const target = nodes.find((n) => n.id === node_id);
+          if (!target)
+            throw new Error(`Node "${node_id}" not found in DAG.
+
+${formatCompactDagDraft(metadata, nodes)}`);
+          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+          if (PROTECTED_IDS.has(node_id))
+            throw new Error(`"${node_id}" cannot be used as an entry point.`);
+          const kickoff = nodes.find((n) => n.id === "execution-kickoff");
+          if (!kickoff)
+            throw new Error("Internal error: execution-kickoff node not found.");
+          if (kickoff.children?.includes(node_id)) {
+            throw new Error(`Entry point is already set to "${node_id}".
+
+${formatCompactDagDraft(metadata, nodes)}`);
+          }
+          kickoff.children = [node_id];
+          writeDagV3(planPath, metadata, nodes);
+          return `## set_entry_point: Entry set to "${node_id}"
+
+` + formatCompactDagDraft(metadata, nodes);
+        }
+      }),
+      set_exit_point: tool({
+        description: "Mark a leaf node as a plan exit point. Call this for every leaf node in the final wiring step. " + "Use type 'success' for nodes on the happy path and 'failure' for nodes on retry-exhaustion or error paths.",
+        args: {
+          plan_name: tool.schema.string().describe("Name of the session plan."),
+          node_id: tool.schema.string().describe("ID of the leaf node to mark as an exit point."),
+          type: tool.schema.string().describe("Exit type: 'success' or 'failure'.")
+        },
+        async execute({ plan_name, node_id, type: exitType }, context) {
+          if (exitType !== "success" && exitType !== "failure") {
+            throw new Error(`Exit type must be "success" or "failure", got "${exitType}".`);
+          }
+          const worktree = resolveWorktree(context);
+          const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
+          const { metadata, nodes } = readDagV3(planPath);
+          const target = nodes.find((n) => n.id === node_id);
+          if (!target)
+            throw new Error(`Node "${node_id}" not found in DAG.
+
+${formatCompactDagDraft(metadata, nodes)}`);
+          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+          if (PROTECTED_IDS.has(node_id))
+            throw new Error(`"${node_id}" cannot be used as an exit point.`);
+          const terminalId = exitType === "success" ? "plan-success" : "plan-fail";
+          if (target.children?.includes(terminalId)) {
+            throw new Error(`"${node_id}" is already marked as a ${exitType} exit.
+
+${formatCompactDagDraft(metadata, nodes)}`);
+          }
+          if (!target.children)
+            target.children = [];
+          target.children.push(terminalId);
+          writeDagV3(planPath, metadata, nodes);
+          return `## set_exit_point: "${node_id}" marked as ${exitType} exit
+
+` + formatCompactDagDraft(metadata, nodes);
+        }
+      }),
       task: tool({
         description: "Dispatch a specialized subagent to complete a task. OpenCode renders a delegation UI when this tool is called. " + "Use this whenever a task requires a specialist: investigation, implementation, documentation, shell operations, or research.",
         args: {
@@ -111340,18 +111420,6 @@ ${errors3.map((e) => `- ${e}`).join(`
           const agentsResponse = await client.app.agents();
           const agents = Array.isArray(agentsResponse.data) ? agentsResponse.data : [];
           const agent = agents.find((a) => a.name === subagent_type);
-          await client.app.log({
-            body: {
-              service: "task-tool",
-              level: "info",
-              message: `task tool dispatch: subagent_type=${subagent_type}`,
-              extra: {
-                agentModel: agent?.model ?? null,
-                agentKeys: Object.keys(agent ?? {}),
-                configModel: agentConfigs[subagent_type]?.model ?? null
-              }
-            }
-          });
           if (!agent) {
             const available = agents.filter((a) => a.mode !== "primary").map((a) => a.name).join(", ");
             throw new Error(`Unknown agent type: "${subagent_type}" is not a valid agent type. Available: ${available || "none"}`);

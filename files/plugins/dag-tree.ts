@@ -100,15 +100,43 @@ export function dagToMermaidCompactV3(
   nodes: DagNodeV3[],
 ): { mermaid: string; warnings: string[] } {
   const warnings: string[] = [];
+
+  // Protected nodes are internal plumbing — hide them from the diagram.
+  // Resolve the effective entry point (kickoff's child) and track exit annotations.
+  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+  const kickoff = nodes.find((n) => n.id === "execution-kickoff");
+  const effectiveEntryId = kickoff?.children?.[0] ?? metadata.entry_node_id;
+
+  // Build exit annotations: which nodes point to plan-success or plan-fail
+  const exitAnnotations: Record<string, "success" | "failure"> = {};
+  for (const node of nodes) {
+    if (PROTECTED_IDS.has(node.id)) continue;
+    for (const childId of node.children ?? []) {
+      if (childId === "plan-success") exitAnnotations[node.id] = "success";
+      if (childId === "plan-fail") exitAnnotations[node.id] = "failure";
+    }
+  }
+
+  // Filter out protected nodes and strip protected children from edges
+  const filteredNodes = nodes
+    .filter((n) => !PROTECTED_IDS.has(n.id))
+    .map((n) => ({
+      ...n,
+      children: n.children?.filter((c) => !PROTECTED_IDS.has(c)),
+    }));
+
+  // Use the effective entry as the virtual entry for BFS
+  const virtualMetadata = { ...metadata, entry_node_id: effectiveEntryId };
+
   const nodeMap: Record<string, DagNodeV3> = {};
-  for (const node of nodes) nodeMap[node.id] = node;
+  for (const node of filteredNodes) nodeMap[node.id] = node;
 
   // ── Detect structural issues (don't throw) ────────────────────────────────
 
-  // Broken child references
-  for (const node of nodes) {
+  // Broken child references (skip protected node references — those are internal plumbing)
+  for (const node of filteredNodes) {
     for (const childId of node.children ?? []) {
-      if (!nodeMap[childId]) {
+      if (!nodeMap[childId] && !PROTECTED_IDS.has(childId)) {
         warnings.push(`Node "${node.id}" references missing child "${childId}"`);
       }
     }
@@ -130,7 +158,7 @@ export function dagToMermaidCompactV3(
       recStack.delete(id);
       return false;
     }
-    if (nodeMap[metadata.entry_node_id] && detectCycle(metadata.entry_node_id)) {
+    if (nodeMap[virtualMetadata.entry_node_id] && detectCycle(virtualMetadata.entry_node_id)) {
       hasCycle = true;
       warnings.push("DAG contains a cycle — diagram may not render correctly");
     }
@@ -139,8 +167,8 @@ export function dagToMermaidCompactV3(
   // ── BFS depth assignment ──────────────────────────────────────────────────
 
   const depth: Record<string, number> = {};
-  if (nodeMap[metadata.entry_node_id]) {
-    const queue: Array<{ id: string; d: number }> = [{ id: metadata.entry_node_id, d: 0 }];
+  if (nodeMap[virtualMetadata.entry_node_id]) {
+    const queue: Array<{ id: string; d: number }> = [{ id: virtualMetadata.entry_node_id, d: 0 }];
     while (queue.length > 0) {
       const { id, d } = queue.shift()!;
       if (depth[id] !== undefined) continue; // already visited (handles shared terminals)
@@ -155,7 +183,7 @@ export function dagToMermaidCompactV3(
 
   // Orphans: nodes with no path from entry
   const orphans = new Set<string>();
-  for (const node of nodes) {
+  for (const node of filteredNodes) {
     if (depth[node.id] === undefined) {
       orphans.add(node.id);
       depth[node.id] = Infinity;
@@ -166,7 +194,7 @@ export function dagToMermaidCompactV3(
   // ── Parent-count map (for collapse eligibility) ───────────────────────────
 
   const parentCount: Record<string, number> = {};
-  for (const node of nodes) {
+  for (const node of filteredNodes) {
     if (!parentCount[node.id]) parentCount[node.id] = 0;
     for (const childId of node.children ?? []) {
       if (nodeMap[childId]) parentCount[childId] = (parentCount[childId] ?? 0) + 1;
@@ -194,7 +222,7 @@ export function dagToMermaidCompactV3(
   const edges: Array<{ from: string; to: string }> = [];
 
   // Process reachable nodes in BFS order (entry first)
-  const bfsQueue: string[] = nodeMap[metadata.entry_node_id] ? [metadata.entry_node_id] : [];
+  const bfsQueue: string[] = nodeMap[virtualMetadata.entry_node_id] ? [virtualMetadata.entry_node_id] : [];
   while (bfsQueue.length > 0) {
     const startId = bfsQueue.shift()!;
     if (visited.has(startId)) continue;
@@ -259,9 +287,19 @@ export function dagToMermaidCompactV3(
     const isOrphan = orphans.has(group.ids[0]) || group.ids.some((id) => orphans.has(id));
     const label = group.ids.join("<br/>");
     const safeLabel = label.replace(/"/g, "'");
+
+    // Check if any node in this group is an exit point
+    const groupExitType = group.ids.reduce<string | null>((acc, id) => {
+      if (exitAnnotations[id] === "success") return acc ?? "SUCCESS EXIT";
+      if (exitAnnotations[id] === "failure") return acc ?? "FAILURE EXIT";
+      return acc;
+    }, null);
+
     if (isOrphan) {
-      // Orphans use a distinct shape (stadium/pill) to stand out
       lines.push(`  ${group.ids[0]}(["[ORPHAN] ${safeLabel}"])`);
+    } else if (groupExitType) {
+      // Exit nodes use a distinct shape with annotation
+      lines.push(`  ${group.ids[0]}(["${safeLabel}<br/>[${groupExitType}]"])`);
     } else {
       lines.push(`  ${group.ids[0]}["${safeLabel}"]`);
     }
@@ -306,6 +344,8 @@ export function formatCompactDagDraft(
 
   // (Orphan grouping is done later, after separating work nodes from protected nodes)
 
+  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+
   // Build a node map for O(1) lookup
   const nodeMap: Record<string, DagNodeV3> = {};
   for (const n of nodes) nodeMap[n.id] = n;
@@ -335,9 +375,10 @@ export function formatCompactDagDraft(
         rendered.add(currentId);
         const node = nodeMap[currentId];
         if (!node) break;
-        const children = (node.children ?? []);
+        // Filter out protected nodes — they're invisible to the agent
+        const children = (node.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
         if (children.length === 0) {
-          // Terminal — just append the id
+          // Leaf node — just append the id
           parts.push(`(${currentId})`);
           currentId = null;
         } else if (children.length === 1) {
@@ -346,7 +387,7 @@ export function formatCompactDagDraft(
           currentId = children[0];
         } else {
           // Branching — append with bracket notation
-          const childList = children.map((c) => c).join(", ");
+          const childList = children.join(", ");
           parts.push(`(${currentId}) → [${childList}]`);
           currentId = null;
           // Queue sub-chains for unvisited children within this group
@@ -358,7 +399,7 @@ export function formatCompactDagDraft(
         }
       }
       // If we stopped at a node already rendered or outside group, add it as a reference
-      if (currentId && !rendered.has(currentId)) {
+      if (currentId && !rendered.has(currentId) && !PROTECTED_IDS.has(currentId)) {
         // Outside group — show as outgoing reference
         parts.push(`(${currentId})`);
       }
@@ -375,8 +416,6 @@ export function formatCompactDagDraft(
   }
 
   // Build output
-  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
-
   // Work nodes = everything except protected nodes, regardless of reachability
   const workNodes = nodes.filter((n) => !PROTECTED_IDS.has(n.id));
   // Split work nodes into connected (reachable from entry) and orphaned
@@ -385,17 +424,38 @@ export function formatCompactDagDraft(
 
   const BANNER = "// ═══════════════════════════════════════════════════";
 
+  // Compute entry/exit status from protected node edges
+  const kickoffNode = nodes.find((n) => n.id === "execution-kickoff");
+  const entryNodeId = kickoffNode?.children?.[0] ?? null;
+
+  const successExits: string[] = [];
+  const failureExits: string[] = [];
+  for (const n of workNodes) {
+    for (const childId of n.children ?? []) {
+      if (childId === "plan-success" && !successExits.includes(n.id)) successExits.push(n.id);
+      if (childId === "plan-fail" && !failureExits.includes(n.id)) failureExits.push(n.id);
+    }
+  }
+
+  // Find leaf work nodes that have no set_exit_point yet
+  const allExits = new Set([...successExits, ...failureExits]);
+  const unsetLeaves = workNodes.filter(
+    (n) => (!n.children || n.children.filter((c) => !PROTECTED_IDS.has(c)).length === 0) && !allExits.has(n.id),
+  );
+
   const lines: string[] = [];
   lines.push(`plan: ${metadata.id}`);
   lines.push("");
 
-  // Protected nodes section — always listed as simple entries, never chain-rendered
+  // Entry/exit status section
   lines.push(BANNER);
-  lines.push("// PROTECTED NODES — wire last");
+  lines.push("// ENTRY / EXIT STATUS");
   lines.push(BANNER);
-  for (const id of ["execution-kickoff", "plan-success", "plan-fail"]) {
-    const n = nodes.find((x) => x.id === id);
-    if (n) lines.push(`(${id})`);
+  lines.push(`// entry: ${entryNodeId ?? "(not set)"}`);
+  lines.push(`// success exits: ${successExits.length > 0 ? successExits.join(", ") : "(none)"}`);
+  lines.push(`// failure exits: ${failureExits.length > 0 ? failureExits.join(", ") : "(none)"}`);
+  if (unsetLeaves.length > 0) {
+    lines.push(`// unset leaf nodes: ${unsetLeaves.map((n) => n.id).join(", ")}`);
   }
   lines.push("");
 

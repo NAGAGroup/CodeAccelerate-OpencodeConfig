@@ -644,7 +644,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       init_dag: tool({
         description:
-          "Initialize a new project DAG plan.jsonl (JSONL format, schema_version 3.0). Creates the session plan directory and plan.jsonl with the hardcoded execution-kickoff entry node, plus auto-added plan-success and plan-fail terminal nodes.",
+          "Initialize a new project DAG. Creates the session plan directory and plan.jsonl. Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.",
         args: {
           plan_name: tool.schema
             .string()
@@ -728,11 +728,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           return (
             `## init_dag: Created DAG "${plan_name}"\n\n` +
-            `Plan directory: ${planDir}\n` +
-            `Plan file: ${planPath}\n` +
-            `Entry node: execution-kickoff\n` +
-            `Terminal nodes auto-added: plan-success, plan-fail\n\n` +
-            `Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.`
+            `Plan directory: ${planDir}\n\n` +
+            `Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.\n` +
+            `When all work nodes are connected, use set_entry_point and set_exit_point to finalize the DAG.`
           );
         },
       }),
@@ -754,7 +752,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           component_name: tool.schema
             .string()
             .describe(
-              "Component type name from the node library (e.g., 'work-item', 'research'). Use get_planning_components_catalogue() to see available types. The terminal nodes 'execution-kickoff', 'plan-success', and 'plan-fail' cannot be added manually — they are auto-managed by init_dag.",
+              "Component type name from the node library (e.g., 'work-item', 'research'). Use get_planning_components_catalogue() to see available types.",
             ),
         },
         async execute({ plan_name, nodeId, component_name }, context) {
@@ -863,7 +861,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       add_nodes_to_dag: tool({
         description:
-          "Add multiple nodes to a DAG in a single batch call. Accepts a dictionary of nodeId→componentType pairs. All nodes are created without edges — use connect_nodes to wire them. The terminal nodes 'execution-kickoff', 'plan-success', and 'plan-fail' are protected and cannot be added manually.",
+          "Add multiple nodes to a DAG in a single batch call. Accepts a dictionary of nodeId→componentType pairs. All nodes are created without edges — use connect_nodes to wire them.",
         args: {
           plan_name: tool.schema
             .string()
@@ -1121,70 +1119,29 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             );
           }
 
-          // Guard: protected nodes (kickoff + terminals) cannot be wired while
-          // work nodes still form multiple disconnected groups.
-          // They are the entry/exit points and must be wired last.
-          const PROTECTED_NODES = [
-            "execution-kickoff",
-            "plan-success",
-            "plan-fail",
-          ];
-          const touchesProtected = edgePairs.some(
-            ({ from, to }) =>
-              PROTECTED_NODES.includes(from) || PROTECTED_NODES.includes(to),
-          );
-          if (touchesProtected) {
-            // Count connected components among work nodes using UNDIRECTED traversal.
-            // This correctly handles the construction phase where kickoff has no children yet —
-            // we only care whether all work nodes are connected to each other, not to kickoff.
-            const workNodes = nodes.filter(
-              (n) => !PROTECTED_NODES.includes(n.id),
-            );
-            if (workNodes.length > 0) {
-              // Build undirected adjacency from directed edges
-              const adj = new Map<string, Set<string>>();
-              for (const n of workNodes) {
-                if (!adj.has(n.id)) adj.set(n.id, new Set());
-                for (const childId of n.children ?? []) {
-                  if (PROTECTED_NODES.includes(childId)) continue;
-                  if (!adj.has(childId)) adj.set(childId, new Set());
-                  adj.get(n.id)!.add(childId);
-                  adj.get(childId)!.add(n.id);
-                }
-              }
-              // Count connected components via BFS
-              const visited = new Set<string>();
-              let componentCount = 0;
-              for (const n of workNodes) {
-                if (visited.has(n.id)) continue;
-                componentCount++;
-                const bfsQueue = [n.id];
-                while (bfsQueue.length > 0) {
-                  const id = bfsQueue.pop()!;
-                  if (visited.has(id)) continue;
-                  visited.add(id);
-                  for (const neighbor of adj.get(id) ?? []) {
-                    if (!visited.has(neighbor)) bfsQueue.push(neighbor);
-                  }
-                }
-              }
-              if (componentCount > 1) {
-                // Roll back the tentatively wired edges
-                for (const { from, to } of edgePairs) {
-                  const parent = nodes.find((n) => n.id === from);
-                  if (parent?.children) {
-                    const idx = parent.children.indexOf(to);
-                    if (idx !== -1) parent.children.splice(idx, 1);
-                  }
-                }
-                throw new Error(
-                  `Cannot wire protected nodes yet — ` +
-                    `work nodes still form ${componentCount} disconnected groups. ` +
-                    `Wire all work nodes into a single connected structure first, then wire execution-kickoff, plan-success, and plan-fail last.\n\n` +
-                    formatCompactDagDraft(metadata, nodes),
-                );
+          // Block direct wiring to protected nodes — use set_entry_point and set_exit_point instead
+          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+          const protectedErrors: string[] = [];
+          for (const { from, to } of edgePairs) {
+            if (PROTECTED_IDS.has(from)) {
+              protectedErrors.push(`Cannot wire from "${from}" — use set_entry_point to set the DAG entry.`);
+            }
+            if (PROTECTED_IDS.has(to) && (to === "plan-success" || to === "plan-fail")) {
+              protectedErrors.push(`Cannot wire to "${to}" — use set_exit_point to mark "${from}" as an exit.`);
+            }
+          }
+          if (protectedErrors.length > 0) {
+            // Roll back any tentatively wired edges
+            for (const { from, to } of edgePairs) {
+              const parent = nodes.find((n) => n.id === from);
+              if (parent?.children) {
+                const idx = parent.children.indexOf(to);
+                if (idx !== -1) parent.children.splice(idx, 1);
               }
             }
+            throw new Error(
+              protectedErrors.join("\n") + "\n\n" + formatCompactDagDraft(metadata, nodes),
+            );
           }
 
           writeDagV3(planPath, metadata, nodes);
@@ -1206,7 +1163,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       delete_node: tool({
         description:
-          "Delete a node from the DAG and remove all edges to/from it. The node's children become orphaned — use connect_nodes to reconnect them. Returns list of orphaned nodes. The terminal nodes 'execution-kickoff', 'plan-success', and 'plan-fail' cannot be deleted.",
+          "Delete a node from the DAG and remove all edges to/from it. The node's children become orphaned — use connect_nodes to reconnect them. Returns list of orphaned nodes.",
         args: {
           plan_name: tool.schema
             .string()
@@ -1338,6 +1295,98 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
+      set_entry_point: tool({
+        description:
+          "Set the DAG's entry point — the first node that executes when the plan starts. Call this once in the final wiring step after all work nodes are connected.",
+        args: {
+          plan_name: tool.schema
+            .string()
+            .describe("Name of the session plan."),
+          node_id: tool.schema
+            .string()
+            .describe("ID of the node that should execute first when the plan starts."),
+        },
+        async execute({ plan_name, node_id }, context) {
+          const worktree = resolveWorktree(context);
+          const planPath = path.join(
+            worktree, ".opencode", "session-plans", plan_name, "plan.jsonl",
+          );
+          const { metadata, nodes } = readDagV3(planPath);
+
+          const target = nodes.find((n) => n.id === node_id);
+          if (!target) throw new Error(`Node "${node_id}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`);
+
+          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+          if (PROTECTED_IDS.has(node_id)) throw new Error(`"${node_id}" cannot be used as an entry point.`);
+
+          // Wire execution-kickoff → target
+          const kickoff = nodes.find((n) => n.id === "execution-kickoff");
+          if (!kickoff) throw new Error("Internal error: execution-kickoff node not found.");
+
+          if (kickoff.children?.includes(node_id)) {
+            throw new Error(`Entry point is already set to "${node_id}".\n\n${formatCompactDagDraft(metadata, nodes)}`);
+          }
+
+          // Replace any existing entry point (only one allowed)
+          kickoff.children = [node_id];
+
+          writeDagV3(planPath, metadata, nodes);
+          return (
+            `## set_entry_point: Entry set to "${node_id}"\n\n` +
+            formatCompactDagDraft(metadata, nodes)
+          );
+        },
+      }),
+
+      set_exit_point: tool({
+        description:
+          "Mark a leaf node as a plan exit point. Call this for every leaf node in the final wiring step. " +
+          "Use type 'success' for nodes on the happy path and 'failure' for nodes on retry-exhaustion or error paths.",
+        args: {
+          plan_name: tool.schema
+            .string()
+            .describe("Name of the session plan."),
+          node_id: tool.schema
+            .string()
+            .describe("ID of the leaf node to mark as an exit point."),
+          type: tool.schema
+            .string()
+            .describe("Exit type: 'success' or 'failure'."),
+        },
+        async execute({ plan_name, node_id, type: exitType }, context) {
+          if (exitType !== "success" && exitType !== "failure") {
+            throw new Error(`Exit type must be "success" or "failure", got "${exitType}".`);
+          }
+
+          const worktree = resolveWorktree(context);
+          const planPath = path.join(
+            worktree, ".opencode", "session-plans", plan_name, "plan.jsonl",
+          );
+          const { metadata, nodes } = readDagV3(planPath);
+
+          const target = nodes.find((n) => n.id === node_id);
+          if (!target) throw new Error(`Node "${node_id}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`);
+
+          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+          if (PROTECTED_IDS.has(node_id)) throw new Error(`"${node_id}" cannot be used as an exit point.`);
+
+          const terminalId = exitType === "success" ? "plan-success" : "plan-fail";
+
+          if (target.children?.includes(terminalId)) {
+            throw new Error(`"${node_id}" is already marked as a ${exitType} exit.\n\n${formatCompactDagDraft(metadata, nodes)}`);
+          }
+
+          if (!target.children) target.children = [];
+          target.children.push(terminalId);
+
+          writeDagV3(planPath, metadata, nodes);
+          return (
+            `## set_exit_point: "${node_id}" marked as ${exitType} exit\n\n` +
+            formatCompactDagDraft(metadata, nodes)
+          );
+        },
+      }),
+
       task: tool({
         description:
           "Dispatch a specialized subagent to complete a task. OpenCode renders a delegation UI when this tool is called. " +
@@ -1382,19 +1431,6 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             : [];
           const agent = agents.find((a: any) => a.name === subagent_type);
 
-          // DEBUG: log resolved agent info
-          await client.app.log({
-            body: {
-              service: "task-tool",
-              level: "info",
-              message: `task tool dispatch: subagent_type=${subagent_type}`,
-              extra: {
-                agentModel: agent?.model ?? null,
-                agentKeys: Object.keys(agent ?? {}),
-                configModel: agentConfigs[subagent_type]?.model ?? null,
-              },
-            },
-          });
           if (!agent) {
             const available = agents
               .filter((a: any) => a.mode !== "primary")

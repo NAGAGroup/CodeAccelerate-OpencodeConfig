@@ -22,7 +22,7 @@ In this skill, you learn how to build, modify, validate, and visualize execution
 |-----------|-------------|
 | `plan_name` | Name for the new session plan — lowercase, hyphens only, no spaces (required) |
 
-Auto-adds three protected terminal nodes: `execution-kickoff` (entry), `plan-success`, and `plan-fail`. These cannot be added or deleted manually.
+Creates a new DAG with the given name.
 
 ### `add_nodes_to_dag`
 
@@ -31,7 +31,7 @@ Auto-adds three protected terminal nodes: `execution-kickoff` (entry), `plan-suc
 | `plan_name` | Name of the session plan to add nodes to (required) |
 | `nodes` | Dictionary mapping nodeId → component_name, e.g. `{ "investigate": "research", "implement": "work-item" }` (required) |
 
-Adds all nodes in a single batch call. Use this after `init_dag` to create all work nodes at once. The protected terminal nodes (`execution-kickoff`, `plan-success`, `plan-fail`) cannot be added via this tool.
+Adds all nodes in a single batch call. Use this after `init_dag` to create all work nodes at once.
 
 ### `add_node`
 
@@ -52,6 +52,25 @@ Adds a single node. Prefer `add_nodes_to_dag` for creating multiple nodes at onc
 
 Wires multiple directed edges in a single batch call. All referenced nodes must already exist in the DAG.
 
+### `set_entry_point`
+
+| Parameter | Description |
+|-----------|-------------|
+| `plan_name` | Name of the session plan (required) |
+| `node_id` | ID of the node that should execute first when the plan starts (required) |
+
+Sets where execution begins. Call this once in the final wiring step (Stage 3).
+
+### `set_exit_point`
+
+| Parameter | Description |
+|-----------|-------------|
+| `plan_name` | Name of the session plan (required) |
+| `node_id` | ID of the leaf node to mark as an exit point (required) |
+| `type` | Exit type: `'success'` or `'failure'` (required) |
+
+Marks a leaf node as a plan exit. Call this for every leaf node in the final wiring step (Stage 3). Use `'success'` for happy-path exits and `'failure'` for retry-exhaustion/error exits.
+
 ### `delete_edge`
 
 | Parameter | Description |
@@ -67,15 +86,13 @@ Wires multiple directed edges in a single batch call. All referenced nodes must 
 | `plan_name` | Name of the session plan (required) |
 | `nodeId` | ID of the node to delete — all edges to and from it are removed; children become orphaned (required) |
 
-The protected terminal nodes (`execution-kickoff`, `plan-success`, `plan-fail`) cannot be deleted.
-
 ### `get_compact_dag_draft`
 
 | Parameter | Description |
 |-----------|-------------|
 | `target` | Session plan name or raw path to plan.jsonl (required) |
 
-Returns the DAG as JSONL with connected nodes first, followed by orphaned groups each prefixed with `// orphaned group N`. Use this to inspect structure and spot disconnected nodes during design.
+Returns the DAG in a compact format showing connected nodes, orphaned groups, and entry/exit status. Use this to inspect structure during design.
 
 ### `get_dag_draft_diagram`
 
@@ -94,5 +111,3 @@ Returns the DAG as JSONL with connected nodes first, followed by orphaned groups
 | Parameter | Description |
 |-----------|-------------|
 | `plan_name` | Session plan name — throws on any structural issue (required) |
-
-

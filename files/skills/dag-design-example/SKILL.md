@@ -16,7 +16,7 @@ Phase 1 — decision-gate with immediate convergence:
 
 Phase 2 — sequential work with early success check:
   work-B → work-C → decision-gate-early-check
-    ├─ → plan-success (early exit example — goal already satisfied) (wired up at the end, leave success paths dangling until then)
+    ├─ → write-notes-early-success (leaf — early exit, goal already satisfied)
     └─ → decision-gate-routing
            ├─ → [Phase 3a entry]
            └─ → [Phase 3b entry]
@@ -26,7 +26,7 @@ Phase 3a — single retry, converges to Phase 4:
     ├─ (pass) → work-F (converge with Phase 3b)
     └─ (fail) → fix-D → verify-D-retry
                            ├─ (pass) → work-F (converge)
-                           └─ (fail) → plan-fail (wired up at the end, leave failure paths dangling until then)
+                           └─ (fail) → write-notes-D-failure (leaf — captures what went wrong)
 
 Phase 3b — two retries, converges to Phase 4:
   work-E → verify-E
@@ -35,16 +35,18 @@ Phase 3b — two retries, converges to Phase 4:
                              ├─ (pass) → work-F (converge)
                              └─ (fail) → fix-E-2 → verify-E-retry-2
                                                      ├─ (pass) → work-F (converge)
-                                                     └─ (fail) → plan-fail (wired up at the end, leave failure paths dangling until then)
+                                                     └─ (fail) → write-notes-E-failure (leaf — captures what went wrong)
 
 Phase 4 — sequential to success:
-  work-F → plan-success (wired up at the end, leave success paths dangling until then)
+  work-F → write-notes-final-summary (leaf — captures what was accomplished)
 ```
+
+**Key pattern:** Every leaf node is a `write-notes` node. Success leaves capture accomplishments; failure leaves capture what went wrong. This ensures the executing agent always records context before the plan exits.
 
 **Then define the wiring between phases:**
 ```
 work-B connects Phase 1 exit to Phase 2 entry (convergence node)
-decision-gate-early-check routes to plan-success (early exit, wired up at the end) or decision-gate-routing
+decision-gate-early-check routes to write-notes-early-success (early exit) or decision-gate-routing
 decision-gate-routing routes to work-D (Phase 3a) or work-E (Phase 3b)
 work-F connects Phase 3a/3b exits to Phase 4 entry (convergence node)
 ```
@@ -69,26 +71,22 @@ get_planning_components_catalogue()
 # Phase 1
 add_nodes_to_dag(plan_name="my-plan", nodes='{"work-A": "work-item", "decision-gate-A": "decision-gate", "work-A-option-1": "work-item", "work-A-option-2": "work-item"}')
 connect_nodes(plan_name="my-plan", edges='{"work-A": "decision-gate-A", "decision-gate-A": ["work-A-option-1", "work-A-option-2"]}')
-get_compact_dag_draft(target="my-plan")
 
 # Phase 2
-add_nodes_to_dag(plan_name="my-plan", nodes='{"work-B": "work-item", "work-C": "work-item", "decision-gate-early-check": "decision-gate", "decision-gate-routing": "decision-gate"}')
-connect_nodes(plan_name="my-plan", edges='{"work-B": "work-C", "work-C": "decision-gate-early-check", "decision-gate-early-check": "decision-gate-routing"}')
-get_compact_dag_draft(target="my-plan")
+add_nodes_to_dag(plan_name="my-plan", nodes='{"work-B": "work-item", "work-C": "work-item", "decision-gate-early-check": "decision-gate", "write-notes-early-success": "write-notes", "decision-gate-routing": "decision-gate"}')
+connect_nodes(plan_name="my-plan", edges='{"work-B": "work-C", "work-C": "decision-gate-early-check", "decision-gate-early-check": ["write-notes-early-success", "decision-gate-routing"]}')
 
 # Phase 3a
-add_nodes_to_dag(plan_name="my-plan", nodes='{"work-D": "work-item", "verify-D": "verify", "fix-D": "work-item", "verify-D-retry": "verify"}')
-connect_nodes(plan_name="my-plan", edges='{"work-D": "verify-D", "verify-D": ["work-F", "fix-D"], "fix-D": "verify-D-retry"}')
-get_compact_dag_draft(target="my-plan")
+add_nodes_to_dag(plan_name="my-plan", nodes='{"work-D": "work-item", "verify-D": "verify", "fix-D": "work-item", "verify-D-retry": "verify", "write-notes-D-failure": "write-notes"}')
+connect_nodes(plan_name="my-plan", edges='{"work-D": "verify-D", "verify-D": ["work-F", "fix-D"], "fix-D": "verify-D-retry", "verify-D-retry": ["work-F", "write-notes-D-failure"]}')
 
 # Phase 3b
-add_nodes_to_dag(plan_name="my-plan", nodes='{"work-E": "work-item", "verify-E": "verify", "fix-E-1": "work-item", "verify-E-retry-1": "verify", "fix-E-2": "work-item", "verify-E-retry-2": "verify"}')
-connect_nodes(plan_name="my-plan", edges='{"work-E": "verify-E", "verify-E": ["work-F", "fix-E-1"], "fix-E-1": "verify-E-retry-1", "verify-E-retry-1": ["work-F", "fix-E-2"], "fix-E-2": "verify-E-retry-2"}')
-get_compact_dag_draft(target="my-plan")
+add_nodes_to_dag(plan_name="my-plan", nodes='{"work-E": "work-item", "verify-E": "verify", "fix-E-1": "work-item", "verify-E-retry-1": "verify", "fix-E-2": "work-item", "verify-E-retry-2": "verify", "write-notes-E-failure": "write-notes"}')
+connect_nodes(plan_name="my-plan", edges='{"work-E": "verify-E", "verify-E": ["work-F", "fix-E-1"], "fix-E-1": "verify-E-retry-1", "verify-E-retry-1": ["work-F", "fix-E-2"], "fix-E-2": "verify-E-retry-2", "verify-E-retry-2": ["work-F", "write-notes-E-failure"]}')
 
 # Phase 4
-add_nodes_to_dag(plan_name="my-plan", nodes='{"work-F": "work-item"}')
-get_compact_dag_draft(target="my-plan")
+add_nodes_to_dag(plan_name="my-plan", nodes='{"work-F": "work-item", "write-notes-final-summary": "write-notes"}')
+connect_nodes(plan_name="my-plan", edges='{"work-F": "write-notes-final-summary"}')
 ```
 
 ### Stage 2: Connect phase clusters
@@ -98,17 +96,27 @@ get_compact_dag_draft(target="my-plan")
 
 ```
 # ── Stage 2: Connect phase clusters ──
-connect_nodes(plan_name="my-plan", edges='{"work-A-option-1": "work-B", "work-A-option-2": "work-B", "decision-gate-routing": ["work-D", "work-E"], "verify-D-retry": "work-F", "verify-E-retry-2": "work-F"}')
+connect_nodes(plan_name="my-plan", edges='{"work-A-option-1": "work-B", "work-A-option-2": "work-B", "decision-gate-routing": ["work-D", "work-E"]}')
 get_compact_dag_draft(target="my-plan")
 get_dag_draft_diagram(target="my-plan")
 ```
 
-### Stage 3: Connect kickoff and terminal nodes
+### Stage 3: Set entry and exit points
 
 ```
-# ── Stage 3: Connect kickoff and terminal nodes ──
+# ── Stage 3: Set entry and exit points ──
 
-connect_nodes(plan_name="my-plan", edges='{"execution-kickoff": "work-A", "decision-gate-early-check": "plan-success", "work-F": "plan-success", "verify-D-retry": "plan-fail", "verify-E-retry-2": "plan-fail"}')
+# Set the entry point — where execution begins
+set_entry_point(plan_name="my-plan", node_id="work-A")
+
+# Set success exits — leaf nodes on happy paths
+set_exit_point(plan_name="my-plan", node_id="write-notes-early-success", type="success")
+set_exit_point(plan_name="my-plan", node_id="write-notes-final-summary", type="success")
+
+# Set failure exits — leaf nodes on retry-exhaustion paths
+set_exit_point(plan_name="my-plan", node_id="write-notes-D-failure", type="failure")
+set_exit_point(plan_name="my-plan", node_id="write-notes-E-failure", type="failure")
+
 validate_dag(plan_name="my-plan")
 ```
 
@@ -117,4 +125,5 @@ validate_dag(plan_name="my-plan")
 <|think|>
 - how does the staged workflow help structure your approach to building complex DAGs?
 - using this as a guide, how would you approach building the DAG for your current plan? What are the different phases you would define and why?
+- notice how every leaf node is a write-notes node — this ensures context is captured before any exit, whether success or failure
 - plan out all stages before you start building, then follow the workflow stage by stage to build your DAG. How does this structured approach compare to how you would have built the DAG without it?
