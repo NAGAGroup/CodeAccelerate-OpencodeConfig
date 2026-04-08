@@ -11,7 +11,7 @@ In this skill, you learn how to delegate to dag-designer, a DAG construction spe
 
 - Reads the component catalogue and design guide before designing
 - Plans the full adjacency list before calling any DAG tool
-- Creates all nodes at once with `add_nodes_to_dag` and wires edges with `connect_nodes`
+- Creates all nodes at once with `add_nodes_to_dag` and wires all edges per phase in a single `connect_nodes` call
 - Validates structure throughout construction and at completion
 - Reports the completed DAG name and rationale for key design decisions
 

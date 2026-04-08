@@ -334,51 +334,116 @@ export function formatCompactDagDraft(
     orphanGroups.push(group);
   }
 
-  // Serialize metadata line
-  const metadataLine = JSON.stringify({
-    schema_version: metadata.schema_version,
-    id: metadata.id,
-    entry_node_id: metadata.entry_node_id,
-  });
+  // Build a node map for O(1) lookup
+  const nodeMap: Record<string, DagNodeV3> = {};
+  for (const n of nodes) nodeMap[n.id] = n;
 
-  // Build output sections
+  // Render a group of nodes in arrow format.
+  // Finds root(s) (nodes not referenced as children within the group),
+  // then walks each chain: a → b → [c, d] ; d → e → f
+  function renderGroup(group: DagNodeV3[]): string {
+    const groupIds = new Set(group.map((n) => n.id));
+    // Find children within this group
+    const hasParentInGroup = new Set<string>();
+    for (const n of group) {
+      for (const childId of n.children ?? []) {
+        if (groupIds.has(childId)) hasParentInGroup.add(childId);
+      }
+    }
+    const roots = group.filter((n) => !hasParentInGroup.has(n.id));
+    if (roots.length === 0 && group.length > 0) roots.push(group[0]); // cycle fallback
+
+    const rendered = new Set<string>();
+    const chains: string[] = [];
+
+    function walkChain(startId: string): string {
+      const parts: string[] = [];
+      let currentId: string | null = startId;
+      while (currentId && !rendered.has(currentId)) {
+        rendered.add(currentId);
+        const node = nodeMap[currentId];
+        if (!node) break;
+        const children = (node.children ?? []);
+        if (children.length === 0) {
+          // Terminal — just append the id
+          parts.push(`(${currentId})`);
+          currentId = null;
+        } else if (children.length === 1) {
+          // Linear — append and continue
+          parts.push(`(${currentId})`);
+          currentId = children[0];
+        } else {
+          // Branching — append with bracket notation
+          const childList = children.map((c) => c).join(", ");
+          parts.push(`(${currentId}) → [${childList}]`);
+          currentId = null;
+          // Queue sub-chains for unvisited children within this group
+          for (const childId of children) {
+            if (groupIds.has(childId) && !rendered.has(childId)) {
+              chains.push(walkChain(childId));
+            }
+          }
+        }
+      }
+      // If we stopped at a node already rendered or outside group, add it as a reference
+      if (currentId && !rendered.has(currentId)) {
+        // Outside group — show as outgoing reference
+        parts.push(`(${currentId})`);
+      }
+      return parts.join(" → ");
+    }
+
+    for (const root of roots) {
+      if (!rendered.has(root.id)) {
+        chains.push(walkChain(root.id));
+      }
+    }
+
+    return chains.filter((c) => c.length > 0).join("\n");
+  }
+
+  // Build output
   const KICKOFF_NODE = "execution-kickoff";
   const kickoffNode = connectedNodes.find((n) => n.id === KICKOFF_NODE);
   const nonKickoffConnected = connectedNodes.filter((n) => n.id !== KICKOFF_NODE);
-  const allProtected = [
-    ...(kickoffNode ? [kickoffNode] : []),
-    ...terminalNodes,
-  ];
 
   const BANNER = "// ═══════════════════════════════════════════════════";
 
-  let output = metadataLine + "\n";
-  if (allProtected.length > 0) {
-    output += `${BANNER}\n`;
-    output += `// PROTECTED NODES — wire last\n`;
-    output += `${BANNER}\n`;
-    for (const n of allProtected) {
-      output += JSON.stringify(n) + "\n";
-    }
-    output += "\n";
+  const lines: string[] = [];
+  lines.push(`plan: ${metadata.id}`);
+  lines.push("");
+
+  // Protected nodes section
+  lines.push(BANNER);
+  lines.push("// PROTECTED NODES — wire last");
+  lines.push(BANNER);
+  if (kickoffNode) {
+    lines.push(renderGroup([kickoffNode]) || `(${kickoffNode.id})`);
   }
-  output += `${BANNER}\n`;
-  output += `// WORKING DRAFT\n`;
-  output += `${BANNER}\n`;
-  for (const n of nonKickoffConnected) {
-    output += JSON.stringify(n) + "\n";
+  for (const t of terminalNodes) {
+    lines.push(`(${t.id})`);
   }
+  lines.push("");
+
+  // Working draft — connected non-kickoff nodes
+  lines.push(BANNER);
+  lines.push("// WORKING DRAFT");
+  lines.push(BANNER);
+  if (nonKickoffConnected.length > 0) {
+    lines.push(renderGroup(nonKickoffConnected));
+  }
+
+  // Orphaned groups
   for (let i = 0; i < orphanGroups.length; i++) {
-    output += `\n// ── orphaned group ${i + 1} ──\n`;
-    for (const n of orphanGroups[i]) {
-      output += JSON.stringify(n) + "\n";
-    }
+    lines.push("");
+    lines.push(`── orphaned group ${i + 1} ──`);
+    lines.push(renderGroup(orphanGroups[i]));
   }
 
   let result = `## DAG Compact Draft: ${metadata.id}\n\n`;
   if (orphanGroups.length > 0) {
     result += `${orphanGroups.length} orphaned group(s)\n\n`;
   }
-  result += `\`\`\`jsonl\n${output.trimEnd()}\n\`\`\``;
+  result += "```\n" + lines.join("\n").trimEnd() + "\n```";
   return result;
 }

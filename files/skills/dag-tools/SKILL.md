@@ -48,8 +48,9 @@ Adds a single node. Prefer `add_nodes_to_dag` for creating multiple nodes at onc
 | Parameter | Description |
 |-----------|-------------|
 | `plan_name` | Name of the session plan (required) |
-| `from` | ID of the source (parent) node (required) |
-| `to` | ID of the target (child) node — must already exist in the DAG (required) |
+| `edges` | Dictionary mapping from-nodeId to to-nodeId (or array of to-nodeIds for fan-out), e.g. `{"work-A": "verify-A", "verify-A": ["fix-A", "work-B"]}` (required) |
+
+Wires multiple directed edges in a single batch call. All referenced nodes must already exist in the DAG.
 
 ### `delete_edge`
 

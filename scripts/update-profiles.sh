@@ -2,7 +2,7 @@
 
 bun run deploy
 
-rm -rf ~/.config/opencode/plugins/ ~/.config/opencode/planning ~/.config/opencode/.ocx/
+rm -rf ~/.config/opencode/plugins/planning-enforcement.js ~/.config/opencode/planning ~/.config/opencode/.ocx/
 
 sleep 5
 

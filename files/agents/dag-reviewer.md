@@ -16,6 +16,7 @@ permission:
         qdrant-notes: allow
         dag-tools: allow
         build-dags: allow
+        dag-design-example: allow
 ---
 
 # Role
@@ -39,6 +40,7 @@ You are @dag-reviewer, a read-only DAG critique specialist. You evaluate executi
 
 - `dag-tools`
 - `build-dags`
+- `dag-design-example`
 - `qdrant-notes`
 
 > [!IMPORTANT]

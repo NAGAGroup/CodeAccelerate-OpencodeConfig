@@ -110273,53 +110273,89 @@ function formatCompactDagDraft(metadata, nodes) {
     }
     orphanGroups.push(group);
   }
-  const metadataLine = JSON.stringify({
-    schema_version: metadata.schema_version,
-    id: metadata.id,
-    entry_node_id: metadata.entry_node_id
-  });
+  const nodeMap = {};
+  for (const n of nodes)
+    nodeMap[n.id] = n;
+  function renderGroup(group) {
+    const groupIds = new Set(group.map((n) => n.id));
+    const hasParentInGroup = new Set;
+    for (const n of group) {
+      for (const childId of n.children ?? []) {
+        if (groupIds.has(childId))
+          hasParentInGroup.add(childId);
+      }
+    }
+    const roots = group.filter((n) => !hasParentInGroup.has(n.id));
+    if (roots.length === 0 && group.length > 0)
+      roots.push(group[0]);
+    const rendered = new Set;
+    const chains = [];
+    function walkChain(startId) {
+      const parts = [];
+      let currentId = startId;
+      while (currentId && !rendered.has(currentId)) {
+        rendered.add(currentId);
+        const node = nodeMap[currentId];
+        if (!node)
+          break;
+        const children = node.children ?? [];
+        if (children.length === 0) {
+          parts.push(`(${currentId})`);
+          currentId = null;
+        } else if (children.length === 1) {
+          parts.push(`(${currentId})`);
+          currentId = children[0];
+        } else {
+          const childList = children.map((c) => c).join(", ");
+          parts.push(`(${currentId}) → [${childList}]`);
+          currentId = null;
+          for (const childId of children) {
+            if (groupIds.has(childId) && !rendered.has(childId)) {
+              chains.push(walkChain(childId));
+            }
+          }
+        }
+      }
+      if (currentId && !rendered.has(currentId)) {
+        parts.push(`(${currentId})`);
+      }
+      return parts.join(" → ");
+    }
+    for (const root of roots) {
+      if (!rendered.has(root.id)) {
+        chains.push(walkChain(root.id));
+      }
+    }
+    return chains.filter((c) => c.length > 0).join(`
+`);
+  }
   const KICKOFF_NODE = "execution-kickoff";
   const kickoffNode = connectedNodes.find((n) => n.id === KICKOFF_NODE);
   const nonKickoffConnected = connectedNodes.filter((n) => n.id !== KICKOFF_NODE);
-  const allProtected = [
-    ...kickoffNode ? [kickoffNode] : [],
-    ...terminalNodes
-  ];
   const BANNER = "// ═══════════════════════════════════════════════════";
-  let output = metadataLine + `
-`;
-  if (allProtected.length > 0) {
-    output += `${BANNER}
-`;
-    output += `// PROTECTED NODES — wire last
-`;
-    output += `${BANNER}
-`;
-    for (const n of allProtected) {
-      output += JSON.stringify(n) + `
-`;
-    }
-    output += `
-`;
+  const lines = [];
+  lines.push(`plan: ${metadata.id}`);
+  lines.push("");
+  lines.push(BANNER);
+  lines.push("// PROTECTED NODES — wire last");
+  lines.push(BANNER);
+  if (kickoffNode) {
+    lines.push(renderGroup([kickoffNode]) || `(${kickoffNode.id})`);
   }
-  output += `${BANNER}
-`;
-  output += `// WORKING DRAFT
-`;
-  output += `${BANNER}
-`;
-  for (const n of nonKickoffConnected) {
-    output += JSON.stringify(n) + `
-`;
+  for (const t of terminalNodes) {
+    lines.push(`(${t.id})`);
+  }
+  lines.push("");
+  lines.push(BANNER);
+  lines.push("// WORKING DRAFT");
+  lines.push(BANNER);
+  if (nonKickoffConnected.length > 0) {
+    lines.push(renderGroup(nonKickoffConnected));
   }
   for (let i = 0;i < orphanGroups.length; i++) {
-    output += `
-// ── orphaned group ${i + 1} ──
-`;
-    for (const n of orphanGroups[i]) {
-      output += JSON.stringify(n) + `
-`;
-    }
+    lines.push("");
+    lines.push(`── orphaned group ${i + 1} ──`);
+    lines.push(renderGroup(orphanGroups[i]));
   }
   let result = `## DAG Compact Draft: ${metadata.id}
 
@@ -110329,9 +110365,8 @@ function formatCompactDagDraft(metadata, nodes) {
 
 `;
   }
-  result += `\`\`\`jsonl
-${output.trimEnd()}
-\`\`\``;
+  result += "```\n" + lines.join(`
+`).trimEnd() + "\n```";
   return result;
 }
 
@@ -110780,7 +110815,7 @@ ${missingPrompts.join(`
         }
       }),
       get_compact_dag_draft: tool({
-        description: "Display the raw JSONL content of a DAG plan file with orphaned node groups separated and labeled. Returns plan.jsonl text with connected groups shown first, then orphaned groups each prefixed with a comment. Use this during DAG design to inspect structure and spot disconnected nodes. Accepts a session plan name or a raw path to plan.jsonl.",
+        description: "Display a compact arrow-format view of a DAG with orphaned node groups separated and labeled. Shows node chains as (a) → (b) → [c, d] with branching in bracket notation. Use this during DAG design to inspect structure and spot disconnected nodes. Accepts a session plan name or a raw path to plan.jsonl.",
         args: {
           target: tool.schema.string().describe("Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.")
         },
@@ -110949,16 +110984,12 @@ ${ascii}`;
           }
           const { metadata, nodes } = readDagV3(planPath);
           if (nodes.some((n) => n.id === nodeId)) {
-            throw new Error(`Node ID "${nodeId}" already exists in DAG.
-
-${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(`Node ID "${nodeId}" already exists in DAG.`);
           }
           const nodeLibRelBase = path6.join("planning", "plan-session", "node-library");
           const specPath = path6.join(CONFIG_ROOT, nodeLibRelBase, component_name, "node-spec.json");
           if (!fs6.existsSync(specPath)) {
-            throw new Error(`Component "${component_name}" not found in node library. Use get_planning_components_catalogue() to see available types.
-
-${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(`Component "${component_name}" not found in node library. Use get_planning_components_catalogue() to see available types.`);
           }
           const spec = JSON.parse(fs6.readFileSync(specPath, "utf-8"));
           const sourcePromptPath = path6.join(CONFIG_ROOT, nodeLibRelBase, component_name, "prompt.md");
@@ -111053,9 +111084,7 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           if (errors3.length > 0) {
             throw new Error(`add_nodes_to_dag: ${errors3.length} error(s):
 ${errors3.join(`
-`)}
-
-${formatCompactDagDraft(metadata, nodes)}`);
+`)}`);
           }
           writeDagV3(planPath, metadata, nodes);
           return `## add_nodes_to_dag: Created ${created.length} node(s)
@@ -111071,52 +111100,142 @@ ${formatCompactDagDraft(metadata, nodes)}`);
         }
       }),
       connect_nodes: tool({
-        description: "Wire a directed edge from one node to another (from → to). Works whether the target node is newly created or already exists (e.g. shared terminals plan-fail and plan-success). Use this to connect any two nodes.",
+        description: "Wire directed edges in a single batch call. Accepts a JSON dictionary mapping source (parent) node IDs to target (child) node IDs. All nodes must already exist in the DAG. Use this to wire multiple edges at once.",
         args: {
           plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
-          from: tool.schema.string().describe("ID of the source (parent) node. Must already exist in the DAG."),
-          to: tool.schema.string().describe("ID of the target (child) node. Must already exist in the DAG.")
+          edges: tool.schema.string().describe(`JSON object mapping from-nodeId to to-nodeId (or to an array of to-nodeIds for fan-out). Example: '{"work-A": "decision-gate-A", "decision-gate-A": ["option-1", "option-2"], "option-1": "work-B", "option-2": "work-B"}'.`)
         },
-        async execute({ plan_name, from, to }, context) {
+        async execute({ plan_name, edges: edgesJson }, context) {
+          let edgeEntries;
+          try {
+            edgeEntries = JSON.parse(edgesJson);
+          } catch {
+            throw new Error(`connect_nodes: "edges" must be a valid JSON object mapping from-nodeId to to-nodeId (or array of to-nodeIds). Example: '{"work-A": "verify-A", "verify-A": ["fix-A", "work-B"]}'`);
+          }
+          if (typeof edgeEntries !== "object" || edgeEntries === null || Array.isArray(edgeEntries)) {
+            throw new Error(`connect_nodes: "edges" must be a JSON object (not an array or primitive). Example: '{"work-A": "verify-A", "verify-A": ["fix-A", "work-B"]}'`);
+          }
+          const edgePairs = [];
+          for (const [from, to] of Object.entries(edgeEntries)) {
+            const targets = Array.isArray(to) ? to : [to];
+            for (const target of targets) {
+              if (typeof target !== "string") {
+                throw new Error(`connect_nodes: target for "${from}" must be a string or array of strings, got ${typeof target}.`);
+              }
+              edgePairs.push({ from, to: target });
+            }
+          }
+          if (edgePairs.length === 0) {
+            throw new Error("connect_nodes: edges object is empty — nothing to wire.");
+          }
           const worktree = resolveWorktree(context);
           const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
           const { metadata, nodes } = readDagV3(planPath);
-          const parent = nodes.find((n) => n.id === from);
-          if (!parent)
-            throw new Error(`Source node "${from}" not found in DAG.
-
-${formatCompactDagDraft(metadata, nodes)}`);
-          const child = nodes.find((n) => n.id === to);
-          if (!child)
-            throw new Error(`Target node "${to}" not found in DAG. Create it first with add_nodes_to_dag.
-
-${formatCompactDagDraft(metadata, nodes)}`);
-          if (parent.children?.includes(to)) {
-            throw new Error(`"${to}" is already a child of "${from}".
-
-${formatCompactDagDraft(metadata, nodes)}`);
+          const wired = [];
+          const errors3 = [];
+          for (const { from, to } of edgePairs) {
+            const parent = nodes.find((n) => n.id === from);
+            if (!parent) {
+              errors3.push(`Source node "${from}" not found in DAG.`);
+              continue;
+            }
+            const child = nodes.find((n) => n.id === to);
+            if (!child) {
+              errors3.push(`Target node "${to}" not found in DAG. Create it first with add_nodes_to_dag.`);
+              continue;
+            }
+            if (parent.children?.includes(to)) {
+              errors3.push(`"${to}" is already a child of "${from}".`);
+              continue;
+            }
+            const descendants = new Set;
+            const queue = [to];
+            while (queue.length > 0) {
+              const id = queue.pop();
+              descendants.add(id);
+              const n = nodes.find((x) => x.id === id);
+              if (n?.children)
+                queue.push(...n.children);
+            }
+            if (descendants.has(from)) {
+              errors3.push(`Adding "${to}" as child of "${from}" would create a cycle.`);
+              continue;
+            }
+            if (!parent.children)
+              parent.children = [];
+            parent.children.push(to);
+            wired.push(`"${from}" → "${to}"`);
           }
-          const descendants = new Set;
-          const queue = [to];
-          while (queue.length > 0) {
-            const id = queue.pop();
-            descendants.add(id);
-            const n = nodes.find((x) => x.id === id);
-            if (n?.children)
-              queue.push(...n.children);
+          if (errors3.length > 0 && wired.length === 0) {
+            throw new Error(`connect_nodes: All edges failed:
+${errors3.map((e) => `- ${e}`).join(`
+`)}`);
           }
-          if (descendants.has(from)) {
-            throw new Error(`Adding "${to}" as child of "${from}" would create a cycle.
-
-${formatCompactDagDraft(metadata, nodes)}`);
+          const PROTECTED_NODES = [
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail"
+          ];
+          const TERMINAL_NODES = ["plan-success", "plan-fail"];
+          const touchesProtected = edgePairs.some(({ from, to }) => PROTECTED_NODES.includes(from) || PROTECTED_NODES.includes(to));
+          if (touchesProtected) {
+            const reachable = new Set;
+            const bfsQueue = [metadata.entry_node_id];
+            while (bfsQueue.length > 0) {
+              const id = bfsQueue.pop();
+              if (reachable.has(id))
+                continue;
+              reachable.add(id);
+              const n = nodes.find((x) => x.id === id);
+              if (n?.children)
+                bfsQueue.push(...n.children);
+            }
+            const orphanedNodes = nodes.filter((n) => !reachable.has(n.id) && !TERMINAL_NODES.includes(n.id));
+            const visited = new Set;
+            let orphanGroupCount = 0;
+            for (const orphan of orphanedNodes) {
+              if (visited.has(orphan.id))
+                continue;
+              orphanGroupCount++;
+              const groupQueue = [orphan.id];
+              while (groupQueue.length > 0) {
+                const id = groupQueue.pop();
+                if (visited.has(id))
+                  continue;
+                visited.add(id);
+                const n = nodes.find((x) => x.id === id);
+                if (n?.children)
+                  groupQueue.push(...n.children);
+              }
+            }
+            if (orphanGroupCount > 0) {
+              for (const { from, to } of edgePairs) {
+                const parent = nodes.find((n) => n.id === from);
+                if (parent?.children) {
+                  const idx = parent.children.indexOf(to);
+                  if (idx !== -1)
+                    parent.children.splice(idx, 1);
+                }
+              }
+              throw new Error(`Cannot wire protected nodes yet — ` + `${orphanGroupCount} orphaned group(s) still exist in the working draft. ` + `Finish building all phases and wire them together, only then can you wire execution-kickoff, plan-success, and plan-fail last.`);
+            }
           }
-          if (!parent.children)
-            parent.children = [];
-          parent.children.push(to);
           writeDagV3(planPath, metadata, nodes);
-          return `## connect_nodes: Wired "${from}" → "${to}"
+          let result = `## connect_nodes: Wired ${wired.length} edge(s)
 
+` + wired.map((w) => `- ${w}`).join(`
+`) + `
+`;
+          if (errors3.length > 0) {
+            result += `
+**${errors3.length} edge(s) failed:**
+` + errors3.map((e) => `- ${e}`).join(`
+`) + `
+`;
+          }
+          result += `
 ` + formatCompactDagDraft(metadata, nodes);
+          return result;
         }
       }),
       delete_node: tool({
@@ -111138,15 +111257,11 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
           const { metadata, nodes } = readDagV3(planPath);
           if (nodeId === metadata.entry_node_id) {
-            throw new Error(`Cannot delete the entry node "${nodeId}". The entry node is required.
-
-${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(`Cannot delete the entry node "${nodeId}". The entry node is required.`);
           }
           const nodeToDelete = nodes.find((n) => n.id === nodeId);
           if (!nodeToDelete)
-            throw new Error(`Node "${nodeId}" not found in DAG.
-
-${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(`Node "${nodeId}" not found in DAG.`);
           const orphanedChildren = nodeToDelete.children ?? [];
           for (const n of nodes) {
             if (n.children) {
@@ -111190,13 +111305,9 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           const { metadata, nodes } = readDagV3(planPath);
           const parent = nodes.find((n) => n.id === from);
           if (!parent)
-            throw new Error(`Source node "${from}" not found in DAG.
-
-${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(`Source node "${from}" not found in DAG.`);
           if (!parent.children?.includes(to)) {
-            throw new Error(`"${to}" is not a child of "${from}".
-
-${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(`"${to}" is not a child of "${from}".`);
           }
           parent.children = parent.children.filter((id) => id !== to);
           if (parent.children.length === 0)
@@ -111224,16 +111335,18 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           const agentsResponse = await client.app.agents();
           const agents = Array.isArray(agentsResponse.data) ? agentsResponse.data : [];
           const agent = agents.find((a) => a.name === subagent_type);
-          await client.app.log({ body: {
-            service: "task-tool",
-            level: "info",
-            message: `task tool dispatch: subagent_type=${subagent_type}`,
-            extra: {
-              agentModel: agent?.model ?? null,
-              agentKeys: Object.keys(agent ?? {}),
-              configModel: agentConfigs[subagent_type]?.model ?? null
+          await client.app.log({
+            body: {
+              service: "task-tool",
+              level: "info",
+              message: `task tool dispatch: subagent_type=${subagent_type}`,
+              extra: {
+                agentModel: agent?.model ?? null,
+                agentKeys: Object.keys(agent ?? {}),
+                configModel: agentConfigs[subagent_type]?.model ?? null
+              }
             }
-          } });
+          });
           if (!agent) {
             const available = agents.filter((a) => a.mode !== "primary").map((a) => a.name).join(", ");
             throw new Error(`Unknown agent type: "${subagent_type}" is not a valid agent type. Available: ${available || "none"}`);

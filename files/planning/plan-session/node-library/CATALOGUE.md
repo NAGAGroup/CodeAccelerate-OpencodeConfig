@@ -1,5 +1,11 @@
 # Node Library Catalogue
 
+## Structural Rules
+
+- **No loops.** Execution DAGs are acyclic — no node may appear on a path back to itself. Retries are implemented as unrolled sequences: `work → verify → fix → verify-retry → [success | fail]`. Each retry adds explicit nodes; there is no "loop back" construct.
+- Every path from `execution-kickoff` terminates at `plan-success` or `plan-fail` — no dead ends.
+- Branches are mutually exclusive paths — parallel work is unsupported.
+
 ## Automatic
 
 | Component | Description |

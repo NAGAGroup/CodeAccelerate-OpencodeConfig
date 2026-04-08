@@ -16,48 +16,7 @@ In this skill, you learn how to design and build structurally correct execution 
 
 Break the work into phases. Each phase is a self-contained cluster of nodes. Plan each cluster independently. Only after you've planned each cluster independently, consider the structure of inter-phase connections.
 
-**Phase planning example:**
-
-```
-Phase 1 — decision-gate with immediate convergence:
-  work-A → decision-gate-A
-    ├─ → work-A-option-1 → work-B (converge)
-    └─ → work-A-option-2 → work-B (converge)
-
-Phase 2 — sequential work with early success check:
-  work-B → work-C → decision-gate-early-check
-    ├─ → plan-success (early exit example — goal already satisfied) (wired up at the end, leave success paths dangling until then)
-    └─ → decision-gate-routing
-           ├─ → [Phase 3a entry]
-           └─ → [Phase 3b entry]
-
-Phase 3a — single retry, converges to Phase 4:
-  work-D → verify-D
-    ├─ (pass) → work-F (converge with Phase 3b)
-    └─ (fail) → fix-D → verify-D-retry
-                           ├─ (pass) → work-F (converge)
-                           └─ (fail) → plan-fail (wired up at the end, leave failure paths dangling until then)
-
-Phase 3b — two retries, converges to Phase 4:
-  work-E → verify-E
-    ├─ (pass) → work-F (converge with Phase 3a)
-    └─ (fail) → fix-E-1 → verify-E-retry-1
-                             ├─ (pass) → work-F (converge)
-                             └─ (fail) → fix-E-2 → verify-E-retry-2
-                                                     ├─ (pass) → work-F (converge)
-                                                     └─ (fail) → plan-fail (wired up at the end, leave failure paths dangling until then)
-
-Phase 4 — sequential to success:
-  work-F → plan-success (wired up at the end, leave success paths dangling until then)
-```
-
-**Then define the wiring between phases:**
-```
-work-B connects Phase 1 exit to Phase 2 entry (convergence node)
-decision-gate-early-check routes to plan-success (early exit, wired up at the end) or decision-gate-routing
-decision-gate-routing routes to work-D (Phase 3a) or work-E (Phase 3b)
-work-F connects Phase 3a/3b exits to Phase 4 entry (convergence node)
-```
+For a complete worked example of phase decomposition, inter-phase wiring, and the full tool call sequence, load the `dag-design-example` skill.
 
 ## Rules for a valid DAG
 
@@ -97,8 +56,8 @@ Build each phase as an independent cluster. It is expected and normal for cluste
 
 For each phase:
 1. Call `add_nodes_to_dag` to create all the nodes needed for the phase
-1. Wire the internal edges within the phase using `connect_nodes`
-4. Call `get_compact_dag_draft` to confirm the cluster is internally correct — it will appear as a grouped orphan cluster, which is expected
+2. Wire all internal edges for the phase in a single `connect_nodes` call — pass a dictionary mapping each parent to its child (or array of children for fan-out nodes like decision gates and verify nodes)
+3. Call `get_compact_dag_draft` to confirm the cluster is internally correct — it will appear as a grouped orphan cluster, which is expected
 
 > [!IMPORTANT]
 > At the end of this stage, you have have `p` orphaned sections of the DAG in `get_compact_dag_draft`, where `p` is the number of phases you designed.
@@ -107,9 +66,9 @@ For each phase:
 
 <|think|>
 Once all phase clusters are internally complete:
-- Create inter-phase connections
-- After each call to `connect_nodes`, call `get_compact_dag_draft` to visually confirm the wiring is correct and that every path from kickoff leads to success or fail with no dead ends
-- After all inter-phase wiring is complete call `get_dag_draft_diagram` to see the full visual structure. Your wired up phase clusters should be a single, orphaned block, alongside the kickoff node and orphaned terminal nodes
+1. Wire all inter-phase connections in a single `connect_nodes` call
+2. Call `get_compact_dag_draft` to visually confirm the wiring is correct and that all phase clusters are connected together
+3. Call `get_dag_draft_diagram` to see the full visual structure. Your wired up phase clusters should be a single, orphaned block, alongside the kickoff node and orphaned terminal nodes
 
 ### Stage 3: Connect kickoff and terminal nodes
 
@@ -127,7 +86,7 @@ Once all phase clusters are internally complete:
 1. Call `get_compact_dag_draft` to read the grouped cluster representation and `get_dag_draft_diagram` to view the visual structure
 2. Write the target adjacency list — what the DAG should look like after revision
 3. Identify the diff: nodes to add, edges to add, edges to remove, nodes to remove
-4. Execute: `add_nodes_to_dag` for new nodes, `connect_nodes` for new edges, `delete_edge` to remove an edge, `delete_node` to remove a node — after any `delete_node`, immediately rewire its orphaned children before continuing
+4. Execute: `add_nodes_to_dag` for new nodes, `connect_nodes` for new edges (batch all new edges in one call), `delete_edge` to remove an edge, `delete_node` to remove a node — after any `delete_node`, immediately rewire its orphaned children before continuing
 5. Call `get_dag_draft_diagram` after each structural change, `validate_dag` when done
 
 ## How to think through this skill
@@ -135,6 +94,7 @@ Once all phase clusters are internally complete:
 <|think|>
 - Am I following the constraints on building a DAG
 - Have I called `get_planning_components_catalogue` and am I working from the actual available components, not memory?
+- Have I loaded the `dag-design-example` skill and studied how the staged workflow applies to a concrete example?
 - Have I decomposed the goal into distinct phases, with each phase having a clear entry, exit, and internal verify-retry structure, and kept phase clusters independent until each is internally correct?
 - Does every `decision-gate` have exactly 2 children, and does every `verify` node have exactly 2 children (pass and fail), with a bounded retry path that converges correctly?
 - Am I using `get_compact_dag_draft` during building (Stages 1-2) and `get_dag_draft_diagram` during wiring and verification (Stage 3)?

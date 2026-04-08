@@ -523,7 +523,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       get_compact_dag_draft: tool({
         description:
-          "Display the raw JSONL content of a DAG plan file with orphaned node groups separated and labeled. Returns plan.jsonl text with connected groups shown first, then orphaned groups each prefixed with a comment. Use this during DAG design to inspect structure and spot disconnected nodes. Accepts a session plan name or a raw path to plan.jsonl.",
+          "Display a compact arrow-format view of a DAG with orphaned node groups separated and labeled. Shows node chains as (a) → (b) → [c, d] with branching in bracket notation. Use this during DAG design to inspect structure and spot disconnected nodes. Accepts a session plan name or a raw path to plan.jsonl.",
         args: {
           target: tool.schema
             .string()
@@ -793,7 +793,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           if (nodes.some((n) => n.id === nodeId)) {
             throw new Error(
-              `Node ID "${nodeId}" already exists in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`,
+              `Node ID "${nodeId}" already exists in DAG.`,
             );
           }
 
@@ -810,7 +810,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           );
           if (!fs.existsSync(specPath)) {
             throw new Error(
-              `Component "${component_name}" not found in node library. Use get_planning_components_catalogue() to see available types.\n\n${formatCompactDagDraft(metadata, nodes)}`,
+              `Component "${component_name}" not found in node library. Use get_planning_components_catalogue() to see available types.`,
             );
           }
           const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
@@ -990,7 +990,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           if (errors.length > 0) {
             throw new Error(
-              `add_nodes_to_dag: ${errors.length} error(s):\n${errors.join("\n")}\n\n${formatCompactDagDraft(metadata, nodes)}`,
+              `add_nodes_to_dag: ${errors.length} error(s):\n${errors.join("\n")}`,
             );
           }
 
@@ -1009,25 +1009,58 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       connect_nodes: tool({
         description:
-          "Wire a directed edge from one node to another (from → to). Works whether the target node is newly created or already exists (e.g. shared terminals plan-fail and plan-success). Use this to connect any two nodes.",
+          "Wire directed edges in a single batch call. Accepts a JSON dictionary mapping source (parent) node IDs to target (child) node IDs. All nodes must already exist in the DAG. Use this to wire multiple edges at once.",
         args: {
           plan_name: tool.schema
             .string()
             .describe(
               "Name of the session plan (directory under .opencode/session-plans/).",
             ),
-          from: tool.schema
+          edges: tool.schema
             .string()
             .describe(
-              "ID of the source (parent) node. Must already exist in the DAG.",
-            ),
-          to: tool.schema
-            .string()
-            .describe(
-              "ID of the target (child) node. Must already exist in the DAG.",
+              'JSON object mapping from-nodeId to to-nodeId (or to an array of to-nodeIds for fan-out). Example: \'{"work-A": "decision-gate-A", "decision-gate-A": ["option-1", "option-2"], "option-1": "work-B", "option-2": "work-B"}\'.',
             ),
         },
-        async execute({ plan_name, from, to }, context) {
+        async execute({ plan_name, edges: edgesJson }, context) {
+          let edgeEntries: Record<string, string | string[]>;
+          try {
+            edgeEntries = JSON.parse(edgesJson);
+          } catch {
+            throw new Error(
+              'connect_nodes: "edges" must be a valid JSON object mapping from-nodeId to to-nodeId (or array of to-nodeIds). Example: \'{"work-A": "verify-A", "verify-A": ["fix-A", "work-B"]}\'',
+            );
+          }
+          if (
+            typeof edgeEntries !== "object" ||
+            edgeEntries === null ||
+            Array.isArray(edgeEntries)
+          ) {
+            throw new Error(
+              'connect_nodes: "edges" must be a JSON object (not an array or primitive). Example: \'{"work-A": "verify-A", "verify-A": ["fix-A", "work-B"]}\'',
+            );
+          }
+
+          // Normalize all values to arrays of targets
+          const edgePairs: Array<{ from: string; to: string }> = [];
+          for (const [from, to] of Object.entries(edgeEntries)) {
+            const targets = Array.isArray(to) ? to : [to];
+            for (const target of targets) {
+              if (typeof target !== "string") {
+                throw new Error(
+                  `connect_nodes: target for "${from}" must be a string or array of strings, got ${typeof target}.`,
+                );
+              }
+              edgePairs.push({ from, to: target });
+            }
+          }
+
+          if (edgePairs.length === 0) {
+            throw new Error(
+              "connect_nodes: edges object is empty — nothing to wire.",
+            );
+          }
+
           const worktree = resolveWorktree(context);
           const planPath = path.join(
             worktree,
@@ -1038,47 +1071,128 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           );
           const { metadata, nodes } = readDagV3(planPath);
 
-          const parent = nodes.find((n) => n.id === from);
-          if (!parent)
-            throw new Error(
-              `Source node "${from}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`,
-            );
+          const wired: string[] = [];
+          const errors: string[] = [];
 
-          const child = nodes.find((n) => n.id === to);
-          if (!child)
-            throw new Error(
-              `Target node "${to}" not found in DAG. Create it first with add_nodes_to_dag.\n\n${formatCompactDagDraft(metadata, nodes)}`,
-            );
+          for (const { from, to } of edgePairs) {
+            const parent = nodes.find((n) => n.id === from);
+            if (!parent) {
+              errors.push(`Source node "${from}" not found in DAG.`);
+              continue;
+            }
 
-          if (parent.children?.includes(to)) {
+            const child = nodes.find((n) => n.id === to);
+            if (!child) {
+              errors.push(
+                `Target node "${to}" not found in DAG. Create it first with add_nodes_to_dag.`,
+              );
+              continue;
+            }
+
+            if (parent.children?.includes(to)) {
+              errors.push(`"${to}" is already a child of "${from}".`);
+              continue;
+            }
+
+            // Cycle detection: from must not be a descendant of to
+            const descendants = new Set<string>();
+            const queue = [to];
+            while (queue.length > 0) {
+              const id = queue.pop()!;
+              descendants.add(id);
+              const n = nodes.find((x) => x.id === id);
+              if (n?.children) queue.push(...n.children);
+            }
+            if (descendants.has(from)) {
+              errors.push(
+                `Adding "${to}" as child of "${from}" would create a cycle.`,
+              );
+              continue;
+            }
+
+            if (!parent.children) parent.children = [];
+            parent.children.push(to);
+            wired.push(`"${from}" → "${to}"`);
+          }
+
+          if (errors.length > 0 && wired.length === 0) {
             throw new Error(
-              `"${to}" is already a child of "${from}".\n\n${formatCompactDagDraft(metadata, nodes)}`,
+              `connect_nodes: All edges failed:\n${errors.map((e) => `- ${e}`).join("\n")}`,
             );
           }
 
-          // Cycle detection: from must not be a descendant of to
-          const descendants = new Set<string>();
-          const queue = [to];
-          while (queue.length > 0) {
-            const id = queue.pop()!;
-            descendants.add(id);
-            const n = nodes.find((x) => x.id === id);
-            if (n?.children) queue.push(...n.children);
-          }
-          if (descendants.has(from)) {
-            throw new Error(
-              `Adding "${to}" as child of "${from}" would create a cycle.\n\n${formatCompactDagDraft(metadata, nodes)}`,
+          // Guard: protected nodes (kickoff + terminals) cannot be wired while orphaned groups remain.
+          // Check this AFTER all edges are tentatively added but BEFORE writing.
+          const PROTECTED_NODES = [
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail",
+          ];
+          const TERMINAL_NODES = ["plan-success", "plan-fail"];
+          const touchesProtected = edgePairs.some(
+            ({ from, to }) =>
+              PROTECTED_NODES.includes(from) || PROTECTED_NODES.includes(to),
+          );
+          if (touchesProtected) {
+            // Count orphaned groups (excluding terminal nodes themselves)
+            const reachable = new Set<string>();
+            const bfsQueue = [metadata.entry_node_id];
+            while (bfsQueue.length > 0) {
+              const id = bfsQueue.pop()!;
+              if (reachable.has(id)) continue;
+              reachable.add(id);
+              const n = nodes.find((x) => x.id === id);
+              if (n?.children) bfsQueue.push(...n.children);
+            }
+            const orphanedNodes = nodes.filter(
+              (n) => !reachable.has(n.id) && !TERMINAL_NODES.includes(n.id),
             );
+            // Group orphaned nodes into connected components
+            const visited = new Set<string>();
+            let orphanGroupCount = 0;
+            for (const orphan of orphanedNodes) {
+              if (visited.has(orphan.id)) continue;
+              orphanGroupCount++;
+              const groupQueue = [orphan.id];
+              while (groupQueue.length > 0) {
+                const id = groupQueue.pop()!;
+                if (visited.has(id)) continue;
+                visited.add(id);
+                const n = nodes.find((x) => x.id === id);
+                if (n?.children) groupQueue.push(...n.children);
+              }
+            }
+            if (orphanGroupCount > 0) {
+              // Roll back the wired edges
+              for (const { from, to } of edgePairs) {
+                const parent = nodes.find((n) => n.id === from);
+                if (parent?.children) {
+                  const idx = parent.children.indexOf(to);
+                  if (idx !== -1) parent.children.splice(idx, 1);
+                }
+              }
+              throw new Error(
+                `Cannot wire protected nodes yet — ` +
+                  `${orphanGroupCount} orphaned group(s) still exist in the working draft. ` +
+                  `Finish building all phases and wire them together, only then can you wire execution-kickoff, plan-success, and plan-fail last.`,
+              );
+            }
           }
-
-          if (!parent.children) parent.children = [];
-          parent.children.push(to);
 
           writeDagV3(planPath, metadata, nodes);
-          return (
-            `## connect_nodes: Wired "${from}" → "${to}"\n\n` +
-            formatCompactDagDraft(metadata, nodes)
-          );
+
+          let result =
+            `## connect_nodes: Wired ${wired.length} edge(s)\n\n` +
+            wired.map((w) => `- ${w}`).join("\n") +
+            "\n";
+          if (errors.length > 0) {
+            result +=
+              `\n**${errors.length} edge(s) failed:**\n` +
+              errors.map((e) => `- ${e}`).join("\n") +
+              "\n";
+          }
+          result += "\n" + formatCompactDagDraft(metadata, nodes);
+          return result;
         },
       }),
 
@@ -1121,14 +1235,14 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           if (nodeId === metadata.entry_node_id) {
             throw new Error(
-              `Cannot delete the entry node "${nodeId}". The entry node is required.\n\n${formatCompactDagDraft(metadata, nodes)}`,
+              `Cannot delete the entry node "${nodeId}". The entry node is required.`,
             );
           }
 
           const nodeToDelete = nodes.find((n) => n.id === nodeId);
           if (!nodeToDelete)
             throw new Error(
-              `Node "${nodeId}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`,
+              `Node "${nodeId}" not found in DAG.`,
             );
 
           const orphanedChildren = nodeToDelete.children ?? [];
@@ -1195,12 +1309,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const parent = nodes.find((n) => n.id === from);
           if (!parent)
             throw new Error(
-              `Source node "${from}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`,
+              `Source node "${from}" not found in DAG.`,
             );
 
           if (!parent.children?.includes(to)) {
             throw new Error(
-              `"${to}" is not a child of "${from}".\n\n${formatCompactDagDraft(metadata, nodes)}`,
+              `"${to}" is not a child of "${from}".`,
             );
           }
 
@@ -1261,16 +1375,18 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const agent = agents.find((a: any) => a.name === subagent_type);
 
           // DEBUG: log resolved agent info
-          await client.app.log({ body: {
-            service: "task-tool",
-            level: "info",
-            message: `task tool dispatch: subagent_type=${subagent_type}`,
-            extra: {
-              agentModel: agent?.model ?? null,
-              agentKeys: Object.keys(agent ?? {}),
-              configModel: agentConfigs[subagent_type]?.model ?? null,
+          await client.app.log({
+            body: {
+              service: "task-tool",
+              level: "info",
+              message: `task tool dispatch: subagent_type=${subagent_type}`,
+              extra: {
+                agentModel: agent?.model ?? null,
+                agentKeys: Object.keys(agent ?? {}),
+                configModel: agentConfigs[subagent_type]?.model ?? null,
+              },
             },
-          }});
+          });
           if (!agent) {
             const available = agents
               .filter((a: any) => a.mode !== "primary")
@@ -1283,7 +1399,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           // Use the resolved model from Agent.list() — populated when the profile has a model override
           // for this agent. If absent, don't pass a model and let OpenCode resolve it.
-          const model: { providerID: string; modelID: string } | undefined = agent.model ?? undefined;
+          const model: { providerID: string; modelID: string } | undefined =
+            agent.model ?? undefined;
 
           // Request delegation permission — triggers the TUI delegation UI
           await context.ask({
@@ -1491,17 +1608,17 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         const queue = pendingInjections.get(sessionID);
         if (!queue || queue.length === 0) return;
         pendingInjections.delete(sessionID);
-         for (const text of queue) {
-           try {
-             await client.session.prompt({
-               path: { id: sessionID },
-               body: {
-                 parts: [{ type: "text", text }],
-               },
-             });
-           } catch {
-             // Best-effort — if the session is gone, silently drop
-           }
+        for (const text of queue) {
+          try {
+            await client.session.prompt({
+              path: { id: sessionID },
+              body: {
+                parts: [{ type: "text", text }],
+              },
+            });
+          } catch {
+            // Best-effort — if the session is gone, silently drop
+          }
         }
       }
     },
