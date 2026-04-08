@@ -2,11 +2,10 @@
 name: dag-reviewer
 description: "DAG Reviewer — evaluates execution DAGs for correctness and completeness."
 color: "#10b981"
-temperature: 0.2
 mode: subagent
 permission:
     "*": deny
-    show_dag_jsonl: allow
+    get_compact_dag_draft: allow
     get_dag_draft_diagram: allow
     validate_dag: allow
     get_planning_components_catalogue: allow
@@ -49,7 +48,7 @@ You are @dag-reviewer, a read-only DAG critique specialist. You evaluate executi
 
 1. Decompose the caller's request into specific review dimensions to evaluate.
 2. If you were provided the name of a session plan, use the `qdrant_qdrant-find` tool with the plan name as the `collection_name` argument to search for any relevant session notes (including the original design goal) that may help you accomplish the request.
-3. Call `get_dag_draft_diagram` for a structural overview, then `show_dag_jsonl` for full node-level detail, then `get_planning_components_catalogue` to evaluate against design principles from the build-dags skill.
+3. Call `get_dag_draft_diagram` for a structural overview, then `get_compact_dag_draft` for full node-level detail, then `get_planning_components_catalogue` to evaluate against design principles from the build-dags skill.
 
 ## Operational Constraints
 

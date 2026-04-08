@@ -22,7 +22,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
   // 500ms delay before prompt injection to prevent llamacpp hangs
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-  // Shared prompt injection helper — always waits before injecting
+  // Shared prompt injection helper — always waits before injecting.
+  // Use this when the injection must complete before the caller continues
+  // (e.g., present_dag_diagram where the return value references the injection).
   const injectPrompt = async (sessionID: string, text: string) => {
     await sleep(500);
     await client.session.prompt({
@@ -32,6 +34,26 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         parts: [{ type: "text", text }]
       }
     });
+  };
+
+  // Fire-and-forget prompt injection with a longer delay.
+  // Use this when the tool returns a result AND injects a prompt — the injection
+  // must arrive AFTER the tool result has been fully processed by llamacpp,
+  // otherwise the two messages collide and cause a hang.
+  const deferredInjectPrompt = (sessionID: string, text: string) => {
+    setTimeout(async () => {
+      try {
+        await client.session.prompt({
+          path: { id: sessionID },
+          body: {
+            noReply: true,
+            parts: [{ type: "text", text }]
+          }
+        });
+      } catch {
+        // Best-effort — if the session is gone, silently drop
+      }
+    }, 1500);
   };
 
   // Per-turn cache: populated by chat.params (has sessionID), consumed by
@@ -85,13 +107,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             const sessionPath = `.opencode/session-plans/${plan_name}`;
             const promptText = readPrompt(entryNode.prompt, worktree, sessionPath, { planning_session_id: plan_name });
             
-            await injectPrompt(context.sessionID, promptText);
-
             if (entryNode.enforcement.length === 0) {
               const hasNext = entryNode.children && entryNode.children.length > 0;
               state.status = hasNext ? "waiting_step" : "complete";
               writeState(statePath, state);
             }
+
+            deferredInjectPrompt(context.sessionID, promptText);
 
             const result = `DAG "${metadata.id}" activated. Your next task, "${metadata.entry_node_id}", will be presented in the following message.`;
             return result;
@@ -147,8 +169,6 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             const sessionPath = `.opencode/session-plans/${plan_name}`;
             const promptText = readPrompt(entryNode.prompt, worktree, sessionPath);
             
-            await injectPrompt(context.sessionID, promptText);
-
             if (entryNode.enforcement.length === 0) {
               if (entryNode.children && entryNode.children.length > 0) {
                 state.status = "waiting_step";
@@ -159,6 +179,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                 writeState(statePath, state);
               }
             }
+
+            deferredInjectPrompt(context.sessionID, promptText);
 
             const result = `DAG "${metadata.id}" activated. Your next task, "${metadata.entry_node_id}", will be presented in the following message.`;
             return result;
@@ -244,8 +266,6 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             planning_session_id: state.planning_session_id,
           });
           
-          await injectPrompt(context.sessionID, promptText);
-
            if (nextNode.enforcement.length === 0) {
              const nextChildren = nextNode.children ?? [];
              if (nextChildren.length > 0) {
@@ -256,6 +276,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                writeState(statePath, state);
              }
            }
+
+          deferredInjectPrompt(context.sessionID, promptText);
 
           // Build completion message - read DAG to get entry node
           const { metadata } = readDagV3(state.plan_path);
@@ -422,8 +444,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           },
         }),
 
-    show_dag_jsonl: tool({
-      description: "Display the raw JSONL content of a DAG plan file. Returns the plan.jsonl text so agents can read node IDs, enforcement arrays, and structure. Accepts a session plan name or a raw path to plan.jsonl. Throws on file-not-found or parse errors.",
+    get_compact_dag_draft: tool({
+      description: "Display the raw JSONL content of a DAG plan file with orphaned node groups separated and labeled. Returns plan.jsonl text with connected groups shown first, then orphaned groups each prefixed with a comment. Use this during DAG design to inspect structure and spot disconnected nodes. Accepts a session plan name or a raw path to plan.jsonl.",
       args: {
         target: tool.schema.string().describe(
           "Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl."
@@ -432,8 +454,65 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       async execute({ target }, context) {
         const worktree = resolveWorktree(context);
         const planPath = resolveDagPath(target, worktree);
-        const content = fs.readFileSync(planPath, "utf-8");
-        return `## DAG JSONL: ${target}\n\n\`\`\`jsonl\n${content}\n\`\`\``;
+        const { metadata, nodes } = readDagV3(planPath);
+
+        // Find all nodes reachable from the entry node
+        const reachable = new Set<string>();
+        const queue = [metadata.entry_node_id];
+        while (queue.length > 0) {
+          const id = queue.pop()!;
+          if (reachable.has(id)) continue;
+          reachable.add(id);
+          const n = nodes.find((x) => x.id === id);
+          if (n?.children) queue.push(...n.children);
+        }
+
+        // Separate reachable and orphaned nodes
+        const connectedNodes = nodes.filter((n) => reachable.has(n.id));
+        const orphanedNodes = nodes.filter((n) => !reachable.has(n.id));
+
+        // Group orphaned nodes into connected components
+        const orphanGroups: DagNodeV3[][] = [];
+        const visited = new Set<string>();
+        for (const orphan of orphanedNodes) {
+          if (visited.has(orphan.id)) continue;
+          // BFS within orphaned set
+          const group: DagNodeV3[] = [];
+          const groupQueue = [orphan.id];
+          while (groupQueue.length > 0) {
+            const id = groupQueue.pop()!;
+            if (visited.has(id)) continue;
+            visited.add(id);
+            const n = nodes.find((x) => x.id === id);
+            if (n) {
+              group.push(n);
+              if (n.children) groupQueue.push(...n.children);
+            }
+          }
+          orphanGroups.push(group);
+        }
+
+        // Serialize metadata line
+        const metadataLine = JSON.stringify({ schema_version: metadata.schema_version, id: metadata.id, entry_node_id: metadata.entry_node_id });
+
+        // Build output sections
+        let output = metadataLine + "\n";
+        for (const n of connectedNodes) {
+          output += JSON.stringify(n) + "\n";
+        }
+        for (let i = 0; i < orphanGroups.length; i++) {
+          output += `// orphaned group ${i + 1}\n`;
+          for (const n of orphanGroups[i]) {
+            output += JSON.stringify(n) + "\n";
+          }
+        }
+
+        let result = `## DAG Compact Draft: ${metadata.id}\n\n`;
+        if (orphanGroups.length > 0) {
+          result += `⚠️ **${orphanGroups.length} orphaned group(s) detected** — these nodes are not reachable from the entry node.\n\n`;
+        }
+        result += `\`\`\`jsonl\n${output.trimEnd()}\n\`\`\``;
+        return result;
       },
     }),
 
@@ -521,7 +600,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
     }),
 
      init_dag: tool({
-        description: "Initialize a new project DAG plan.jsonl (JSONL format, schema_version 3.0). Creates the session plan directory and plan.jsonl with the hardcoded execution-kickoff entry node.",
+        description: "Initialize a new project DAG plan.jsonl (JSONL format, schema_version 3.0). Creates the session plan directory and plan.jsonl with the hardcoded execution-kickoff entry node, plus auto-added plan-success and plan-fail terminal nodes.",
         args: {
           plan_name: tool.schema.string().describe(
             "Name for the session plan (e.g., 'my-feature-delivery'). Used as the directory name under .opencode/session-plans/ and as the DAG id. Lowercase, hyphens only, no spaces."
@@ -533,39 +612,47 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const planPath = path.join(planDir, "plan.jsonl");
 
           if (fs.existsSync(planPath)) {
-            throw new Error(`plan.jsonl already exists at ${planPath}. Use add_node to extend the existing DAG, or delete the file manually to start fresh.`);
+            throw new Error(`plan.jsonl already exists at ${planPath}. Use add_nodes_to_dag to extend the existing DAG, or delete the file manually to start fresh.`);
           }
 
           const nodeLibRelBase = path.join("planning", "plan-session", "node-library");
-          const kickoffSpecPath = path.join(CONFIG_ROOT, nodeLibRelBase, "execution-kickoff", "node-spec.json");
-          if (!fs.existsSync(kickoffSpecPath)) {
-            throw new Error(`execution-kickoff node-spec.json not found at ${kickoffSpecPath}.`);
-          }
-          const kickoffSpec = JSON.parse(fs.readFileSync(kickoffSpecPath, "utf-8"));
-          const sourcePromptPath = path.join(CONFIG_ROOT, nodeLibRelBase, "execution-kickoff", "prompt.md");
-
           const sessionPromptsDir = path.join(planDir, "prompts");
           fs.mkdirSync(sessionPromptsDir, { recursive: true });
-          const destPromptPath = path.join(sessionPromptsDir, "execution-kickoff.md");
-          fs.copyFileSync(sourcePromptPath, destPromptPath);
 
-          const promptPath = path.join(".opencode", "session-plans", plan_name, "prompts", "execution-kickoff.md");
+          // Helper to load and copy a terminal node's spec + prompt
+          const loadTerminalNode = (componentName: string): DagNodeV3 => {
+            const specPath = path.join(CONFIG_ROOT, nodeLibRelBase, componentName, "node-spec.json");
+            if (!fs.existsSync(specPath)) {
+              throw new Error(`${componentName} node-spec.json not found at ${specPath}.`);
+            }
+            const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
+            const sourcePromptPath = path.join(CONFIG_ROOT, nodeLibRelBase, componentName, "prompt.md");
+            const destPromptPath = path.join(sessionPromptsDir, `${componentName}.md`);
+            fs.copyFileSync(sourcePromptPath, destPromptPath);
+            const promptPath = path.join(".opencode", "session-plans", plan_name, "prompts", `${componentName}.md`);
+            return { id: componentName, prompt: promptPath, enforcement: spec.enforcement };
+          };
+
+          const kickoffNode = loadTerminalNode("execution-kickoff");
+          const successNode = loadTerminalNode("plan-success");
+          const failNode = loadTerminalNode("plan-fail");
+
           const metadata: DagMetadataV3 = { schema_version: "3.0", id: plan_name, entry_node_id: "execution-kickoff" };
-          const entryNode: DagNodeV3 = { id: "execution-kickoff", prompt: promptPath, enforcement: kickoffSpec.enforcement };
-
-          writeDagV3(planPath, metadata, [entryNode]);
+          writeDagV3(planPath, metadata, [kickoffNode, successNode, failNode]);
 
           return (
             `## init_dag: Created DAG "${plan_name}"\n\n` +
             `Plan directory: ${planDir}\n` +
             `Plan file: ${planPath}\n` +
-            `Entry node: execution-kickoff`
+            `Entry node: execution-kickoff\n` +
+            `Terminal nodes auto-added: plan-success, plan-fail\n\n` +
+            `Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.`
           );
         },
       }),
 
      add_node: tool({
-         description: "Create a new node in the DAG without wiring it. Looks up the component type in the node library for its fixed enforcement array and prompt. Use add_child to wire it to a parent after creation.",
+         description: "Create a new node in the DAG without wiring it. Looks up the component type in the node library for its fixed enforcement array and prompt. Use connect_nodes to wire it to a parent after creation.",
          args: {
           plan_name: tool.schema.string().describe(
             "Name of the session plan (directory under .opencode/session-plans/)."
@@ -574,10 +661,18 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             "ID for the new node. Must be unique across all existing node IDs."
           ),
           component_name: tool.schema.string().describe(
-            "Component type name from the node library (e.g., 'work-item', 'research', 'plan-fail'). Use get_planning_components_catalogue() to see available types."
+            "Component type name from the node library (e.g., 'work-item', 'research'). Use get_planning_components_catalogue() to see available types. The terminal nodes 'execution-kickoff', 'plan-success', and 'plan-fail' cannot be added manually — they are auto-managed by init_dag."
           ),
         },
         async execute({ plan_name, nodeId, component_name }, context) {
+          const PROTECTED_NODES = ["execution-kickoff", "plan-success", "plan-fail"];
+          if (PROTECTED_NODES.includes(component_name)) {
+            throw new Error(`"${component_name}" is a protected terminal node and cannot be added manually. It is auto-managed by init_dag.`);
+          }
+          if (PROTECTED_NODES.includes(nodeId)) {
+            throw new Error(`"${nodeId}" is a reserved node ID for a protected terminal node. Choose a different node ID.`);
+          }
+
           const worktree = resolveWorktree(context);
           const planPath = path.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
 
@@ -617,62 +712,143 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             `Enforcement items: ${spec.enforcement.length}\n` +
             `Prompt: ${destPromptPath}\n\n` +
             `**DAG now contains ${nodes.length} nodes.**\n\n` +
-            `Use add_child to wire this node to a parent.`
+            `Use connect_nodes to wire this node to a parent.`
           );
         },
       }),
 
-     add_child: tool({
-       description: "Wire an edge from parentId to childId. Works whether childId is newly created or already exists elsewhere in the DAG (shared terminals like plan-fail and plan-success). Use this to connect any two nodes.",
+     add_nodes_to_dag: tool({
+         description: "Add multiple nodes to a DAG in a single batch call. Accepts a dictionary of nodeId→componentType pairs. All nodes are created without edges — use connect_nodes to wire them. The terminal nodes 'execution-kickoff', 'plan-success', and 'plan-fail' are protected and cannot be added manually.",
+         args: {
+          plan_name: tool.schema.string().describe(
+            "Name of the session plan (directory under .opencode/session-plans/)."
+          ),
+          nodes: tool.schema.string().describe(
+            "JSON object mapping nodeId to component_name. Example: '{\"investigate\": \"research\", \"implement\": \"work-item\", \"verify\": \"verify\"}'. Use get_planning_components_catalogue() to see available component types."
+          ),
+        },
+        async execute({ plan_name, nodes: nodesJson }, context) {
+          let nodeEntries: Record<string, string>;
+          try {
+            nodeEntries = JSON.parse(nodesJson);
+          } catch {
+            throw new Error('add_nodes_to_dag: "nodes" must be a valid JSON object mapping nodeId to component_name. Example: \'{"investigate": "research", "implement": "work-item"}\'');
+          }
+          if (typeof nodeEntries !== "object" || nodeEntries === null || Array.isArray(nodeEntries)) {
+            throw new Error('add_nodes_to_dag: "nodes" must be a JSON object (not an array or primitive). Example: \'{"investigate": "research", "implement": "work-item"}\'');
+          }
+          const PROTECTED_NODES = ["execution-kickoff", "plan-success", "plan-fail"];
+
+          // Validate no protected nodes in the batch
+          for (const [nodeId, componentName] of Object.entries(nodeEntries)) {
+            if (PROTECTED_NODES.includes(componentName)) {
+              throw new Error(`"${componentName}" is a protected terminal node and cannot be added manually. It is auto-managed by init_dag.`);
+            }
+            if (PROTECTED_NODES.includes(nodeId)) {
+              throw new Error(`"${nodeId}" is a reserved node ID for a protected terminal node. Choose a different node ID.`);
+            }
+          }
+
+          const worktree = resolveWorktree(context);
+          const planPath = path.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
+
+          if (!fs.existsSync(planPath)) {
+            throw new Error(`plan.jsonl not found for "${plan_name}". Initialize with init_dag first.`);
+          }
+
+          const { metadata, nodes } = readDagV3(planPath);
+          const nodeLibRelBase = path.join("planning", "plan-session", "node-library");
+          const sessionPromptsDir = path.join(worktree, ".opencode", "session-plans", plan_name, "prompts");
+          fs.mkdirSync(sessionPromptsDir, { recursive: true });
+
+          const created: string[] = [];
+          const errors: string[] = [];
+
+          for (const [nodeId, componentName] of Object.entries(nodeEntries)) {
+            if (nodes.some((n) => n.id === nodeId)) {
+              errors.push(`Node ID "${nodeId}" already exists in DAG.`);
+              continue;
+            }
+            const specPath = path.join(CONFIG_ROOT, nodeLibRelBase, componentName, "node-spec.json");
+            if (!fs.existsSync(specPath)) {
+              errors.push(`Component "${componentName}" not found in node library (node: "${nodeId}").`);
+              continue;
+            }
+            const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
+            const sourcePromptPath = path.join(CONFIG_ROOT, nodeLibRelBase, componentName, "prompt.md");
+            const destPromptPath = path.join(sessionPromptsDir, `${nodeId}.md`);
+            fs.copyFileSync(sourcePromptPath, destPromptPath);
+            const promptPath = path.join(".opencode", "session-plans", plan_name, "prompts", `${nodeId}.md`);
+            nodes.push({ id: nodeId, prompt: promptPath, enforcement: spec.enforcement });
+            created.push(`${nodeId} (${componentName})`);
+          }
+
+          if (errors.length > 0) {
+            throw new Error(`add_nodes_to_dag: ${errors.length} error(s):\n${errors.join("\n")}`);
+          }
+
+          writeDagV3(planPath, metadata, nodes);
+
+          return (
+            `## add_nodes_to_dag: Created ${created.length} node(s)\n\n` +
+            created.map((c) => `- ${c}`).join("\n") + "\n\n" +
+            `**DAG now contains ${nodes.length} nodes.**\n\n` +
+            `Use connect_nodes to wire these nodes into the DAG.`
+          );
+        },
+      }),
+
+     connect_nodes: tool({
+       description: "Wire a directed edge from one node to another (from → to). Works whether the target node is newly created or already exists (e.g. shared terminals plan-fail and plan-success). Use this to connect any two nodes.",
        args: {
          plan_name: tool.schema.string().describe(
            "Name of the session plan (directory under .opencode/session-plans/)."
          ),
-         parentId: tool.schema.string().describe(
-           "ID of the parent node. Must already exist in the DAG."
+         from: tool.schema.string().describe(
+           "ID of the source (parent) node. Must already exist in the DAG."
          ),
-         childId: tool.schema.string().describe(
-           "ID of the child node. Must already exist in the DAG."
+         to: tool.schema.string().describe(
+           "ID of the target (child) node. Must already exist in the DAG."
          ),
        },
-       async execute({ plan_name, parentId, childId }, context) {
+       async execute({ plan_name, from, to }, context) {
          const worktree = resolveWorktree(context);
          const planPath = path.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
          const { metadata, nodes } = readDagV3(planPath);
 
-         const parent = nodes.find((n) => n.id === parentId);
-         if (!parent) throw new Error(`Parent node "${parentId}" not found in DAG.`);
+         const parent = nodes.find((n) => n.id === from);
+         if (!parent) throw new Error(`Source node "${from}" not found in DAG.`);
 
-         const child = nodes.find((n) => n.id === childId);
-         if (!child) throw new Error(`Child node "${childId}" not found in DAG. Create it first with add_node.`);
+         const child = nodes.find((n) => n.id === to);
+         if (!child) throw new Error(`Target node "${to}" not found in DAG. Create it first with add_nodes_to_dag.`);
 
-         if (parent.children?.includes(childId)) {
-           throw new Error(`"${childId}" is already a child of "${parentId}".`);
+         if (parent.children?.includes(to)) {
+           throw new Error(`"${to}" is already a child of "${from}".`);
          }
 
-         // Cycle detection: parentId must not be a descendant of childId
+         // Cycle detection: from must not be a descendant of to
          const descendants = new Set<string>();
-         const queue = [childId];
+         const queue = [to];
          while (queue.length > 0) {
            const id = queue.pop()!;
            descendants.add(id);
            const n = nodes.find((x) => x.id === id);
            if (n?.children) queue.push(...n.children);
          }
-         if (descendants.has(parentId)) {
-           throw new Error(`Adding "${childId}" as child of "${parentId}" would create a cycle.`);
+         if (descendants.has(from)) {
+           throw new Error(`Adding "${to}" as child of "${from}" would create a cycle.`);
          }
 
          if (!parent.children) parent.children = [];
-         parent.children.push(childId);
+         parent.children.push(to);
 
          writeDagV3(planPath, metadata, nodes);
-         return `## add_child: Wired "${parentId}" → "${childId}"\n\nCall get_dag_draft_diagram to visualize the current DAG diagram.`;
+         return `## connect_nodes: Wired "${from}" → "${to}"\n\nCall get_dag_draft_diagram to visualize the current DAG diagram.`;
        },
      }),
 
     delete_node: tool({
-      description: "Delete a node from the DAG and remove all edges to/from it. The node's children become orphaned — use add_child to reconnect them. Returns list of orphaned nodes.",
+      description: "Delete a node from the DAG and remove all edges to/from it. The node's children become orphaned — use connect_nodes to reconnect them. Returns list of orphaned nodes. The terminal nodes 'execution-kickoff', 'plan-success', and 'plan-fail' cannot be deleted.",
       args: {
         plan_name: tool.schema.string().describe(
           "Name of the session plan (directory under .opencode/session-plans/)."
@@ -682,6 +858,11 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         ),
       },
         async execute({ plan_name, nodeId }, context) {
+          const PROTECTED_NODES = ["execution-kickoff", "plan-success", "plan-fail"];
+          if (PROTECTED_NODES.includes(nodeId)) {
+            throw new Error(`"${nodeId}" is a protected terminal node and cannot be deleted. It is auto-managed by init_dag.`);
+          }
+
           const worktree = resolveWorktree(context);
           const planPath = path.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
           const { metadata, nodes } = readDagV3(planPath);
@@ -714,45 +895,45 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           let result = `## delete_node: Deleted "${nodeId}"\n\n`;
           if (orphanedChildren.length > 0) {
             result += `**Orphaned nodes (need re-parenting):** ${orphanedChildren.join(", ")}\n`;
-            result += `Use add_child to reconnect these nodes to a new parent.\n\n`;
+            result += `Use connect_nodes to reconnect these nodes to a new parent.\n\n`;
           }
           result += `Call get_dag_draft_diagram to visualize the current DAG diagram.`;
           return result;
         },
     }),
 
-    delete_child: tool({
-      description: "Remove an edge between parentId and childId without deleting either node. Use this to disconnect a child from a parent when restructuring the DAG.",
+    delete_edge: tool({
+      description: "Remove a directed edge between two nodes without deleting either node. Use this to disconnect nodes when restructuring the DAG.",
       args: {
         plan_name: tool.schema.string().describe(
           "Name of the session plan (directory under .opencode/session-plans/)."
         ),
-        parentId: tool.schema.string().describe(
-          "ID of the parent node."
+        from: tool.schema.string().describe(
+          "ID of the source (parent) node."
         ),
-        childId: tool.schema.string().describe(
-          "ID of the child node to disconnect from the parent."
+        to: tool.schema.string().describe(
+          "ID of the target (child) node to disconnect from the source."
         ),
       },
-       async execute({ plan_name, parentId, childId }, context) {
+       async execute({ plan_name, from, to }, context) {
          const worktree = resolveWorktree(context);
          const planPath = path.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
          const { metadata, nodes } = readDagV3(planPath);
 
-         const parent = nodes.find((n) => n.id === parentId);
-         if (!parent) throw new Error(`Parent node "${parentId}" not found in DAG.`);
+         const parent = nodes.find((n) => n.id === from);
+         if (!parent) throw new Error(`Source node "${from}" not found in DAG.`);
 
-         if (!parent.children?.includes(childId)) {
-           throw new Error(`"${childId}" is not a child of "${parentId}".`);
+         if (!parent.children?.includes(to)) {
+           throw new Error(`"${to}" is not a child of "${from}".`);
          }
 
-         parent.children = parent.children.filter((id) => id !== childId);
+         parent.children = parent.children.filter((id) => id !== to);
          if (parent.children.length === 0) delete parent.children;
 
          writeDagV3(planPath, metadata, nodes);
          return (
-           `## delete_child: Removed edge "${parentId}" → "${childId}"\n\n` +
-           `Note: "${childId}" still exists in the DAG — use add_child to reconnect it if needed.\n\n` +
+           `## delete_edge: Removed edge "${from}" → "${to}"\n\n` +
+           `Note: "${to}" still exists in the DAG — use connect_nodes to reconnect it if needed.\n\n` +
            `Call get_dag_draft_diagram to visualize the current DAG diagram.`
          );
        },
@@ -787,13 +968,79 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
              "Optional. Provide a task_id returned by a previous task call to resume that subagent session with its prior context intact."
            ),
        },
-       async execute({ description, prompt, subagent_type, task_id }, _context) {
-         // OpenCode intercepts this tool call by name and handles the actual delegation.
-         // This implementation is a fallback only — it should not normally be reached.
-         return (
-           `[task] Dispatched "${description}" to @${subagent_type}.` +
-           (task_id ? ` (resuming session ${task_id})` : "")
-         );
+       async execute({ description, prompt, subagent_type, task_id }, context) {
+         // Validate agent exists
+         const agentsResponse = await client.app.agents();
+         const agents: any[] = Array.isArray(agentsResponse.data) ? agentsResponse.data : [];
+         const agent = agents.find((a: any) => a.name === subagent_type);
+         if (!agent) {
+           const available = agents.filter((a: any) => a.mode !== "primary").map((a: any) => a.name).join(", ");
+           throw new Error(`Unknown agent type: "${subagent_type}" is not a valid agent type. Available: ${available || "none"}`);
+         }
+
+         // Request delegation permission — triggers the TUI delegation UI
+         await context.ask({
+           permission: "task",
+           patterns: [subagent_type],
+           always: ["*"],
+           metadata: { description, subagent_type },
+         });
+
+         // Get or create the child session
+         let session: any;
+         if (task_id) {
+           try {
+             const existing = await client.session.get({ path: { id: task_id } });
+             if (existing.data) session = existing.data;
+           } catch { /* not found, will create */ }
+         }
+         if (!session) {
+           const created = await client.session.create({
+             body: {
+               parentID: context.sessionID,
+               title: `${description} (@${agent.name} subagent)`,
+             },
+           });
+           session = created.data;
+         }
+         if (!session) throw new Error("Failed to create or retrieve subagent session");
+
+         // Set initial metadata so TUI shows the delegation immediately
+         context.metadata({
+           title: description,
+           metadata: { sessionId: session.id },
+         });
+
+         // Abort handling
+         const handleAbort = () => client.session.abort({ path: { id: session.id } });
+         context.abort.addEventListener("abort", handleAbort);
+
+         try {
+           const result = await client.session.prompt({
+             path: { id: session.id },
+             body: {
+               agent: agent.name,
+               parts: [{ type: "text", text: prompt }],
+             },
+           });
+
+           const resultParts: any[] = result.data?.parts ?? [];
+           const textParts = resultParts.filter((p: any) => p.type === "text");
+           const text = textParts[textParts.length - 1]?.text ?? "";
+
+           context.metadata({
+             title: description,
+             metadata: { sessionId: session.id },
+           });
+
+           return [
+             text,
+             "",
+             `task_id: ${session.id}`,
+           ].join("\n");
+         } finally {
+           context.abort.removeEventListener("abort", handleAbort);
+         }
        },
      }),
 

@@ -2,7 +2,6 @@
 name: documentation-expert
 description: "DocumentationExpert — targeted documentation writes and single-file edits."
 color: "#818cf8"
-temperature: 0.2
 mode: subagent
 permission:
     "*": deny

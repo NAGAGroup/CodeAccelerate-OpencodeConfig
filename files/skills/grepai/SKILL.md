@@ -7,7 +7,7 @@ description: Teaches how to use GrepAI semantic search and code intelligence too
 
 In this skill, you learn how to use GrepAI to find code by describing what it does and to trace how code elements connect across files.
 
-## Related Tools
+## Tool reference
 
 ### `grepai_grepai_index_status`
 
@@ -23,42 +23,38 @@ In this skill, you learn how to use GrepAI to find code by describing what it do
 | `limit` | Max results to return, default 10 (optional) |
 | `compact` | Return file paths and line numbers only, without content (optional) |
 | `format` | Use `'toon'` for ~50% fewer tokens (optional) |
-| `path` | Restrict search to a specific path prefix (optional) |
+| `path` | Restrict search to a specific file or directory prefix (optional) |
 
-### `grepai_grepai_trace_callers`
+### Trace tools (not available to all agents)
 
-| Parameter | Description |
-|-----------|-------------|
-| `symbol` | Function or method name to find callers of (required) |
-| `compact` | Return locations only without context (optional) |
+The following tools are used for dependency tracing. If you do not have access to these tools, ignore this section entirely.
 
-### `grepai_grepai_trace_callees`
+**`grepai_grepai_trace_callers`** — Find everything that calls a function. Params: `symbol` (required), `compact` (optional).
 
-| Parameter | Description |
-|-----------|-------------|
-| `symbol` | Function or method name to find callees of (required) |
-| `compact` | Return locations only without context (optional) |
+**`grepai_grepai_trace_callees`** — Find everything a function calls. Params: `symbol` (required), `compact` (optional).
 
-### `grepai_grepai_trace_graph`
-
-| Parameter | Description |
-|-----------|-------------|
-| `symbol` | Function or method name to build a call graph around (required) |
-| `depth` | Traversal depth in both directions, default 2 (optional) |
-
-## How to investigate code
-
-1. Call `grepai_grepai_index_status` to confirm the index is healthy before relying on search results
-2. Run `grepai_grepai_search` with `compact=true` and `format='toon'` to locate candidates with minimal token cost
-3. Run additional `grepai_grepai_search` calls with varied queries — one query rarely surfaces everything relevant; approach from different angles
-4. For candidates worth reading in full, run `grepai_grepai_search` without `compact` to retrieve content with file paths
-5. If you have access to trace tools, use `grepai_grepai_trace_callers` to understand what depends on a symbol before changing it, `grepai_grepai_trace_callees` to understand what a symbol depends on, and `grepai_grepai_trace_graph` when you need the full picture around a symbol
+**`grepai_grepai_trace_graph`** — Full call graph around a function. Params: `symbol` (required), `depth` (optional, default 2).ees`, or `grepai_grepai_trace_graph`, use them now to understand how the code you found in steps 3-4 connects. Skip this step if these tools are not available to you.
 
 ## How to think through this skill
 
 <|think|>
+- Am I following the investigation procedure in order — index status, then README, then broad discovery, then targeted reads?
 - Am I describing what the code does in natural language, or am I using keywords that won't match semantically?
-- Have I checked index status — if results seem sparse, the index may not cover the relevant files?
+- Am I using compact=true and toon format for discovery searches to save tokens?
+- Am I using the path argument to narrow targeted reads to specific files or directories?
 - Have I run enough varied queries to be confident I've found all relevant code, or did I stop at the first result?
-- Do I need to understand what calls this code (trace_callers), what this code calls (trace_callees), or both (trace_graph)?
-- Am I using compact=true and toon format to save tokens on results I don't need to read in full?
+- Do I have access to trace tools? If yes, have I used them to understand connections? If no, have I skipped that section?
+
+## Investigation procedure
+
+This is your plan. Execute these steps in order — do not devise your own investigation strategy.
+
+1. **Check index health.** Call `grepai_grepai_index_status`. If the index is unhealthy or missing files, note this in your findings. Do not skip this step.
+
+2. **Read the README.** Call `grepai_grepai_search` with `path` set to `"README.md"` and a broad query describing the project's purpose. The README is the single most information-dense file in most projects. If no README exists, continue to step 3.
+
+3. **Broad discovery.** Run `grepai_grepai_search` with `compact=true` and `format='toon'` using varied natural-language queries — one per aspect you need to understand. This gives you a map of where things are without burning tokens on full content.
+
+4. **Targeted reads.** For the most relevant files identified in step 3, run `grepai_grepai_search` again without `compact` and with a `path` argument to retrieve full content from specific directories or files.
+
+5. **Trace connections (if available).** If you have access to `grepai_grepai_trace_callers`, `grepai_grepai_trace_call

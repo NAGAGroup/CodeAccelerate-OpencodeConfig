@@ -3,7 +3,6 @@ name: junior-dev
 description: "JuniorDev — goal-oriented implementer. Investigates the codebase to understand context, then makes targeted changes. No bash, no testing, no shell operations."
 steps: 50
 color: "#22c55e"
-temperature: 0.2
 mode: subagent
 permission:
     "*": deny

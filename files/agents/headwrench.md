@@ -2,7 +2,6 @@
 name: headwrench
 description: "HeadWrench — primary agent. Follows instructions, reasons through decisions, delegates to specialists."
 color: "#22c55e"
-temperature: 0.6
 mode: primary
 permission:
     "*": allow

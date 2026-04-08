@@ -2,15 +2,15 @@
 name: dag-designer
 description: "DAG Designer — builds execution DAGs from the component library one node at a time."
 color: "#8b5cf6"
-temperature: 0.2
 mode: subagent
 permission:
     "*": deny
     add_node: allow
-    add_child: allow
+    add_nodes_to_dag: allow
+    connect_nodes: allow
     delete_node: allow
-    delete_child: allow
-    show_dag_jsonl: allow
+    delete_edge: allow
+    get_compact_dag_draft: allow
     get_dag_draft_diagram: allow
     present_dag_diagram: allow
     validate_dag: allow

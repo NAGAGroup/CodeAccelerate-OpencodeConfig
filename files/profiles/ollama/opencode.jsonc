@@ -9,7 +9,7 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "Ollama (local)",
       "options": {
-        "baseURL": "http://localhost:11434/v1"
+        "baseURL": "http://localhost:{env:OPENCODE_OLLAMA_PORT}/v1"
       },
       "models": {
         "opencode-model": {

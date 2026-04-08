@@ -1,6 +1,6 @@
 **Plan Name:** {{PLAN_NAME}}
 **Required Skills:** following-plans, qdrant-notes
-**Required Tools:** get_dag_draft_diagram, show_dag_jsonl, qdrant_qdrant-find, qdrant_qdrant-store
+**Required Tools:** get_dag_draft_diagram, get_compact_dag_draft, qdrant_qdrant-find, qdrant_qdrant-store
 **Optional Tools:** None
 **Questions Allowed?:** No
 
@@ -12,7 +12,7 @@ Orient to the plan structure and retrieve planning context before execution begi
 ## Instructions
 
 1. Call `get_dag_draft_diagram` to understand the plan's phases and branching structure
-2. Call `show_dag_jsonl` to read exact node IDs, component types, and dependencies
+2. Call `get_compact_dag_draft` to read exact node IDs, component types, and dependencies
 3. Call `qdrant_qdrant-find` with collection `{{PLAN_NAME}}` to retrieve planning context — what was discovered, what constraints were documented, what rationale informed the design
 4. Call `qdrant_qdrant-store` with collection `{{PLAN_NAME}}` to store executor-framed orientation notes — restate the goal and execution strategy from your perspective
 5. Call `next_step`

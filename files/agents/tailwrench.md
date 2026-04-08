@@ -3,7 +3,6 @@ name: tailwrench
 description: "Tailwrench — powerful operator for verification, shell operations, and git. Full tool access, step-limited."
 steps: 30
 color: "#f97316"
-temperature: 0.2
 mode: subagent
 permission:
     "*": deny

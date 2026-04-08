@@ -2,7 +2,6 @@
 name: context-insurgent
 description: "ContextInsurgent — deep project exploration with sequential thinking."
 color: "#f59e0b"
-temperature: 0.2
 mode: subagent
 permission:
     "*": deny
