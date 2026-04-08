@@ -111497,10 +111497,16 @@ ${formatCompactDagDraft(metadata, nodes)}`);
         }
       }),
       get_planning_components_catalogue: tool({
-        description: "Retrieve the planning components catalogue listing all available node types. Returns CATALOGUE.md text verbatim from the global node-library installation.",
-        args: {},
-        async execute(_args, _context) {
-          const cataloguePath = path6.join(CONFIG_ROOT, "planning", "plan-session", "node-library", "CATALOGUE.md");
+        description: "Retrieve the planning components catalogue listing all available node types. Returns CATALOGUE.md text verbatim from the global node-library installation. Use variant='core' for the minimal core component set, or omit/use 'full' for the complete catalogue.",
+        args: {
+          variant: tool.schema.string().optional().describe("Catalogue variant: 'core' for minimal structural components only, 'full' (default) for the complete catalogue including specialist nodes.")
+        },
+        async execute({ variant }, _context) {
+          const filename = variant === "core" ? "CATALOGUE-CORE.md" : "CATALOGUE.md";
+          const cataloguePath = path6.join(CONFIG_ROOT, "planning", "plan-session", "node-library", filename);
+          if (!fs6.existsSync(cataloguePath)) {
+            throw new Error(`Catalogue variant "${variant}" not found at ${cataloguePath}`);
+          }
           return fs6.readFileSync(cataloguePath, "utf-8");
         }
       })

@@ -1,17 +1,18 @@
 ---
 name: dag-designer
-description: Teaches how to dispatch dag-designer to build execution DAGs from the component library.
+description: Teaches how to dispatch dag-designer to build a first-pass MVP execution DAG from the core component library.
 ---
 
 # What does this skill teach?
 
-In this skill, you learn how to delegate to dag-designer, a DAG construction specialist that builds execution DAGs from the component library one node at a time.
+In this skill, you learn how to delegate to dag-designer, a first-pass DAG construction specialist that builds MVP execution DAGs from the core component catalogue. The designer produces a structurally valid skeleton — a reviewer and reviser will improve it in subsequent passes.
 
 # What does dag-designer do?
 
-- Reads the component catalogue and design guide before designing
+- Reads the core component catalogue (`variant="core"`) before designing — never the full catalogue
 - Plans the full adjacency list before calling any DAG tool
 - Creates all nodes at once with `add_nodes_to_dag` and wires all edges per phase in a single `connect_nodes` call
+- Defaults to 1 retry per verify-retry structure
 - Validates structure throughout construction and at completion
 - Reports the completed DAG name and rationale for key design decisions
 
@@ -29,6 +30,8 @@ Use the `task` tool to delegate using the prompt template below, filling in each
 **Scope boundaries:** <what is in scope for this plan and what must be excluded>
 
 **DAG objectives:** <the phases of work, where decisions need to happen, what could fail and need a retry path, and what success looks like>
+
+**First-pass guidance:** This is a first-pass MVP build. Use only the core catalogue (variant="core"). Focus on getting the phases, verification, and convergence structure right. Default to 1 retry per verify chain. A reviewer and reviser will add specialist nodes and adjust retry counts in subsequent passes.
 ```
 
 # Thinking through your delegation prompt
@@ -38,5 +41,5 @@ Use the `task` tool to delegate using the prompt template below, filling in each
 - Have I described work phases and decision points rather than specific files, functions, or commands?
 - Have I passed all accumulated planning findings so the designer understands the full context?
 - Are the scope boundaries clear enough that the designer knows what to include and what to leave out?
-- Have I described where branches should be — what are the exclusive paths, what are the decision gates?
+- Have I included the first-pass guidance reminding the designer to use core catalogue only?
 - Have I noted what could fail and needs a retry path so the designer can include verify nodes?

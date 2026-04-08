@@ -43,8 +43,11 @@
         "planning/plan-session/prompts/dag-revision.md",
         "planning/plan-session/prompts/retrieve-notes.md",
         "planning/plan-session/prompts/plan-success.md",
-        // Node library catalogue
+        // Planning prompt: hw-assessment
+        "planning/plan-session/prompts/hw-assessment.md",
+        // Node library catalogues
         "planning/plan-session/node-library/CATALOGUE.md",
+        "planning/plan-session/node-library/CATALOGUE-CORE.md",
         // Node library: execution-kickoff
         "planning/plan-session/node-library/execution-kickoff/node-spec.json",
         "planning/plan-session/node-library/execution-kickoff/prompt.md",
@@ -114,6 +117,7 @@
         "agents/external-scout.md",
         "agents/dag-designer.md",
         "agents/dag-reviewer.md",
+        "agents/dag-reviser.md",
         "agents/headwrench.md",
         "agents/junior-dev.md",
         "agents/tailwrench.md",
@@ -127,12 +131,15 @@
          "skills/context-scout/SKILL.md",
          "skills/dag-designer/SKILL.md",
          "skills/dag-reviewer/SKILL.md",
+         "skills/dag-reviser/SKILL.md",
          "skills/documentation-expert/SKILL.md",
          "skills/external-scout/SKILL.md",
          "skills/junior-dev/SKILL.md",
          "skills/tailwrench/SKILL.md",
          "skills/build-dags/SKILL.md",
+         "skills/build-dags-core/SKILL.md",
          "skills/dag-design-example/SKILL.md",
+         "skills/dag-review-criteria/SKILL.md",
          "skills/dag-tools/SKILL.md",
          "skills/following-plans/SKILL.md",
          "skills/grepai/SKILL.md",

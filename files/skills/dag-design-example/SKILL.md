@@ -60,6 +60,8 @@ Think through the following application of the staged workflow to the example ab
 
 ```
 # ── Load catalogue ──
+# Call get_planning_components_catalogue() with the appropriate variant
+# for your pass (see your build-dags or build-dags-core skill for which variant to use)
 get_planning_components_catalogue()
 ```
 

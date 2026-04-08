@@ -4,10 +4,10 @@
 **Optional Tools:** None
 **Questions Allowed?:** No
 
-# DAG Node: DAG Design
+# DAG Node: DAG Design (First Pass)
 
 ## Goal
-Initialize the execution DAG and dispatch dag-designer to build it from the component library.
+Initialize the execution DAG and dispatch dag-designer to build a first-pass MVP from the core component library.
 
 ## Instructions
 
@@ -23,3 +23,4 @@ Initialize the execution DAG and dispatch dag-designer to build it from the comp
 - Have I described the work as phases and decision points, not implementation steps?
 - Have I passed all accumulated planning context so the designer understands the full picture?
 - Have I identified where verification and retry paths are needed?
+- The designer will use the core catalogue only and default to 1 retry — this is expected for a first pass
