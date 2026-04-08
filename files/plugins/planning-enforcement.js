@@ -110248,31 +110248,6 @@ function formatCompactDagDraft(metadata, nodes) {
     if (n?.children)
       queue.push(...n.children);
   }
-  const TERMINAL_NODES = ["plan-success", "plan-fail"];
-  const connectedNodes = nodes.filter((n) => reachable.has(n.id));
-  const orphanedNodes = nodes.filter((n) => !reachable.has(n.id) && !TERMINAL_NODES.includes(n.id));
-  const terminalNodes = nodes.filter((n) => !reachable.has(n.id) && TERMINAL_NODES.includes(n.id));
-  const orphanGroups = [];
-  const visited = new Set;
-  for (const orphan of orphanedNodes) {
-    if (visited.has(orphan.id))
-      continue;
-    const group = [];
-    const groupQueue = [orphan.id];
-    while (groupQueue.length > 0) {
-      const id = groupQueue.pop();
-      if (visited.has(id))
-        continue;
-      visited.add(id);
-      const n = nodes.find((x) => x.id === id);
-      if (n) {
-        group.push(n);
-        if (n.children)
-          groupQueue.push(...n.children);
-      }
-    }
-    orphanGroups.push(group);
-  }
   const nodeMap = {};
   for (const n of nodes)
     nodeMap[n.id] = n;
@@ -110329,9 +110304,10 @@ function formatCompactDagDraft(metadata, nodes) {
     return chains.filter((c) => c.length > 0).join(`
 `);
   }
-  const KICKOFF_NODE = "execution-kickoff";
-  const kickoffNode = connectedNodes.find((n) => n.id === KICKOFF_NODE);
-  const nonKickoffConnected = connectedNodes.filter((n) => n.id !== KICKOFF_NODE);
+  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+  const workNodes = nodes.filter((n) => !PROTECTED_IDS.has(n.id));
+  const connectedWork = workNodes.filter((n) => reachable.has(n.id));
+  const orphanedWork = workNodes.filter((n) => !reachable.has(n.id));
   const BANNER = "// ═══════════════════════════════════════════════════";
   const lines = [];
   lines.push(`plan: ${metadata.id}`);
@@ -110339,29 +110315,52 @@ function formatCompactDagDraft(metadata, nodes) {
   lines.push(BANNER);
   lines.push("// PROTECTED NODES — wire last");
   lines.push(BANNER);
-  if (kickoffNode) {
-    lines.push(renderGroup([kickoffNode]) || `(${kickoffNode.id})`);
-  }
-  for (const t of terminalNodes) {
-    lines.push(`(${t.id})`);
+  for (const id of ["execution-kickoff", "plan-success", "plan-fail"]) {
+    const n = nodes.find((x) => x.id === id);
+    if (n)
+      lines.push(`(${id})`);
   }
   lines.push("");
   lines.push(BANNER);
   lines.push("// WORKING DRAFT");
   lines.push(BANNER);
-  if (nonKickoffConnected.length > 0) {
-    lines.push(renderGroup(nonKickoffConnected));
+  if (connectedWork.length > 0) {
+    lines.push(renderGroup(connectedWork));
   }
-  for (let i = 0;i < orphanGroups.length; i++) {
+  const orphanWorkGroups = [];
+  const visitedOrphans = new Set;
+  for (const orphan of orphanedWork) {
+    if (visitedOrphans.has(orphan.id))
+      continue;
+    const group = [];
+    const groupQueue = [orphan.id];
+    while (groupQueue.length > 0) {
+      const id = groupQueue.pop();
+      if (visitedOrphans.has(id))
+        continue;
+      visitedOrphans.add(id);
+      const n = nodes.find((x) => x.id === id);
+      if (n && !PROTECTED_IDS.has(n.id)) {
+        group.push(n);
+        for (const childId of n.children ?? []) {
+          if (!PROTECTED_IDS.has(childId))
+            groupQueue.push(childId);
+        }
+      }
+    }
+    if (group.length > 0)
+      orphanWorkGroups.push(group);
+  }
+  for (let i = 0;i < orphanWorkGroups.length; i++) {
     lines.push("");
     lines.push(`── orphaned group ${i + 1} ──`);
-    lines.push(renderGroup(orphanGroups[i]));
+    lines.push(renderGroup(orphanWorkGroups[i]));
   }
   let result = `## DAG Compact Draft: ${metadata.id}
 
 `;
-  if (orphanGroups.length > 0) {
-    result += `${orphanGroups.length} orphaned group(s)
+  if (orphanWorkGroups.length > 0) {
+    result += `${orphanWorkGroups.length} orphaned group(s)
 
 `;
   }
@@ -111176,48 +111175,54 @@ ${errors3.map((e) => `- ${e}`).join(`
             "plan-success",
             "plan-fail"
           ];
-          const TERMINAL_NODES = ["plan-success", "plan-fail"];
           const touchesProtected = edgePairs.some(({ from, to }) => PROTECTED_NODES.includes(from) || PROTECTED_NODES.includes(to));
           if (touchesProtected) {
-            const reachable = new Set;
-            const bfsQueue = [metadata.entry_node_id];
-            while (bfsQueue.length > 0) {
-              const id = bfsQueue.pop();
-              if (reachable.has(id))
-                continue;
-              reachable.add(id);
-              const n = nodes.find((x) => x.id === id);
-              if (n?.children)
-                bfsQueue.push(...n.children);
-            }
-            const orphanedNodes = nodes.filter((n) => !reachable.has(n.id) && !TERMINAL_NODES.includes(n.id));
-            const visited = new Set;
-            let orphanGroupCount = 0;
-            for (const orphan of orphanedNodes) {
-              if (visited.has(orphan.id))
-                continue;
-              orphanGroupCount++;
-              const groupQueue = [orphan.id];
-              while (groupQueue.length > 0) {
-                const id = groupQueue.pop();
-                if (visited.has(id))
-                  continue;
-                visited.add(id);
-                const n = nodes.find((x) => x.id === id);
-                if (n?.children)
-                  groupQueue.push(...n.children);
-              }
-            }
-            if (orphanGroupCount > 0) {
-              for (const { from, to } of edgePairs) {
-                const parent = nodes.find((n) => n.id === from);
-                if (parent?.children) {
-                  const idx = parent.children.indexOf(to);
-                  if (idx !== -1)
-                    parent.children.splice(idx, 1);
+            const workNodes = nodes.filter((n) => !PROTECTED_NODES.includes(n.id));
+            if (workNodes.length > 0) {
+              const adj = new Map;
+              for (const n of workNodes) {
+                if (!adj.has(n.id))
+                  adj.set(n.id, new Set);
+                for (const childId of n.children ?? []) {
+                  if (PROTECTED_NODES.includes(childId))
+                    continue;
+                  if (!adj.has(childId))
+                    adj.set(childId, new Set);
+                  adj.get(n.id).add(childId);
+                  adj.get(childId).add(n.id);
                 }
               }
-              throw new Error(`Cannot wire protected nodes yet — ` + `${orphanGroupCount} orphaned group(s) still exist in the working draft. ` + `Finish building all phases and wire them together, only then can you wire execution-kickoff, plan-success, and plan-fail last.`);
+              const visited = new Set;
+              let componentCount = 0;
+              for (const n of workNodes) {
+                if (visited.has(n.id))
+                  continue;
+                componentCount++;
+                const bfsQueue = [n.id];
+                while (bfsQueue.length > 0) {
+                  const id = bfsQueue.pop();
+                  if (visited.has(id))
+                    continue;
+                  visited.add(id);
+                  for (const neighbor of adj.get(id) ?? []) {
+                    if (!visited.has(neighbor))
+                      bfsQueue.push(neighbor);
+                  }
+                }
+              }
+              if (componentCount > 1) {
+                for (const { from, to } of edgePairs) {
+                  const parent = nodes.find((n) => n.id === from);
+                  if (parent?.children) {
+                    const idx = parent.children.indexOf(to);
+                    if (idx !== -1)
+                      parent.children.splice(idx, 1);
+                  }
+                }
+                throw new Error(`Cannot wire protected nodes yet — ` + `work nodes still form ${componentCount} disconnected groups. ` + `Wire all work nodes into a single connected structure first, then wire execution-kickoff, plan-success, and plan-fail last.
+
+` + formatCompactDagDraft(metadata, nodes));
+              }
             }
           }
           writeDagV3(planPath, metadata, nodes);
@@ -111463,6 +111468,10 @@ ${errors3.map((e) => `- ${e}`).join(`
     },
     "tool.execute.after": async (input, output) => {
       if (!input.tool || !input.sessionID)
+        return;
+      if (!output)
+        return;
+      if (output.error)
         return;
       const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);

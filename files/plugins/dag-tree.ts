@@ -304,35 +304,7 @@ export function formatCompactDagDraft(
     if (n?.children) queue.push(...n.children);
   }
 
-  const TERMINAL_NODES = ["plan-success", "plan-fail"];
-
-  // Separate reachable and orphaned nodes
-  // Terminal nodes (plan-success, plan-fail) are never treated as orphans —
-  // they are expected to be unwired during incremental DAG construction.
-  const connectedNodes = nodes.filter((n) => reachable.has(n.id));
-  const orphanedNodes = nodes.filter((n) => !reachable.has(n.id) && !TERMINAL_NODES.includes(n.id));
-  const terminalNodes = nodes.filter((n) => !reachable.has(n.id) && TERMINAL_NODES.includes(n.id));
-
-  // Group orphaned nodes into connected components
-  const orphanGroups: DagNodeV3[][] = [];
-  const visited = new Set<string>();
-  for (const orphan of orphanedNodes) {
-    if (visited.has(orphan.id)) continue;
-    // BFS within orphaned set
-    const group: DagNodeV3[] = [];
-    const groupQueue = [orphan.id];
-    while (groupQueue.length > 0) {
-      const id = groupQueue.pop()!;
-      if (visited.has(id)) continue;
-      visited.add(id);
-      const n = nodes.find((x) => x.id === id);
-      if (n) {
-        group.push(n);
-        if (n.children) groupQueue.push(...n.children);
-      }
-    }
-    orphanGroups.push(group);
-  }
+  // (Orphan grouping is done later, after separating work nodes from protected nodes)
 
   // Build a node map for O(1) lookup
   const nodeMap: Record<string, DagNodeV3> = {};
@@ -403,9 +375,13 @@ export function formatCompactDagDraft(
   }
 
   // Build output
-  const KICKOFF_NODE = "execution-kickoff";
-  const kickoffNode = connectedNodes.find((n) => n.id === KICKOFF_NODE);
-  const nonKickoffConnected = connectedNodes.filter((n) => n.id !== KICKOFF_NODE);
+  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+
+  // Work nodes = everything except protected nodes, regardless of reachability
+  const workNodes = nodes.filter((n) => !PROTECTED_IDS.has(n.id));
+  // Split work nodes into connected (reachable from entry) and orphaned
+  const connectedWork = workNodes.filter((n) => reachable.has(n.id));
+  const orphanedWork = workNodes.filter((n) => !reachable.has(n.id));
 
   const BANNER = "// ═══════════════════════════════════════════════════";
 
@@ -413,36 +389,56 @@ export function formatCompactDagDraft(
   lines.push(`plan: ${metadata.id}`);
   lines.push("");
 
-  // Protected nodes section
+  // Protected nodes section — always listed as simple entries, never chain-rendered
   lines.push(BANNER);
   lines.push("// PROTECTED NODES — wire last");
   lines.push(BANNER);
-  if (kickoffNode) {
-    lines.push(renderGroup([kickoffNode]) || `(${kickoffNode.id})`);
-  }
-  for (const t of terminalNodes) {
-    lines.push(`(${t.id})`);
+  for (const id of ["execution-kickoff", "plan-success", "plan-fail"]) {
+    const n = nodes.find((x) => x.id === id);
+    if (n) lines.push(`(${id})`);
   }
   lines.push("");
 
-  // Working draft — connected non-kickoff nodes
+  // Working draft — connected work nodes (excluding protected)
   lines.push(BANNER);
   lines.push("// WORKING DRAFT");
   lines.push(BANNER);
-  if (nonKickoffConnected.length > 0) {
-    lines.push(renderGroup(nonKickoffConnected));
+  if (connectedWork.length > 0) {
+    lines.push(renderGroup(connectedWork));
+  }
+
+  // Re-group orphaned work nodes into connected components
+  const orphanWorkGroups: DagNodeV3[][] = [];
+  const visitedOrphans = new Set<string>();
+  for (const orphan of orphanedWork) {
+    if (visitedOrphans.has(orphan.id)) continue;
+    const group: DagNodeV3[] = [];
+    const groupQueue = [orphan.id];
+    while (groupQueue.length > 0) {
+      const id = groupQueue.pop()!;
+      if (visitedOrphans.has(id)) continue;
+      visitedOrphans.add(id);
+      const n = nodes.find((x) => x.id === id);
+      if (n && !PROTECTED_IDS.has(n.id)) {
+        group.push(n);
+        for (const childId of n.children ?? []) {
+          if (!PROTECTED_IDS.has(childId)) groupQueue.push(childId);
+        }
+      }
+    }
+    if (group.length > 0) orphanWorkGroups.push(group);
   }
 
   // Orphaned groups
-  for (let i = 0; i < orphanGroups.length; i++) {
+  for (let i = 0; i < orphanWorkGroups.length; i++) {
     lines.push("");
     lines.push(`── orphaned group ${i + 1} ──`);
-    lines.push(renderGroup(orphanGroups[i]));
+    lines.push(renderGroup(orphanWorkGroups[i]));
   }
 
   let result = `## DAG Compact Draft: ${metadata.id}\n\n`;
-  if (orphanGroups.length > 0) {
-    result += `${orphanGroups.length} orphaned group(s)\n\n`;
+  if (orphanWorkGroups.length > 0) {
+    result += `${orphanWorkGroups.length} orphaned group(s)\n\n`;
   }
   result += "```\n" + lines.join("\n").trimEnd() + "\n```";
   return result;

@@ -40,20 +40,16 @@ You are @dag-designer, a DAG construction specialist. You build and revise DAGs 
 
 ## Required Skills
 
-- `qdrant-notes`
-- `dag-tools`
-- `build-dags`
 - `dag-design-example`
-
-> [!IMPORTANT]
-> Do this immediately: load all required skills as the first thing you do before doing any work, these teach you important aspects of your workflow.
+- `build-dags`
+- `dag-tools`
+- `qdrant-notes`
 
 ## Methodology
 
 <|think|>
-1. Load `qdrant-notes`
 2. Load `dag-tools`
-4. Load `build-dags` and `dag-design-example` together
+4. Load `dag-design-example` and `build-dags`  together
 4. Review the example DAG design and think through how the patterns used there can be applied to your current plan's DAG design
 3. Think through the `build-dags` skill, plan your approach from start to finish, and only then can you begin
 

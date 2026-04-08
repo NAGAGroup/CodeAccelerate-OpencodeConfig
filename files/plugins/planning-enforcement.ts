@@ -1121,61 +1121,69 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             );
           }
 
-          // Guard: protected nodes (kickoff + terminals) cannot be wired while orphaned groups remain.
-          // Check this AFTER all edges are tentatively added but BEFORE writing.
+          // Guard: protected nodes (kickoff + terminals) cannot be wired while
+          // work nodes still form multiple disconnected groups.
+          // They are the entry/exit points and must be wired last.
           const PROTECTED_NODES = [
             "execution-kickoff",
             "plan-success",
             "plan-fail",
           ];
-          const TERMINAL_NODES = ["plan-success", "plan-fail"];
           const touchesProtected = edgePairs.some(
             ({ from, to }) =>
               PROTECTED_NODES.includes(from) || PROTECTED_NODES.includes(to),
           );
           if (touchesProtected) {
-            // Count orphaned groups (excluding terminal nodes themselves)
-            const reachable = new Set<string>();
-            const bfsQueue = [metadata.entry_node_id];
-            while (bfsQueue.length > 0) {
-              const id = bfsQueue.pop()!;
-              if (reachable.has(id)) continue;
-              reachable.add(id);
-              const n = nodes.find((x) => x.id === id);
-              if (n?.children) bfsQueue.push(...n.children);
-            }
-            const orphanedNodes = nodes.filter(
-              (n) => !reachable.has(n.id) && !TERMINAL_NODES.includes(n.id),
+            // Count connected components among work nodes using UNDIRECTED traversal.
+            // This correctly handles the construction phase where kickoff has no children yet —
+            // we only care whether all work nodes are connected to each other, not to kickoff.
+            const workNodes = nodes.filter(
+              (n) => !PROTECTED_NODES.includes(n.id),
             );
-            // Group orphaned nodes into connected components
-            const visited = new Set<string>();
-            let orphanGroupCount = 0;
-            for (const orphan of orphanedNodes) {
-              if (visited.has(orphan.id)) continue;
-              orphanGroupCount++;
-              const groupQueue = [orphan.id];
-              while (groupQueue.length > 0) {
-                const id = groupQueue.pop()!;
-                if (visited.has(id)) continue;
-                visited.add(id);
-                const n = nodes.find((x) => x.id === id);
-                if (n?.children) groupQueue.push(...n.children);
-              }
-            }
-            if (orphanGroupCount > 0) {
-              // Roll back the wired edges
-              for (const { from, to } of edgePairs) {
-                const parent = nodes.find((n) => n.id === from);
-                if (parent?.children) {
-                  const idx = parent.children.indexOf(to);
-                  if (idx !== -1) parent.children.splice(idx, 1);
+            if (workNodes.length > 0) {
+              // Build undirected adjacency from directed edges
+              const adj = new Map<string, Set<string>>();
+              for (const n of workNodes) {
+                if (!adj.has(n.id)) adj.set(n.id, new Set());
+                for (const childId of n.children ?? []) {
+                  if (PROTECTED_NODES.includes(childId)) continue;
+                  if (!adj.has(childId)) adj.set(childId, new Set());
+                  adj.get(n.id)!.add(childId);
+                  adj.get(childId)!.add(n.id);
                 }
               }
-              throw new Error(
-                `Cannot wire protected nodes yet — ` +
-                  `${orphanGroupCount} orphaned group(s) still exist in the working draft. ` +
-                  `Finish building all phases and wire them together, only then can you wire execution-kickoff, plan-success, and plan-fail last.`,
-              );
+              // Count connected components via BFS
+              const visited = new Set<string>();
+              let componentCount = 0;
+              for (const n of workNodes) {
+                if (visited.has(n.id)) continue;
+                componentCount++;
+                const bfsQueue = [n.id];
+                while (bfsQueue.length > 0) {
+                  const id = bfsQueue.pop()!;
+                  if (visited.has(id)) continue;
+                  visited.add(id);
+                  for (const neighbor of adj.get(id) ?? []) {
+                    if (!visited.has(neighbor)) bfsQueue.push(neighbor);
+                  }
+                }
+              }
+              if (componentCount > 1) {
+                // Roll back the tentatively wired edges
+                for (const { from, to } of edgePairs) {
+                  const parent = nodes.find((n) => n.id === from);
+                  if (parent?.children) {
+                    const idx = parent.children.indexOf(to);
+                    if (idx !== -1) parent.children.splice(idx, 1);
+                  }
+                }
+                throw new Error(
+                  `Cannot wire protected nodes yet — ` +
+                    `work nodes still form ${componentCount} disconnected groups. ` +
+                    `Wire all work nodes into a single connected structure first, then wire execution-kickoff, plan-success, and plan-fail last.\n\n` +
+                    formatCompactDagDraft(metadata, nodes),
+                );
+              }
             }
           }
 
@@ -1558,8 +1566,16 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
     },
 
     // Track tool calls and auto-advance when todos are exhausted.
+    // Only advances on SUCCESSFUL tool calls — failed tools must be retried.
     "tool.execute.after": async (input, output) => {
       if (!input.tool || !input.sessionID) return;
+
+      // Skip tracking if the tool call failed.
+      // For built-in tools, this hook only fires on success so output is always present.
+      // For the task tool, errors are caught and output is undefined.
+      // For plugin tools, output.output may contain error indicators.
+      if (!output) return;
+      if (output.error) return;
 
       // Exempt tools bypass blocking but still participate in todo tracking when
       // they appear as the currently expected todo item (e.g. "question" in todo[]).
