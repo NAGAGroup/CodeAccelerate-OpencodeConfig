@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** delegating-to-external-scout
+**Required Skills:** external-scout
 **Required Tools:** task
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -11,7 +11,7 @@ Conduct broad external research covering multiple angles of a domain or topic.
 
 ## Instructions
 
-1. Use the `delegating-to-external-scout` skill to compose a comprehensive research brief — think through what domain needs exploration, what angles are most valuable, and what scope protects proprietary information
+1. Use the `external-scout` skill to compose a comprehensive research brief — think through what domain needs exploration, what angles are most valuable, and what scope protects proprietary information
 2. Dispatch external-scout using the `task` tool with plan name `{{PLAN_NAME}}`
 3. Call `next_step`
 

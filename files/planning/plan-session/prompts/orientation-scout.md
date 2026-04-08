@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** delegating-to-context-scout
+**Required Skills:** context-scout
 **Required Tools:** task
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -11,7 +11,7 @@ Build broad understanding of the project and user's goal through wide-shallow ex
 
 ## Instructions
 
-1. Use the `delegating-to-context-scout` skill to compose a dispatch prompt — think through what areas to survey and what questions the scout should answer about the project structure, relationships, and constraints
+1. Use the `context-scout` skill to compose a dispatch prompt — think through what areas to survey and what questions the scout should answer about the project structure, relationships, and constraints
 2. Dispatch context-scout using the `task` tool with plan name `{{PLAN_NAME}}`
 3. Call `next_step`
 

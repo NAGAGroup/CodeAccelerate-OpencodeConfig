@@ -110452,7 +110452,6 @@ var PlanningEnforcementPlugin = async (_ctx) => {
     await client.session.prompt({
       path: { id: sessionID },
       body: {
-        noReply: true,
         parts: [{ type: "text", text }]
       }
     });
@@ -111225,21 +111224,21 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           const agentsResponse = await client.app.agents();
           const agents = Array.isArray(agentsResponse.data) ? agentsResponse.data : [];
           const agent = agents.find((a) => a.name === subagent_type);
+          await client.app.log({ body: {
+            service: "task-tool",
+            level: "info",
+            message: `task tool dispatch: subagent_type=${subagent_type}`,
+            extra: {
+              agentModel: agent?.model ?? null,
+              agentKeys: Object.keys(agent ?? {}),
+              configModel: agentConfigs[subagent_type]?.model ?? null
+            }
+          } });
           if (!agent) {
             const available = agents.filter((a) => a.mode !== "primary").map((a) => a.name).join(", ");
             throw new Error(`Unknown agent type: "${subagent_type}" is not a valid agent type. Available: ${available || "none"}`);
           }
-          const agentConfig = agentConfigs[subagent_type] ?? {};
-          let model;
-          if (agentConfig.model && typeof agentConfig.model === "string") {
-            const slashIdx = agentConfig.model.indexOf("/");
-            if (slashIdx > 0) {
-              model = {
-                providerID: agentConfig.model.substring(0, slashIdx),
-                modelID: agentConfig.model.substring(slashIdx + 1)
-              };
-            }
-          }
+          const model = agent.model ?? undefined;
           await context.ask({
             permission: "task",
             patterns: [subagent_type],
@@ -111394,7 +111393,6 @@ ${formatCompactDagDraft(metadata, nodes)}`);
             await client.session.prompt({
               path: { id: sessionID },
               body: {
-                noReply: true,
                 parts: [{ type: "text", text }]
               }
             });

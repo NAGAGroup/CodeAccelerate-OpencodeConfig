@@ -24,7 +24,7 @@
   },
   "autoupdate": false,
   "small_model": "opencode/big-pickle",
-  "plugin": ["@tarquinen/opencode-dcp@latest"],
+  "plugin": ["@tarquinen/opencode-dcp@latest", "file://{env:HOME}/.config/opencode/plugins/planning-enforcement.js"],
   "default_agent": "headwrench",
   "agent": {
     "plan": {
@@ -58,6 +58,12 @@
       "model": "anthropic/claude-sonnet-4-6"
     },
     "autonomous-agent": {
+      "model": "anthropic/claude-sonnet-4-6"
+    },
+    "dag-designer": {
+      "model": "anthropic/claude-sonnet-4-6"
+    },
+    "dag-reviewer": {
       "model": "anthropic/claude-sonnet-4-6"
     },
     "compaction": {

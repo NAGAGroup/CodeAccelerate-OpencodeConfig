@@ -1,5 +1,13 @@
 #!/bin/bash
 
+bun run deploy
+
+rm -rf ~/.config/opencode/plugins/ ~/.config/opencode/planning ~/.config/opencode/.ocx/
+
+sleep 5
+
+npx ocx add --global naga-group/ocx-planning-plugin
+
 npx ocx profile rm naga --global
 npx ocx profile rm naga-copilot --global
 npx ocx profile rm naga-free --global

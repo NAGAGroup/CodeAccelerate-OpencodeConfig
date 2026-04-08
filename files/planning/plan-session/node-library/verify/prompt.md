@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** delegating-to-tailwrench
+**Required Skills:** tailwrench
 **Required Tools:** task
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -11,7 +11,7 @@ Verify the most recent change meets its acceptance criteria.
 
 ## Instructions
 
-1. Use the `delegating-to-tailwrench` skill to compose a dispatch prompt — think through what was just implemented, what the acceptance criteria are, and what a passing verification looks like
+1. Use the `tailwrench` skill to compose a dispatch prompt — think through what was just implemented, what the acceptance criteria are, and what a passing verification looks like
 2. Dispatch tailwrench using the `task` tool with plan name `{{PLAN_NAME}}`
 3. Call `next_step`
 

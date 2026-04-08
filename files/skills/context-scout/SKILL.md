@@ -1,5 +1,5 @@
 ---
-name: delegating-to-context-scout
+name: context-scout
 description: Teaches how to dispatch context-scout for wide-shallow project exploration and landscape overviews.
 ---
 

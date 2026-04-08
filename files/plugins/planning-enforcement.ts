@@ -52,7 +52,6 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
     await client.session.prompt({
       path: { id: sessionID },
       body: {
-        noReply: true,
         parts: [{ type: "text", text }],
       },
     });
@@ -1254,12 +1253,24 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const config: any = configResponse.data ?? {};
           const agentConfigs: Record<string, any> = config.agent ?? {};
 
-          // Also get the agent list for validation and resolved permissions
+          // Get the agent list for validation and resolved permissions
           const agentsResponse = await client.app.agents();
           const agents: any[] = Array.isArray(agentsResponse.data)
             ? agentsResponse.data
             : [];
           const agent = agents.find((a: any) => a.name === subagent_type);
+
+          // DEBUG: log resolved agent info
+          await client.app.log({ body: {
+            service: "task-tool",
+            level: "info",
+            message: `task tool dispatch: subagent_type=${subagent_type}`,
+            extra: {
+              agentModel: agent?.model ?? null,
+              agentKeys: Object.keys(agent ?? {}),
+              configModel: agentConfigs[subagent_type]?.model ?? null,
+            },
+          }});
           if (!agent) {
             const available = agents
               .filter((a: any) => a.mode !== "primary")
@@ -1270,20 +1281,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             );
           }
 
-          // Get the agent's config entry from the running config for model resolution
-          const agentConfig = agentConfigs[subagent_type] ?? {};
-
-          // Parse model from config (format: "provider/model-id")
-          let model: { providerID: string; modelID: string } | undefined;
-          if (agentConfig.model && typeof agentConfig.model === "string") {
-            const slashIdx = agentConfig.model.indexOf("/");
-            if (slashIdx > 0) {
-              model = {
-                providerID: agentConfig.model.substring(0, slashIdx),
-                modelID: agentConfig.model.substring(slashIdx + 1),
-              };
-            }
-          }
+          // Use the resolved model from Agent.list() — populated when the profile has a model override
+          // for this agent. If absent, don't pass a model and let OpenCode resolve it.
+          const model: { providerID: string; modelID: string } | undefined = agent.model ?? undefined;
 
           // Request delegation permission — triggers the TUI delegation UI
           await context.ask({
@@ -1491,18 +1491,17 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         const queue = pendingInjections.get(sessionID);
         if (!queue || queue.length === 0) return;
         pendingInjections.delete(sessionID);
-        for (const text of queue) {
-          try {
-            await client.session.prompt({
-              path: { id: sessionID },
-              body: {
-                noReply: true,
-                parts: [{ type: "text", text }],
-              },
-            });
-          } catch {
-            // Best-effort — if the session is gone, silently drop
-          }
+         for (const text of queue) {
+           try {
+             await client.session.prompt({
+               path: { id: sessionID },
+               body: {
+                 parts: [{ type: "text", text }],
+               },
+             });
+           } catch {
+             // Best-effort — if the session is gone, silently drop
+           }
         }
       }
     },

@@ -2,7 +2,7 @@
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": false,
   "small_model": "ollama/opencode-model",
-  "plugin": ["@tarquinen/opencode-dcp@latest"],
+  "plugin": ["@tarquinen/opencode-dcp@latest", "file://{env:HOME}/.config/opencode/plugins/planning-enforcement.js"],
   "default_agent": "headwrench",
   "provider": {
     "ollama": {
@@ -71,6 +71,12 @@
       "model": "ollama/opencode-model"
     },
     "autonomous-agent": {
+      "model": "ollama/opencode-model"
+    },
+    "dag-designer": {
+      "model": "ollama/opencode-model"
+    },
+    "dag-reviewer": {
       "model": "ollama/opencode-model"
     },
     "compaction": {

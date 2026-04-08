@@ -1,5 +1,5 @@
 ---
-name: delegating-to-documentation-expert
+name: documentation-expert
 description: Teaches how to dispatch documentation-expert for writing and editing documentation files.
 ---
 

@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** delegating-to-dag-reviewer
+**Required Skills:** dag-reviewer
 **Required Tools:** task
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -11,7 +11,7 @@ Evaluate the completed execution DAG against design criteria through independent
 
 ## Instructions
 
-1. Use the `delegating-to-dag-reviewer` skill to compose a dispatch prompt — think through what context the reviewer needs and which dimensions to evaluate
+1. Use the `dag-reviewer` skill to compose a dispatch prompt — think through what context the reviewer needs and which dimensions to evaluate
 2. Dispatch dag-reviewer using the `task` tool with plan name `{{PLAN_NAME}}`, the user's goal, and the review scope
 3. Call `next_step`
 

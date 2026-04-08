@@ -25,7 +25,8 @@
   "autoupdate": false,
   "small_model": "opencode/big-pickle",
   "plugin": [
-    "@tarquinen/opencode-dcp@latest"
+    "@tarquinen/opencode-dcp@latest",
+    "file://{env:HOME}/.config/opencode/plugins/planning-enforcement.js"
   ],
   "default_agent": "headwrench",
   "agent": {
@@ -60,6 +61,12 @@
       "model": "github-copilot/claude-sonnet-4.6"
     },
     "autonomous-agent": {
+      "model": "github-copilot/claude-sonnet-4.6"
+    },
+    "dag-designer": {
+      "model": "github-copilot/claude-sonnet-4.6"
+    },
+    "dag-reviewer": {
       "model": "github-copilot/claude-sonnet-4.6"
     },
     "compaction": {

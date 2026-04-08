@@ -24,11 +24,10 @@
     //   - bundle    - Collections of related components
     //   - profile   - Shareable profile configuration
     {
-      "name": "ocx-tools",
-      "type": "tool",
-      "description": "NAGAGroup's plugins and planning scaffolds",
+      "name": "ocx-planning-plugin",
+      "type": "plugin",
+      "description": "NAGAGroup's DAG-driven planning plugin",
       "files": [
-        // Plugin
         "plugins/planning-enforcement.js",
         // Plan session DAG
         "planning/plan-session/plan.jsonl",
@@ -123,24 +122,21 @@
         "commands/plan-session.md",
         // Skills
          "skills/asking-questions/SKILL.md",
-         "skills/delegating-to-autonomous-agent/SKILL.md",
-         "skills/delegating-to-context-insurgent/SKILL.md",
-         "skills/delegating-to-context-scout/SKILL.md",
-         "skills/delegating-to-dag-designer/SKILL.md",
-         "skills/delegating-to-dag-reviewer/SKILL.md",
-         "skills/delegating-to-documentation-expert/SKILL.md",
-         "skills/delegating-to-external-scout/SKILL.md",
-         "skills/delegating-to-junior-dev/SKILL.md",
-         "skills/delegating-to-tailwrench/SKILL.md",
+         "skills/autonomous-agent/SKILL.md",
+         "skills/context-insurgent/SKILL.md",
+         "skills/context-scout/SKILL.md",
+         "skills/dag-designer/SKILL.md",
+         "skills/dag-reviewer/SKILL.md",
+         "skills/documentation-expert/SKILL.md",
+         "skills/external-scout/SKILL.md",
+         "skills/junior-dev/SKILL.md",
+         "skills/tailwrench/SKILL.md",
          "skills/build-dags/SKILL.md",
          "skills/dag-tools/SKILL.md",
          "skills/following-plans/SKILL.md",
          "skills/grepai/SKILL.md",
          "skills/qdrant-notes/SKILL.md",
          "skills/web-research/SKILL.md"
-      ],
-      "dependencies": [
-        "ocx-tools"
       ]
     },
     {

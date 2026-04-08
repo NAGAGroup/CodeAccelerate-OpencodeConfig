@@ -1,5 +1,5 @@
 ---
-name: delegating-to-dag-reviewer
+name: dag-reviewer
 description: Teaches how to dispatch dag-reviewer to review execution DAGs against design criteria and produce structured critiques.
 ---
 

@@ -16,7 +16,7 @@
   },
   "autoupdate": false,
   "small_model": "opencode/big-pickle",
-  "plugin": ["@tarquinen/opencode-dcp@latest"],
+  "plugin": ["@tarquinen/opencode-dcp@latest", "file://{env:HOME}/.config/opencode/plugins/planning-enforcement.js"],
   "default_agent": "headwrench",
   "agent": {
     "plan": {
@@ -50,6 +50,12 @@
       "model": "anthropic/claude-haiku-4-5"
     },
     "autonomous-agent": {
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "dag-designer": {
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "dag-reviewer": {
       "model": "anthropic/claude-haiku-4-5"
     },
     "compaction": {

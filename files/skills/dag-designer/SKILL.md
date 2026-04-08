@@ -1,5 +1,5 @@
 ---
-name: delegating-to-dag-designer
+name: dag-designer
 description: Teaches how to dispatch dag-designer to build execution DAGs from the component library.
 ---
 

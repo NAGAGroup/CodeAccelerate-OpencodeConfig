@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** delegating-to-context-scout, delegating-to-junior-dev
+**Required Skills:** context-scout, junior-dev
 **Required Tools:** task, task
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -11,9 +11,9 @@ Investigate current state then implement a scoped change.
 
 ## Instructions
 
-1. Use the `delegating-to-context-scout` skill to compose a dispatch prompt — think through what the scout needs to understand about the area that needs to change: existing patterns, what will be affected, and any pain points
+1. Use the `context-scout` skill to compose a dispatch prompt — think through what the scout needs to understand about the area that needs to change: existing patterns, what will be affected, and any pain points
 2. Dispatch context-scout using the `task` tool with plan name `{{PLAN_NAME}}`
-3. Use the `delegating-to-junior-dev` skill to compose a dispatch prompt based on what the scout reported — think through what the implementation goal is, what boundaries apply, and what constraints the implementer needs to know
+3. Use the `junior-dev` skill to compose a dispatch prompt based on what the scout reported — think through what the implementation goal is, what boundaries apply, and what constraints the implementer needs to know
 4. Dispatch junior-dev using the `task` tool with plan name `{{PLAN_NAME}}`
 5. Call `next_step`
 

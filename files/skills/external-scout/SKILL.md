@@ -1,5 +1,5 @@
 ---
-name: delegating-to-external-scout
+name: external-scout
 description: Teaches how to dispatch external-scout for external research on public information and documentation.
 ---
 
