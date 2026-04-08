@@ -59,13 +59,40 @@ decision-gate-routing routes to work-D (Phase 3a) or work-E (Phase 3b)
 work-F connects Phase 3a/3b exits to Phase 4 entry (convergence node)
 ```
 
+## Rules for a valid DAG
+
+- Every path from `execution-kickoff` terminates at `plan-success` or `plan-fail` — no dead ends
+- Every `verify` node has exactly 2 children: a pass path and a fail path
+- Every `decision-gate` has exactly 2 children
+- `plan-fail` and `plan-success` are terminals — never add children to them
+- Branches are mutually exclusive paths — parallel work is unsupported
+
 ## How to build a DAG
+
+### How to name nodes
+
+Node IDs must be unique and descriptive. Never use generic names like `node-1` or `step-3`, and never use bare component names like `verify` or `work-item`. Add context: `verify-setup`, `verify-auth`, `fix-build-errors`, `decision-gate-auth-check`.
+
+### DAG Building Constraints
+
+- Always leave the `execution-kickoff`, `plan-success`, and `plan-fail` nodes until the end — they are the anchors of the DAG and should be wired in last
+- Always build and wire each phase independently before connecting them together — this keeps the work manageable and prevents structural errors from propagating across phases
+- Be comfortable with orphaned groups throughout the build process, this is expected behavior until you finish wiring up the DAG completely. It is used to guide you, not correct you.
+
+### Procedural Overview
+
+> [!IMPORTANT]
+> Ignore the `execution-kickoff`, `plan-fail` and `plan-success` nodes. You will wire these up last.w
+
+1. build each phase cluster independently, using `get_compact_dag_draft` to check work after each cluster
+2. wire clusters together, using `get_compact_dag_draft` after each connection
+4. `get_dag_draft_diagram` after all wiring is done to check you work
+3. connect kickoff and terminal nodes
+4. call `validate_dag` when done to ensure the DAG is valid
 
 ### Stage 1: Build phase clusters
 
-> [!IMPORTANT]
-> Ignore the `execution-kickoff`, `plan-fail` and `plan-success` nodes. You will wire these up last.
-
+<|think|>
 Build each phase as an independent cluster. It is expected and normal for clusters to be orphaned at this stage.
 
 For each phase:
@@ -78,6 +105,7 @@ For each phase:
 
 ### Stage 2: Wire clusters together
 
+<|think|>
 Once all phase clusters are internally complete:
 - Create inter-phase connections
 - After each call to `connect_nodes`, call `get_compact_dag_draft` to visually confirm the wiring is correct and that every path from kickoff leads to success or fail with no dead ends
@@ -85,7 +113,14 @@ Once all phase clusters are internally complete:
 
 ### Stage 3: Connect kickoff and terminal nodes
 
-Finally, connect the kickoff node to the entry of the first phase, and connect all paths leading to success or failure to their respective terminal nodes. Call `get_dag_draft_diagram` after each change, and `validate_dag` when done.
+<|think|>
+1. Before wiring terminal nodes, call `get_dag_draft_diagram` if you haven't already
+2. Verify that everything matches your expectations. If the do not, see the revising strategies in the next section below. To verify, consider:
+    - Are all terminal pathways accounted for, for both success and failure modes?
+    - Are your verify-retry structures correct, with the correct number of retries you originally planned?
+    - Are all of your phases wired together into a single, monolithic cluster, with no orphaned phase clusters remaining?
+3. If everything looks correct, identify what node should connect to the entry point then connect it
+4. Finally, remind yourself of the failure pathways you decided and connect the dangling node for each pathway to `plan-fail`
 
 ## How to revise an existing DAG
 
@@ -94,34 +129,6 @@ Finally, connect the kickoff node to the entry of the first phase, and connect a
 3. Identify the diff: nodes to add, edges to add, edges to remove, nodes to remove
 4. Execute: `add_nodes_to_dag` for new nodes, `connect_nodes` for new edges, `delete_edge` to remove an edge, `delete_node` to remove a node — after any `delete_node`, immediately rewire its orphaned children before continuing
 5. Call `get_dag_draft_diagram` after each structural change, `validate_dag` when done
-
-## Rules for a valid DAG
-
-- Every path from `execution-kickoff` terminates at `plan-success` or `plan-fail` — no dead ends
-- Every `verify` node has exactly 2 children: a pass path and a fail path
-- Every `decision-gate` has exactly 2 children
-- `plan-fail` and `plan-success` are terminals — never add children to them
-- There is exactly one of each terminal node — these two nodes are shared targets among every node immediately preceding failure or success
-- Branches are mutually exclusive paths — parallel work is unsupported
-
-## How to name nodes
-
-Node IDs must be unique and descriptive. Never use generic names like `node-1` or `step-3`, and never use bare component names like `verify` or `work-item`. Add context: `verify-setup`, `verify-auth`, `fix-build-errors`, `decision-gate-auth-check`.
-
-## DAG Building Steps Refresher
-
-> [!IMPORTANT]
-> Ignore kickoff and terminal nodes until all phases are built and wired up to one another
-
-1. build each phase cluster independently, using `get_compact_dag_draft` to check work after each cluster
-2. wire clusters together, using `get_compact_dag_draft` after each connection and `get_dag_draft_diagram` after all wiring is done
-3. connect kickoff and terminal nodes, using `get_dag_draft_diagram` after each change and `validate_dag` when done
-
-## DAG Building Constraints
-
-- Always leave the `execution-kickoff`, `plan-success`, and `plan-fail` nodes until the end — they are the anchors of the DAG and should be wired in last
-- Always build and wire each phase independently before connecting them together — this keeps the work manageable and prevents structural errors from propagating across phases
-- Be comfortable with orphaned groups throughout the build process, this is expected behavior until you finish wiring up the DAG completely. It is used to guide you, not correct you.
 
 ## How to think through this skill
 

@@ -110442,9 +110442,13 @@ function suggestRecoveryActions(report) {
 var PlanningEnforcementPlugin = async (_ctx) => {
   const { client } = _ctx;
   const resolveWorktree = (_ctx2) => process.cwd();
-  const sleep = (ms) => new Promise((resolve2) => setTimeout(resolve2, ms));
+  const pendingInjections = new Map;
+  const deferredInjectPrompt = (sessionID, text) => {
+    const queue = pendingInjections.get(sessionID) ?? [];
+    queue.push(text);
+    pendingInjections.set(sessionID, queue);
+  };
   const injectPrompt = async (sessionID, text) => {
-    await sleep(500);
     await client.session.prompt({
       path: { id: sessionID },
       body: {
@@ -110452,19 +110456,6 @@ var PlanningEnforcementPlugin = async (_ctx) => {
         parts: [{ type: "text", text }]
       }
     });
-  };
-  const deferredInjectPrompt = (sessionID, text) => {
-    setTimeout(async () => {
-      try {
-        await client.session.prompt({
-          path: { id: sessionID },
-          body: {
-            noReply: true,
-            parts: [{ type: "text", text }]
-          }
-        });
-      } catch {}
-    }, 1500);
   };
   let _dagActiveThisTurn = false;
   ensureOpenCodeIgnore(resolveWorktree(_ctx));
@@ -111219,6 +111210,107 @@ ${formatCompactDagDraft(metadata, nodes)}`);
 ` + formatCompactDagDraft(metadata, nodes);
         }
       }),
+      task: tool({
+        description: "Dispatch a specialized subagent to complete a task. OpenCode renders a delegation UI when this tool is called. " + "Use this whenever a task requires a specialist: investigation, implementation, documentation, shell operations, or research.",
+        args: {
+          description: tool.schema.string().describe("A short label for the task (3-5 words). Do not leave this empty. It provides essential feedback to the user."),
+          prompt: tool.schema.string().describe("Full task instructions for the subagent. Be specific: include the goal, relevant context, constraints, and what to return. The subagent has no memory of the current conversation."),
+          subagent_type: tool.schema.string().describe("The agent type to dispatch. Available types: context-scout, context-insurgent, external-scout, junior-dev, documentation-expert, dag-designer, dag-reviewer, tailwrench, autonomous-agent."),
+          task_id: tool.schema.string().optional().describe("Optional. Provide a task_id returned by a previous task call to resume that subagent session with its prior context intact.")
+        },
+        async execute({ description, prompt, subagent_type, task_id }, context) {
+          const configResponse = await client.config.get();
+          const config2 = configResponse.data ?? {};
+          const agentConfigs = config2.agent ?? {};
+          const agentsResponse = await client.app.agents();
+          const agents = Array.isArray(agentsResponse.data) ? agentsResponse.data : [];
+          const agent = agents.find((a) => a.name === subagent_type);
+          if (!agent) {
+            const available = agents.filter((a) => a.mode !== "primary").map((a) => a.name).join(", ");
+            throw new Error(`Unknown agent type: "${subagent_type}" is not a valid agent type. Available: ${available || "none"}`);
+          }
+          const agentConfig = agentConfigs[subagent_type] ?? {};
+          let model;
+          if (agentConfig.model && typeof agentConfig.model === "string") {
+            const slashIdx = agentConfig.model.indexOf("/");
+            if (slashIdx > 0) {
+              model = {
+                providerID: agentConfig.model.substring(0, slashIdx),
+                modelID: agentConfig.model.substring(slashIdx + 1)
+              };
+            }
+          }
+          await context.ask({
+            permission: "task",
+            patterns: [subagent_type],
+            always: ["*"],
+            metadata: { description, subagent_type }
+          });
+          const permissions = agent.permission ?? [];
+          const toolRestrictions = {};
+          for (const rule of permissions) {
+            if (rule.action === "deny" && rule.pattern === "*" && typeof rule.permission === "string") {
+              toolRestrictions[rule.permission] = false;
+            }
+            if (rule.action === "allow" && typeof rule.permission === "string" && rule.permission !== "*") {
+              toolRestrictions[rule.permission] = true;
+            }
+          }
+          let session;
+          if (task_id) {
+            try {
+              const existing = await client.session.get({
+                path: { id: task_id }
+              });
+              if (existing.data)
+                session = existing.data;
+            } catch {}
+          }
+          if (!session) {
+            const created = await client.session.create({
+              body: {
+                parentID: context.sessionID,
+                title: `${description} (@${agent.name} subagent)`,
+                permission: permissions
+              }
+            });
+            session = created.data;
+          }
+          if (!session)
+            throw new Error("Failed to create or retrieve subagent session");
+          context.metadata({
+            title: description,
+            metadata: { sessionId: session.id, ...model ? { model } : {} }
+          });
+          const handleAbort = () => client.session.abort({ path: { id: session.id } });
+          context.abort.addEventListener("abort", handleAbort);
+          try {
+            const promptBody = {
+              agent: agent.name,
+              tools: toolRestrictions,
+              parts: [{ type: "text", text: prompt }]
+            };
+            if (model) {
+              promptBody.model = model;
+            }
+            const result = await client.session.prompt({
+              path: { id: session.id },
+              body: promptBody
+            });
+            const resultParts = result.data?.parts ?? [];
+            const textParts = resultParts.filter((p) => p.type === "text");
+            const text = textParts[textParts.length - 1]?.text ?? "";
+            context.metadata({
+              title: description,
+              metadata: { sessionId: session.id, ...model ? { model } : {} }
+            });
+            return [text, "", `task_id: ${session.id}`].join(`
+`);
+          } finally {
+            context.abort.removeEventListener("abort", handleAbort);
+          }
+        }
+      }),
       get_planning_components_catalogue: tool({
         description: "Retrieve the planning components catalogue listing all available node types. Returns CATALOGUE.md text verbatim from the global node-library installation.",
         args: {},
@@ -111285,6 +111377,28 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           writeState(statePath, state);
         } else {
           writeState(statePath, state);
+        }
+      }
+    },
+    event: async ({ event }) => {
+      if (event.type === "session.idle") {
+        const sessionID = event.properties?.sessionID;
+        if (!sessionID)
+          return;
+        const queue = pendingInjections.get(sessionID);
+        if (!queue || queue.length === 0)
+          return;
+        pendingInjections.delete(sessionID);
+        for (const text of queue) {
+          try {
+            await client.session.prompt({
+              path: { id: sessionID },
+              body: {
+                noReply: true,
+                parts: [{ type: "text", text }]
+              }
+            });
+          } catch {}
         }
       }
     },
