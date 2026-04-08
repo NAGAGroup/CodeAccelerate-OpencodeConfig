@@ -55,6 +55,6 @@ This is your plan. Execute these steps in order — do not devise your own inves
 
 3. **Broad discovery.** Run `grepai_grepai_search` with `compact=true` and `format='toon'` using varied natural-language queries — one per aspect you need to understand. This gives you a map of where things are without burning tokens on full content.
 
-4. **Targeted reads.** For the most relevant files identified in step 3, run `grepai_grepai_search` again without `compact` and with a `path` argument to retrieve full content from specific directories or files.
+4. **Targeted reads.** For the most relevant files identified in step 3, run `grepai_grepai_search` again without `compact=false` and with a `path` argument to retrieve full content from specific directories or files.
 
 5. **Trace connections (if available).** If you have access to `grepai_grepai_trace_callers`, `grepai_grepai_trace_callees`, or `grepai_grepai_trace_graph`, use them now to understand how the code you found in steps 3-4 connects. Skip this step if these tools are not available to you.
