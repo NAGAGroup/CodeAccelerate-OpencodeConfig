@@ -304,9 +304,14 @@ export function formatCompactDagDraft(
     if (n?.children) queue.push(...n.children);
   }
 
+  const TERMINAL_NODES = ["plan-success", "plan-fail"];
+
   // Separate reachable and orphaned nodes
+  // Terminal nodes (plan-success, plan-fail) are never treated as orphans —
+  // they are expected to be unwired during incremental DAG construction.
   const connectedNodes = nodes.filter((n) => reachable.has(n.id));
-  const orphanedNodes = nodes.filter((n) => !reachable.has(n.id));
+  const orphanedNodes = nodes.filter((n) => !reachable.has(n.id) && !TERMINAL_NODES.includes(n.id));
+  const terminalNodes = nodes.filter((n) => !reachable.has(n.id) && TERMINAL_NODES.includes(n.id));
 
   // Group orphaned nodes into connected components
   const orphanGroups: DagNodeV3[][] = [];
@@ -337,9 +342,23 @@ export function formatCompactDagDraft(
   });
 
   // Build output sections
+  const KICKOFF_NODE = "execution-kickoff";
+  const kickoffNode = connectedNodes.find((n) => n.id === KICKOFF_NODE);
+  const nonKickoffConnected = connectedNodes.filter((n) => n.id !== KICKOFF_NODE);
+
   let output = metadataLine + "\n";
-  for (const n of connectedNodes) {
+  if (kickoffNode) {
+    output += `// kickoff node — remains unwired until the final wiring step\n`;
+    output += JSON.stringify(kickoffNode) + "\n";
+  }
+  for (const n of nonKickoffConnected) {
     output += JSON.stringify(n) + "\n";
+  }
+  if (terminalNodes.length > 0) {
+    output += `\n// terminal nodes — remain unwired until the final wiring step\n`;
+    for (const n of terminalNodes) {
+      output += JSON.stringify(n) + "\n";
+    }
   }
   for (let i = 0; i < orphanGroups.length; i++) {
     output += `\n// orphaned group ${i + 1}\n`;
@@ -350,7 +369,7 @@ export function formatCompactDagDraft(
 
   let result = `## DAG Compact Draft: ${metadata.id}\n\n`;
   if (orphanGroups.length > 0) {
-    result += `⚠️ **${orphanGroups.length} orphaned group(s) detected** — these nodes are not reachable from the entry node.\n\n`;
+    result += `${orphanGroups.length} orphaned group(s)\n\n`;
   }
   result += `\`\`\`jsonl\n${output.trimEnd()}\n\`\`\``;
   return result;

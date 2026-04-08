@@ -110248,8 +110248,10 @@ function formatCompactDagDraft(metadata, nodes) {
     if (n?.children)
       queue.push(...n.children);
   }
+  const TERMINAL_NODES = ["plan-success", "plan-fail"];
   const connectedNodes = nodes.filter((n) => reachable.has(n.id));
-  const orphanedNodes = nodes.filter((n) => !reachable.has(n.id));
+  const orphanedNodes = nodes.filter((n) => !reachable.has(n.id) && !TERMINAL_NODES.includes(n.id));
+  const terminalNodes = nodes.filter((n) => !reachable.has(n.id) && TERMINAL_NODES.includes(n.id));
   const orphanGroups = [];
   const visited = new Set;
   for (const orphan of orphanedNodes) {
@@ -110276,14 +110278,33 @@ function formatCompactDagDraft(metadata, nodes) {
     id: metadata.id,
     entry_node_id: metadata.entry_node_id
   });
+  const KICKOFF_NODE = "execution-kickoff";
+  const kickoffNode = connectedNodes.find((n) => n.id === KICKOFF_NODE);
+  const nonKickoffConnected = connectedNodes.filter((n) => n.id !== KICKOFF_NODE);
   let output = metadataLine + `
 `;
-  for (const n of connectedNodes) {
+  if (kickoffNode) {
+    output += `// kickoff node — remains unwired until the final wiring step
+`;
+    output += JSON.stringify(kickoffNode) + `
+`;
+  }
+  for (const n of nonKickoffConnected) {
     output += JSON.stringify(n) + `
 `;
   }
+  if (terminalNodes.length > 0) {
+    output += `
+// terminal nodes — remain unwired until the final wiring step
+`;
+    for (const n of terminalNodes) {
+      output += JSON.stringify(n) + `
+`;
+    }
+  }
   for (let i = 0;i < orphanGroups.length; i++) {
-    output += `// orphaned group ${i + 1}
+    output += `
+// orphaned group ${i + 1}
 `;
     for (const n of orphanGroups[i]) {
       output += JSON.stringify(n) + `
@@ -110294,7 +110315,7 @@ function formatCompactDagDraft(metadata, nodes) {
 
 `;
   if (orphanGroups.length > 0) {
-    result += `⚠️ **${orphanGroups.length} orphaned group(s) detected** — these nodes are not reachable from the entry node.
+    result += `${orphanGroups.length} orphaned group(s)
 
 `;
   }

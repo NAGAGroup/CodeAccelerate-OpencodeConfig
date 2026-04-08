@@ -26,7 +26,7 @@ Phase 1 — decision-gate with immediate convergence:
 
 Phase 2 — sequential work with early success check:
   work-B → work-C → decision-gate-early-check
-    ├─ → plan-success (early exit — goal already satisfied)
+    ├─ → plan-success (early exit example — goal already satisfied) (wired up at the end, leave success paths dangling until then)
     └─ → decision-gate-routing
            ├─ → [Phase 3a entry]
            └─ → [Phase 3b entry]
@@ -36,7 +36,7 @@ Phase 3a — single retry, converges to Phase 4:
     ├─ (pass) → work-F (converge with Phase 3b)
     └─ (fail) → fix-D → verify-D-retry
                            ├─ (pass) → work-F (converge)
-                           └─ (fail) → plan-fail
+                           └─ (fail) → plan-fail (wired up at the end, leave failure paths dangling until then)
 
 Phase 3b — two retries, converges to Phase 4:
   work-E → verify-E
@@ -45,20 +45,18 @@ Phase 3b — two retries, converges to Phase 4:
                              ├─ (pass) → work-F (converge)
                              └─ (fail) → fix-E-2 → verify-E-retry-2
                                                      ├─ (pass) → work-F (converge)
-                                                     └─ (fail) → plan-fail
+                                                     └─ (fail) → plan-fail (wired up at the end, leave failure paths dangling until then)
 
 Phase 4 — sequential to success:
-  work-F → plan-success
+  work-F → plan-success (wired up at the end, leave success paths dangling until then)
 ```
 
 **Then define the wiring between phases:**
 ```
-execution-kickoff → work-A
 work-B connects Phase 1 exit to Phase 2 entry (convergence node)
-decision-gate-early-check routes to plan-success (early exit) or decision-gate-routing
+decision-gate-early-check routes to plan-success (early exit, wired up at the end) or decision-gate-routing
 decision-gate-routing routes to work-D (Phase 3a) or work-E (Phase 3b)
 work-F connects Phase 3a/3b exits to Phase 4 entry (convergence node)
-work-F → plan-success
 ```
 
 ## How to build a DAG
@@ -66,12 +64,12 @@ work-F → plan-success
 ### Stage 1: Build phase clusters
 
 > [!IMPORTANT]
-> Call `get_compact_dag_draft` after each phase cluster to check your work before proceeding to the next cluster. Always wait until the next stage before doing any inter-phase wiring
+> Ignore the `execution-kickoff`, `plan-fail` and `plan-success` nodes. You will wire these up last.
 
 Build each phase as an independent cluster. It is expected and normal for clusters to be orphaned at this stage.
 
 For each phase:
-1. Call `add_nodes_to_dag` to create all the nodes needed for the phase, including entry and exit nodes, work nodes, verify nodes, fix nodes, and decision gates
+1. Call `add_nodes_to_dag` to create all the nodes needed for the phase
 1. Wire the internal edges within the phase using `connect_nodes`
 4. Call `get_compact_dag_draft` to confirm the cluster is internally correct — it will appear as a grouped orphan cluster, which is expected
 
@@ -123,6 +121,7 @@ Node IDs must be unique and descriptive. Never use generic names like `node-1` o
 
 - Always leave the `execution-kickoff`, `plan-success`, and `plan-fail` nodes until the end — they are the anchors of the DAG and should be wired in last
 - Always build and wire each phase independently before connecting them together — this keeps the work manageable and prevents structural errors from propagating across phases
+- Be comfortable with orphaned groups throughout the build process, this is expected behavior until you finish wiring up the DAG completely. It is used to guide you, not correct you.
 
 ## How to think through this skill
 
