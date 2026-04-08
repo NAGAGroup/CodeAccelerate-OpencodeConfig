@@ -94,7 +94,7 @@ Finally, connect the kickoff node to the entry of the first phase, and connect a
 1. Call `get_compact_dag_draft` to read the grouped cluster representation and `get_dag_draft_diagram` to view the visual structure
 2. Write the target adjacency list — what the DAG should look like after revision
 3. Identify the diff: nodes to add, edges to add, edges to remove, nodes to remove
-4. Execute: `add_nodes_to_dag` for new nodes, `connect_nodes` for new edges, `delete_dag_edge` to remove an edge, `delete_node` to remove a node — after any `delete_node`, immediately rewire its orphaned children before continuing
+4. Execute: `add_nodes_to_dag` for new nodes, `connect_nodes` for new edges, `delete_edge` to remove an edge, `delete_node` to remove a node — after any `delete_node`, immediately rewire its orphaned children before continuing
 5. Call `get_dag_draft_diagram` after each structural change, `validate_dag` when done
 
 ## Rules for a valid DAG

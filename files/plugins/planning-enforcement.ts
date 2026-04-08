@@ -8,7 +8,7 @@ import { exemptTools, isExempt, CONFIG_ROOT } from "./constants";
 import { dagStatePath, writeState, readState, now } from "./state-io";
 import { expandPath, readPrompt, resolveDagPath } from "./path-utils";
 import { readDagV3, writeDagV3 } from "./dag-io";
-import { dagToMermaidCompactV3, validateDagV3, flattenTreeV3 } from "./dag-tree";
+import { dagToMermaidCompactV3, validateDagV3, flattenTreeV3, formatCompactDagDraft } from "./dag-tree";
 import { copyPlanningDag } from "./dag-lifecycle";
 import { ensureOpenCodeIgnore } from "./plugin-utils";
 import { detectDivergence, suggestRecoveryActions } from "./divergence-detection";
@@ -455,64 +455,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         const worktree = resolveWorktree(context);
         const planPath = resolveDagPath(target, worktree);
         const { metadata, nodes } = readDagV3(planPath);
-
-        // Find all nodes reachable from the entry node
-        const reachable = new Set<string>();
-        const queue = [metadata.entry_node_id];
-        while (queue.length > 0) {
-          const id = queue.pop()!;
-          if (reachable.has(id)) continue;
-          reachable.add(id);
-          const n = nodes.find((x) => x.id === id);
-          if (n?.children) queue.push(...n.children);
-        }
-
-        // Separate reachable and orphaned nodes
-        const connectedNodes = nodes.filter((n) => reachable.has(n.id));
-        const orphanedNodes = nodes.filter((n) => !reachable.has(n.id));
-
-        // Group orphaned nodes into connected components
-        const orphanGroups: DagNodeV3[][] = [];
-        const visited = new Set<string>();
-        for (const orphan of orphanedNodes) {
-          if (visited.has(orphan.id)) continue;
-          // BFS within orphaned set
-          const group: DagNodeV3[] = [];
-          const groupQueue = [orphan.id];
-          while (groupQueue.length > 0) {
-            const id = groupQueue.pop()!;
-            if (visited.has(id)) continue;
-            visited.add(id);
-            const n = nodes.find((x) => x.id === id);
-            if (n) {
-              group.push(n);
-              if (n.children) groupQueue.push(...n.children);
-            }
-          }
-          orphanGroups.push(group);
-        }
-
-        // Serialize metadata line
-        const metadataLine = JSON.stringify({ schema_version: metadata.schema_version, id: metadata.id, entry_node_id: metadata.entry_node_id });
-
-        // Build output sections
-        let output = metadataLine + "\n";
-        for (const n of connectedNodes) {
-          output += JSON.stringify(n) + "\n";
-        }
-        for (let i = 0; i < orphanGroups.length; i++) {
-          output += `// orphaned group ${i + 1}\n`;
-          for (const n of orphanGroups[i]) {
-            output += JSON.stringify(n) + "\n";
-          }
-        }
-
-        let result = `## DAG Compact Draft: ${metadata.id}\n\n`;
-        if (orphanGroups.length > 0) {
-          result += `⚠️ **${orphanGroups.length} orphaned group(s) detected** — these nodes are not reachable from the entry node.\n\n`;
-        }
-        result += `\`\`\`jsonl\n${output.trimEnd()}\n\`\`\``;
-        return result;
+        return formatCompactDagDraft(metadata, nodes);
       },
     }),
 
@@ -683,13 +626,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const { metadata, nodes } = readDagV3(planPath);
 
           if (nodes.some((n) => n.id === nodeId)) {
-            throw new Error(`Node ID "${nodeId}" already exists in DAG.`);
+            throw new Error(`Node ID "${nodeId}" already exists in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`);
           }
 
           const nodeLibRelBase = path.join("planning", "plan-session", "node-library");
           const specPath = path.join(CONFIG_ROOT, nodeLibRelBase, component_name, "node-spec.json");
           if (!fs.existsSync(specPath)) {
-            throw new Error(`Component "${component_name}" not found in node library. Use get_planning_components_catalogue() to see available types.`);
+            throw new Error(`Component "${component_name}" not found in node library. Use get_planning_components_catalogue() to see available types.\n\n${formatCompactDagDraft(metadata, nodes)}`);
           }
           const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
           const sourcePromptPath = path.join(CONFIG_ROOT, nodeLibRelBase, component_name, "prompt.md");
@@ -712,7 +655,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             `Enforcement items: ${spec.enforcement.length}\n` +
             `Prompt: ${destPromptPath}\n\n` +
             `**DAG now contains ${nodes.length} nodes.**\n\n` +
-            `Use connect_nodes to wire this node to a parent.`
+            `Use connect_nodes to wire this node to a parent.\n\n` +
+            formatCompactDagDraft(metadata, nodes)
           );
         },
       }),
@@ -784,7 +728,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           }
 
           if (errors.length > 0) {
-            throw new Error(`add_nodes_to_dag: ${errors.length} error(s):\n${errors.join("\n")}`);
+            throw new Error(`add_nodes_to_dag: ${errors.length} error(s):\n${errors.join("\n")}\n\n${formatCompactDagDraft(metadata, nodes)}`);
           }
 
           writeDagV3(planPath, metadata, nodes);
@@ -793,7 +737,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             `## add_nodes_to_dag: Created ${created.length} node(s)\n\n` +
             created.map((c) => `- ${c}`).join("\n") + "\n\n" +
             `**DAG now contains ${nodes.length} nodes.**\n\n` +
-            `Use connect_nodes to wire these nodes into the DAG.`
+            `Use connect_nodes to wire these nodes into the DAG.\n\n` +
+            formatCompactDagDraft(metadata, nodes)
           );
         },
       }),
@@ -817,13 +762,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
          const { metadata, nodes } = readDagV3(planPath);
 
          const parent = nodes.find((n) => n.id === from);
-         if (!parent) throw new Error(`Source node "${from}" not found in DAG.`);
+         if (!parent) throw new Error(`Source node "${from}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`);
 
          const child = nodes.find((n) => n.id === to);
-         if (!child) throw new Error(`Target node "${to}" not found in DAG. Create it first with add_nodes_to_dag.`);
+         if (!child) throw new Error(`Target node "${to}" not found in DAG. Create it first with add_nodes_to_dag.\n\n${formatCompactDagDraft(metadata, nodes)}`);
 
          if (parent.children?.includes(to)) {
-           throw new Error(`"${to}" is already a child of "${from}".`);
+           throw new Error(`"${to}" is already a child of "${from}".\n\n${formatCompactDagDraft(metadata, nodes)}`);
          }
 
          // Cycle detection: from must not be a descendant of to
@@ -836,14 +781,17 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
            if (n?.children) queue.push(...n.children);
          }
          if (descendants.has(from)) {
-           throw new Error(`Adding "${to}" as child of "${from}" would create a cycle.`);
+           throw new Error(`Adding "${to}" as child of "${from}" would create a cycle.\n\n${formatCompactDagDraft(metadata, nodes)}`);
          }
 
          if (!parent.children) parent.children = [];
          parent.children.push(to);
 
          writeDagV3(planPath, metadata, nodes);
-         return `## connect_nodes: Wired "${from}" → "${to}"\n\nCall get_dag_draft_diagram to visualize the current DAG diagram.`;
+         return (
+           `## connect_nodes: Wired "${from}" → "${to}"\n\n` +
+           formatCompactDagDraft(metadata, nodes)
+         );
        },
      }),
 
@@ -868,11 +816,11 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const { metadata, nodes } = readDagV3(planPath);
 
           if (nodeId === metadata.entry_node_id) {
-            throw new Error(`Cannot delete the entry node "${nodeId}". The entry node is required.`);
+            throw new Error(`Cannot delete the entry node "${nodeId}". The entry node is required.\n\n${formatCompactDagDraft(metadata, nodes)}`);
           }
 
           const nodeToDelete = nodes.find((n) => n.id === nodeId);
-          if (!nodeToDelete) throw new Error(`Node "${nodeId}" not found in DAG.`);
+          if (!nodeToDelete) throw new Error(`Node "${nodeId}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`);
 
           const orphanedChildren = nodeToDelete.children ?? [];
 
@@ -897,7 +845,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             result += `**Orphaned nodes (need re-parenting):** ${orphanedChildren.join(", ")}\n`;
             result += `Use connect_nodes to reconnect these nodes to a new parent.\n\n`;
           }
-          result += `Call get_dag_draft_diagram to visualize the current DAG diagram.`;
+          result += formatCompactDagDraft(metadata, remaining);
           return result;
         },
     }),
@@ -921,10 +869,10 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
          const { metadata, nodes } = readDagV3(planPath);
 
          const parent = nodes.find((n) => n.id === from);
-         if (!parent) throw new Error(`Source node "${from}" not found in DAG.`);
+         if (!parent) throw new Error(`Source node "${from}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`);
 
          if (!parent.children?.includes(to)) {
-           throw new Error(`"${to}" is not a child of "${from}".`);
+           throw new Error(`"${to}" is not a child of "${from}".\n\n${formatCompactDagDraft(metadata, nodes)}`);
          }
 
          parent.children = parent.children.filter((id) => id !== to);
@@ -934,7 +882,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
          return (
            `## delete_edge: Removed edge "${from}" → "${to}"\n\n` +
            `Note: "${to}" still exists in the DAG — use connect_nodes to reconnect it if needed.\n\n` +
-           `Call get_dag_draft_diagram to visualize the current DAG diagram.`
+           formatCompactDagDraft(metadata, nodes)
          );
        },
      }),

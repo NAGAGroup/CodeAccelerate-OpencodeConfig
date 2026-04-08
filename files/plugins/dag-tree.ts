@@ -281,3 +281,77 @@ export function dagToMermaidCompactV3(
 
   return { mermaid: lines.join("\n"), warnings };
 }
+
+// ─── Compact JSONL draft ──────────────────────────────────────────────────────
+
+/**
+ * Format a DAG as a compact JSONL draft with orphaned node groups separated
+ * and labeled. Connected nodes appear first, then orphaned groups each prefixed
+ * with a comment line. Returns the formatted string ready for display.
+ */
+export function formatCompactDagDraft(
+  metadata: DagMetadataV3,
+  nodes: DagNodeV3[],
+): string {
+  // Find all nodes reachable from the entry node
+  const reachable = new Set<string>();
+  const queue = [metadata.entry_node_id];
+  while (queue.length > 0) {
+    const id = queue.pop()!;
+    if (reachable.has(id)) continue;
+    reachable.add(id);
+    const n = nodes.find((x) => x.id === id);
+    if (n?.children) queue.push(...n.children);
+  }
+
+  // Separate reachable and orphaned nodes
+  const connectedNodes = nodes.filter((n) => reachable.has(n.id));
+  const orphanedNodes = nodes.filter((n) => !reachable.has(n.id));
+
+  // Group orphaned nodes into connected components
+  const orphanGroups: DagNodeV3[][] = [];
+  const visited = new Set<string>();
+  for (const orphan of orphanedNodes) {
+    if (visited.has(orphan.id)) continue;
+    // BFS within orphaned set
+    const group: DagNodeV3[] = [];
+    const groupQueue = [orphan.id];
+    while (groupQueue.length > 0) {
+      const id = groupQueue.pop()!;
+      if (visited.has(id)) continue;
+      visited.add(id);
+      const n = nodes.find((x) => x.id === id);
+      if (n) {
+        group.push(n);
+        if (n.children) groupQueue.push(...n.children);
+      }
+    }
+    orphanGroups.push(group);
+  }
+
+  // Serialize metadata line
+  const metadataLine = JSON.stringify({
+    schema_version: metadata.schema_version,
+    id: metadata.id,
+    entry_node_id: metadata.entry_node_id,
+  });
+
+  // Build output sections
+  let output = metadataLine + "\n";
+  for (const n of connectedNodes) {
+    output += JSON.stringify(n) + "\n";
+  }
+  for (let i = 0; i < orphanGroups.length; i++) {
+    output += `// orphaned group ${i + 1}\n`;
+    for (const n of orphanGroups[i]) {
+      output += JSON.stringify(n) + "\n";
+    }
+  }
+
+  let result = `## DAG Compact Draft: ${metadata.id}\n\n`;
+  if (orphanGroups.length > 0) {
+    result += `⚠️ **${orphanGroups.length} orphaned group(s) detected** — these nodes are not reachable from the entry node.\n\n`;
+  }
+  result += `\`\`\`jsonl\n${output.trimEnd()}\n\`\`\``;
+  return result;
+}

@@ -110236,6 +110236,73 @@ function dagToMermaidCompactV3(metadata, nodes) {
   return { mermaid: lines.join(`
 `), warnings };
 }
+function formatCompactDagDraft(metadata, nodes) {
+  const reachable = new Set;
+  const queue = [metadata.entry_node_id];
+  while (queue.length > 0) {
+    const id = queue.pop();
+    if (reachable.has(id))
+      continue;
+    reachable.add(id);
+    const n = nodes.find((x) => x.id === id);
+    if (n?.children)
+      queue.push(...n.children);
+  }
+  const connectedNodes = nodes.filter((n) => reachable.has(n.id));
+  const orphanedNodes = nodes.filter((n) => !reachable.has(n.id));
+  const orphanGroups = [];
+  const visited = new Set;
+  for (const orphan of orphanedNodes) {
+    if (visited.has(orphan.id))
+      continue;
+    const group = [];
+    const groupQueue = [orphan.id];
+    while (groupQueue.length > 0) {
+      const id = groupQueue.pop();
+      if (visited.has(id))
+        continue;
+      visited.add(id);
+      const n = nodes.find((x) => x.id === id);
+      if (n) {
+        group.push(n);
+        if (n.children)
+          groupQueue.push(...n.children);
+      }
+    }
+    orphanGroups.push(group);
+  }
+  const metadataLine = JSON.stringify({
+    schema_version: metadata.schema_version,
+    id: metadata.id,
+    entry_node_id: metadata.entry_node_id
+  });
+  let output = metadataLine + `
+`;
+  for (const n of connectedNodes) {
+    output += JSON.stringify(n) + `
+`;
+  }
+  for (let i = 0;i < orphanGroups.length; i++) {
+    output += `// orphaned group ${i + 1}
+`;
+    for (const n of orphanGroups[i]) {
+      output += JSON.stringify(n) + `
+`;
+    }
+  }
+  let result = `## DAG Compact Draft: ${metadata.id}
+
+`;
+  if (orphanGroups.length > 0) {
+    result += `⚠️ **${orphanGroups.length} orphaned group(s) detected** — these nodes are not reachable from the entry node.
+
+`;
+  }
+  result += `\`\`\`jsonl
+${output.trimEnd()}
+\`\`\``;
+  return result;
+}
 
 // dag-lifecycle.ts
 import * as fs4 from "fs";
@@ -110696,67 +110763,7 @@ ${missingPrompts.join(`
           const worktree = resolveWorktree(context);
           const planPath = resolveDagPath(target, worktree);
           const { metadata, nodes } = readDagV3(planPath);
-          const reachable = new Set;
-          const queue = [metadata.entry_node_id];
-          while (queue.length > 0) {
-            const id = queue.pop();
-            if (reachable.has(id))
-              continue;
-            reachable.add(id);
-            const n = nodes.find((x) => x.id === id);
-            if (n?.children)
-              queue.push(...n.children);
-          }
-          const connectedNodes = nodes.filter((n) => reachable.has(n.id));
-          const orphanedNodes = nodes.filter((n) => !reachable.has(n.id));
-          const orphanGroups = [];
-          const visited = new Set;
-          for (const orphan of orphanedNodes) {
-            if (visited.has(orphan.id))
-              continue;
-            const group = [];
-            const groupQueue = [orphan.id];
-            while (groupQueue.length > 0) {
-              const id = groupQueue.pop();
-              if (visited.has(id))
-                continue;
-              visited.add(id);
-              const n = nodes.find((x) => x.id === id);
-              if (n) {
-                group.push(n);
-                if (n.children)
-                  groupQueue.push(...n.children);
-              }
-            }
-            orphanGroups.push(group);
-          }
-          const metadataLine = JSON.stringify({ schema_version: metadata.schema_version, id: metadata.id, entry_node_id: metadata.entry_node_id });
-          let output = metadataLine + `
-`;
-          for (const n of connectedNodes) {
-            output += JSON.stringify(n) + `
-`;
-          }
-          for (let i = 0;i < orphanGroups.length; i++) {
-            output += `// orphaned group ${i + 1}
-`;
-            for (const n of orphanGroups[i]) {
-              output += JSON.stringify(n) + `
-`;
-            }
-          }
-          let result = `## DAG Compact Draft: ${metadata.id}
-
-`;
-          if (orphanGroups.length > 0) {
-            result += `⚠️ **${orphanGroups.length} orphaned group(s) detected** — these nodes are not reachable from the entry node.
-
-`;
-          }
-          result += `\`\`\`jsonl
-${output.trimEnd()}
-\`\`\``;
-          return result;
+          return formatCompactDagDraft(metadata, nodes);
         }
       }),
       get_dag_draft_diagram: tool({
@@ -110901,12 +110908,16 @@ ${ascii}`;
           }
           const { metadata, nodes } = readDagV3(planPath);
           if (nodes.some((n) => n.id === nodeId)) {
-            throw new Error(`Node ID "${nodeId}" already exists in DAG.`);
+            throw new Error(`Node ID "${nodeId}" already exists in DAG.
+
+${formatCompactDagDraft(metadata, nodes)}`);
           }
           const nodeLibRelBase = path6.join("planning", "plan-session", "node-library");
           const specPath = path6.join(CONFIG_ROOT, nodeLibRelBase, component_name, "node-spec.json");
           if (!fs6.existsSync(specPath)) {
-            throw new Error(`Component "${component_name}" not found in node library. Use get_planning_components_catalogue() to see available types.`);
+            throw new Error(`Component "${component_name}" not found in node library. Use get_planning_components_catalogue() to see available types.
+
+${formatCompactDagDraft(metadata, nodes)}`);
           }
           const spec = JSON.parse(fs6.readFileSync(specPath, "utf-8"));
           const sourcePromptPath = path6.join(CONFIG_ROOT, nodeLibRelBase, component_name, "prompt.md");
@@ -110927,7 +110938,9 @@ ${ascii}`;
 
 ` + `**DAG now contains ${nodes.length} nodes.**
 
-` + `Use connect_nodes to wire this node to a parent.`;
+` + `Use connect_nodes to wire this node to a parent.
+
+` + formatCompactDagDraft(metadata, nodes);
         }
       }),
       add_nodes_to_dag: tool({
@@ -110987,7 +111000,9 @@ ${ascii}`;
           if (errors3.length > 0) {
             throw new Error(`add_nodes_to_dag: ${errors3.length} error(s):
 ${errors3.join(`
-`)}`);
+`)}
+
+${formatCompactDagDraft(metadata, nodes)}`);
           }
           writeDagV3(planPath, metadata, nodes);
           return `## add_nodes_to_dag: Created ${created.length} node(s)
@@ -110997,7 +111012,9 @@ ${errors3.join(`
 
 ` + `**DAG now contains ${nodes.length} nodes.**
 
-` + `Use connect_nodes to wire these nodes into the DAG.`;
+` + `Use connect_nodes to wire these nodes into the DAG.
+
+` + formatCompactDagDraft(metadata, nodes);
         }
       }),
       connect_nodes: tool({
@@ -111013,12 +111030,18 @@ ${errors3.join(`
           const { metadata, nodes } = readDagV3(planPath);
           const parent = nodes.find((n) => n.id === from);
           if (!parent)
-            throw new Error(`Source node "${from}" not found in DAG.`);
+            throw new Error(`Source node "${from}" not found in DAG.
+
+${formatCompactDagDraft(metadata, nodes)}`);
           const child = nodes.find((n) => n.id === to);
           if (!child)
-            throw new Error(`Target node "${to}" not found in DAG. Create it first with add_nodes_to_dag.`);
+            throw new Error(`Target node "${to}" not found in DAG. Create it first with add_nodes_to_dag.
+
+${formatCompactDagDraft(metadata, nodes)}`);
           if (parent.children?.includes(to)) {
-            throw new Error(`"${to}" is already a child of "${from}".`);
+            throw new Error(`"${to}" is already a child of "${from}".
+
+${formatCompactDagDraft(metadata, nodes)}`);
           }
           const descendants = new Set;
           const queue = [to];
@@ -111030,7 +111053,9 @@ ${errors3.join(`
               queue.push(...n.children);
           }
           if (descendants.has(from)) {
-            throw new Error(`Adding "${to}" as child of "${from}" would create a cycle.`);
+            throw new Error(`Adding "${to}" as child of "${from}" would create a cycle.
+
+${formatCompactDagDraft(metadata, nodes)}`);
           }
           if (!parent.children)
             parent.children = [];
@@ -111038,7 +111063,7 @@ ${errors3.join(`
           writeDagV3(planPath, metadata, nodes);
           return `## connect_nodes: Wired "${from}" → "${to}"
 
-Call get_dag_draft_diagram to visualize the current DAG diagram.`;
+` + formatCompactDagDraft(metadata, nodes);
         }
       }),
       delete_node: tool({
@@ -111056,11 +111081,15 @@ Call get_dag_draft_diagram to visualize the current DAG diagram.`;
           const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
           const { metadata, nodes } = readDagV3(planPath);
           if (nodeId === metadata.entry_node_id) {
-            throw new Error(`Cannot delete the entry node "${nodeId}". The entry node is required.`);
+            throw new Error(`Cannot delete the entry node "${nodeId}". The entry node is required.
+
+${formatCompactDagDraft(metadata, nodes)}`);
           }
           const nodeToDelete = nodes.find((n) => n.id === nodeId);
           if (!nodeToDelete)
-            throw new Error(`Node "${nodeId}" not found in DAG.`);
+            throw new Error(`Node "${nodeId}" not found in DAG.
+
+${formatCompactDagDraft(metadata, nodes)}`);
           const orphanedChildren = nodeToDelete.children ?? [];
           for (const n of nodes) {
             if (n.children) {
@@ -111087,7 +111116,7 @@ Call get_dag_draft_diagram to visualize the current DAG diagram.`;
 
 `;
           }
-          result += `Call get_dag_draft_diagram to visualize the current DAG diagram.`;
+          result += formatCompactDagDraft(metadata, remaining);
           return result;
         }
       }),
@@ -111104,9 +111133,13 @@ Call get_dag_draft_diagram to visualize the current DAG diagram.`;
           const { metadata, nodes } = readDagV3(planPath);
           const parent = nodes.find((n) => n.id === from);
           if (!parent)
-            throw new Error(`Source node "${from}" not found in DAG.`);
+            throw new Error(`Source node "${from}" not found in DAG.
+
+${formatCompactDagDraft(metadata, nodes)}`);
           if (!parent.children?.includes(to)) {
-            throw new Error(`"${to}" is not a child of "${from}".`);
+            throw new Error(`"${to}" is not a child of "${from}".
+
+${formatCompactDagDraft(metadata, nodes)}`);
           }
           parent.children = parent.children.filter((id) => id !== to);
           if (parent.children.length === 0)
@@ -111116,7 +111149,7 @@ Call get_dag_draft_diagram to visualize the current DAG diagram.`;
 
 ` + `Note: "${to}" still exists in the DAG — use connect_nodes to reconnect it if needed.
 
-` + `Call get_dag_draft_diagram to visualize the current DAG diagram.`;
+` + formatCompactDagDraft(metadata, nodes);
         }
       }),
       task: tool({
