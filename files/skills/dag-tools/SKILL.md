@@ -94,29 +94,4 @@ Returns the DAG as JSONL with connected nodes first, followed by orphaned groups
 |-----------|-------------|
 | `plan_name` | Session plan name — throws on any structural issue (required) |
 
-## How to build a DAG
 
-1. Call `get_planning_components_catalogue` to load the component library
-2. Plan the full adjacency list in your reasoning before calling any DAG tool — every node and every edge, end to end
-3. Call `init_dag` to create the plan file — `execution-kickoff`, `plan-success`, and `plan-fail` are auto-added
-4. Create all remaining nodes in one call with `add_nodes_to_dag`
-5. Wire all edges with `connect_nodes` — entry node first, then follow each path to the terminals
-6. Call `get_dag_draft_diagram` after each structural change to verify the shape looks correct
-7. Call `validate_dag` when construction is complete — fix any issues before finishing
-
-## How to revise a DAG
-
-1. Call `get_compact_dag_draft` to read the current structure and identify orphaned groups
-2. Plan the target adjacency list in your reasoning — what the DAG should look like after revision
-3. Identify the diff: nodes to add, edges to add, edges to remove, nodes to remove
-4. Execute: new nodes with `add_nodes_to_dag`, new edges with `connect_nodes`, removed edges with `delete_edge`, removed nodes with `delete_node` — after any `delete_node`, immediately rewire orphaned children before continuing
-5. Call `get_dag_draft_diagram` after each change, `validate_dag` when done
-
-## How to think through this skill
-
-<|think|>
-- Have I loaded the catalogue before designing — am I working from the actual available components, not memory?
-- Have I planned the full adjacency list before calling any tool — do I know every node and every edge?
-- Am I creating all nodes first with `add_nodes_to_dag` and wiring second, or am I mixing the two and losing track of what exists?
-- After a delete_node, have I immediately rewired the orphaned children before doing anything else?
-- Does the draft diagram match the adjacency list I planned — are there any unexpected orphans or missing edges?

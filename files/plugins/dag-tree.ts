@@ -342,7 +342,7 @@ export function formatCompactDagDraft(
     output += JSON.stringify(n) + "\n";
   }
   for (let i = 0; i < orphanGroups.length; i++) {
-    output += `// orphaned group ${i + 1}\n`;
+    output += `\n// orphaned group ${i + 1}\n`;
     for (const n of orphanGroups[i]) {
       output += JSON.stringify(n) + "\n";
     }
