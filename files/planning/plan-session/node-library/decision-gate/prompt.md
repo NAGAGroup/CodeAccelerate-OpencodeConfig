@@ -1,18 +1,23 @@
-# DAG Node: Decision Gate
-**Skills:** sequential-thinking, qdrant-notes
-**Thinking Required:** Yes
-**Questions Allowed:** No
-**Required Tools:** qdrant_qdrant-find, sequential-thinking_sequentialthinking
+**Plan Name:** {{PLAN_NAME}}
+**Required Skills:** qdrant-notes
+**Required Tools:** qdrant_qdrant-find
 **Optional Tools:** None
-**Delegated Subagent:** None
+**Questions Allowed?:** No
 
-# Goal
-Evaluate evidence and choose which branch to take.
+# DAG Node: Decision Gate
+
+## Goal
+Evaluate evidence from prior nodes and choose which branch to take.
 
 ## Instructions
-Retrieve findings and decisions from earlier in the session using {{PLAN_NAME}} as the collection_name, considering what prior nodes discovered, what constraints were documented, and what prior reasoning is relevant. Use sequential-thinking_sequentialthinking to evaluate the evidence and choose which branch is correct, considering what the available branches represent, what evidence supports each choice, and which path best aligns with the evidence and constraints.
 
-## Constraints
-- Base your choice on evidence from prior nodes documented in planning notes, with priority given to evidence over assumptions
-- The DAG structure defines the available branches
-- Retrieve planning notes about the branch conditions if they were stored during planning
+1. Call `qdrant_qdrant-find` with collection `{{PLAN_NAME}}` to retrieve relevant findings — what prior nodes discovered, what constraints were documented, and what reasoning is relevant to this decision
+2. Evaluate the evidence and choose the correct branch — base your choice on what the evidence supports, not on assumptions
+3. Call `next_step` with the chosen branch
+
+## Thinking through the instructions
+
+<|think|>
+- What evidence from prior nodes is relevant to this decision?
+- What do the available branches represent — what does each path mean?
+- Does the evidence clearly support one path, or is it ambiguous — if ambiguous, which path is safer?

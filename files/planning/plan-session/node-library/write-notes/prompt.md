@@ -1,18 +1,22 @@
-# DAG Node: Write Notes
-**Skills:** qdrant-notes
-**Thinking Required:** No
-**Questions Allowed:** No
+**Plan Name:** {{PLAN_NAME}}
+**Required Skills:** qdrant-notes
 **Required Tools:** qdrant_qdrant-store
 **Optional Tools:** None
-**Delegated Subagent:** None
+**Questions Allowed?:** No
 
-# Goal
-Store accumulated findings and decisions to semantic notes.
+# DAG Node: Write Notes
+
+## Goal
+Store accumulated findings and decisions to semantic notes for future agents to retrieve.
 
 ## Instructions
-Store significant findings, decisions, and constraints discovered so far in this session using {{PLAN_NAME}} as the collection_name. Each call should capture a meaningful piece of information that later agents might retrieve by meaning. Write in prose describing what was found, decided, or discovered. The information should be self-contained and discoverable by semantic search. Make one qdrant_qdrant-store call for each significant finding, skipping procedural details or trivial information and focusing on constraints, decisions, discoveries, and surprises.
 
-## Constraints
-- Store all findings to the semantic notes system, not to project files
-- Each piece of information should stand alone and be discoverable by meaning
-- Consider what questions a future agent might ask and write your notes accordingly
+1. Call `qdrant_qdrant-store` with collection `{{PLAN_NAME}}` for each significant finding, decision, or constraint — write in prose, one meaningful piece of information per call, skipping procedural details
+2. Call `next_step`
+
+## Thinking through the instructions
+
+<|think|>
+- Have I covered all significant findings, decisions, and constraints from this session so far?
+- Is each note self-contained prose — could a future agent understand it without re-investigating?
+- Am I storing things that shape future decisions, not just procedural steps I took?

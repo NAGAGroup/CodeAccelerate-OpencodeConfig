@@ -6,7 +6,16 @@
         "claude-sonnet-4.6": {
           "variants": {
             "default": {
-              "reasoning": false
+              "reasoning": false,
+              "reasoningEffort": "medium"
+            }
+          }
+        },
+        "claude-haiku-4.5": {
+          "variants": {
+            "default": {
+              "reasoning": false,
+              "reasoningEffort": "medium"
             }
           }
         }
@@ -64,15 +73,6 @@
         "npx",
         "-y",
         "@upstash/context7-mcp"
-      ],
-      "enabled": true
-    },
-    "sequential-thinking": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
       ],
       "enabled": true
     },

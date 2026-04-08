@@ -1,18 +1,21 @@
-# DAG Node: User Decision Gate
-**Skills:** asking-questions
-**Thinking Required:** No
-**Questions Allowed:** Yes
+**Plan Name:** {{PLAN_NAME}}
+**Required Skills:** asking-questions
 **Required Tools:** question
 **Optional Tools:** None
-**Delegated Subagent:** None
+**Questions Allowed?:** Yes
 
-# Goal
-Present branch options to the user and route based on their choice.
+# DAG Node: User Decision Gate
+
+## Goal
+Present branch options to the user and route execution based on their choice.
 
 ## Instructions
-Use the question tool to present the available branches and relevant context to the user, asking them to choose which branch should be taken next. Include enough context for the user to make an informed choice.
 
-## Constraints
-- Collect the user's choice through the question tool based on presented options and context
-- Present all available branches with sufficient context for an informed decision
-- Interpret the user's response as the branch ID to advance to
+1. Use the `question` tool to present the available branches with enough context for the user to make an informed choice
+2. Call `next_step` with the branch the user chose
+
+## Thinking through the instructions
+
+<|think|>
+- Have I provided enough context for the user to understand what each branch means and what will happen?
+- Are the options clearly distinct and mutually exclusive?

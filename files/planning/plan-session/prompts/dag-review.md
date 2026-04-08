@@ -1,18 +1,23 @@
-# DAG Node: DAG Review
-**Skills:** dag-review, sequential-thinking
-**Thinking Required:** Yes
-**Questions Allowed:** No
-**Required Tools:** sequential-thinking_sequentialthinking, task
+**Plan Name:** {{PLAN_NAME}}
+**Required Skills:** delegating-to-dag-reviewer
+**Required Tools:** task
 **Optional Tools:** None
-**Delegated Subagent:** @dag-reviewer
+**Questions Allowed?:** No
 
-# Goal
+# DAG Node: DAG Review
+
+## Goal
 Evaluate the completed execution DAG against design criteria through independent review.
 
 ## Instructions
-Use sequential-thinking to reason through what context the reviewer needs and what dimensions to evaluate. Dispatch @dag-reviewer with the plan name `{{PLAN_NAME}}`, the user's goal, and the review scope. The reviewer evaluates: completeness, dependency ordering, component fit, verification coverage, scope adherence, failure handling, efficiency.
 
-## Constraints
-- provide sufficient context for independent assessment
-- reviewer never saw the designer's reasoning
-- specify all review dimensions explicitly in the dispatch prompt
+1. Use the `delegating-to-dag-reviewer` skill to compose a dispatch prompt — think through what context the reviewer needs and which dimensions to evaluate
+2. Dispatch dag-reviewer using the `task` tool with plan name `{{PLAN_NAME}}`, the user's goal, and the review scope
+3. Call `next_step`
+
+## Thinking through the instructions
+
+<|think|>
+- Have I provided the user's goal so the reviewer can assess whether the DAG fits it?
+- Have I specified which review dimensions matter most for this plan?
+- Is the prompt self-contained — the reviewer has no memory of the designer's reasoning?

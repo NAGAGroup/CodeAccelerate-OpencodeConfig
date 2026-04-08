@@ -1,18 +1,23 @@
-# DAG Node: Deep Research
-**Skills:** external-scout-delegation, sequential-thinking
-**Thinking Required:** Yes
-**Questions Allowed:** No
-**Required Tools:** sequential-thinking_sequentialthinking, task
+**Plan Name:** {{PLAN_NAME}}
+**Required Skills:** delegating-to-external-scout
+**Required Tools:** task
 **Optional Tools:** None
-**Delegated Subagent:** @external-scout
+**Questions Allowed?:** No
 
-# Goal
-Conduct broad external research without approval gate.
+# DAG Node: Deep Research
+
+## Goal
+Conduct broad external research covering multiple angles of a domain or topic.
 
 ## Instructions
-Use sequential-thinking_sequentialthinking to plan the scope of investigation, considering what domain or topic needs exploration, what angles or sub-questions are most valuable to cover, and what external research would best serve the plan. Dispatch @external-scout with a comprehensive research brief that covers multiple angles or perspectives — tell @external-scout to store findings to Qdrant collection `{{PLAN_NAME}}`.
 
-## Constraints
-- This component is for broad domain exploration, not single targeted queries
-- Expect the scout to synthesize findings across multiple sources and perspectives
-- Remove or redact any proprietary, sensitive, or confidential information before sending the research brief
+1. Use the `delegating-to-external-scout` skill to compose a comprehensive research brief — think through what domain needs exploration, what angles are most valuable, and what scope protects proprietary information
+2. Dispatch external-scout using the `task` tool with plan name `{{PLAN_NAME}}`
+3. Call `next_step`
+
+## Thinking through the instructions
+
+<|think|>
+- Have I identified multiple angles or sub-questions that together give a comprehensive picture?
+- Have I used only public, general terms — no internal names or proprietary details?
+- Is this genuinely broad domain exploration, not a single targeted query (which belongs in research)?

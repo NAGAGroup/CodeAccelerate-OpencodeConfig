@@ -1,24 +1,22 @@
-# DAG Node: Session Overview Refresher
-**Skills:** following-plans, sequential-thinking
-**Thinking Required:** No
-**Questions Allowed:** No
-**Required Tools:** (none)
+**Plan Name:** {{PLAN_NAME}}
+**Required Skills:** following-plans
+**Required Tools:** None
 **Optional Tools:** None
-**Delegated Subagent:** None
+**Questions Allowed?:** No
 
-# Goal
+# DAG Node: Session Overview Refresher
+
+## Goal
 Re-establish planning methodology after context compression before DAG design begins.
 
 ## Instructions
 
-Call the `skill` tool to load the `following-plans` and `sequential-thinking` skills.
+1. Load the `following-plans` skill
+2. Briefly explain to the user what node prompts look like and how to read required skills and tools from them
+3. Call `next_step`
 
-After loading your skills, use `sequential-thinking_sequentialthinking` to reason through `plan-following` skill.
+## Thinking through the instructions
 
-Explain to the user:
-
-- what node prompts look like
-- where to find required skills and tools to use for each node
-
-Then call `next_step` without waiting for a response.
-
+<|think|>
+- Have I loaded the following-plans skill so I can accurately describe the node prompt format?
+- Is my explanation concise — this is a refresher, not a full tutorial?

@@ -1,114 +1,6 @@
-import * as path from "path";
-import type { DagNode, BranchOption, PlanDag, FlatNode, DagNodeV3, DagMetadataV3 } from "./types";
+import type { DagNodeV3, DagMetadataV3, FlatNode } from "./types";
 
-// ─── V3 (JSONL flat-array) utilities ─────────────────────────────────────────
-
-export function dagToMermaidV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): string {
-  const lines: string[] = ['flowchart TD'];
-  for (const node of nodes) {
-    const promptFile = path.basename(node.prompt);
-    const enforcementStr = node.enforcement.length > 0 ? node.enforcement.join(', ') : 'none';
-    lines.push(`  ${node.id}["${node.id}<br/>${promptFile} | [${enforcementStr}]"]`);
-  }
-  for (const node of nodes) {
-    if (!node.children || node.children.length === 0) continue;
-    for (const childId of node.children) {
-      lines.push(`  ${node.id} --> ${childId}`);
-    }
-  }
-  return lines.join('\n');
-}
-
-/**
- * Compact Mermaid: collapses sequential (single-child, single-parent) chains
- * into grouped blocks. Only branching nodes and their immediate children are
- * shown as individual nodes. This avoids hangs on large DAGs.
- */
-export function dagToMermaidCompactV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): string {
-  // Build parent-count map
-  const parentCount: Record<string, number> = {};
-  for (const node of nodes) {
-    if (!parentCount[node.id]) parentCount[node.id] = 0;
-    for (const childId of node.children ?? []) {
-      parentCount[childId] = (parentCount[childId] ?? 0) + 1;
-    }
-  }
-
-  const nodeMap: Record<string, DagNodeV3> = {};
-  for (const node of nodes) nodeMap[node.id] = node;
-
-  // A node is "sequential" (collapsible) if it has exactly 1 child and exactly 1 parent
-  // and its single child also has exactly 1 parent.
-  const isSequential = (id: string): boolean => {
-    const node = nodeMap[id];
-    if (!node) return false;
-    if ((node.children ?? []).length !== 1) return false;
-    if ((parentCount[id] ?? 0) !== 1) return false;
-    const childId = node.children![0];
-    if ((parentCount[childId] ?? 0) !== 1) return false;
-    return true;
-  };
-
-  // Find chain starts: nodes that are NOT sequential themselves but have a sequential child
-  // Also include the entry node always.
-  const visited = new Set<string>();
-  const groups: Array<{ ids: string[]; label: string }> = [];
-  const edges: Array<{ from: string; to: string }> = []; // between group representatives
-
-  // Walk from entry node
-  const queue: string[] = [metadata.entry_node_id];
-  while (queue.length > 0) {
-    const startId = queue.shift()!;
-    if (visited.has(startId)) continue;
-
-    // Collect the sequential chain starting here
-    const chain: string[] = [startId];
-    visited.add(startId);
-    let cur = startId;
-    while (isSequential(cur)) {
-      const nextId = nodeMap[cur].children![0];
-      if (visited.has(nextId)) break;
-      chain.push(nextId);
-      visited.add(nextId);
-      cur = nextId;
-    }
-
-    // The group label is the chain of IDs joined vertically with <br/>
-    const label = chain.join('<br/>');
-    const groupId = chain[0]; // representative node ID for edges
-    groups.push({ ids: chain, label });
-
-    // Queue children of the last node in the chain
-    const lastNode = nodeMap[chain[chain.length - 1]];
-    for (const childId of lastNode?.children ?? []) {
-      if (!visited.has(childId)) queue.push(childId);
-      edges.push({ from: groupId, to: childId });
-    }
-  }
-
-  // Build group ID → representative map (first node in chain)
-  const repOf: Record<string, string> = {};
-  for (const group of groups) {
-    for (const id of group.ids) repOf[id] = group.ids[0];
-  }
-
-  const lines: string[] = ['flowchart TD'];
-  for (const group of groups) {
-    const safeLabel = group.label.replace(/"/g, "'");
-    lines.push(`  ${group.ids[0]}["${safeLabel}"]`);
-  }
-  // Deduplicate edges and map to representatives
-  const edgeSet = new Set<string>();
-  for (const edge of edges) {
-    const toRep = repOf[edge.to] ?? edge.to;
-    const key = `${edge.from}-->${toRep}`;
-    if (!edgeSet.has(key)) {
-      edgeSet.add(key);
-      lines.push(`  ${edge.from} --> ${toRep}`);
-    }
-  }
-  return lines.join('\n');
-}
+// ─── Validation ───────────────────────────────────────────────────────────────
 
 export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void {
   const ids = new Set<string>();
@@ -118,61 +10,60 @@ export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void
     else ids.add(node.id);
   }
   if (duplicates.length > 0) {
-    throw new Error(`Duplicate node IDs in DAG: ${duplicates.join(', ')}`);
+    throw new Error(`Duplicate node IDs in DAG: ${duplicates.join(", ")}`);
   }
   if (!ids.has(metadata.entry_node_id)) {
     throw new Error(`Entry node "${metadata.entry_node_id}" not found in DAG nodes`);
   }
-  
-  // Check for unreachable nodes (nodes with no path from entry)
-  const reachable = new Set<string>();
-  const queue = [metadata.entry_node_id];
+
   const nodeMap: Record<string, DagNodeV3> = {};
   for (const node of nodes) nodeMap[node.id] = node;
-  
+
+  // Check all child references exist
+  for (const node of nodes) {
+    for (const childId of node.children ?? []) {
+      if (!nodeMap[childId]) {
+        throw new Error(`Node "${node.id}" references child "${childId}" which does not exist`);
+      }
+    }
+  }
+
+  // Reachability check (BFS from entry)
+  const reachable = new Set<string>();
+  const queue = [metadata.entry_node_id];
   while (queue.length > 0) {
     const id = queue.shift()!;
     if (reachable.has(id)) continue;
     reachable.add(id);
-    const node = nodeMap[id];
-    if (node?.children) {
-      for (const childId of node.children) {
-        if (!reachable.has(childId)) queue.push(childId);
-      }
+    for (const childId of nodeMap[id]?.children ?? []) {
+      if (!reachable.has(childId)) queue.push(childId);
     }
   }
-  
-  const unreachable = nodes.filter(n => !reachable.has(n.id)).map(n => n.id);
+  const unreachable = nodes.filter((n) => !reachable.has(n.id)).map((n) => n.id);
   if (unreachable.length > 0) {
-    throw new Error(`Unreachable nodes (no path from entry): ${unreachable.join(', ')}`);
+    throw new Error(`Unreachable nodes (no path from entry): ${unreachable.join(", ")}`);
   }
-  
-  // Check for cycles using DFS with recursion stack
+
+  // Cycle detection (DFS with recursion stack)
   const visited = new Set<string>();
   const recStack = new Set<string>();
-  
   function hasCycle(nodeId: string): boolean {
-    if (recStack.has(nodeId)) return true; // cycle detected
-    if (visited.has(nodeId)) return false; // already checked this path
-    
+    if (recStack.has(nodeId)) return true;
+    if (visited.has(nodeId)) return false;
     visited.add(nodeId);
     recStack.add(nodeId);
-    
-    const node = nodeMap[nodeId];
-    if (node?.children) {
-      for (const childId of node.children) {
-        if (hasCycle(childId)) return true;
-      }
+    for (const childId of nodeMap[nodeId]?.children ?? []) {
+      if (hasCycle(childId)) return true;
     }
-    
     recStack.delete(nodeId);
     return false;
   }
-  
   if (hasCycle(metadata.entry_node_id)) {
-    throw new Error('DAG contains a cycle (circular dependency detected)');
+    throw new Error("DAG contains a cycle (circular dependency detected)");
   }
 }
+
+// ─── Flatten ──────────────────────────────────────────────────────────────────
 
 export function flattenTreeV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): Record<string, FlatNode> {
   const map: Record<string, FlatNode> = {};
@@ -182,151 +73,211 @@ export function flattenTreeV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): Reco
     }
     const flat: FlatNode = { id: node.id, prompt: node.prompt, enforcement: node.enforcement };
     if (node.children && node.children.length > 0) flat.children = node.children;
-    if (node.unlocked_tools && node.unlocked_tools.length > 0) flat.unlockedTools = node.unlocked_tools;
     map[node.id] = flat;
   }
   return map;
 }
 
-export function collectAllNodes(node: DagNode, collected: DagNode[] = []): DagNode[] {
-  collected.push(node);
-  if (Array.isArray(node.next)) {
-    for (const branch of node.next as BranchOption[]) {
-      collectAllNodes(branch.node, collected);
-    }
-  } else if (node.next && typeof node.next === 'object') {
-    collectAllNodes(node.next as DagNode, collected);
-  }
-  return collected;
-}
+// ─── Diagram generation ───────────────────────────────────────────────────────
 
-export function dagToMermaid(dag: PlanDag): string {
-  const lines: string[] = ['flowchart TD'];
-  const nodes = collectAllNodes(dag.entry);
+/**
+ * Build a compact Mermaid diagram with BFS-ordered collapsed groups.
+ *
+ * Algorithm:
+ * 1. BFS from entry to assign a depth to every reachable node.
+ * 2. Collect all nodes (reachable + unreachable) — orphans get depth Infinity.
+ * 3. Collapse sequential chains (single-child, single-parent) into groups.
+ *    The group's BFS depth = minimum depth of its members.
+ * 4. Emit node declarations in ascending depth order so leaf/terminal nodes
+ *    always appear at the bottom of the rendered diagram.
+ * 5. Orphaned nodes are labelled [ORPHAN: id] and listed in a warning header.
+ *
+ * For invalid DAGs (broken refs, cycles) the function falls back to showing
+ * all nodes individually without collapsing, with a structural warning.
+ */
+export function dagToMermaidCompactV3(
+  metadata: DagMetadataV3,
+  nodes: DagNodeV3[],
+): { mermaid: string; warnings: string[] } {
+  const warnings: string[] = [];
+  const nodeMap: Record<string, DagNodeV3> = {};
+  for (const node of nodes) nodeMap[node.id] = node;
+
+  // ── Detect structural issues (don't throw) ────────────────────────────────
+
+  // Broken child references
   for (const node of nodes) {
-    const promptFile = path.basename(node.prompt);
-    const todoStr = node.todo.length > 0 ? node.todo.join(', ') : 'none';
-    const label = `${node.id}["${node.id}<br/>${promptFile} | [${todoStr}]"]`;
-    lines.push(`  ${label}`);
-  }
-  for (const node of nodes) {
-    if (Array.isArray(node.next)) {
-      for (const branch of node.next as BranchOption[]) {
-        lines.push(`  ${node.id} -->|"${branch.when}"| ${branch.node.id}`);
+    for (const childId of node.children ?? []) {
+      if (!nodeMap[childId]) {
+        warnings.push(`Node "${node.id}" references missing child "${childId}"`);
       }
-    } else if (node.next && typeof node.next === 'object') {
-      lines.push(`  ${node.id} --> ${(node.next as DagNode).id}`);
     }
   }
-  return lines.join('\n');
-}
 
-export function validateDagTree(dag: PlanDag): void {
-  const nodes = collectAllNodes(dag.entry);
-  const ids = new Set<string>();
-  const duplicates: string[] = [];
-  for (const node of nodes) {
-    if (ids.has(node.id)) {
-      duplicates.push(node.id);
-    } else {
-      ids.add(node.id);
-    }
-  }
-  if (duplicates.length > 0) {
-    throw new Error(`Duplicate node IDs in DAG: ${duplicates.join(', ')}`);
-  }
-  for (const node of nodes) {
-    if (Array.isArray(node.next) && (node.next as BranchOption[]).length < 2) {
-      throw new Error(`Branch node "${node.id}" has fewer than 2 branches`);
-    }
-  }
-}
-
-// Validates only node ID uniqueness — used by add_node to allow incremental
-// branch building (branches can have <2 options while being constructed).
-export function validateDagTreeIds(dag: PlanDag): void {
-  const nodes = collectAllNodes(dag.entry);
-  const ids = new Set<string>();
-  const duplicates: string[] = [];
-  for (const node of nodes) {
-    if (ids.has(node.id)) {
-      duplicates.push(node.id);
-    } else {
-      ids.add(node.id);
-    }
-  }
-  if (duplicates.length > 0) {
-    throw new Error(`Duplicate node IDs in DAG: ${duplicates.join(', ')}`);
-  }
-}
-
-export function findNode(dag: PlanDag, nodeId: string): DagNode | null {
-  function search(node: DagNode): DagNode | null {
-    if (node.id === nodeId) return node;
-    if (Array.isArray(node.next)) {
-      for (const branch of node.next as BranchOption[]) {
-        const found = search(branch.node);
-        if (found) return found;
+  // Cycle detection
+  let hasCycle = false;
+  {
+    const visited = new Set<string>();
+    const recStack = new Set<string>();
+    function detectCycle(id: string): boolean {
+      if (recStack.has(id)) return true;
+      if (visited.has(id)) return false;
+      visited.add(id);
+      recStack.add(id);
+      for (const childId of nodeMap[id]?.children ?? []) {
+        if (nodeMap[childId] && detectCycle(childId)) return true;
       }
-    } else if (node.next && typeof node.next === 'object') {
-      return search(node.next as DagNode);
+      recStack.delete(id);
+      return false;
     }
-    return null;
-  }
-  return search(dag.entry);
-}
-
-// ─── Tree flattening ─────────────────────────────────────────────────────────
-
-export function flattenTree(node: DagNode, map: Record<string, FlatNode> = {}): Record<string, FlatNode> {
-  // Detect duplicate node IDs — DAG nodes must be unique. A loop-back or shared
-  // node silently overwrites the first entry and corrupts the node_map, causing
-  // autoAdvance to treat a non-terminal node as terminal.
-  if (map[node.id]) {
-    throw new Error(
-      `DAG validation error: duplicate node id "${node.id}". ` +
-      `Each node must have a unique id. Use "-2", "-3" suffixes for repeated nodes ` +
-      `(e.g. "audit-agents-2" instead of reusing "audit-agents").`
-    );
+    if (nodeMap[metadata.entry_node_id] && detectCycle(metadata.entry_node_id)) {
+      hasCycle = true;
+      warnings.push("DAG contains a cycle — diagram may not render correctly");
+    }
   }
 
-  const flat: FlatNode = {
-    id: node.id,
-    prompt: node.prompt,
-    enforcement: node.todo,
+  // ── BFS depth assignment ──────────────────────────────────────────────────
+
+  const depth: Record<string, number> = {};
+  if (nodeMap[metadata.entry_node_id]) {
+    const queue: Array<{ id: string; d: number }> = [{ id: metadata.entry_node_id, d: 0 }];
+    while (queue.length > 0) {
+      const { id, d } = queue.shift()!;
+      if (depth[id] !== undefined) continue; // already visited (handles shared terminals)
+      depth[id] = d;
+      for (const childId of nodeMap[id]?.children ?? []) {
+        if (nodeMap[childId] && depth[childId] === undefined) {
+          queue.push({ id: childId, d: d + 1 });
+        }
+      }
+    }
+  }
+
+  // Orphans: nodes with no path from entry
+  const orphans = new Set<string>();
+  for (const node of nodes) {
+    if (depth[node.id] === undefined) {
+      orphans.add(node.id);
+      depth[node.id] = Infinity;
+      warnings.push(`Orphaned node (not reachable from entry): "${node.id}"`);
+    }
+  }
+
+  // ── Parent-count map (for collapse eligibility) ───────────────────────────
+
+  const parentCount: Record<string, number> = {};
+  for (const node of nodes) {
+    if (!parentCount[node.id]) parentCount[node.id] = 0;
+    for (const childId of node.children ?? []) {
+      if (nodeMap[childId]) parentCount[childId] = (parentCount[childId] ?? 0) + 1;
+    }
+  }
+
+  // A node is collapsible if: 1 child, 1 parent, and that child also has 1 parent.
+  // Orphans and cycle participants are never collapsed.
+  const isCollapsible = (id: string): boolean => {
+    if (orphans.has(id) || hasCycle) return false;
+    const node = nodeMap[id];
+    if (!node) return false;
+    const children = (node.children ?? []).filter((c) => nodeMap[c]);
+    if (children.length !== 1) return false;
+    if ((parentCount[id] ?? 0) !== 1) return false;
+    const childId = children[0];
+    if ((parentCount[childId] ?? 0) !== 1) return false;
+    return true;
   };
 
-  if (node.next === undefined || node.next === null) {
-    // Terminal node
-  } else if (Array.isArray(node.next)) {
-    // Branching
-    flat.branches = (node.next as BranchOption[]).map((b) => {
-      flattenTree(b.node, map);
-      return { when: b.when, nodeId: b.node.id };
-    });
-  } else {
-    // Linear
-    const child = node.next as DagNode;
-    flat.nextLinear = child.id;
-    flattenTree(child, map);
-  }
+  // ── Build collapsed groups via BFS from entry, then append orphans ────────
 
-  map[node.id] = flat;
-  return map;
-}
+  const visited = new Set<string>();
+  const groups: Array<{ ids: string[]; minDepth: number }> = [];
+  const edges: Array<{ from: string; to: string }> = [];
 
-// ─── Prompt path rewriting ───────────────────────────────────────────────────
+  // Process reachable nodes in BFS order (entry first)
+  const bfsQueue: string[] = nodeMap[metadata.entry_node_id] ? [metadata.entry_node_id] : [];
+  while (bfsQueue.length > 0) {
+    const startId = bfsQueue.shift()!;
+    if (visited.has(startId)) continue;
 
-// Bare filenames (no "/") are rewritten to a worktree-relative path under prompts/.
-export function rewritePromptPaths(node: DagNode, prefix: string): void {
-  if (!node.prompt.includes("/")) {
-    node.prompt = `${prefix}${node.prompt}`;
-  }
-  if (Array.isArray(node.next)) {
-    for (const branch of node.next as BranchOption[]) {
-      rewritePromptPaths(branch.node, prefix);
+    // Collect sequential chain
+    const chain: string[] = [startId];
+    visited.add(startId);
+    let cur = startId;
+    while (isCollapsible(cur)) {
+      const nextId = (nodeMap[cur].children ?? []).find((c) => nodeMap[c] && !visited.has(c));
+      if (!nextId) break;
+      chain.push(nextId);
+      visited.add(nextId);
+      cur = nextId;
     }
-  } else if (node.next && typeof node.next === "object" && !Array.isArray(node.next)) {
-    rewritePromptPaths(node.next as DagNode, prefix);
+
+    const minDepth = Math.min(...chain.map((id) => depth[id] ?? Infinity));
+    groups.push({ ids: chain, minDepth });
+
+    // Queue children of the last node in the chain
+    const lastNode = nodeMap[chain[chain.length - 1]];
+    for (const childId of lastNode?.children ?? []) {
+      if (nodeMap[childId]) {
+        if (!visited.has(childId)) bfsQueue.push(childId);
+        edges.push({ from: chain[0], to: childId });
+      }
+    }
   }
+
+  // Append orphan groups (each orphan is its own group, depth Infinity)
+  for (const orphanId of orphans) {
+    if (!visited.has(orphanId)) {
+      groups.push({ ids: [orphanId], minDepth: Infinity });
+      visited.add(orphanId);
+      // Include orphan's own edges if children exist
+      for (const childId of nodeMap[orphanId]?.children ?? []) {
+        if (nodeMap[childId]) edges.push({ from: orphanId, to: childId });
+      }
+    }
+  }
+
+  // ── Sort groups by BFS depth so terminals appear at the bottom ────────────
+
+  groups.sort((a, b) => {
+    if (a.minDepth === Infinity && b.minDepth === Infinity) return 0;
+    if (a.minDepth === Infinity) return 1;
+    if (b.minDepth === Infinity) return -1;
+    return a.minDepth - b.minDepth;
+  });
+
+  // ── Build representative map (first node in chain → group) ───────────────
+
+  const repOf: Record<string, string> = {};
+  for (const group of groups) {
+    for (const id of group.ids) repOf[id] = group.ids[0];
+  }
+
+  // ── Emit Mermaid ──────────────────────────────────────────────────────────
+
+  const lines: string[] = ["flowchart TD"];
+  for (const group of groups) {
+    const isOrphan = orphans.has(group.ids[0]) || group.ids.some((id) => orphans.has(id));
+    const label = group.ids.join("<br/>");
+    const safeLabel = label.replace(/"/g, "'");
+    if (isOrphan) {
+      // Orphans use a distinct shape (stadium/pill) to stand out
+      lines.push(`  ${group.ids[0]}(["[ORPHAN] ${safeLabel}"])`);
+    } else {
+      lines.push(`  ${group.ids[0]}["${safeLabel}"]`);
+    }
+  }
+
+  // Deduplicate edges and resolve to group representatives
+  const edgeSet = new Set<string>();
+  for (const edge of edges) {
+    const fromRep = repOf[edge.from] ?? edge.from;
+    const toRep = repOf[edge.to] ?? edge.to;
+    const key = `${fromRep}-->${toRep}`;
+    if (!edgeSet.has(key) && fromRep !== toRep) {
+      edgeSet.add(key);
+      lines.push(`  ${fromRep} --> ${toRep}`);
+    }
+  }
+
+  return { mermaid: lines.join("\n"), warnings };
 }

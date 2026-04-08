@@ -1,1 +1,1 @@
-{"enforcement": ["show_compact_dag", "show_dag", "qdrant_qdrant-find", "qdrant_qdrant-store"]}
+{"enforcement": ["get_dag_draft_diagram", "show_dag_jsonl", "qdrant_qdrant-find", "qdrant_qdrant-store"]}

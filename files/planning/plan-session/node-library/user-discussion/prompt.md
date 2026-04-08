@@ -1,17 +1,23 @@
-# DAG Node: User Discussion
-**Skills:** asking-questions, qdrant-notes
-**Thinking Required:** No
-**Questions Allowed:** Yes
+**Plan Name:** {{PLAN_NAME}}
+**Required Skills:** asking-questions, qdrant-notes
 **Required Tools:** question
 **Optional Tools:** qdrant_qdrant-find
-**Delegated Subagent:** None
+**Questions Allowed?:** Yes
 
-# Goal
-Have a free-form conversation with the user mid-execution.
+# DAG Node: User Discussion
+
+## Goal
+Have a free-form conversation with the user mid-execution to gather input or present findings.
 
 ## Instructions
-Optionally retrieve relevant context using {{PLAN_NAME}} as the collection_name if you need to understand what topics or decisions relate to this discussion. Use the question tool to present your topic or findings to the user, asking for their input, perspective, or decision as appropriate and including enough context for them to engage meaningfully. After the user responds, consider storing any decisions or clarifications to the semantic notes system for future reference.
 
-## Constraints
-- This step is for free-form conversation that doesn't fit the structured question format
-- Present information clearly and ask open-ended questions that invite substantive input
+1. Optionally call `qdrant_qdrant-find` with collection `{{PLAN_NAME}}` if you need context about what topics or decisions relate to this discussion
+2. Use the `question` tool to present your topic or findings to the user and ask for their input, perspective, or decision — include enough context for them to engage meaningfully
+3. Call `next_step`
+
+## Thinking through the instructions
+
+<|think|>
+- What do I need from the user — information, a decision, or their perspective on findings?
+- Have I provided enough context for them to engage meaningfully without re-reading the whole session?
+- Should I store any decisions or clarifications the user provides to Qdrant for future nodes?

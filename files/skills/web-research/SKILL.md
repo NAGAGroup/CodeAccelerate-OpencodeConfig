@@ -3,24 +3,64 @@ name: web-research
 description: Teaches how to search public information and documentation using web search, URL reading, and library documentation tools.
 ---
 
-# Web Research
+# What does this skill teach?
 
-Use web search and documentation tools to research public information, libraries, and frameworks.
+In this skill, you learn how to research public information, libraries, and frameworks using web search, URL reading, and library documentation tools.
 
-## Tools
-**searxng_searxng_web_search** — Search the public web. Key params: `query` (search term), `time_range` (day/month/year), `language`, `pageno` (pagination).
+## Related Tools
 
-**searxng_web_url_read** — Read full webpage content. Key params: `url`, `section` (extract under heading), `readHeadings` (list only), `paragraphRange` (specific paragraphs), `maxLength` (character limit).
+### `searxng_searxng_web_search`
 
-**context7_resolve-library-id** — Resolve library name to Context7 ID. Key params: `libraryName`, `query`.
+| Parameter | Description |
+|-----------|-------------|
+| `query` | Search query (required) |
+| `time_range` | Restrict results by recency: `'day'`, `'month'`, or `'year'` (optional) |
+| `language` | Language code for results, e.g. `'en'` (optional) |
+| `pageno` | Page number for pagination, default 1 (optional) |
+| `safesearch` | Safe search level: 0 (none), 1 (moderate), 2 (strict), default 0 (optional) |
 
-**context7_query-docs** — Search library documentation. Key params: `libraryId`, `query`.
+### `searxng_web_url_read`
 
-## Rules
-- Provide complete context to tools about what you're researching and why
-- Use general, public terms; no private details or internal identifiers
-- Search multiple sources rather than accepting the first result
-- Read actual source content using searxng_web_url_read rather than relying on snippets
-- Resolve library IDs first before querying documentation
-- Report findings with verification status: verified (multiple authoritative sources), inferred (summaries or single sources), uncertain (conflicting sources)
-- Include uncertainties section listing what was searched but not confirmed
+| Parameter | Description |
+|-----------|-------------|
+| `url` | Full URL to fetch and read (required) |
+| `section` | Extract content under a specific heading (optional) |
+| `readHeadings` | Return only a list of headings instead of full content (optional) |
+| `paragraphRange` | Return specific paragraph ranges, e.g. `'1-5'` or `'10-'` (optional) |
+| `maxLength` | Maximum number of characters to return (optional) |
+| `startChar` | Starting character position for extraction (optional) |
+
+### `context7_resolve-library-id`
+
+| Parameter | Description |
+|-----------|-------------|
+| `libraryName` | Official library name to resolve, e.g. `'Next.js'` not `'nextjs'` (required) |
+| `query` | The question or task you need help with — used to rank results by relevance (required) |
+
+### `context7_query-docs`
+
+| Parameter | Description |
+|-----------|-------------|
+| `libraryId` | Context7-compatible library ID from `context7_resolve-library-id`, e.g. `'/vercel/next.js'` (required) |
+| `query` | The specific question or task to find documentation for (required) |
+
+## How to research a topic
+
+1. Run `searxng_searxng_web_search` with a focused query to find relevant sources
+2. Read actual source content with `searxng_web_url_read` for each relevant result — do not rely on search snippets alone
+3. Run additional searches from different angles if the first results don't fully answer the question
+
+## How to research a library or framework
+
+1. Call `context7_resolve-library-id` to get the correct library ID — use the official name with proper punctuation
+2. Call `context7_query-docs` with a specific question — vague queries return poor results
+3. Supplement with `searxng_searxng_web_search` for community resources, examples, and edge cases not covered in official docs
+
+## How to think through this skill
+
+<|think|>
+- Am I using general, public terms — no internal names, proprietary identifiers, or confidential context?
+- Have I read actual source material, or am I drawing conclusions from search snippets alone?
+- Have I searched from multiple angles — official docs, community resources, recent discussions?
+- For library research, have I resolved the library ID before querying docs?
+- Am I tagging findings with confidence levels — verified (read from source), inferred (from summaries), uncertain (conflicting or insufficient evidence)?

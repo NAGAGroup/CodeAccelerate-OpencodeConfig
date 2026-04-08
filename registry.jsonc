@@ -30,9 +30,8 @@
       "files": [
         // Plugin
         "plugins/planning-enforcement.js",
-        // Plan session DAG + guide
+        // Plan session DAG
         "planning/plan-session/plan.jsonl",
-        "planning/plan-session/dag-design-guide.md",
         // Planning prompts
         "planning/plan-session/prompts/session-overview.md",
         "planning/plan-session/prompts/orientation-scout.md",
@@ -124,22 +123,20 @@
         "commands/plan-session.md",
         // Skills
          "skills/asking-questions/SKILL.md",
-         "skills/autonomous-agent-delegation/SKILL.md",
-         "skills/context-insurgent-delegation/SKILL.md",
-         "skills/context-scout-delegation/SKILL.md",
-         "skills/dag-design/SKILL.md",
-         "skills/dag-review/SKILL.md",
+         "skills/delegating-to-autonomous-agent/SKILL.md",
+         "skills/delegating-to-context-insurgent/SKILL.md",
+         "skills/delegating-to-context-scout/SKILL.md",
+         "skills/delegating-to-dag-designer/SKILL.md",
+         "skills/delegating-to-dag-reviewer/SKILL.md",
+         "skills/delegating-to-documentation-expert/SKILL.md",
+         "skills/delegating-to-external-scout/SKILL.md",
+         "skills/delegating-to-junior-dev/SKILL.md",
+         "skills/delegating-to-tailwrench/SKILL.md",
+         "skills/build-dags/SKILL.md",
          "skills/dag-tools/SKILL.md",
-         "skills/documentation-expert-delegation/SKILL.md",
-         "skills/external-scout-delegation/SKILL.md",
-         "skills/file-operations/SKILL.md",
          "skills/following-plans/SKILL.md",
          "skills/grepai/SKILL.md",
-         "skills/juniordev-delegation/SKILL.md",
          "skills/qdrant-notes/SKILL.md",
-         "skills/sequential-thinking/SKILL.md",
-         "skills/shell-operations/SKILL.md",
-         "skills/tailwrench-delegation/SKILL.md",
          "skills/web-research/SKILL.md"
       ],
       "dependencies": [

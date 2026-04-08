@@ -12,7 +12,7 @@
 |-----------|-------------|
 | `work-item` | Any project mutation — code changes, file edits, refactors, documentation updates. |
 | `project-search-and-analysis` | Investigation without mutation. Use before work-item when current state needs to be understood first. |
-| `research` | External research via @external-scout behind a user approval gate. |
+| `research` | External research via external-scout behind a user approval gate. |
 | `deep-research` | Extended external research without an approval gate. |
 | `write-notes` | Store accumulated findings, decisions, and constraints to semantic notes. |
 | `compress` | Compress closed conversation sections to free context window space. Always followed by kickoff-refresher. |
@@ -41,4 +41,4 @@
 | Component | Description |
 |-----------|-------------|
 | `user-discussion` | Free-form conversation with the user mid-execution. |
-| `autonomous-work` | Delegates to @autonomous-agent. Only include when user explicitly approved autonomous work during planning. |
+| `autonomous-work` | Delegates to autonomous-agent. Only include when user explicitly approved autonomous work during planning. |

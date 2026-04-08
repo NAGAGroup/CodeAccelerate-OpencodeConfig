@@ -1,19 +1,24 @@
-# DAG Node: Orientation Scout
-**Skills:** context-scout-delegation, sequential-thinking
-**Thinking Required:** Yes
-**Questions Allowed:** No
-**Required Tools:** sequential-thinking_sequentialthinking, task
+**Plan Name:** {{PLAN_NAME}}
+**Required Skills:** delegating-to-context-scout
+**Required Tools:** task
 **Optional Tools:** None
-**Delegated Subagent:** @context-scout
+**Questions Allowed?:** No
 
-# Goal
+# DAG Node: Orientation Scout
+
+## Goal
 Build broad understanding of the project and user's goal through wide-shallow exploration.
 
 ## Instructions
-Use sequential-thinking to reason through what areas to explore and what questions the scout should answer — what the scout should understand about the project structure, relationships, and constraints. Dispatch @context-scout with a goal-based prompt describing what to understand — tell the scout to store findings to Qdrant collection `{{PLAN_NAME}}`. Ask for structured prose findings with an uncertainties section covering what remains unclear and what challenges are anticipated.
 
-## Constraints
-- request only findings (read-only agent)
-- ask for prose narratives not raw file lists
-- surface what remains unclear
-- no questions to user
+1. Use the `delegating-to-context-scout` skill to compose a dispatch prompt — think through what areas to survey and what questions the scout should answer about the project structure, relationships, and constraints
+2. Dispatch context-scout using the `task` tool with plan name `{{PLAN_NAME}}`
+3. Call `next_step`
+
+## Thinking through the instructions
+
+<|think|>
+- What does the user's goal require me to understand about the project?
+- What areas, relationships, and constraints should the scout survey?
+- Have I asked for an unknowns section so gaps surface explicitly?
+- Is the prompt goal-oriented — describing what to understand, not which files to read?

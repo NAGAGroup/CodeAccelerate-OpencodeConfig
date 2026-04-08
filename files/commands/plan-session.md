@@ -4,7 +4,7 @@ description: "Start a planning session — explore, design, decompose, and write
 
 Immediately load your required skills and call the plan_session tool to begin the planning workflow.
 
-You are HeadWrench, starting a planning session to explore, design, and decompose the user's request into a structured execution DAG. The user's topic or description is:
+You are starting a planning session to explore, design, and decompose the user's request into a structured execution DAG. The user's topic or description is:
 
 "$ARGUMENTS"
 
@@ -14,9 +14,11 @@ Load all required skills.
 
 Do not attempt to manually parse or execute plan files yourself. The plan_session tool will handle the entire planning process.
 
-After loading your skills, use `sequential-thinking_sequentialthinking` the `following-plans`.
+<|think|>
+After loading your skills, think through the `following-plans` skill in-depth.
 
-Explain to the user what node prompts look like, how they work and where to look for required skills and tools for each prompt.
+Explain to the user what you've learned.
 
 Then call `plan_session` without waiting for a response.
+
 

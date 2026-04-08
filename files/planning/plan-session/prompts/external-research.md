@@ -1,23 +1,24 @@
-# DAG Node: External Research
-**Skills:** external-scout-delegation, sequential-thinking
-**Thinking Required:** Yes
-**Questions Allowed:** No
-**Required Tools:** sequential-thinking_sequentialthinking, task
+**Plan Name:** {{PLAN_NAME}}
+**Required Skills:** delegating-to-external-scout
+**Required Tools:** task
 **Optional Tools:** None
-**Delegated Subagent:** @external-scout
+**Questions Allowed?:** No
 
-# Goal
+# DAG Node: External Research
+
+## Goal
 Research external public information that the project depends on or that scout findings raised questions about.
 
 ## Instructions
-Use sequential-thinking to identify specific research areas — frameworks, libraries, APIs, domain knowledge, assumptions to verify from the scout findings. Dispatch @external-scout with a clear research goal in public, general terms. Ask for findings categorized as verified (read from source), inferred (from summaries), or uncertain.
 
-Tell the subagent to store findings to the qdrant collection `{{PLAN_NAME}}`
+1. Use the `delegating-to-external-scout` skill to compose a dispatch prompt — identify specific research areas from the scout findings: frameworks, libraries, APIs, domain knowledge, or assumptions to verify
+2. Dispatch external-scout using the `task` tool with plan name `{{PLAN_NAME}}`
+3. Call `next_step`
 
-## Constraints
-- use only public terms in the dispatch prompt
-- no private project details
-- always dispatch even if research need seems minimal
-- ask for verification distinctions in findings
-- always tell the subagent what qdrant collection to store findings in
+## Thinking through the instructions
 
+<|think|>
+- What specific questions from the scout findings require external research?
+- Have I used only public, general terms — no internal names or proprietary details?
+- Have I asked for confidence tagging (verified, inferred, uncertain) and an unknowns section?
+- Is the research question scoped narrowly enough to produce focused findings?
