@@ -33,7 +33,7 @@ The following tools are used for dependency tracing. If you do not have access t
 
 **`grepai_grepai_trace_callees`** — Find everything a function calls. Params: `symbol` (required), `compact` (optional).
 
-**`grepai_grepai_trace_graph`** — Full call graph around a function. Params: `symbol` (required), `depth` (optional, default 2).ees`, or `grepai_grepai_trace_graph`, use them now to understand how the code you found in steps 3-4 connects. Skip this step if these tools are not available to you.
+**`grepai_grepai_trace_graph`** — Full call graph around a function. Params: `symbol` (required), `depth` (optional, default 2).
 
 ## How to think through this skill
 
@@ -57,4 +57,4 @@ This is your plan. Execute these steps in order — do not devise your own inves
 
 4. **Targeted reads.** For the most relevant files identified in step 3, run `grepai_grepai_search` again without `compact` and with a `path` argument to retrieve full content from specific directories or files.
 
-5. **Trace connections (if available).** If you have access to `grepai_grepai_trace_callers`, `grepai_grepai_trace_call
+5. **Trace connections (if available).** If you have access to `grepai_grepai_trace_callers`, `grepai_grepai_trace_callees`, or `grepai_grepai_trace_graph`, use them now to understand how the code you found in steps 3-4 connects. Skip this step if these tools are not available to you.
