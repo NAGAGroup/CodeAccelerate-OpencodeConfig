@@ -345,23 +345,31 @@ export function formatCompactDagDraft(
   const KICKOFF_NODE = "execution-kickoff";
   const kickoffNode = connectedNodes.find((n) => n.id === KICKOFF_NODE);
   const nonKickoffConnected = connectedNodes.filter((n) => n.id !== KICKOFF_NODE);
+  const allProtected = [
+    ...(kickoffNode ? [kickoffNode] : []),
+    ...terminalNodes,
+  ];
+
+  const BANNER = "// ═══════════════════════════════════════════════════";
 
   let output = metadataLine + "\n";
-  if (kickoffNode) {
-    output += `// kickoff node — remains unwired until the final wiring step\n`;
-    output += JSON.stringify(kickoffNode) + "\n";
+  if (allProtected.length > 0) {
+    output += `${BANNER}\n`;
+    output += `// PROTECTED NODES — wire last\n`;
+    output += `${BANNER}\n`;
+    for (const n of allProtected) {
+      output += JSON.stringify(n) + "\n";
+    }
+    output += "\n";
   }
+  output += `${BANNER}\n`;
+  output += `// WORKING DRAFT\n`;
+  output += `${BANNER}\n`;
   for (const n of nonKickoffConnected) {
     output += JSON.stringify(n) + "\n";
   }
-  if (terminalNodes.length > 0) {
-    output += `\n// terminal nodes — remain unwired until the final wiring step\n`;
-    for (const n of terminalNodes) {
-      output += JSON.stringify(n) + "\n";
-    }
-  }
   for (let i = 0; i < orphanGroups.length; i++) {
-    output += `\n// orphaned group ${i + 1}\n`;
+    output += `\n// ── orphaned group ${i + 1} ──\n`;
     for (const n of orphanGroups[i]) {
       output += JSON.stringify(n) + "\n";
     }

@@ -110281,30 +110281,40 @@ function formatCompactDagDraft(metadata, nodes) {
   const KICKOFF_NODE = "execution-kickoff";
   const kickoffNode = connectedNodes.find((n) => n.id === KICKOFF_NODE);
   const nonKickoffConnected = connectedNodes.filter((n) => n.id !== KICKOFF_NODE);
+  const allProtected = [
+    ...kickoffNode ? [kickoffNode] : [],
+    ...terminalNodes
+  ];
+  const BANNER = "// ═══════════════════════════════════════════════════";
   let output = metadataLine + `
 `;
-  if (kickoffNode) {
-    output += `// kickoff node — remains unwired until the final wiring step
+  if (allProtected.length > 0) {
+    output += `${BANNER}
 `;
-    output += JSON.stringify(kickoffNode) + `
+    output += `// PROTECTED NODES — wire last
+`;
+    output += `${BANNER}
+`;
+    for (const n of allProtected) {
+      output += JSON.stringify(n) + `
+`;
+    }
+    output += `
 `;
   }
+  output += `${BANNER}
+`;
+  output += `// WORKING DRAFT
+`;
+  output += `${BANNER}
+`;
   for (const n of nonKickoffConnected) {
     output += JSON.stringify(n) + `
 `;
   }
-  if (terminalNodes.length > 0) {
-    output += `
-// terminal nodes — remain unwired until the final wiring step
-`;
-    for (const n of terminalNodes) {
-      output += JSON.stringify(n) + `
-`;
-    }
-  }
   for (let i = 0;i < orphanGroups.length; i++) {
     output += `
-// orphaned group ${i + 1}
+// ── orphaned group ${i + 1} ──
 `;
     for (const n of orphanGroups[i]) {
       output += JSON.stringify(n) + `
@@ -110604,7 +110614,11 @@ Call next_step with the next parameter. Valid options: [${children.join(", ")}].
             if (!children.includes(next)) {
               return `Invalid branch "${next}". Valid options: [${children.join(", ")}]`;
             }
-            state.decisions.push({ node_id: state.current_node, timestamp: now(), summary: `Chose branch "${next}"` });
+            state.decisions.push({
+              node_id: state.current_node,
+              timestamp: now(),
+              summary: `Chose branch "${next}"`
+            });
           }
           const nextId = children.length === 1 ? children[0] : next;
           const nextNode = state.node_map[nextId];
@@ -110797,7 +110811,9 @@ ${missingPrompts.join(`
           const planPath = resolveDagPath(target, worktree);
           const { metadata, nodes } = readDagV3(planPath);
           const { mermaid, warnings } = dagToMermaidCompactV3(metadata, nodes);
-          const ascii = await renderMermaidASCII(mermaid, { colorMode: "none" });
+          const ascii = await renderMermaidASCII(mermaid, {
+            colorMode: "none"
+          });
           let result = "";
           if (warnings.length > 0) {
             result += `## ⚠️ Structural Warnings
@@ -110826,7 +110842,9 @@ ${ascii}`;
           const { metadata, nodes } = readDagV3(planPath);
           validateDagV3(metadata, nodes);
           const { mermaid } = dagToMermaidCompactV3(metadata, nodes);
-          const ascii = await renderMermaidASCII(mermaid, { colorMode: "none" });
+          const ascii = await renderMermaidASCII(mermaid, {
+            colorMode: "none"
+          });
           const diagramText = `## Session Plan: ${metadata.id}
 
 **Plan Name:** ${plan_name}
@@ -110890,12 +110908,20 @@ ${ascii}`;
             const destPromptPath = path6.join(sessionPromptsDir, `${componentName}.md`);
             fs6.copyFileSync(sourcePromptPath, destPromptPath);
             const promptPath = path6.join(".opencode", "session-plans", plan_name, "prompts", `${componentName}.md`);
-            return { id: componentName, prompt: promptPath, enforcement: spec.enforcement };
+            return {
+              id: componentName,
+              prompt: promptPath,
+              enforcement: spec.enforcement
+            };
           };
           const kickoffNode = loadTerminalNode("execution-kickoff");
           const successNode = loadTerminalNode("plan-success");
           const failNode = loadTerminalNode("plan-fail");
-          const metadata = { schema_version: "3.0", id: plan_name, entry_node_id: "execution-kickoff" };
+          const metadata = {
+            schema_version: "3.0",
+            id: plan_name,
+            entry_node_id: "execution-kickoff"
+          };
           writeDagV3(planPath, metadata, [kickoffNode, successNode, failNode]);
           return `## init_dag: Created DAG "${plan_name}"
 
@@ -110915,7 +110941,11 @@ ${ascii}`;
           component_name: tool.schema.string().describe("Component type name from the node library (e.g., 'work-item', 'research'). Use get_planning_components_catalogue() to see available types. The terminal nodes 'execution-kickoff', 'plan-success', and 'plan-fail' cannot be added manually — they are auto-managed by init_dag.")
         },
         async execute({ plan_name, nodeId, component_name }, context) {
-          const PROTECTED_NODES = ["execution-kickoff", "plan-success", "plan-fail"];
+          const PROTECTED_NODES = [
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail"
+          ];
           if (PROTECTED_NODES.includes(component_name)) {
             throw new Error(`"${component_name}" is a protected terminal node and cannot be added manually. It is auto-managed by init_dag.`);
           }
@@ -110947,7 +110977,11 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           const destPromptPath = path6.join(sessionPromptsDir, `${nodeId}.md`);
           fs6.copyFileSync(sourcePromptPath, destPromptPath);
           const promptPath = path6.join(".opencode", "session-plans", plan_name, "prompts", `${nodeId}.md`);
-          const newNode = { id: nodeId, prompt: promptPath, enforcement: spec.enforcement };
+          const newNode = {
+            id: nodeId,
+            prompt: promptPath,
+            enforcement: spec.enforcement
+          };
           nodes.push(newNode);
           writeDagV3(planPath, metadata, nodes);
           return `## add_node: Created "${nodeId}" (${component_name})
@@ -110980,7 +111014,11 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           if (typeof nodeEntries !== "object" || nodeEntries === null || Array.isArray(nodeEntries)) {
             throw new Error(`add_nodes_to_dag: "nodes" must be a JSON object (not an array or primitive). Example: '{"investigate": "research", "implement": "work-item"}'`);
           }
-          const PROTECTED_NODES = ["execution-kickoff", "plan-success", "plan-fail"];
+          const PROTECTED_NODES = [
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail"
+          ];
           for (const [nodeId, componentName] of Object.entries(nodeEntries)) {
             if (PROTECTED_NODES.includes(componentName)) {
               throw new Error(`"${componentName}" is a protected terminal node and cannot be added manually. It is auto-managed by init_dag.`);
@@ -111015,7 +111053,11 @@ ${formatCompactDagDraft(metadata, nodes)}`);
             const destPromptPath = path6.join(sessionPromptsDir, `${nodeId}.md`);
             fs6.copyFileSync(sourcePromptPath, destPromptPath);
             const promptPath = path6.join(".opencode", "session-plans", plan_name, "prompts", `${nodeId}.md`);
-            nodes.push({ id: nodeId, prompt: promptPath, enforcement: spec.enforcement });
+            nodes.push({
+              id: nodeId,
+              prompt: promptPath,
+              enforcement: spec.enforcement
+            });
             created.push(`${nodeId} (${componentName})`);
           }
           if (errors3.length > 0) {
@@ -111094,7 +111136,11 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           nodeId: tool.schema.string().describe("ID of the node to delete. Its children will become orphaned.")
         },
         async execute({ plan_name, nodeId }, context) {
-          const PROTECTED_NODES = ["execution-kickoff", "plan-success", "plan-fail"];
+          const PROTECTED_NODES = [
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail"
+          ];
           if (PROTECTED_NODES.includes(nodeId)) {
             throw new Error(`"${nodeId}" is a protected terminal node and cannot be deleted. It is auto-managed by init_dag.`);
           }
@@ -111171,79 +111217,6 @@ ${formatCompactDagDraft(metadata, nodes)}`);
 ` + `Note: "${to}" still exists in the DAG — use connect_nodes to reconnect it if needed.
 
 ` + formatCompactDagDraft(metadata, nodes);
-        }
-      }),
-      task: tool({
-        description: "Dispatch a specialized subagent to complete a task. OpenCode renders a delegation UI when this tool is called. " + "Use this whenever a task requires a specialist: investigation, implementation, documentation, shell operations, or research.",
-        args: {
-          description: tool.schema.string().describe("A short label for the task (3-5 words). Shown in the delegation UI. Example: 'Explore auth module'."),
-          prompt: tool.schema.string().describe("Full task instructions for the subagent. Be specific: include the goal, relevant context, constraints, and what to return. The subagent has no memory of the current conversation."),
-          subagent_type: tool.schema.string().describe("The agent type to dispatch. Available types: context-scout, context-insurgent, external-scout, junior-dev, documentation-expert, dag-designer, dag-reviewer, tailwrench, autonomous-agent."),
-          task_id: tool.schema.string().optional().describe("Optional. Provide a task_id returned by a previous task call to resume that subagent session with its prior context intact.")
-        },
-        async execute({ description, prompt, subagent_type, task_id }, context) {
-          const agentsResponse = await client.app.agents();
-          const agents = Array.isArray(agentsResponse.data) ? agentsResponse.data : [];
-          const agent = agents.find((a) => a.name === subagent_type);
-          if (!agent) {
-            const available = agents.filter((a) => a.mode !== "primary").map((a) => a.name).join(", ");
-            throw new Error(`Unknown agent type: "${subagent_type}" is not a valid agent type. Available: ${available || "none"}`);
-          }
-          await context.ask({
-            permission: "task",
-            patterns: [subagent_type],
-            always: ["*"],
-            metadata: { description, subagent_type }
-          });
-          let session;
-          if (task_id) {
-            try {
-              const existing = await client.session.get({ path: { id: task_id } });
-              if (existing.data)
-                session = existing.data;
-            } catch {}
-          }
-          if (!session) {
-            const created = await client.session.create({
-              body: {
-                parentID: context.sessionID,
-                title: `${description} (@${agent.name} subagent)`
-              }
-            });
-            session = created.data;
-          }
-          if (!session)
-            throw new Error("Failed to create or retrieve subagent session");
-          context.metadata({
-            title: description,
-            metadata: { sessionId: session.id }
-          });
-          const handleAbort = () => client.session.abort({ path: { id: session.id } });
-          context.abort.addEventListener("abort", handleAbort);
-          try {
-            const result = await client.session.prompt({
-              path: { id: session.id },
-              body: {
-                agent: agent.name,
-                parts: [{ type: "text", text: prompt }]
-              }
-            });
-            const resultParts = result.data?.parts ?? [];
-            const textParts = resultParts.filter((p) => p.type === "text");
-            const text = textParts[textParts.length - 1]?.text ?? "";
-            context.metadata({
-              title: description,
-              metadata: { sessionId: session.id }
-            });
-            return [
-              text,
-              "",
-              `task_id: ${session.id}`
-            ].join(`
-`);
-          } finally {
-            context.abort.removeEventListener("abort", handleAbort);
-          }
         }
       }),
       get_planning_components_catalogue: tool({
