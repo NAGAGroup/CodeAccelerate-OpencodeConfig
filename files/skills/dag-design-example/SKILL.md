@@ -54,10 +54,16 @@ work-F connects Phase 3a/3b exits to Phase 4 entry (convergence node)
 <|think|>
 Think through the following application of the staged workflow to the example above and how it generalizes to the DAG you're designing.
 
+### Load the Catalogue
+
 ```
 # ── Load catalogue ──
 get_planning_components_catalogue()
+```
 
+### Stage 1: Build phase clusters
+
+```
 # ── Stage 1: Build phase clusters ──
 
 # Phase 1
@@ -83,49 +89,32 @@ get_compact_dag_draft(target="my-plan")
 # Phase 4
 add_nodes_to_dag(plan_name="my-plan", nodes='{"work-F": "work-item"}')
 get_compact_dag_draft(target="my-plan")
-# Example output at this point — 5 orphaned groups plus protected nodes:
-#
-#   plan: my-plan
-#
-#   // ═══════════════════════════════════════════════════
-#   // PROTECTED NODES — wire last
-#   // ═══════════════════════════════════════════════════
-#   (execution-kickoff)
-#   (plan-success)
-#   (plan-fail)
-#
-#   // ═══════════════════════════════════════════════════
-#   // WORKING DRAFT
-#   // ═══════════════════════════════════════════════════
-#
-#   ── orphaned group 1 ──
-#   (work-A) → (decision-gate-A) → [work-A-option-1, work-A-option-2]
-#   (work-A-option-1)
-#   (work-A-option-2)
-#
-#   ── orphaned group 2 ──
-#   (work-B) → (work-C) → (decision-gate-early-check) → (decision-gate-routing)
-#
-#   ── orphaned group 3 ──
-#   (work-D) → (verify-D) → [work-F, fix-D]
-#   (fix-D) → (verify-D-retry)
-#
-#   ── orphaned group 4 ──
-#   (work-E) → (verify-E) → [work-F, fix-E-1]
-#   (fix-E-1) → (verify-E-retry-1) → [work-F, fix-E-2]
-#   (fix-E-2) → (verify-E-retry-2)
-#
-#   ── orphaned group 5 ──
-#   (work-F)
+```
 
-# ── Stage 2: Wire clusters together (no terminal nodes — those are Stage 3) ──
+### Stage 2: Connect phase clusters
 
+> [!IMPORTANT]
+> You do not need to redo any connections within phase clusters, only those that connect different phases together, so this stage is much faster than Stage 1. You can also connect phases in any order you like, just make sure to connect all of them before moving on to Stage 3.
+
+```
+# ── Stage 2: Connect phase clusters ──
 connect_nodes(plan_name="my-plan", edges='{"work-A-option-1": "work-B", "work-A-option-2": "work-B", "decision-gate-routing": ["work-D", "work-E"], "verify-D-retry": "work-F", "verify-E-retry-2": "work-F"}')
 get_compact_dag_draft(target="my-plan")
 get_dag_draft_diagram(target="my-plan")
+```
 
+### Stage 3: Connect kickoff and terminal nodes
+
+```
 # ── Stage 3: Connect kickoff and terminal nodes ──
 
 connect_nodes(plan_name="my-plan", edges='{"execution-kickoff": "work-A", "decision-gate-early-check": "plan-success", "work-F": "plan-success", "verify-D-retry": "plan-fail", "verify-E-retry-2": "plan-fail"}')
 validate_dag(plan_name="my-plan")
 ```
+
+## Thinking through this skill
+
+<|think|>
+- how does the staged workflow help structure your approach to building complex DAGs?
+- using this as a guide, how would you approach building the DAG for your current plan? What are the different phases you would define and why?
+- plan out all stages before you start building, then follow the workflow stage by stage to build your DAG. How does this structured approach compare to how you would have built the DAG without it?
