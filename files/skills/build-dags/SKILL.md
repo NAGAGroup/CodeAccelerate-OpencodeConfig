@@ -9,11 +9,12 @@ In this skill, you learn how to design and build structurally correct execution 
 ## How to start every DAG session
 
 1. Call `get_planning_components_catalogue` to load the available node types — never design from memory
-2. Decompose the goal into sequential phases, then plan each phase's internal structure before calling any DAG tool
+2. Decompose the goal into chunked phases
+3. Proceed with the design guidance below
 
 ## How to design a DAG
 
-Break the work into phases. Each phase is a self-contained cluster of nodes. Plan each cluster independently, then define how clusters connect.
+Break the work into phases. Each phase is a self-contained cluster of nodes. Plan each cluster independently. Only after you've planned each cluster independently, consider the structure of inter-phase connections.
 
 **Phase planning example:**
 
@@ -60,7 +61,44 @@ work-F connects Phase 3a/3b exits to Phase 4 entry (convergence node)
 work-F → plan-success
 ```
 
-Rules for a valid DAG:
+## How to build a DAG
+
+### Stage 1: Build phase clusters
+
+> [!IMPORTANT]
+> Call `get_compact_dag_draft` after each phase cluster to check your work before proceeding to the next cluster. Always wait until the next stage before doing any inter-phase wiring
+
+Build each phase as an independent cluster. It is expected and normal for clusters to be orphaned at this stage.
+
+For each phase:
+1. Call `add_nodes_to_dag` to create all the nodes needed for the phase, including entry and exit nodes, work nodes, verify nodes, fix nodes, and decision gates
+1. Wire the internal edges within the phase using `connect_nodes`
+4. Call `get_compact_dag_draft` to confirm the cluster is internally correct — it will appear as a grouped orphan cluster, which is expected
+
+> [!IMPORTANT]
+> At the end of this stage, you have have `p` orphaned sections of the DAG in `get_compact_dag_draft`, where `p` is the number of phases you designed.
+
+### Stage 2: Wire clusters together
+
+Once all phase clusters are internally complete:
+- Create inter-phase connections
+- After each call to `connect_nodes`, call `get_compact_dag_draft` to visually confirm the wiring is correct and that every path from kickoff leads to success or fail with no dead ends
+- After all inter-phase wiring is complete call `get_dag_draft_diagram` to see the full visual structure. Your wired up phase clusters should be a single, orphaned block, alongside the kickoff node and orphaned terminal nodes
+
+### Stage 3: Connect kickoff and terminal nodes
+
+Finally, connect the kickoff node to the entry of the first phase, and connect all paths leading to success or failure to their respective terminal nodes. Call `get_dag_draft_diagram` after each change, and `validate_dag` when done.
+
+## How to revise an existing DAG
+
+1. Call `get_compact_dag_draft` to read the grouped cluster representation and `get_dag_draft_diagram` to view the visual structure
+2. Write the target adjacency list — what the DAG should look like after revision
+3. Identify the diff: nodes to add, edges to add, edges to remove, nodes to remove
+4. Execute: `add_nodes_to_dag` for new nodes, `connect_nodes` for new edges, `delete_dag_edge` to remove an edge, `delete_node` to remove a node — after any `delete_node`, immediately rewire its orphaned children before continuing
+5. Call `get_dag_draft_diagram` after each structural change, `validate_dag` when done
+
+## Rules for a valid DAG
+
 - Every path from `execution-kickoff` terminates at `plan-success` or `plan-fail` — no dead ends
 - Every `verify` node has exactly 2 children: a pass path and a fail path
 - Every `decision-gate` has exactly 2 children
@@ -68,60 +106,29 @@ Rules for a valid DAG:
 - There is exactly one of each terminal node — these two nodes are shared targets among every node immediately preceding failure or success
 - Branches are mutually exclusive paths — parallel work is unsupported
 
-## How to build a DAG
-
-Construction happens in three stages: create nodes, build phase clusters, then wire clusters together.
-
-### Stage 1: Create all nodes
-
-1. You will be presented with a plan name for which `init_dag` has already been called — `execution-kickoff`, `plan-success`, and `plan-fail` already exist and must not be added again
-2. Create every remaining node with a single `add_nodes_to_dag` call — organized by phase, all nodes at once, no wiring yet
-3. Call `get_compact_dag_draft` to confirm all nodes exist before wiring
-
-### Stage 2: Build phase clusters
-
-Build each phase as an independent cluster. It is expected and normal for clusters to be orphaned at this stage.
-
-For each phase:
-1. Wire the internal edges within the phase using `connect_dag_nodes`
-2. Wire the verify-retry loop within the phase
-3. Wire the phase's failure terminal to `plan-fail`
-4. Call `get_compact_dag_draft` to confirm the cluster is internally correct — it will appear as a grouped orphan cluster, which is expected
-
-Do not attempt to connect phases to each other yet. Focus on getting each cluster's internal structure right first.
-
-### Stage 3: Wire clusters together
-
-Once all phase clusters are internally complete:
-1. Connect `execution-kickoff` to the first phase's entry node
-2. Connect each phase's success exit to the next phase's entry node
-3. Connect the final phase's success exit to `plan-success`
-4. Call `get_dag_draft_diagram` to visually verify the complete structure — all orphans should now be resolved
-5. Call `validate_dag` — fix any issues before finishing
-
-## How to revise an existing DAG
-
-1. Call `get_compact_dag_draft` to read the grouped cluster representation and `get_dag_draft_diagram` to view the visual structure
-2. Write the target adjacency list — what the DAG should look like after revision
-3. Identify the diff: nodes to add, edges to add, edges to remove, nodes to remove
-4. Execute: `add_nodes_to_dag` for new nodes, `connect_dag_nodes` for new edges, `delete_dag_edge` to remove an edge, `delete_node` to remove a node — after any `delete_node`, immediately rewire its orphaned children before continuing
-5. Call `get_dag_draft_diagram` after each structural change, `validate_dag` when done
-
 ## How to name nodes
 
 Node IDs must be unique and descriptive. Never use generic names like `node-1` or `step-3`, and never use bare component names like `verify` or `work-item`. Add context: `verify-setup`, `verify-auth`, `fix-build-errors`, `decision-gate-auth-check`.
 
+## DAG Building Steps Refresher
+
+> [!IMPORTANT]
+> Ignore kickoff and terminal nodes until all phases are built and wired up to one another
+
+1. build each phase cluster independently, using `get_compact_dag_draft` to check work after each cluster
+2. wire clusters together, using `get_compact_dag_draft` after each connection and `get_dag_draft_diagram` after all wiring is done
+3. connect kickoff and terminal nodes, using `get_dag_draft_diagram` after each change and `validate_dag` when done
+
+## DAG Building Constraints
+
+- Always leave the `execution-kickoff`, `plan-success`, and `plan-fail` nodes until the end — they are the anchors of the DAG and should be wired in last
+- Always build and wire each phase independently before connecting them together — this keeps the work manageable and prevents structural errors from propagating across phases
+
 ## How to think through this skill
 
 <|think|>
-- Have I called `get_planning_components_catalogue` — am I working from the actual available components, not memory?
-- Have I decomposed the goal into distinct phases — does each phase have a clear entry, exit, and internal verify-retry structure?
-- Within each phase cluster, is the internal wiring complete — work → verify (pass → exit, fail → fix → verify-retry → plan-fail)?
-- Have I kept phase clusters independent during Stage 2 — am I resisting the urge to wire between phases before each cluster is internally correct?
-- When wiring clusters together in Stage 3, does every phase exit connect to the next phase entry?
-- Does every path from `execution-kickoff` reach `plan-success` or `plan-fail` — are there any dead ends?
-- Does every `decision-gate` have exactly 2 children?
-- Does every `verify` node have exactly 2 children — a pass path and a fail path?
-- For each verify node, is there a bounded retry path — and does the retry's pass path converge back to the same next step as the original verify's pass path?
-- After any `delete_node`, have I immediately rewired the orphaned children before doing anything else?
+- Am I following the constraints on building a DAG
+- Have I called `get_planning_components_catalogue` and am I working from the actual available components, not memory?
+- Have I decomposed the goal into distinct phases, with each phase having a clear entry, exit, and internal verify-retry structure, and kept phase clusters independent until each is internally correct?
+- Does every `decision-gate` have exactly 2 children, and does every `verify` node have exactly 2 children (pass and fail), with a bounded retry path that converges correctly?
 - Am I using `get_compact_dag_draft` during building (Stages 1-2) and `get_dag_draft_diagram` during wiring and verification (Stage 3)?
