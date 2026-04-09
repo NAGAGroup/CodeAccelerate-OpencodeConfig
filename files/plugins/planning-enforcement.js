@@ -110002,6 +110002,8 @@ function writeDagV3(planPath, metadata, nodes) {
 
 // dag-tree.ts
 function validateDagV3(metadata, nodes) {
+  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+  const workNodes = nodes.filter((n) => !PROTECTED_IDS.has(n.id));
   const ids = new Set;
   const duplicates = [];
   for (const node of nodes) {
@@ -110013,43 +110015,61 @@ function validateDagV3(metadata, nodes) {
   if (duplicates.length > 0) {
     throw new Error(`Duplicate node IDs in DAG: ${duplicates.join(", ")}`);
   }
-  if (!ids.has(metadata.entry_node_id)) {
-    throw new Error(`Entry node "${metadata.entry_node_id}" not found in DAG nodes`);
-  }
   const nodeMap = {};
   for (const node of nodes)
     nodeMap[node.id] = node;
-  for (const node of nodes) {
+  for (const node of workNodes) {
     for (const childId of node.children ?? []) {
-      if (!nodeMap[childId]) {
+      if (!PROTECTED_IDS.has(childId) && !nodeMap[childId]) {
         throw new Error(`Node "${node.id}" references child "${childId}" which does not exist`);
       }
     }
   }
+  const kickoff = nodes.find((n) => n.id === "execution-kickoff");
+  const effectiveEntryId = kickoff?.children?.[0];
+  if (!effectiveEntryId || PROTECTED_IDS.has(effectiveEntryId) || !nodeMap[effectiveEntryId]) {
+    throw new Error(`No entry point has been set. Call \`set_entry_point\` with the first work node to resolve.`);
+  }
   const reachable = new Set;
-  const queue = [metadata.entry_node_id];
+  const queue = [effectiveEntryId];
   while (queue.length > 0) {
     const id = queue.shift();
     if (reachable.has(id))
       continue;
     reachable.add(id);
     for (const childId of nodeMap[id]?.children ?? []) {
-      if (!reachable.has(childId))
+      if (!PROTECTED_IDS.has(childId) && !reachable.has(childId))
         queue.push(childId);
     }
   }
-  const unreachable = nodes.filter((n) => !reachable.has(n.id)).map((n) => n.id);
-  if (unreachable.length > 0) {
-    throw new Error(`Unreachable nodes (no path from entry): ${unreachable.join(", ")}`);
+  const unreachableWork = workNodes.filter((n) => !reachable.has(n.id));
+  if (unreachableWork.length > 0) {
+    throw new Error(`Unreachable nodes (no path from entry): ${unreachableWork.map((n) => n.id).join(", ")}. ` + `Connect them via \`connect_nodes\` or remove them with \`delete_node\`.`);
   }
-  const overBranched = nodes.filter((n) => (n.children ?? []).length > 2);
+  const allExits = new Set;
+  for (const n of workNodes) {
+    for (const childId of n.children ?? []) {
+      if (childId === "plan-success" || childId === "plan-fail")
+        allExits.add(n.id);
+    }
+  }
+  const unsetLeaves = workNodes.filter((n) => (!n.children || n.children.filter((c) => !PROTECTED_IDS.has(c)).length === 0) && !allExits.has(n.id));
+  if (unsetLeaves.length > 0) {
+    throw new Error(`The following leaf nodes are not connected or marked as exit points: ${unsetLeaves.map((n) => n.id).join(", ")}. ` + `Connect them to another DAG node via \`connect_nodes\` or mark them as exit points via \`set_exit_point\`.`);
+  }
+  const overBranched = workNodes.filter((n) => (n.children ?? []).filter((c) => !PROTECTED_IDS.has(c)).length > 2);
   if (overBranched.length > 0) {
-    const details = overBranched.map((n) => `"${n.id}" has ${n.children.length} children: [${n.children.join(", ")}]`).join("; ");
+    const details = overBranched.map((n) => {
+      const visibleChildren = n.children.filter((c) => !PROTECTED_IDS.has(c));
+      return `"${n.id}" has ${visibleChildren.length} children: [${visibleChildren.join(", ")}]`;
+    }).join("; ");
     throw new Error(`Branching limit violated — nodes may have at most 2 children. ${details}. ` + `Decision gates and verify nodes must have exactly 2 children. ` + `Decompose wider branches into nested binary decisions.`);
   }
   const visited = new Set;
   const recStack = new Set;
   function hasCycle(nodeId) {
+    if (PROTECTED_IDS.has(nodeId))
+      return false;
     if (recStack.has(nodeId))
       return true;
     if (visited.has(nodeId))
@@ -110057,13 +110077,13 @@ function validateDagV3(metadata, nodes) {
     visited.add(nodeId);
     recStack.add(nodeId);
     for (const childId of nodeMap[nodeId]?.children ?? []) {
-      if (hasCycle(childId))
+      if (!PROTECTED_IDS.has(childId) && hasCycle(childId))
         return true;
     }
     recStack.delete(nodeId);
     return false;
   }
-  if (hasCycle(metadata.entry_node_id)) {
+  if (hasCycle(effectiveEntryId)) {
     throw new Error("DAG contains a cycle (circular dependency detected)");
   }
 }
@@ -110788,8 +110808,15 @@ ${choices}
           const { metadata, nodes } = readDagV3(planPath);
           validateDagV3(metadata, nodes);
           const promptsDir = path6.join(worktree, ".opencode", "session-plans", plan_name, "prompts");
+          const PROTECTED_NODE_IDS = new Set([
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail"
+          ]);
           const missingPrompts = [];
           for (const node of nodes) {
+            if (PROTECTED_NODE_IDS.has(node.id))
+              continue;
             const resolvedPrompt = node.prompt.includes("/") ? expandPath(node.prompt) : path6.join(promptsDir, node.prompt);
             const fullPromptPath = path6.isAbsolute(resolvedPrompt) ? resolvedPrompt : path6.join(worktree, resolvedPrompt);
             if (!fs6.existsSync(fullPromptPath)) {
@@ -110801,9 +110828,12 @@ ${choices}
 ${missingPrompts.join(`
 `)}`);
           }
+          const workNodeCount = nodes.filter((n) => !["execution-kickoff", "plan-success", "plan-fail"].includes(n.id)).length;
+          const kickoffForEntry = nodes.find((n) => n.id === "execution-kickoff");
+          const entryNodeId = kickoffForEntry?.children?.[0] ?? "(not set)";
           return `## validate_dag: ${plan_name} — All checks passed
 
-` + `**Nodes:** ${nodes.length} | **Entry:** ${metadata.entry_node_id}
+` + `**Nodes:** ${workNodeCount} | **Entry:** ${entryNodeId}
 
 ` + `Checks: schema, unique IDs, child refs, reachability, cycles, prompt files.`;
         }
@@ -111195,7 +111225,7 @@ ${errors3.map((e) => `- ${e}`).join(`
               protectedErrors.push(`Cannot wire from "${from}" — use set_entry_point to set the DAG entry.`);
             }
             if (PROTECTED_IDS.has(to) && (to === "plan-success" || to === "plan-fail")) {
-              protectedErrors.push(`Cannot wire to "${to}" — use set_exit_point to mark "${from}" as an exit.`);
+              protectedErrors.push(`Cannot wire directly to a DAG terminal — use \`set_exit_point\` to mark "${from}" as a success or failure exit instead.`);
             }
           }
           if (protectedErrors.length > 0) {
@@ -111682,6 +111712,22 @@ ${formatCompactDagDraft(metadata, nodes)}`);
         const planPath = resolveDagPath(plan_name, worktree2);
         const { metadata, nodes } = readDagV3(planPath);
         validateDagV3(metadata, nodes);
+        const { mermaid } = dagToMermaidCompactV3(metadata, nodes);
+        const ascii = renderMermaidASCII(mermaid, {
+          colorMode: "none"
+        });
+        const diagramText = `## Session Plan: ${metadata.id}
+
+**Plan Name:** ${plan_name}
+
+${ascii}`;
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: {
+            parts: [{ type: "text", text: diagramText }],
+            noReply: true
+          }
+        });
         return;
       }
       if (input.tool === "next_step") {
@@ -111792,31 +111838,6 @@ ${formatCompactDagDraft(metadata, nodes)}`);
         client.session.prompt({
           path: { id: input.sessionID },
           body: { parts: [{ type: "text", text: promptText }] }
-        });
-        return;
-      }
-      if (input.tool === "present_dag_diagram") {
-        const plan_name = output.args?.plan_name;
-        if (!plan_name)
-          return;
-        const worktree2 = resolveWorktree(_ctx);
-        const planPath = resolveDagPath(plan_name, worktree2);
-        const { metadata, nodes } = readDagV3(planPath);
-        const { mermaid } = dagToMermaidCompactV3(metadata, nodes);
-        const ascii = await renderMermaidASCII(mermaid, {
-          colorMode: "none"
-        });
-        const diagramText = `## Session Plan: ${metadata.id}
-
-**Plan Name:** ${plan_name}
-
-${ascii}`;
-        client.session.prompt({
-          path: { id: input.sessionID },
-          body: {
-            parts: [{ type: "text", text: diagramText }],
-            noReply: true
-          }
         });
         return;
       }

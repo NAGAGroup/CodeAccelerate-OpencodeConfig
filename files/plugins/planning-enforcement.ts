@@ -339,8 +339,14 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             plan_name,
             "prompts",
           );
+          const PROTECTED_NODE_IDS = new Set([
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail",
+          ]);
           const missingPrompts: string[] = [];
           for (const node of nodes) {
+            if (PROTECTED_NODE_IDS.has(node.id)) continue; // internal plumbing — skip
             const resolvedPrompt = node.prompt.includes("/")
               ? expandPath(node.prompt)
               : path.join(promptsDir, node.prompt);
@@ -360,9 +366,20 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             );
           }
 
+          const workNodeCount = nodes.filter(
+            (n) =>
+              !["execution-kickoff", "plan-success", "plan-fail"].includes(
+                n.id,
+              ),
+          ).length;
+          const kickoffForEntry = nodes.find(
+            (n) => n.id === "execution-kickoff",
+          );
+          const entryNodeId = kickoffForEntry?.children?.[0] ?? "(not set)";
+
           return (
             `## validate_dag: ${plan_name} — All checks passed\n\n` +
-            `**Nodes:** ${nodes.length} | **Entry:** ${metadata.entry_node_id}\n\n` +
+            `**Nodes:** ${workNodeCount} | **Entry:** ${entryNodeId}\n\n` +
             `Checks: schema, unique IDs, child refs, reachability, cycles, prompt files.`
           );
         },
@@ -1006,15 +1023,18 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
             // Enforce max 2 children — catch over-branching immediately
             const workChildren = parent.children.filter(
-              (c) => c !== "plan-success" && c !== "plan-fail" && c !== "execution-kickoff",
+              (c) =>
+                c !== "plan-success" &&
+                c !== "plan-fail" &&
+                c !== "execution-kickoff",
             );
             if (workChildren.length > 2) {
               // Roll back
               parent.children.pop();
               errors.push(
                 `"${from}" already has ${workChildren.length - 1} work-node children (${workChildren.slice(0, -1).join(", ")}). ` +
-                `Adding "${to}" would give it ${workChildren.length} — max is 2. ` +
-                `Decompose wider branches into nested binary decisions.`,
+                  `Adding "${to}" would give it ${workChildren.length} — max is 2. ` +
+                  `Decompose wider branches into nested binary decisions.`,
               );
               continue;
             }
@@ -1046,7 +1066,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               (to === "plan-success" || to === "plan-fail")
             ) {
               protectedErrors.push(
-                `Cannot wire to "${to}" — use set_exit_point to mark "${from}" as an exit.`,
+                `Cannot wire directly to a DAG terminal — use \`set_exit_point\` to mark "${from}" as a success or failure exit instead.`,
               );
             }
           }
@@ -1470,7 +1490,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           // Strip exit point edges: remove plan-success and plan-fail from all work node children
           let exitEdgesRemoved = 0;
           for (const node of nodes) {
-            if (node.id === "execution-kickoff" || TERMINAL_IDS.has(node.id)) continue;
+            if (node.id === "execution-kickoff" || TERMINAL_IDS.has(node.id))
+              continue;
             const before = node.children?.length ?? 0;
             if (node.children) {
               node.children = node.children.filter((c) => !TERMINAL_IDS.has(c));
@@ -1794,6 +1815,20 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         const planPath = resolveDagPath(plan_name, worktree);
         const { metadata, nodes } = readDagV3(planPath);
         validateDagV3(metadata, nodes); // throws on structural issues
+
+        const { mermaid } = dagToMermaidCompactV3(metadata, nodes);
+        const ascii = renderMermaidASCII(mermaid, {
+          colorMode: "none",
+        });
+        const diagramText = `## Session Plan: ${metadata.id}\n\n**Plan Name:** ${plan_name}\n\n${ascii}`;
+
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: {
+            parts: [{ type: "text", text: diagramText }],
+            noReply: true,
+          },
+        });
         return;
       }
 
@@ -1953,29 +1988,6 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         client.session.prompt({
           path: { id: input.sessionID },
           body: { parts: [{ type: "text", text: promptText }] },
-        });
-        return;
-      }
-
-      if (input.tool === "present_dag_diagram") {
-        const plan_name = output.args?.plan_name as string;
-        if (!plan_name) return;
-
-        const worktree = resolveWorktree(_ctx);
-        const planPath = resolveDagPath(plan_name, worktree);
-        const { metadata, nodes } = readDagV3(planPath);
-        const { mermaid } = dagToMermaidCompactV3(metadata, nodes);
-        const ascii = await renderMermaidASCII(mermaid, {
-          colorMode: "none",
-        });
-        const diagramText = `## Session Plan: ${metadata.id}\n\n**Plan Name:** ${plan_name}\n\n${ascii}`;
-
-        client.session.prompt({
-          path: { id: input.sessionID },
-          body: {
-            parts: [{ type: "text", text: diagramText }],
-            noReply: true,
-          },
         });
         return;
       }

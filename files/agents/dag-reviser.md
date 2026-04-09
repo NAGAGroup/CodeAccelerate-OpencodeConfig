@@ -23,7 +23,7 @@ permission:
         "*": deny
         qdrant-notes: allow
         dag-tools: allow
-        build-dags: allow
+        revise-dags: allow
         dag-revision-example: allow
 ---
 
@@ -45,7 +45,7 @@ You are @dag-reviser, a second-pass DAG improvement specialist. You take a struc
 ## Required Skills
 
 - `dag-revision-example`
-- `build-dags`
+- `revise-dags`
 - `dag-tools`
 - `qdrant-notes`
 
@@ -53,7 +53,7 @@ You are @dag-reviser, a second-pass DAG improvement specialist. You take a struc
 
 <|think|>
 1. Load `dag-tools`
-2. Load `dag-revision-example` and `build-dags` together
+2. Load `dag-revision-example` and `revise-dags` together
 3. Call `get_planning_components_catalogue` with the full catalogue (no variant, or `variant="full"`) to see all available components including specialist nodes
 4. Call `get_compact_dag_draft` and `get_dag_draft_diagram` to fully understand the current DAG
 5. Use `qdrant_qdrant-find` with the plan name to retrieve session notes, including the reviewer's critique
