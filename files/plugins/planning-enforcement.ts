@@ -177,7 +177,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           if (!isFromEntryNode) {
             result += `You have just completed "${node.id}". `;
           }
-          result += `Your next task, "${nextId}", will be presented in the following message.`;
+          result += `Please wait for your next task.`;
 
           return result;
         },
@@ -418,7 +418,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const planPath = resolveDagPath(target, worktree);
           const { metadata, nodes } = readDagV3(planPath);
           const { mermaid, warnings } = dagToMermaidCompactV3(metadata, nodes);
-          const ascii = await renderMermaidASCII(mermaid, {
+          const ascii = renderMermaidASCII(mermaid, {
             colorMode: "none",
           });
           let result = "";
@@ -2033,6 +2033,30 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           body: { parts: [{ type: "text", text: promptText }] },
         });
         return;
+      }
+
+      // --- Inject DAG draft diagram tip for DAG-editing tools ---
+      const DAG_EDITING_TOOLS = new Set([
+        "connect_nodes",
+        "delete_node",
+        "delete_edge",
+        "insert_between",
+        "set_entry_point",
+        "set_exit_point",
+        "reset_entry_exit_points",
+      ]);
+      if (DAG_EDITING_TOOLS.has(input.tool)) {
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: {
+            parts: [
+              {
+                type: "text",
+                text: "**Useful Tip!** Reload your DAG skills often as a refresher! (This message was auto generated.)",
+              },
+            ],
+          },
+        });
       }
 
       // --- Enforcement tracking for all other tools ---

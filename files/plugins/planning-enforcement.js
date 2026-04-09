@@ -110086,6 +110086,20 @@ function validateDagV3(metadata, nodes) {
   if (hasCycle(effectiveEntryId)) {
     throw new Error("DAG contains a cycle (circular dependency detected)");
   }
+  const BINARY_COMPONENTS = new Set(["verify", "decision-gate", "user-decision-gate"]);
+  const underBranched = workNodes.filter((n) => {
+    if (!n.component || !BINARY_COMPONENTS.has(n.component))
+      return false;
+    const visibleChildren = (n.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+    return visibleChildren.length !== 2;
+  });
+  if (underBranched.length > 0) {
+    const details = underBranched.map((n) => {
+      const visibleChildren = (n.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+      return `"${n.id}" (${n.component}) has ${visibleChildren.length} children — needs exactly 2`;
+    }).join("; ");
+    throw new Error(`Binary branching violated — verify, decision-gate, and user-decision-gate nodes must have exactly 2 children. ${details}.`);
+  }
 }
 function flattenTreeV3(metadata, nodes) {
   const map2 = {};
@@ -110690,7 +110704,7 @@ var PlanningEnforcementPlugin = async (_ctx) => {
           if (!isFromEntryNode) {
             result += `You have just completed "${node.id}". `;
           }
-          result += `Your next task, "${nextId}", will be presented in the following message.`;
+          result += `Please wait for your next task.`;
           return result;
         }
       }),
@@ -111865,6 +111879,28 @@ ${ascii}`;
           body: { parts: [{ type: "text", text: promptText }] }
         });
         return;
+      }
+      const DAG_EDITING_TOOLS = new Set([
+        "connect_nodes",
+        "delete_node",
+        "delete_edge",
+        "insert_between",
+        "set_entry_point",
+        "set_exit_point",
+        "reset_entry_exit_points"
+      ]);
+      if (DAG_EDITING_TOOLS.has(input.tool)) {
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: {
+            parts: [
+              {
+                type: "text",
+                text: "**Useful Tip!** Call `get_dag_draft_diagram` for a full mermaid ascii rendering"
+              }
+            ]
+          }
+        });
       }
       const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
