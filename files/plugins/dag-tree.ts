@@ -624,10 +624,10 @@ export function formatCompactDagDraft(
     lines.push(renderGroup(orphanWorkGroups[i]));
   }
 
-  let result = `## DAG Compact Draft: ${metadata.id}\n\n`;
+  let result = `DAG: ${metadata.id}\n\n`;
   if (orphanWorkGroups.length > 0) {
     result += `${orphanWorkGroups.length} orphaned group(s)\n\n`;
   }
-  result += "```\n" + lines.join("\n").trimEnd() + "\n```";
+  result += lines.join("\n").trimEnd();
   return result;
 }

@@ -4,20 +4,18 @@
 **Optional Tools:** None
 **Questions Allowed?:** No
 
-# DAG Node: Deep Research
-
-## Goal
+<goal>
 Conduct comprehensive external research covering multiple angles of a novel or frontier topic.
+</goal>
 
-## Instructions
+<instructions>
+1. Use the deep-researcher skill to compose a comprehensive research brief — think through what domain needs exploration, what angles are most valuable, and what scope protects proprietary information.
+2. Dispatch deep-researcher using the task tool with plan name {{PLAN_NAME}}.
+3. Call next_step.
+</instructions>
 
-1. Use the `deep-researcher` skill to compose a comprehensive research brief — think through what domain needs exploration, what angles are most valuable, and what scope protects proprietary information
-2. Dispatch deep-researcher using the `task` tool with plan name `{{PLAN_NAME}}`
-3. Call `next_step`
-
-## Thinking through the instructions
-
-<|think|>
-- Have I identified multiple angles or sub-questions that together give a comprehensive picture?
-- Have I used only public, general terms — no internal names or proprietary details?
-- Is this genuinely novel or frontier research that requires deep multi-source investigation, not a routine query that belongs in an external-scout node?
+<check>
+1. Have I identified multiple angles or sub-questions that together give a comprehensive picture?
+2. Have I used only public, general terms — no internal names or proprietary details?
+3. Is this genuinely novel or frontier research, or would a routine external-scout node suffice?
+</check>

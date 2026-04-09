@@ -4,19 +4,17 @@
 **Optional Tools:** None
 **Questions Allowed?:** No
 
-# DAG Node: Store Notes
-
-## Goal
+<goal>
 Persist all significant findings, decisions, and constraints from the investigation phases to semantic notes before context compression.
+</goal>
 
-## Instructions
+<instructions>
+1. Store each significant finding, decision, or constraint as a separate qdrant_qdrant-store call to collection {{PLAN_NAME}} — cover: user's goal and scope boundaries, scout findings, research outcomes, and constraints that will affect plan design.
+2. Call next_step.
+</instructions>
 
-1. Store each significant finding, decision, or constraint as a separate `qdrant_qdrant-store` call to collection `{{PLAN_NAME}}` — cover: user's goal and scope boundaries, scout findings, research outcomes, and constraints that will affect plan design
-2. Call `next_step`
-
-## Thinking through the instructions
-
-<|think|>
-- Have I stored the user's goal, scope boundaries, scout findings, research outcomes, and key constraints?
-- Is each note self-contained prose — could a future agent understand it without re-investigating?
-- Am I storing findings that shape plan structure, not procedural details?
+<check>
+1. Have I stored the user's goal, scope boundaries, scout findings, research outcomes, and key constraints?
+2. Is each note self-contained prose — could a future agent understand it without re-investigating?
+3. Am I storing findings that shape plan structure, not procedural details?
+</check>

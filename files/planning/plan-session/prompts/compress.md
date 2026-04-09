@@ -4,19 +4,17 @@
 **Optional Tools:** None
 **Questions Allowed?:** No
 
-# DAG Node: Compress
-
-## Goal
+<goal>
 Compress investigation phase content to free context window space for DAG design.
+</goal>
 
-## Instructions
+<instructions>
+1. Use the compress tool to compress scout findings, external research, and all related reasoning from the investigation phases — all significant findings have been stored to semantic notes and will be retrieved in the next phase.
+2. Call next_step.
+</instructions>
 
-1. Use the `compress` tool to compress scout findings, external research, and all related reasoning from the investigation phases — all significant findings have been stored to semantic notes and will be retrieved in the next phase
-2. Call `next_step`
-
-## Thinking through the instructions
-
-<|think|>
-- Have I identified all closed investigation sections that are safe to compress?
-- Are there any sections still actively needed for the immediate next step that should stay uncompressed?
-- Have I preserved key decisions and scope boundaries in the compression summary?
+<check>
+1. Have I identified all closed investigation sections that are safe to compress?
+2. Are there any sections still actively needed for the immediate next step that should stay uncompressed?
+3. Have I preserved key decisions and scope boundaries in the compression summary?
+</check>

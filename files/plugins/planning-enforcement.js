@@ -110479,7 +110479,7 @@ function formatCompactDagDraft(metadata, nodes) {
     lines.push(`── orphaned group ${i + 1} ──`);
     lines.push(renderGroup(orphanWorkGroups[i]));
   }
-  let result = `## DAG Compact Draft: ${metadata.id}
+  let result = `DAG: ${metadata.id}
 
 `;
   if (orphanWorkGroups.length > 0) {
@@ -110487,8 +110487,8 @@ function formatCompactDagDraft(metadata, nodes) {
 
 `;
   }
-  result += "```\n" + lines.join(`
-`).trimEnd() + "\n```";
+  result += lines.join(`
+`).trimEnd();
   return result;
 }
 
@@ -110662,15 +110662,11 @@ var PlanningEnforcementPlugin = async (_ctx) => {
             if (isPlanningSession) {
               return `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.
 
-` + `---
-
-` + `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` + `Present the final DAG to the user by calling \`present_dag_diagram\` with the plan name, then ` + `present a summary of what was produced. ` + `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`;
+` + `PLANNING SESSION COMPLETE. Do NOT continue executing tasks. ` + `Present the final DAG to the user by calling present_dag_diagram with the plan name, then ` + `present a summary of what was produced. ` + `If a project DAG was written, tell the user they can activate it with /activate-plan {plan-name}.`;
             } else {
               return `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.
 
-` + `---
-
-` + `**EXECUTION COMPLETE.** Do NOT continue executing tasks. ` + `Present a summary to the user of what was accomplished, any deferred items, and known limitations.`;
+` + `EXECUTION COMPLETE. Do NOT continue executing tasks. ` + `Present a summary to the user of what was accomplished, any deferred items, and known limitations.`;
             }
           }
           if (children.length > 1) {
@@ -110719,24 +110715,22 @@ var PlanningEnforcementPlugin = async (_ctx) => {
           const divergenceReport = detectDivergence(state);
           let divergenceWarning = "";
           if (divergenceReport.hasDivergence) {
-            divergenceWarning = `# ⚠️ DIVERGENCE DETECTED
+            divergenceWarning = `DIVERGENCE DETECTED
 
 `;
             for (const issue2 of divergenceReport.issues) {
-              divergenceWarning += `**[${issue2.severity.toUpperCase()}] ${issue2.type}:** ${issue2.description}
+              divergenceWarning += `[${issue2.severity.toUpperCase()}] ${issue2.type}: ${issue2.description}
 
 `;
             }
             const suggestions = suggestRecoveryActions(divergenceReport);
-            divergenceWarning += `## Suggested Recovery Actions
+            divergenceWarning += `Suggested Recovery Actions:
 `;
             suggestions.forEach((s) => {
-              divergenceWarning += `- ${s}
+              divergenceWarning += `${s}
 `;
             });
             divergenceWarning += `
----
-
 `;
           }
           if (state.status === "abandoned") {
@@ -110756,36 +110750,34 @@ var PlanningEnforcementPlugin = async (_ctx) => {
 `) : "  (no enforcement items)";
           const decisionsLog = state.decisions.length > 0 ? state.decisions.map((d) => `- [${d.node_id}] ${d.summary}`).join(`
 `) : "None yet";
-          let result = divergenceWarning + `# DAG Session Recovery
+          let result = divergenceWarning + `DAG Session Recovery
 
 `;
-          result += `**DAG:** ${state.dag_id}
+          result += `DAG: ${state.dag_id}
 `;
-          result += `**Status:** ${state.status}
+          result += `Status: ${state.status}
 `;
-          result += `**Started:** ${state.started_at}
+          result += `Started: ${state.started_at}
 
 `;
-          result += `## Decisions Made
+          result += `Decisions Made:
 ${decisionsLog}
 
 `;
-          result += `## Current Node: ${state.current_node}
+          result += `Current Node: ${state.current_node}
 `;
-          result += `**Todo progress:**
+          result += `Todo progress:
 ${todoProgress}
 
 `;
-          result += `## Current Node Prompt
+          result += `Current Node Prompt:
 
 ${promptText}
 `;
           if (currentNode?.children && currentNode.children.length > 1) {
-            const choices = currentNode.children.map((id) => `- **${id}**`).join(`
-`);
+            const choices = currentNode.children.join(", ");
             result += `
-## Pending Branch Choice
-${choices}
+Pending Branch Choice: [${choices}]
 `;
           }
           return result;
@@ -110827,27 +110819,25 @@ ${choices}
             "plan-success",
             "plan-fail"
           ]);
-          const missingPrompts = [];
+          const missingNodeIds = [];
           for (const node of nodes) {
             if (PROTECTED_NODE_IDS.has(node.id))
               continue;
             const resolvedPrompt = node.prompt.includes("/") ? expandPath(node.prompt) : path6.join(promptsDir, node.prompt);
             const fullPromptPath = path6.isAbsolute(resolvedPrompt) ? resolvedPrompt : path6.join(worktree, resolvedPrompt);
             if (!fs6.existsSync(fullPromptPath)) {
-              missingPrompts.push(`- [${node.id}] prompt file not found: ${node.prompt}`);
+              missingNodeIds.push(node.id);
             }
           }
-          if (missingPrompts.length > 0) {
-            throw new Error(`validate_dag: ${missingPrompts.length} prompt file(s) missing:
-${missingPrompts.join(`
-`)}`);
+          if (missingNodeIds.length > 0) {
+            throw new Error(`validate_dag: prompt files not found for ${missingNodeIds.length} node(s): ${missingNodeIds.join(", ")}`);
           }
           const workNodeCount = nodes.filter((n) => !["execution-kickoff", "plan-success", "plan-fail"].includes(n.id)).length;
           const kickoffForEntry = nodes.find((n) => n.id === "execution-kickoff");
           const entryNodeId = kickoffForEntry?.children?.[0] ?? "(not set)";
-          return `## validate_dag: ${plan_name} — All checks passed
+          return `validate_dag: ${plan_name} — All checks passed
 
-` + `**Nodes:** ${workNodeCount} | **Entry:** ${entryNodeId}
+` + `Nodes: ${workNodeCount} | Entry: ${entryNodeId}
 
 ` + `Checks: schema, unique IDs, child refs, reachability, cycles, prompt files.`;
         }
@@ -110862,36 +110852,6 @@ ${missingPrompts.join(`
           const planPath = resolveDagPath(target, worktree);
           const { metadata, nodes } = readDagV3(planPath);
           return formatCompactDagDraft(metadata, nodes);
-        }
-      }),
-      get_dag_draft_diagram: tool({
-        description: "Display an ASCII diagram of a DAG with sequential nodes collapsed into groups, ordered by BFS depth so leaf/terminal nodes appear at the bottom. Shows ALL nodes including orphans — orphaned nodes are marked [ORPHAN] with a warning header. Use this to visualize structure during design, including incomplete or invalid DAGs. Use present_dag_diagram to show the final validated diagram to the user.",
-        args: {
-          target: tool.schema.string().describe("Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.")
-        },
-        async execute({ target }, context) {
-          const worktree = resolveWorktree(context);
-          const planPath = resolveDagPath(target, worktree);
-          const { metadata, nodes } = readDagV3(planPath);
-          const { mermaid, warnings } = dagToMermaidCompactV3(metadata, nodes);
-          const ascii = renderMermaidASCII(mermaid, {
-            colorMode: "none"
-          });
-          let result = "";
-          if (warnings.length > 0) {
-            result += `## ⚠️ Structural Warnings
-
-`;
-            for (const w of warnings)
-              result += `- ${w}
-`;
-            result += `
-`;
-          }
-          result += `## DAG Draft Diagram: ${metadata.id}
-
-${ascii}`;
-          return result;
         }
       }),
       present_dag_diagram: tool({
@@ -110972,9 +110932,7 @@ ${ascii}`;
             entry_node_id: "execution-kickoff"
           };
           writeDagV3(planPath, metadata, [kickoffNode, successNode, failNode]);
-          return `## init_dag: Created DAG "${plan_name}"
-
-` + `Plan directory: ${planDir}
+          return `init_dag: Created DAG "${plan_name}"
 
 ` + `Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.
 ` + `When all work nodes are connected, use set_entry_point and set_exit_point to finalize the DAG.`;
@@ -111028,16 +110986,9 @@ ${ascii}`;
           };
           nodes.push(newNode);
           writeDagV3(planPath, metadata, nodes);
-          return `## add_node: Created "${nodeId}" (${component_name})
+          return `add_node: Created "${nodeId}" (${component_name}) — ${spec.enforcement.length} enforcement item(s).
 
-` + `Node: ${nodeId}
-` + `Component: ${component_name}
-` + `Enforcement items: ${spec.enforcement.length}
-` + `Prompt: ${destPromptPath}
-
-` + `**DAG now contains ${nodes.length} nodes.**
-
-` + `Use connect_nodes to wire this node to a parent.
+` + `DAG now contains ${nodes.length} nodes. Use connect_nodes to wire this node to a parent.
 
 ` + formatCompactDagDraft(metadata, nodes);
         }
@@ -111106,19 +111057,12 @@ ${ascii}`;
             created.push(`${nodeId} (${componentName})`);
           }
           if (errors3.length > 0) {
-            throw new Error(`add_nodes_to_dag: ${errors3.length} error(s):
-${errors3.join(`
-`)}`);
+            throw new Error(`add_nodes_to_dag: ${errors3.length} error(s) — ${errors3.join("; ")}`);
           }
           writeDagV3(planPath, metadata, nodes);
-          return `## add_nodes_to_dag: Created ${created.length} node(s)
+          return `add_nodes_to_dag: Created ${created.length} node(s): ${created.join(", ")}
 
-` + created.map((c) => `- ${c}`).join(`
-`) + `
-
-` + `**DAG now contains ${nodes.length} nodes.**
-
-` + `Use connect_nodes to wire these nodes into the DAG.
+` + `DAG now contains ${nodes.length} nodes. Use connect_nodes to wire these nodes into the DAG.
 
 ` + formatCompactDagDraft(metadata, nodes);
         }
@@ -111143,11 +111087,7 @@ ${errors3.join(`
           }
           node.description = description;
           writeDagV3(planPath, metadata, nodes);
-          return `## add_description_to_node: Description set for "${nodeId}"
-
-` + `Node: ${nodeId}
-` + `Description: ${description}
-`;
+          return `add_description_to_node: Description set for "${nodeId}" (${description.length} chars).`;
         }
       }),
       connect_nodes: tool({
@@ -111224,9 +111164,7 @@ ${errors3.join(`
             wired.push(`"${from}" → "${to}"`);
           }
           if (errors3.length > 0 && wired.length === 0) {
-            throw new Error(`connect_nodes: All edges failed:
-${errors3.map((e) => `- ${e}`).join(`
-`)}`);
+            throw new Error(`connect_nodes: All edges failed — ${errors3.join("; ")}`);
           }
           const PROTECTED_IDS = new Set([
             "execution-kickoff",
@@ -111251,22 +111189,13 @@ ${errors3.map((e) => `- ${e}`).join(`
                   parent.children.splice(idx, 1);
               }
             }
-            throw new Error(protectedErrors.join(`
-`) + `
-
-` + formatCompactDagDraft(metadata, nodes));
+            throw new Error(protectedErrors.join("; "));
           }
           writeDagV3(planPath, metadata, nodes);
-          let result = `## connect_nodes: Wired ${wired.length} edge(s)
-
-` + wired.map((w) => `- ${w}`).join(`
-`) + `
+          let result = `connect_nodes: Wired ${wired.length} edge(s): ${wired.join(", ")}
 `;
           if (errors3.length > 0) {
-            result += `
-**${errors3.length} edge(s) failed:**
-` + errors3.map((e) => `- ${e}`).join(`
-`) + `
+            result += `${errors3.length} edge(s) failed: ${errors3.join("; ")}
 `;
           }
           result += `
@@ -111314,17 +111243,13 @@ ${errors3.map((e) => `- ${e}`).join(`
           const promptFile = path6.join(path6.dirname(planPath), "prompts", `${nodeId}.md`);
           if (fs6.existsSync(promptFile))
             fs6.unlinkSync(promptFile);
-          let result = `## delete_node: Deleted "${nodeId}"
-
-`;
+          let result = `delete_node: Deleted "${nodeId}"`;
           if (orphanedChildren.length > 0) {
-            result += `**Orphaned nodes (need re-parenting):** ${orphanedChildren.join(", ")}
-`;
-            result += `Use connect_nodes to reconnect these nodes to a new parent.
-
-`;
+            result += `. Orphaned nodes (need re-parenting): ${orphanedChildren.join(", ")}. Use connect_nodes to reconnect them.`;
           }
-          result += formatCompactDagDraft(metadata, remaining);
+          result += `
+
+` + formatCompactDagDraft(metadata, remaining);
           return result;
         }
       }),
@@ -111349,9 +111274,7 @@ ${errors3.map((e) => `- ${e}`).join(`
           if (parent.children.length === 0)
             delete parent.children;
           writeDagV3(planPath, metadata, nodes);
-          return `## delete_edge: Removed edge "${from}" → "${to}"
-
-` + `Note: "${to}" still exists in the DAG — use connect_nodes to reconnect it if needed.
+          return `delete_edge: Removed edge "${from}" → "${to}". "${to}" still exists — use connect_nodes to reconnect it if needed.
 
 ` + formatCompactDagDraft(metadata, nodes);
         }
@@ -111378,9 +111301,7 @@ ${errors3.map((e) => `- ${e}`).join(`
           if (!childNode)
             throw new Error(`Target node "${to}" not found in DAG.`);
           if (!parentNode.children?.includes(to)) {
-            throw new Error(`"${to}" is not a child of "${from}" — cannot insert between them.
-
-` + formatCompactDagDraft(metadata, nodes));
+            throw new Error(`"${to}" is not a child of "${from}" — there is no direct edge between them. Check the DAG structure and try again.`);
           }
           const ancestorsOfFrom = new Set;
           const queue = [from];
@@ -111408,10 +111329,7 @@ ${errors3.map((e) => `- ${e}`).join(`
             insertNode.children.push(to);
           }
           writeDagV3(planPath, metadata, nodes);
-          return `## insert_between: Inserted "${new_node}" between "${from}" and "${to}"
-
-` + `- Removed: "${from}" → "${to}"
-` + `- Added: "${from}" → "${new_node}" → "${to}"
+          return `insert_between: Inserted "${new_node}" between "${from}" and "${to}" — removed "${from}"→"${to}", added "${from}"→"${new_node}"→"${to}".
 
 ` + formatCompactDagDraft(metadata, nodes);
         }
@@ -111428,9 +111346,7 @@ ${errors3.map((e) => `- ${e}`).join(`
           const { metadata, nodes } = readDagV3(planPath);
           const target = nodes.find((n) => n.id === node_id);
           if (!target)
-            throw new Error(`Node "${node_id}" not found in DAG.
-
-${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(`Node "${node_id}" not found in DAG "${plan_name}".`);
           const PROTECTED_IDS = new Set([
             "execution-kickoff",
             "plan-success",
@@ -111442,13 +111358,11 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           if (!kickoff)
             throw new Error("Internal error: execution-kickoff node not found.");
           if (kickoff.children?.includes(node_id)) {
-            throw new Error(`Entry point is already set to "${node_id}".
-
-${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(`Entry point is already set to "${node_id}".`);
           }
           kickoff.children = [node_id];
           writeDagV3(planPath, metadata, nodes);
-          return `## set_entry_point: Entry set to "${node_id}"
+          return `set_entry_point: Entry set to "${node_id}".
 
 ` + formatCompactDagDraft(metadata, nodes);
         }
@@ -111469,9 +111383,7 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           const { metadata, nodes } = readDagV3(planPath);
           const target = nodes.find((n) => n.id === node_id);
           if (!target)
-            throw new Error(`Node "${node_id}" not found in DAG.
-
-${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(`Node "${node_id}" not found in DAG "${plan_name}".`);
           const PROTECTED_IDS = new Set([
             "execution-kickoff",
             "plan-success",
@@ -111480,21 +111392,17 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           if (PROTECTED_IDS.has(node_id))
             throw new Error(`"${node_id}" cannot be used as an exit point.`);
           if (target.component && target.component !== "write-notes") {
-            throw new Error(`"${node_id}" is a "${target.component}" node — only write-notes nodes can be exit points. ` + `Every terminal path must end with a write-notes node to capture context before exit.
-
-` + formatCompactDagDraft(metadata, nodes));
+            throw new Error(`"${node_id}" is a "${target.component}" node — only write-notes nodes can be exit points. Every terminal path must end with a write-notes node.`);
           }
           const terminalId = exitType === "success" ? "plan-success" : "plan-fail";
           if (target.children?.includes(terminalId)) {
-            throw new Error(`"${node_id}" is already marked as a ${exitType} exit.
-
-${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(`"${node_id}" is already marked as a ${exitType} exit.`);
           }
           if (!target.children)
             target.children = [];
           target.children.push(terminalId);
           writeDagV3(planPath, metadata, nodes);
-          return `## set_exit_point: "${node_id}" marked as ${exitType} exit
+          return `set_exit_point: "${node_id}" marked as ${exitType} exit.
 
 ` + formatCompactDagDraft(metadata, nodes);
         }
@@ -111524,103 +111432,9 @@ ${formatCompactDagDraft(metadata, nodes)}`);
             exitEdgesRemoved += before - (node.children?.length ?? 0);
           }
           writeDagV3(planPath, metadata, nodes);
-          return `## reset_entry_exit_points: Cleared entry/exit markers
-
-` + `- Entry point cleared
-` + `- ${exitEdgesRemoved} exit edge(s) removed
+          return `reset_entry_exit_points: Cleared entry point and removed ${exitEdgesRemoved} exit edge(s).
 
 ` + formatCompactDagDraft(metadata, nodes);
-        }
-      }),
-      task: tool({
-        description: "Dispatch a specialized subagent to complete a task. OpenCode renders a delegation UI when this tool is called. " + "Use this whenever a task requires a specialist: investigation, implementation, documentation, shell operations, or research.",
-        args: {
-          description: tool.schema.string().describe("A short label for the task (3-5 words). Do not leave this empty. It provides essential feedback to the user."),
-          prompt: tool.schema.string().describe("Full task instructions for the subagent. Be specific: include the goal, relevant context, constraints, and what to return. The subagent has no memory of the current conversation."),
-          subagent_type: tool.schema.string().describe("The agent type to dispatch. Available types: context-scout, context-insurgent, external-scout, junior-dev, documentation-expert, dag-designer, dag-reviewer, tailwrench, autonomous-agent."),
-          task_id: tool.schema.string().optional().describe("Optional. Provide a task_id returned by a previous task call to resume that subagent session with its prior context intact.")
-        },
-        async execute({ description, prompt, subagent_type, task_id }, context) {
-          const configResponse = await client.config.get();
-          const config2 = configResponse.data ?? {};
-          const agentConfigs = config2.agent ?? {};
-          const agentsResponse = await client.app.agents();
-          const agents = Array.isArray(agentsResponse.data) ? agentsResponse.data : [];
-          const agent = agents.find((a) => a.name === subagent_type);
-          if (!agent) {
-            const available = agents.filter((a) => a.mode !== "primary").map((a) => a.name).join(", ");
-            throw new Error(`Unknown agent type: "${subagent_type}" is not a valid agent type. Available: ${available || "none"}`);
-          }
-          const model = agent.model ?? undefined;
-          await context.ask({
-            permission: "task",
-            patterns: [subagent_type],
-            always: ["*"],
-            metadata: { description, subagent_type }
-          });
-          const permissions = agent.permission ?? [];
-          const toolRestrictions = {};
-          for (const rule of permissions) {
-            if (rule.action === "deny" && rule.pattern === "*" && typeof rule.permission === "string") {
-              toolRestrictions[rule.permission] = false;
-            }
-            if (rule.action === "allow" && typeof rule.permission === "string" && rule.permission !== "*") {
-              toolRestrictions[rule.permission] = true;
-            }
-          }
-          let session;
-          if (task_id) {
-            try {
-              const existing = await client.session.get({
-                path: { id: task_id }
-              });
-              if (existing.data)
-                session = existing.data;
-            } catch {}
-          }
-          if (!session) {
-            const created = await client.session.create({
-              body: {
-                parentID: context.sessionID,
-                title: `${description} (@${agent.name} subagent)`,
-                permission: permissions
-              }
-            });
-            session = created.data;
-          }
-          if (!session)
-            throw new Error("Failed to create or retrieve subagent session");
-          context.metadata({
-            title: description,
-            metadata: { sessionId: session.id, ...model ? { model } : {} }
-          });
-          const handleAbort = () => client.session.abort({ path: { id: session.id } });
-          context.abort.addEventListener("abort", handleAbort);
-          try {
-            const promptBody = {
-              agent: agent.name,
-              tools: toolRestrictions,
-              parts: [{ type: "text", text: prompt }]
-            };
-            if (model) {
-              promptBody.model = model;
-            }
-            const result = await client.session.prompt({
-              path: { id: session.id },
-              body: promptBody
-            });
-            const resultParts = result.data?.parts ?? [];
-            const textParts = resultParts.filter((p) => p.type === "text");
-            const text = textParts[textParts.length - 1]?.text ?? "";
-            context.metadata({
-              title: description,
-              metadata: { sessionId: session.id, ...model ? { model } : {} }
-            });
-            return [text, "", `task_id: ${session.id}`].join(`
-`);
-          } finally {
-            context.abort.removeEventListener("abort", handleAbort);
-          }
         }
       }),
       get_planning_components_catalogue: tool({
@@ -111730,9 +111544,9 @@ ${formatCompactDagDraft(metadata, nodes)}`);
         const ascii = renderMermaidASCII(mermaid, {
           colorMode: "none"
         });
-        const diagramText = `## Session Plan: ${metadata.id}
+        const diagramText = `Session Plan: ${metadata.id}
 
-**Plan Name:** ${plan_name}
+Plan Name: ${plan_name}
 
 ${ascii}`;
         client.session.prompt({
@@ -111879,28 +111693,6 @@ ${ascii}`;
           body: { parts: [{ type: "text", text: promptText }] }
         });
         return;
-      }
-      const DAG_EDITING_TOOLS = new Set([
-        "connect_nodes",
-        "delete_node",
-        "delete_edge",
-        "insert_between",
-        "set_entry_point",
-        "set_exit_point",
-        "reset_entry_exit_points"
-      ]);
-      if (DAG_EDITING_TOOLS.has(input.tool)) {
-        client.session.prompt({
-          path: { id: input.sessionID },
-          body: {
-            parts: [
-              {
-                type: "text",
-                text: "**Useful Tip!** Reload your DAG skills often as a refresher! (This message was auto generated.)"
-              }
-            ]
-          }
-        });
       }
       const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);

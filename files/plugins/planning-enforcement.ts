@@ -121,17 +121,15 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             if (isPlanningSession) {
               return (
                 `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.\n\n` +
-                `---\n\n` +
-                `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` +
-                `Present the final DAG to the user by calling \`present_dag_diagram\` with the plan name, then ` +
+                `PLANNING SESSION COMPLETE. Do NOT continue executing tasks. ` +
+                `Present the final DAG to the user by calling present_dag_diagram with the plan name, then ` +
                 `present a summary of what was produced. ` +
-                `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`
+                `If a project DAG was written, tell the user they can activate it with /activate-plan {plan-name}.`
               );
             } else {
               return (
                 `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.\n\n` +
-                `---\n\n` +
-                `**EXECUTION COMPLETE.** Do NOT continue executing tasks. ` +
+                `EXECUTION COMPLETE. Do NOT continue executing tasks. ` +
                 `Present a summary to the user of what was accomplished, any deferred items, and known limitations.`
               );
             }
@@ -200,16 +198,16 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const divergenceReport = detectDivergence(state);
           let divergenceWarning = "";
           if (divergenceReport.hasDivergence) {
-            divergenceWarning = "# ⚠️ DIVERGENCE DETECTED\n\n";
+            divergenceWarning = "DIVERGENCE DETECTED\n\n";
             for (const issue of divergenceReport.issues) {
-              divergenceWarning += `**[${issue.severity.toUpperCase()}] ${issue.type}:** ${issue.description}\n\n`;
+              divergenceWarning += `[${issue.severity.toUpperCase()}] ${issue.type}: ${issue.description}\n\n`;
             }
             const suggestions = suggestRecoveryActions(divergenceReport);
-            divergenceWarning += "## Suggested Recovery Actions\n";
+            divergenceWarning += "Suggested Recovery Actions:\n";
             suggestions.forEach((s) => {
-              divergenceWarning += `- ${s}\n`;
+              divergenceWarning += `${s}\n`;
             });
-            divergenceWarning += "\n---\n\n";
+            divergenceWarning += "\n";
           }
 
           // Resume an abandoned session from where it left off
@@ -254,20 +252,18 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                   .join("\n")
               : "None yet";
 
-          let result = divergenceWarning + `# DAG Session Recovery\n\n`;
-          result += `**DAG:** ${state.dag_id}\n`;
-          result += `**Status:** ${state.status}\n`;
-          result += `**Started:** ${state.started_at}\n\n`;
-          result += `## Decisions Made\n${decisionsLog}\n\n`;
-          result += `## Current Node: ${state.current_node}\n`;
-          result += `**Todo progress:**\n${todoProgress}\n\n`;
-          result += `## Current Node Prompt\n\n${promptText}\n`;
+          let result = divergenceWarning + `DAG Session Recovery\n\n`;
+          result += `DAG: ${state.dag_id}\n`;
+          result += `Status: ${state.status}\n`;
+          result += `Started: ${state.started_at}\n\n`;
+          result += `Decisions Made:\n${decisionsLog}\n\n`;
+          result += `Current Node: ${state.current_node}\n`;
+          result += `Todo progress:\n${todoProgress}\n\n`;
+          result += `Current Node Prompt:\n\n${promptText}\n`;
 
           if (currentNode?.children && currentNode.children.length > 1) {
-            const choices = currentNode.children
-              .map((id) => `- **${id}**`)
-              .join("\n");
-            result += `\n## Pending Branch Choice\n${choices}\n`;
+            const choices = currentNode.children.join(", ");
+            result += `\nPending Branch Choice: [${choices}]\n`;
           }
 
           return result;
@@ -344,7 +340,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             "plan-success",
             "plan-fail",
           ]);
-          const missingPrompts: string[] = [];
+          const missingNodeIds: string[] = [];
           for (const node of nodes) {
             if (PROTECTED_NODE_IDS.has(node.id)) continue; // internal plumbing — skip
             const resolvedPrompt = node.prompt.includes("/")
@@ -354,15 +350,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               ? resolvedPrompt
               : path.join(worktree, resolvedPrompt);
             if (!fs.existsSync(fullPromptPath)) {
-              missingPrompts.push(
-                `- [${node.id}] prompt file not found: ${node.prompt}`,
-              );
+              missingNodeIds.push(node.id);
             }
           }
 
-          if (missingPrompts.length > 0) {
+          if (missingNodeIds.length > 0) {
             throw new Error(
-              `validate_dag: ${missingPrompts.length} prompt file(s) missing:\n${missingPrompts.join("\n")}`,
+              `validate_dag: prompt files not found for ${missingNodeIds.length} node(s): ${missingNodeIds.join(", ")}`,
             );
           }
 
@@ -378,8 +372,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const entryNodeId = kickoffForEntry?.children?.[0] ?? "(not set)";
 
           return (
-            `## validate_dag: ${plan_name} — All checks passed\n\n` +
-            `**Nodes:** ${workNodeCount} | **Entry:** ${entryNodeId}\n\n` +
+            `validate_dag: ${plan_name} — All checks passed\n\n` +
+            `Nodes: ${workNodeCount} | Entry: ${entryNodeId}\n\n` +
             `Checks: schema, unique IDs, child refs, reachability, cycles, prompt files.`
           );
         },
@@ -403,34 +397,34 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
-      get_dag_draft_diagram: tool({
-        description:
-          "Display an ASCII diagram of a DAG with sequential nodes collapsed into groups, ordered by BFS depth so leaf/terminal nodes appear at the bottom. Shows ALL nodes including orphans — orphaned nodes are marked [ORPHAN] with a warning header. Use this to visualize structure during design, including incomplete or invalid DAGs. Use present_dag_diagram to show the final validated diagram to the user.",
-        args: {
-          target: tool.schema
-            .string()
-            .describe(
-              "Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.",
-            ),
-        },
-        async execute({ target }, context) {
-          const worktree = resolveWorktree(context);
-          const planPath = resolveDagPath(target, worktree);
-          const { metadata, nodes } = readDagV3(planPath);
-          const { mermaid, warnings } = dagToMermaidCompactV3(metadata, nodes);
-          const ascii = renderMermaidASCII(mermaid, {
-            colorMode: "none",
-          });
-          let result = "";
-          if (warnings.length > 0) {
-            result += `## ⚠️ Structural Warnings\n\n`;
-            for (const w of warnings) result += `- ${w}\n`;
-            result += "\n";
-          }
-          result += `## DAG Draft Diagram: ${metadata.id}\n\n${ascii}`;
-          return result;
-        },
-      }),
+      // get_dag_draft_diagram: tool({
+      //   description:
+      //     "Display an ASCII diagram of a DAG with sequential nodes collapsed into groups, ordered by BFS depth so leaf/terminal nodes appear at the bottom. Shows ALL nodes including orphans — orphaned nodes are marked [ORPHAN] with a warning header. Use this to visualize structure during design, including incomplete or invalid DAGs. Use present_dag_diagram to show the final validated diagram to the user.",
+      //   args: {
+      //     target: tool.schema
+      //       .string()
+      //       .describe(
+      //         "Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.",
+      //       ),
+      //   },
+      //   async execute({ target }, context) {
+      //     const worktree = resolveWorktree(context);
+      //     const planPath = resolveDagPath(target, worktree);
+      //     const { metadata, nodes } = readDagV3(planPath);
+      //     const { mermaid, warnings } = dagToMermaidCompactV3(metadata, nodes);
+      //     const ascii = renderMermaidASCII(mermaid, {
+      //       colorMode: "none",
+      //     });
+      //     let result = "";
+      //     if (warnings.length > 0) {
+      //       result += `## ⚠️ Structural Warnings\n\n`;
+      //       for (const w of warnings) result += `- ${w}\n`;
+      //       result += "\n";
+      //     }
+      //     result += `## DAG Draft Diagram: ${metadata.id}\n\n${ascii}`;
+      //     return result;
+      //   },
+      // }),
 
       present_dag_diagram: tool({
         description:
@@ -582,8 +576,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           writeDagV3(planPath, metadata, [kickoffNode, successNode, failNode]);
 
           return (
-            `## init_dag: Created DAG "${plan_name}"\n\n` +
-            `Plan directory: ${planDir}\n\n` +
+            `init_dag: Created DAG "${plan_name}"\n\n` +
             `Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.\n` +
             `When all work nodes are connected, use set_entry_point and set_exit_point to finalize the DAG.`
           );
@@ -701,13 +694,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           writeDagV3(planPath, metadata, nodes);
 
           return (
-            `## add_node: Created "${nodeId}" (${component_name})\n\n` +
-            `Node: ${nodeId}\n` +
-            `Component: ${component_name}\n` +
-            `Enforcement items: ${spec.enforcement.length}\n` +
-            `Prompt: ${destPromptPath}\n\n` +
-            `**DAG now contains ${nodes.length} nodes.**\n\n` +
-            `Use connect_nodes to wire this node to a parent.\n\n` +
+            `add_node: Created "${nodeId}" (${component_name}) — ${spec.enforcement.length} enforcement item(s).\n\n` +
+            `DAG now contains ${nodes.length} nodes. Use connect_nodes to wire this node to a parent.\n\n` +
             formatCompactDagDraft(metadata, nodes)
           );
         },
@@ -843,18 +831,15 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           if (errors.length > 0) {
             throw new Error(
-              `add_nodes_to_dag: ${errors.length} error(s):\n${errors.join("\n")}`,
+              `add_nodes_to_dag: ${errors.length} error(s) — ${errors.join("; ")}`,
             );
           }
 
           writeDagV3(planPath, metadata, nodes);
 
           return (
-            `## add_nodes_to_dag: Created ${created.length} node(s)\n\n` +
-            created.map((c) => `- ${c}`).join("\n") +
-            "\n\n" +
-            `**DAG now contains ${nodes.length} nodes.**\n\n` +
-            `Use connect_nodes to wire these nodes into the DAG.\n\n` +
+            `add_nodes_to_dag: Created ${created.length} node(s): ${created.join(", ")}\n\n` +
+            `DAG now contains ${nodes.length} nodes. Use connect_nodes to wire these nodes into the DAG.\n\n` +
             formatCompactDagDraft(metadata, nodes)
           );
         },
@@ -907,11 +892,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           node.description = description;
           writeDagV3(planPath, metadata, nodes);
 
-          return (
-            `## add_description_to_node: Description set for "${nodeId}"\n\n` +
-            `Node: ${nodeId}\n` +
-            `Description: ${description}\n`
-          );
+          return `add_description_to_node: Description set for "${nodeId}" (${description.length} chars).`;
         },
       }),
 
@@ -1044,7 +1025,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           if (errors.length > 0 && wired.length === 0) {
             throw new Error(
-              `connect_nodes: All edges failed:\n${errors.map((e) => `- ${e}`).join("\n")}`,
+              `connect_nodes: All edges failed — ${errors.join("; ")}`,
             );
           }
 
@@ -1079,24 +1060,14 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
                 if (idx !== -1) parent.children.splice(idx, 1);
               }
             }
-            throw new Error(
-              protectedErrors.join("\n") +
-                "\n\n" +
-                formatCompactDagDraft(metadata, nodes),
-            );
+            throw new Error(protectedErrors.join("; "));
           }
 
           writeDagV3(planPath, metadata, nodes);
 
-          let result =
-            `## connect_nodes: Wired ${wired.length} edge(s)\n\n` +
-            wired.map((w) => `- ${w}`).join("\n") +
-            "\n";
+          let result = `connect_nodes: Wired ${wired.length} edge(s): ${wired.join(", ")}\n`;
           if (errors.length > 0) {
-            result +=
-              `\n**${errors.length} edge(s) failed:**\n` +
-              errors.map((e) => `- ${e}`).join("\n") +
-              "\n";
+            result += `${errors.length} edge(s) failed: ${errors.join("; ")}\n`;
           }
           result += "\n" + formatCompactDagDraft(metadata, nodes);
           return result;
@@ -1172,12 +1143,11 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           );
           if (fs.existsSync(promptFile)) fs.unlinkSync(promptFile);
 
-          let result = `## delete_node: Deleted "${nodeId}"\n\n`;
+          let result = `delete_node: Deleted "${nodeId}"`;
           if (orphanedChildren.length > 0) {
-            result += `**Orphaned nodes (need re-parenting):** ${orphanedChildren.join(", ")}\n`;
-            result += `Use connect_nodes to reconnect these nodes to a new parent.\n\n`;
+            result += `. Orphaned nodes (need re-parenting): ${orphanedChildren.join(", ")}. Use connect_nodes to reconnect them.`;
           }
-          result += formatCompactDagDraft(metadata, remaining);
+          result += "\n\n" + formatCompactDagDraft(metadata, remaining);
           return result;
         },
       }),
@@ -1224,8 +1194,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           writeDagV3(planPath, metadata, nodes);
           return (
-            `## delete_edge: Removed edge "${from}" → "${to}"\n\n` +
-            `Note: "${to}" still exists in the DAG — use connect_nodes to reconnect it if needed.\n\n` +
+            `delete_edge: Removed edge "${from}" → "${to}". "${to}" still exists — use connect_nodes to reconnect it if needed.\n\n` +
             formatCompactDagDraft(metadata, nodes)
           );
         },
@@ -1279,8 +1248,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           if (!parentNode.children?.includes(to)) {
             throw new Error(
-              `"${to}" is not a child of "${from}" — cannot insert between them.\n\n` +
-                formatCompactDagDraft(metadata, nodes),
+              `"${to}" is not a child of "${from}" — there is no direct edge between them. Check the DAG structure and try again.`,
             );
           }
 
@@ -1319,9 +1287,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           writeDagV3(planPath, metadata, nodes);
 
           return (
-            `## insert_between: Inserted "${new_node}" between "${from}" and "${to}"\n\n` +
-            `- Removed: "${from}" → "${to}"\n` +
-            `- Added: "${from}" → "${new_node}" → "${to}"\n\n` +
+            `insert_between: Inserted "${new_node}" between "${from}" and "${to}" — removed "${from}"→"${to}", added "${from}"→"${new_node}"→"${to}".\n\n` +
             formatCompactDagDraft(metadata, nodes)
           );
         },
@@ -1351,9 +1317,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           const target = nodes.find((n) => n.id === node_id);
           if (!target)
-            throw new Error(
-              `Node "${node_id}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`,
-            );
+            throw new Error(`Node "${node_id}" not found in DAG "${plan_name}".`);
 
           const PROTECTED_IDS = new Set([
             "execution-kickoff",
@@ -1371,19 +1335,14 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             );
 
           if (kickoff.children?.includes(node_id)) {
-            throw new Error(
-              `Entry point is already set to "${node_id}".\n\n${formatCompactDagDraft(metadata, nodes)}`,
-            );
+            throw new Error(`Entry point is already set to "${node_id}".`);
           }
 
           // Replace any existing entry point (only one allowed)
           kickoff.children = [node_id];
 
           writeDagV3(planPath, metadata, nodes);
-          return (
-            `## set_entry_point: Entry set to "${node_id}"\n\n` +
-            formatCompactDagDraft(metadata, nodes)
-          );
+          return `set_entry_point: Entry set to "${node_id}".\n\n` + formatCompactDagDraft(metadata, nodes);
         },
       }),
 
@@ -1419,9 +1378,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           const target = nodes.find((n) => n.id === node_id);
           if (!target)
-            throw new Error(
-              `Node "${node_id}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`,
-            );
+            throw new Error(`Node "${node_id}" not found in DAG "${plan_name}".`);
 
           const PROTECTED_IDS = new Set([
             "execution-kickoff",
@@ -1434,9 +1391,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           // Enforce: every exit point must be a write-notes node
           if (target.component && target.component !== "write-notes") {
             throw new Error(
-              `"${node_id}" is a "${target.component}" node — only write-notes nodes can be exit points. ` +
-                `Every terminal path must end with a write-notes node to capture context before exit.\n\n` +
-                formatCompactDagDraft(metadata, nodes),
+              `"${node_id}" is a "${target.component}" node — only write-notes nodes can be exit points. Every terminal path must end with a write-notes node.`,
             );
           }
 
@@ -1444,19 +1399,14 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             exitType === "success" ? "plan-success" : "plan-fail";
 
           if (target.children?.includes(terminalId)) {
-            throw new Error(
-              `"${node_id}" is already marked as a ${exitType} exit.\n\n${formatCompactDagDraft(metadata, nodes)}`,
-            );
+            throw new Error(`"${node_id}" is already marked as a ${exitType} exit.`);
           }
 
           if (!target.children) target.children = [];
           target.children.push(terminalId);
 
           writeDagV3(planPath, metadata, nodes);
-          return (
-            `## set_exit_point: "${node_id}" marked as ${exitType} exit\n\n` +
-            formatCompactDagDraft(metadata, nodes)
-          );
+          return `set_exit_point: "${node_id}" marked as ${exitType} exit.\n\n` + formatCompactDagDraft(metadata, nodes);
         },
       }),
 
@@ -1501,170 +1451,168 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           writeDagV3(planPath, metadata, nodes);
           return (
-            `## reset_entry_exit_points: Cleared entry/exit markers\n\n` +
-            `- Entry point cleared\n` +
-            `- ${exitEdgesRemoved} exit edge(s) removed\n\n` +
+            `reset_entry_exit_points: Cleared entry point and removed ${exitEdgesRemoved} exit edge(s).\n\n` +
             formatCompactDagDraft(metadata, nodes)
           );
         },
       }),
 
-      task: tool({
-        description:
-          "Dispatch a specialized subagent to complete a task. OpenCode renders a delegation UI when this tool is called. " +
-          "Use this whenever a task requires a specialist: investigation, implementation, documentation, shell operations, or research.",
-        args: {
-          description: tool.schema
-            .string()
-            .describe(
-              "A short label for the task (3-5 words). Do not leave this empty. It provides essential feedback to the user.",
-            ),
-          prompt: tool.schema
-            .string()
-            .describe(
-              "Full task instructions for the subagent. Be specific: include the goal, relevant context, constraints, and what to return. The subagent has no memory of the current conversation.",
-            ),
-          subagent_type: tool.schema
-            .string()
-            .describe(
-              "The agent type to dispatch. Available types: context-scout, context-insurgent, external-scout, junior-dev, documentation-expert, dag-designer, dag-reviewer, tailwrench, autonomous-agent.",
-            ),
-          task_id: tool.schema
-            .string()
-            .optional()
-            .describe(
-              "Optional. Provide a task_id returned by a previous task call to resume that subagent session with its prior context intact.",
-            ),
-        },
-        async execute(
-          { description, prompt, subagent_type, task_id },
-          context,
-        ) {
-          // Get the running config — this is the source of truth for the active profile's
-          // agent settings including model, permissions, etc.
-          const configResponse = await client.config.get();
-          const config: any = configResponse.data ?? {};
-          const agentConfigs: Record<string, any> = config.agent ?? {};
-
-          // Get the agent list for validation and resolved permissions
-          const agentsResponse = await client.app.agents();
-          const agents: any[] = Array.isArray(agentsResponse.data)
-            ? agentsResponse.data
-            : [];
-          const agent = agents.find((a: any) => a.name === subagent_type);
-
-          if (!agent) {
-            const available = agents
-              .filter((a: any) => a.mode !== "primary")
-              .map((a: any) => a.name)
-              .join(", ");
-            throw new Error(
-              `Unknown agent type: "${subagent_type}" is not a valid agent type. Available: ${available || "none"}`,
-            );
-          }
-
-          // Use the resolved model from Agent.list() — populated when the profile has a model override
-          // for this agent. If absent, don't pass a model and let OpenCode resolve it.
-          const model: { providerID: string; modelID: string } | undefined =
-            agent.model ?? undefined;
-
-          // Request delegation permission — triggers the TUI delegation UI
-          await context.ask({
-            permission: "task",
-            patterns: [subagent_type],
-            always: ["*"],
-            metadata: { description, subagent_type },
-          });
-
-          // Derive tool restrictions from the agent's resolved permission rules.
-          const permissions: any[] = agent.permission ?? [];
-          const toolRestrictions: Record<string, boolean> = {};
-          for (const rule of permissions) {
-            if (
-              rule.action === "deny" &&
-              rule.pattern === "*" &&
-              typeof rule.permission === "string"
-            ) {
-              toolRestrictions[rule.permission] = false;
-            }
-            if (
-              rule.action === "allow" &&
-              typeof rule.permission === "string" &&
-              rule.permission !== "*"
-            ) {
-              toolRestrictions[rule.permission] = true;
-            }
-          }
-
-          // Get or create the child session
-          let session: any;
-          if (task_id) {
-            try {
-              const existing = await client.session.get({
-                path: { id: task_id },
-              });
-              if (existing.data) session = existing.data;
-            } catch {
-              /* not found, will create */
-            }
-          }
-          if (!session) {
-            const created = await client.session.create({
-              body: {
-                parentID: context.sessionID,
-                title: `${description} (@${agent.name} subagent)`,
-                permission: permissions,
-              },
-            });
-            session = created.data;
-          }
-          if (!session)
-            throw new Error("Failed to create or retrieve subagent session");
-
-          // Set initial metadata so TUI shows the delegation immediately
-          context.metadata({
-            title: description,
-            metadata: { sessionId: session.id, ...(model ? { model } : {}) },
-          });
-
-          // Abort handling
-          const handleAbort = () =>
-            client.session.abort({ path: { id: session.id } });
-          context.abort.addEventListener("abort", handleAbort);
-
-          try {
-            // Build prompt body matching OpenCode's native TaskTool contract:
-            // - agent: correct agent identity for the session
-            // - tools: restrictions derived from agent's permission config
-            // - model: from the running config (active profile), not from Agent.list()
-            const promptBody: Record<string, any> = {
-              agent: agent.name,
-              tools: toolRestrictions,
-              parts: [{ type: "text", text: prompt }],
-            };
-            if (model) {
-              promptBody.model = model;
-            }
-            const result = await client.session.prompt({
-              path: { id: session.id },
-              body: promptBody,
-            });
-
-            const resultParts: any[] = result.data?.parts ?? [];
-            const textParts = resultParts.filter((p: any) => p.type === "text");
-            const text = textParts[textParts.length - 1]?.text ?? "";
-
-            context.metadata({
-              title: description,
-              metadata: { sessionId: session.id, ...(model ? { model } : {}) },
-            });
-
-            return [text, "", `task_id: ${session.id}`].join("\n");
-          } finally {
-            context.abort.removeEventListener("abort", handleAbort);
-          }
-        },
-      }),
+      // task: tool({
+      //   description:
+      //     "Dispatch a specialized subagent to complete a task. OpenCode renders a delegation UI when this tool is called. " +
+      //     "Use this whenever a task requires a specialist: investigation, implementation, documentation, shell operations, or research.",
+      //   args: {
+      //     description: tool.schema
+      //       .string()
+      //       .describe(
+      //         "A short label for the task (3-5 words). Do not leave this empty. It provides essential feedback to the user.",
+      //       ),
+      //     prompt: tool.schema
+      //       .string()
+      //       .describe(
+      //         "Full task instructions for the subagent. Be specific: include the goal, relevant context, constraints, and what to return. The subagent has no memory of the current conversation.",
+      //       ),
+      //     subagent_type: tool.schema
+      //       .string()
+      //       .describe(
+      //         "The agent type to dispatch. Available types: context-scout, context-insurgent, external-scout, junior-dev, documentation-expert, dag-designer, dag-reviewer, tailwrench, autonomous-agent.",
+      //       ),
+      //     task_id: tool.schema
+      //       .string()
+      //       .optional()
+      //       .describe(
+      //         "Optional. Provide a task_id returned by a previous task call to resume that subagent session with its prior context intact.",
+      //       ),
+      //   },
+      //   async execute(
+      //     { description, prompt, subagent_type, task_id },
+      //     context,
+      //   ) {
+      //     // Get the running config — this is the source of truth for the active profile's
+      //     // agent settings including model, permissions, etc.
+      //     const configResponse = await client.config.get();
+      //     const config: any = configResponse.data ?? {};
+      //     const agentConfigs: Record<string, any> = config.agent ?? {};
+      //
+      //     // Get the agent list for validation and resolved permissions
+      //     const agentsResponse = await client.app.agents();
+      //     const agents: any[] = Array.isArray(agentsResponse.data)
+      //       ? agentsResponse.data
+      //       : [];
+      //     const agent = agents.find((a: any) => a.name === subagent_type);
+      //
+      //     if (!agent) {
+      //       const available = agents
+      //         .filter((a: any) => a.mode !== "primary")
+      //         .map((a: any) => a.name)
+      //         .join(", ");
+      //       throw new Error(
+      //         `Unknown agent type: "${subagent_type}" is not a valid agent type. Available: ${available || "none"}`,
+      //       );
+      //     }
+      //
+      //     // Use the resolved model from Agent.list() — populated when the profile has a model override
+      //     // for this agent. If absent, don't pass a model and let OpenCode resolve it.
+      //     const model: { providerID: string; modelID: string } | undefined =
+      //       agent.model ?? undefined;
+      //
+      //     // Request delegation permission — triggers the TUI delegation UI
+      //     await context.ask({
+      //       permission: "task",
+      //       patterns: [subagent_type],
+      //       always: ["*"],
+      //       metadata: { description, subagent_type },
+      //     });
+      //
+      //     // Derive tool restrictions from the agent's resolved permission rules.
+      //     const permissions: any[] = agent.permission ?? [];
+      //     const toolRestrictions: Record<string, boolean> = {};
+      //     for (const rule of permissions) {
+      //       if (
+      //         rule.action === "deny" &&
+      //         rule.pattern === "*" &&
+      //         typeof rule.permission === "string"
+      //       ) {
+      //         toolRestrictions[rule.permission] = false;
+      //       }
+      //       if (
+      //         rule.action === "allow" &&
+      //         typeof rule.permission === "string" &&
+      //         rule.permission !== "*"
+      //       ) {
+      //         toolRestrictions[rule.permission] = true;
+      //       }
+      //     }
+      //
+      //     // Get or create the child session
+      //     let session: any;
+      //     if (task_id) {
+      //       try {
+      //         const existing = await client.session.get({
+      //           path: { id: task_id },
+      //         });
+      //         if (existing.data) session = existing.data;
+      //       } catch {
+      //         /* not found, will create */
+      //       }
+      //     }
+      //     if (!session) {
+      //       const created = await client.session.create({
+      //         body: {
+      //           parentID: context.sessionID,
+      //           title: `${description} (@${agent.name} subagent)`,
+      //           permission: permissions,
+      //         },
+      //       });
+      //       session = created.data;
+      //     }
+      //     if (!session)
+      //       throw new Error("Failed to create or retrieve subagent session");
+      //
+      //     // Set initial metadata so TUI shows the delegation immediately
+      //     context.metadata({
+      //       title: description,
+      //       metadata: { sessionId: session.id, ...(model ? { model } : {}) },
+      //     });
+      //
+      //     // Abort handling
+      //     const handleAbort = () =>
+      //       client.session.abort({ path: { id: session.id } });
+      //     context.abort.addEventListener("abort", handleAbort);
+      //
+      //     try {
+      //       // Build prompt body matching OpenCode's native TaskTool contract:
+      //       // - agent: correct agent identity for the session
+      //       // - tools: restrictions derived from agent's permission config
+      //       // - model: from the running config (active profile), not from Agent.list()
+      //       const promptBody: Record<string, any> = {
+      //         agent: agent.name,
+      //         tools: toolRestrictions,
+      //         parts: [{ type: "text", text: prompt }],
+      //       };
+      //       if (model) {
+      //         promptBody.model = model;
+      //       }
+      //       const result = await client.session.prompt({
+      //         path: { id: session.id },
+      //         body: promptBody,
+      //       });
+      //
+      //       const resultParts: any[] = result.data?.parts ?? [];
+      //       const textParts = resultParts.filter((p: any) => p.type === "text");
+      //       const text = textParts[textParts.length - 1]?.text ?? "";
+      //
+      //       context.metadata({
+      //         title: description,
+      //         metadata: { sessionId: session.id, ...(model ? { model } : {}) },
+      //       });
+      //
+      //       return [text, "", `task_id: ${session.id}`].join("\n");
+      //     } finally {
+      //       context.abort.removeEventListener("abort", handleAbort);
+      //     }
+      //   },
+      // }),
 
       get_planning_components_catalogue: tool({
         description:
@@ -1820,7 +1768,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         const ascii = renderMermaidASCII(mermaid, {
           colorMode: "none",
         });
-        const diagramText = `## Session Plan: ${metadata.id}\n\n**Plan Name:** ${plan_name}\n\n${ascii}`;
+        const diagramText = `Session Plan: ${metadata.id}\n\nPlan Name: ${plan_name}\n\n${ascii}`;
 
         client.session.prompt({
           path: { id: input.sessionID },
@@ -2035,29 +1983,29 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         return;
       }
 
-      // --- Inject DAG draft diagram tip for DAG-editing tools ---
-      const DAG_EDITING_TOOLS = new Set([
-        "connect_nodes",
-        "delete_node",
-        "delete_edge",
-        "insert_between",
-        "set_entry_point",
-        "set_exit_point",
-        "reset_entry_exit_points",
-      ]);
-      if (DAG_EDITING_TOOLS.has(input.tool)) {
-        client.session.prompt({
-          path: { id: input.sessionID },
-          body: {
-            parts: [
-              {
-                type: "text",
-                text: "**Useful Tip!** Reload your DAG skills often as a refresher! (This message was auto generated.)",
-              },
-            ],
-          },
-        });
-      }
+      // // --- Inject DAG draft diagram tip for DAG-editing tools ---
+      // const DAG_EDITING_TOOLS = new Set([
+      //   "connect_nodes",
+      //   "delete_node",
+      //   "delete_edge",
+      //   "insert_between",
+      //   "set_entry_point",
+      //   "set_exit_point",
+      //   "reset_entry_exit_points",
+      // ]);
+      // if (DAG_EDITING_TOOLS.has(input.tool)) {
+      //   client.session.prompt({
+      //     path: { id: input.sessionID },
+      //     body: {
+      //       parts: [
+      //         {
+      //           type: "text",
+      //           text: "**Useful Tip!** Reload your DAG skills often as a refresher! (This message was auto generated.)",
+      //         },
+      //       ],
+      //     },
+      //   });
+      // }
 
       // --- Enforcement tracking for all other tools ---
       const worktree = resolveWorktree(_ctx);
