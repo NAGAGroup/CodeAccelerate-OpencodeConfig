@@ -16,7 +16,7 @@ permission:
     grepai_grepai_index_status: allow
     qdrant_qdrant-store: allow
     qdrant_qdrant-find: allow
-     skill:
+    skill:
         "*": deny
         qdrant-notes: allow
         grepai: allow
