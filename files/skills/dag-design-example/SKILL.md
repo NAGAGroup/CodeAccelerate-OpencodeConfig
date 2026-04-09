@@ -2,130 +2,76 @@
 name: dag-design-example
 description: Worked example of DAG design and construction — phase decomposition, tool call sequence, and expected output at each stage.
 ---
-# DAG Design Example
+<overview>
+This is a reference artifact. Study the phase decomposition and compact notation, then apply the same structure to the DAG you are building. Every exit node must be a write-notes node. Success exits capture what was accomplished; failure exits capture what went wrong.
+</overview>
 
-This skill provides a complete worked example of designing and building an execution DAG using the staged workflow from the `build-dags` skill.
+<example name="phase-decomposition">
+This example covers three phases and includes every core component at least once.
 
-## Phase planning example
+Phase 1 — plan then branch:
+(plan: sequential-thinking) → (route: decision-gate) → [path-a-research, path-b-work]
 
-```
-Phase 1 — decision-gate with immediate convergence:
-  work-A → decision-gate-A
-    ├─ → work-A-option-1 → work-B (converge)
-    └─ → work-A-option-2 → work-B (converge)
+Phase 2a — investigation-first with early exit:
+(path-a-research: project-search-and-analysis) → (early-check: decision-gate) → [write-notes-early-exit, path-a-work]
+(path-a-work: work-item) → (setup: run-project-commands)
+(write-notes-early-exit: write-notes)
 
-Phase 2 — sequential work with early success check:
-  work-B → work-C → decision-gate-early-check
-    ├─ → write-notes-early-success (leaf — early exit, goal already satisfied)
-    └─ → decision-gate-routing
-           ├─ → [Phase 3a entry]
-           └─ → [Phase 3b entry]
+Phase 2b — alternative path, converges to phase 3:
+(path-b-work: work-item) → (setup: run-project-commands)
 
-Phase 3a — single retry, converges to Phase 4:
-  work-D → verify-D
-    ├─ (pass) → work-F (converge with Phase 3b)
-    └─ (fail) → fix-D → verify-D-retry
-                           ├─ (pass) → work-F (converge)
-                           └─ (fail) → write-notes-D-failure (leaf — captures what went wrong)
+Phase 3 — implement with single retry:
+(setup: run-project-commands) → (implement: work-item) → (verify-impl: verify) → [commit-success, fix-impl]
+(commit-success: commit) → (write-notes-success: write-notes)
+(fix-impl: work-item) → (verify-impl-retry: verify) → [commit-retry, write-notes-failure]
+(commit-retry: commit) → (write-notes-success: write-notes)
+(write-notes-success: write-notes)
+(write-notes-failure: write-notes)
 
-Phase 3b — two retries, converges to Phase 4:
-  work-E → verify-E
-    ├─ (pass) → work-F (converge with Phase 3a)
-    └─ (fail) → fix-E-1 → verify-E-retry-1
-                             ├─ (pass) → work-F (converge)
-                             └─ (fail) → fix-E-2 → verify-E-retry-2
-                                                     ├─ (pass) → work-F (converge)
-                                                     └─ (fail) → write-notes-E-failure (leaf — captures what went wrong)
+Patterns demonstrated:
+inter-phase branching — route splits to path-a-research and path-b-work
+intra-phase branching — early-check exits early or continues
+mutually exclusive phase 2 paths — path-a and path-b both feed into setup
+convergence — setup receives from both path-a-work and path-b-work
+single retry — verify-impl → fix-impl → verify-impl-retry
+commit placement — after each successful verify, before write-notes
+</example>
 
-Phase 4 — sequential to success:
-  work-F → write-notes-final-summary (leaf — captures what was accomplished)
-```
+<example name="stage-1-build-clusters">
+Load the catalogue first.
+  get_planning_components_catalogue(variant="core")
 
-**Key pattern:** Every leaf node is a `write-notes` node. Success leaves capture accomplishments; failure leaves capture what went wrong. This ensures the executing agent always records context before the plan exits.
+Phase 1:
+  add_nodes_to_dag(plan_name="my-plan", nodes={"plan": "sequential-thinking", "route": "decision-gate"})
+  connect_nodes(plan_name="my-plan", edges={"plan": "route", "route": ["path-a-research", "path-b-work"]})
 
-**Then define the wiring between phases:**
-```
-work-B connects Phase 1 exit to Phase 2 entry (convergence node)
-decision-gate-early-check routes to write-notes-early-success (early exit) or decision-gate-routing
-decision-gate-routing routes to work-D (Phase 3a) or work-E (Phase 3b)
-work-F connects Phase 3a/3b exits to Phase 4 entry (convergence node)
-```
+Phase 2a:
+  add_nodes_to_dag(plan_name="my-plan", nodes={"path-a-research": "project-search-and-analysis", "early-check": "decision-gate", "write-notes-early-exit": "write-notes", "path-a-work": "work-item"})
+  connect_nodes(plan_name="my-plan", edges={"path-a-research": "early-check", "early-check": ["write-notes-early-exit", "path-a-work"]})
+  get_compact_dag_draft(target="my-plan")
 
-## Applying the workflow
+Phase 2b:
+  add_nodes_to_dag(plan_name="my-plan", nodes={"path-b-work": "work-item"})
+  get_compact_dag_draft(target="my-plan")
 
-<|think|>
-Think through the following application of the staged workflow to the example above and how it generalizes to the DAG you're designing.
+Phase 3:
+  add_nodes_to_dag(plan_name="my-plan", nodes={"setup": "run-project-commands", "implement": "work-item", "verify-impl": "verify", "commit-success": "commit", "write-notes-success": "write-notes", "fix-impl": "work-item", "verify-impl-retry": "verify", "commit-retry": "commit", "write-notes-failure": "write-notes"})
+  connect_nodes(plan_name="my-plan", edges={"setup": "implement", "implement": "verify-impl", "verify-impl": ["commit-success", "fix-impl"], "commit-success": "write-notes-success", "fix-impl": "verify-impl-retry", "verify-impl-retry": ["commit-retry", "write-notes-failure"], "commit-retry": "write-notes-success"})
+  get_compact_dag_draft(target="my-plan")
+</example>
 
-### Load the Catalogue
+<example name="stage-2-connect-clusters">
+  connect_nodes(plan_name="my-plan", edges={"path-a-work": "setup", "path-b-work": "setup"})
+  get_compact_dag_draft(target="my-plan")
+  get_dag_draft_diagram(target="my-plan")
+</example>
 
-```
-# ── Load catalogue ──
-# Call get_planning_components_catalogue() with the appropriate variant
-# for your pass (see your build-dags or build-dags-core skill for which variant to use)
-get_planning_components_catalogue()
-```
+<example name="stage-3-entry-exit">
+  set_entry_point(plan_name="my-plan", node_id="plan")
 
-### Stage 1: Build phase clusters
+  set_exit_point(plan_name="my-plan", node_id="write-notes-early-exit", type="success")
+  set_exit_point(plan_name="my-plan", node_id="write-notes-success", type="success")
+  set_exit_point(plan_name="my-plan", node_id="write-notes-failure", type="failure")
 
-```
-# ── Stage 1: Build phase clusters ──
-
-# Phase 1
-add_nodes_to_dag(plan_name="my-plan", nodes='{"work-A": "work-item", "decision-gate-A": "decision-gate", "work-A-option-1": "work-item", "work-A-option-2": "work-item"}')
-connect_nodes(plan_name="my-plan", edges='{"work-A": "decision-gate-A", "decision-gate-A": ["work-A-option-1", "work-A-option-2"]}')
-
-# Phase 2
-add_nodes_to_dag(plan_name="my-plan", nodes='{"work-B": "work-item", "work-C": "work-item", "decision-gate-early-check": "decision-gate", "write-notes-early-success": "write-notes", "decision-gate-routing": "decision-gate"}')
-connect_nodes(plan_name="my-plan", edges='{"work-B": "work-C", "work-C": "decision-gate-early-check", "decision-gate-early-check": ["write-notes-early-success", "decision-gate-routing"]}')
-
-# Phase 3a
-add_nodes_to_dag(plan_name="my-plan", nodes='{"work-D": "work-item", "verify-D": "verify", "fix-D": "work-item", "verify-D-retry": "verify", "write-notes-D-failure": "write-notes"}')
-connect_nodes(plan_name="my-plan", edges='{"work-D": "verify-D", "verify-D": ["work-F", "fix-D"], "fix-D": "verify-D-retry", "verify-D-retry": ["work-F", "write-notes-D-failure"]}')
-
-# Phase 3b
-add_nodes_to_dag(plan_name="my-plan", nodes='{"work-E": "work-item", "verify-E": "verify", "fix-E-1": "work-item", "verify-E-retry-1": "verify", "fix-E-2": "work-item", "verify-E-retry-2": "verify", "write-notes-E-failure": "write-notes"}')
-connect_nodes(plan_name="my-plan", edges='{"work-E": "verify-E", "verify-E": ["work-F", "fix-E-1"], "fix-E-1": "verify-E-retry-1", "verify-E-retry-1": ["work-F", "fix-E-2"], "fix-E-2": "verify-E-retry-2", "verify-E-retry-2": ["work-F", "write-notes-E-failure"]}')
-
-# Phase 4
-add_nodes_to_dag(plan_name="my-plan", nodes='{"work-F": "work-item", "write-notes-final-summary": "write-notes"}')
-connect_nodes(plan_name="my-plan", edges='{"work-F": "write-notes-final-summary"}')
-```
-
-### Stage 2: Connect phase clusters
-
-> [!IMPORTANT]
-> You do not need to redo any connections within phase clusters, only those that connect different phases together, so this stage is much faster than Stage 1. You can also connect phases in any order you like, just make sure to connect all of them before moving on to Stage 3.
-
-```
-# ── Stage 2: Connect phase clusters ──
-connect_nodes(plan_name="my-plan", edges='{"work-A-option-1": "work-B", "work-A-option-2": "work-B", "decision-gate-routing": ["work-D", "work-E"]}')
-get_compact_dag_draft(target="my-plan")
-get_dag_draft_diagram(target="my-plan")
-```
-
-### Stage 3: Set entry and exit points
-
-```
-# ── Stage 3: Set entry and exit points ──
-
-# Set the entry point — where execution begins
-set_entry_point(plan_name="my-plan", node_id="work-A")
-
-# Set success exits — leaf nodes on happy paths
-set_exit_point(plan_name="my-plan", node_id="write-notes-early-success", type="success")
-set_exit_point(plan_name="my-plan", node_id="write-notes-final-summary", type="success")
-
-# Set failure exits — leaf nodes on retry-exhaustion paths
-set_exit_point(plan_name="my-plan", node_id="write-notes-D-failure", type="failure")
-set_exit_point(plan_name="my-plan", node_id="write-notes-E-failure", type="failure")
-
-validate_dag(plan_name="my-plan")
-```
-
-## Thinking through this skill
-
-<|think|>
-- how does the staged workflow help structure your approach to building complex DAGs?
-- using this as a guide, how would you approach building the DAG for your current plan? What are the different phases you would define and why?
-- notice how every leaf node is a write-notes node — this ensures context is captured before any exit, whether success or failure
-- plan out all stages before you start building, then follow the workflow stage by stage to build your DAG. How does this structured approach compare to how you would have built the DAG without it?
+  validate_dag(plan_name="my-plan")
+</example>

@@ -2,18 +2,13 @@
 name: sequential-thinking
 description: Teaches how to use sequential thinking for step-by-step reasoning about complex problems and decisions.
 ---
+<tools>
+sequential-thinking_sequentialthinking — step-by-step reasoning through a problem. Parameters: thought (current reasoning step, required), thoughtNumber (step number starting at 1, required), nextThoughtNeeded (false only when reasoning is complete, required), totalThoughts (estimated total — adjust as understanding changes, required), isRevision (true when correcting a prior step — optional), revisesThought (step number being corrected — required when isRevision is true).
+</tools>
 
-# Sequential Thinking
-
-Use sequential-thinking_sequentialthinking for step-by-step reasoning through complex problems before acting.
-
-## Tools
-**sequential-thinking_sequentialthinking** — Reason through problems step by step. Key params: `thought` (current step), `thoughtNumber` (step number), `nextThoughtNeeded` (boolean), `totalThoughts` (estimated total), `isRevision` (boolean), `revisesThought` (thought number to revise).
-
-## Rules
-- Each thought advances reasoning by one step
-- Start at thoughtNumber 1 and increment by 1
-- Set nextThoughtNeeded to false only when you have a satisfactory final answer
-- Adjust totalThoughts up or down as understanding changes
-- To correct a previous step, set isRevision=true and specify revisesThought
-- Questions are always handled through the question tool, not in thinking steps
+<rules>
+Each thought advances reasoning by one step. Increment thoughtNumber by 1 each call.
+Set nextThoughtNeeded to false only when you have a satisfactory final answer.
+To correct a previous step, set isRevision=true and specify revisesThought.
+User questions are handled through the question tool, not in thinking steps.
+</rules>

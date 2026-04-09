@@ -2,40 +2,25 @@
 name: context-insurgent
 description: Teaches how to dispatch context-insurgent for deep, narrow analysis of specific code mechanisms and logic flows.
 ---
+<overview>
+context-insurgent traces specific mechanisms, data flows, and dependencies across the project. It returns rich analytical findings about how things work — behaviors, constraints, failure modes, non-obvious interactions. Use for narrow-deep analysis, not broad surveying.
+</overview>
 
-# What does this skill teach?
+<what-context-insurgent-does>
+Traces specific mechanisms using semantic search, call tracing, glob, grep, and read.
+Synthesizes findings into analytical prose — what the mechanism does, how it behaves, what the constraints are.
+Includes an explicit unknowns section covering what could not be verified.
+Makes no changes — read only.
+</what-context-insurgent-does>
 
-In this skill, you learn how to delegate to context-insurgent, a narrow-deep analyst that traces logic chains across files and returns evidence-grounded findings.
+<example name="delegation">
+Goal: Understand how the project's error recovery mechanism works — what triggers recovery, what state is preserved, and what conditions cause unrecoverable failure.
 
-# What does context-insurgent do?
+Questions to answer: What initiates the recovery sequence? What state is saved and restored? Are there conditions where recovery is skipped? What happens to in-progress work when recovery triggers?
 
-- Traces specific mechanisms, data flows, and dependencies across files using search, trace, and read tools
-- Synthesizes findings with file paths and line numbers as evidence for every claim
-- Returns a precise analytical report — not a broad survey
-- Includes an explicit unknowns section covering what could not be verified
-- Makes no changes — read-only
+Why this matters: We are adding a new operation type and need to know which recovery paths it must participate in and what invariants must be maintained for recovery to work correctly.
 
-# How to delegate to context-insurgent
+Plan Name: error-recovery-analysis
 
-Use the `task` tool to delegate using the prompt template below, filling in each section for the current goal:
-
-```prompt
-**Goal:** <the specific mechanism, behavior, or relationship to investigate>
-
-**Questions to answer:** <the specific questions the analysis should resolve>
-
-**Why this matters:** <what decision or understanding depends on these findings>
-
-**Plan Name:** <plan name to store findings under, or N/A if not working within a plan session>
-
-Return a precise analytical report with file paths and line numbers as evidence for every claim. Include an explicit unknowns section covering what was examined but could not be fully verified, what assumptions were made, and what would require deeper investigation to confirm.
-```
-
-# Thinking through your delegation prompt
-
-<|think|>
-- Is my goal narrow and specific enough — context-insurgent traces one thing deeply, not many things broadly?
-- Have I described what to understand rather than which files to read or which tools to use?
-- What are the specific questions I need answered — have I listed them clearly?
-- Have I asked for an unknowns section so unverifiable assumptions surface explicitly?
-- Does the agent know why this matters so it can prioritize what to trace?
+Return findings as analytical prose describing how the mechanism works, what the key behaviors and constraints are, and what was examined but could not be fully determined.
+</example>

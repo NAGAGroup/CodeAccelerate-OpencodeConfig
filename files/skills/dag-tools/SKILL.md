@@ -3,122 +3,32 @@ name: dag-tools
 description: Teaches how to build, modify, review, and validate execution DAGs using DAG manipulation and design tools.
 ---
 
-# What does this skill teach?
+<tools>
+get_planning_components_catalogue — returns the component catalogue. Use variant="core" for the first-pass design. Omit variant or use variant="full" for all components including specialist nodes.
 
-In this skill, you learn how to build, modify, validate, and visualize execution DAGs using the DAG manipulation tools.
+init_dag — creates a new empty DAG. plan_name must be lowercase with hyphens only.
 
-## Related Tools
+add_nodes_to_dag — creates multiple nodes in one call. nodes is a JSON object mapping nodeId to component_name.
 
-### `get_planning_components_catalogue`
+add_node — creates a single node. Prefer add_nodes_to_dag when creating multiple nodes.
 
-| Parameter | Description |
-|-----------|-------------|
-| *(none)* | Returns the full CATALOGUE.md listing all available node component types |
+connect_nodes — wires multiple directed edges in one call. edges is a JSON object mapping from-nodeId to to-nodeId or an array of to-nodeIds for fan-out.
 
+insert_between — atomically inserts a node between two connected nodes. Removes the from→to edge and adds from→new_node→to in one operation. Use this for all mid-chain insertions. Never use manual delete_edge + connect_nodes instead.
 
-### `init_dag`
+delete_edge — removes a directed edge without deleting either node. The child node becomes orphaned.
 
-| Parameter | Description |
-|-----------|-------------|
-| `plan_name` | Name for the new session plan — lowercase, hyphens only, no spaces (required) |
+delete_node — removes a node and all its edges. Children become orphaned.
 
-Creates a new DAG with the given name.
+set_entry_point — marks the first work node as the plan entry. Call once as the final construction step.
 
-### `add_nodes_to_dag`
+set_exit_point — marks a write-notes leaf as a plan exit. type is "success" for happy-path exits and "failure" for retry-exhaustion exits. Call for every write-notes leaf as the final construction step.
 
-| Parameter | Description |
-|-----------|-------------|
-| `plan_name` | Name of the session plan to add nodes to (required) |
-| `nodes` | Dictionary mapping nodeId → component_name, e.g. `{ "investigate": "external-scout", "implement": "work-item" }` (required) |
+get_compact_dag_draft — returns connected node chains, orphaned groups, and entry/exit status. Call after each structural change to verify incrementally.
 
-Adds all nodes in a single batch call. Use this after `init_dag` to create all work nodes at once.
+get_dag_draft_diagram — returns a visual ASCII diagram of the full DAG structure.
 
-### `add_node`
+present_dag_diagram — validates the DAG and injects the diagram as a system message. Throws if the DAG has structural errors.
 
-| Parameter | Description |
-|-----------|-------------|
-| `plan_name` | Name of the session plan to add the node to (required) |
-| `nodeId` | Unique ID for the new node (required) |
-| `component_name` | Component type from the node library, e.g. `'work-item'`, `'verify'` (required) |
-
-Adds a single node. Prefer `add_nodes_to_dag` for creating multiple nodes at once.
-
-### `connect_nodes`
-
-| Parameter | Description |
-|-----------|-------------|
-| `plan_name` | Name of the session plan (required) |
-| `edges` | Dictionary mapping from-nodeId to to-nodeId (or array of to-nodeIds for fan-out), e.g. `{"work-A": "verify-A", "verify-A": ["fix-A", "work-B"]}` (required) |
-
-Wires multiple directed edges in a single batch call. All referenced nodes must already exist in the DAG.
-
-### `insert_between`
-
-| Parameter | Description |
-|-----------|-------------|
-| `plan_name` | Name of the session plan (required) |
-| `from` | ID of the upstream (parent) node (required) |
-| `new_node` | ID of the node to insert — must already exist in the DAG (required) |
-| `to` | ID of the downstream (child) node (required) |
-
-Atomically inserts `new_node` between `from` and `to`. Removes the edge `from → to` and adds `from → new_node → to` in one operation. Use this when adding a node mid-chain to avoid accidentally creating orphans or extra children. The node must already exist (create it first with `add_node` or `add_nodes_to_dag`).
-
-### `set_entry_point`
-
-| Parameter | Description |
-|-----------|-------------|
-| `plan_name` | Name of the session plan (required) |
-| `node_id` | ID of the node that should execute first when the plan starts (required) |
-
-Sets where execution begins. Call this once in the final wiring step (Stage 3).
-
-### `set_exit_point`
-
-| Parameter | Description |
-|-----------|-------------|
-| `plan_name` | Name of the session plan (required) |
-| `node_id` | ID of the leaf node to mark as an exit point (required) |
-| `type` | Exit type: `'success'` or `'failure'` (required) |
-
-Marks a leaf node as a plan exit. Call this for every leaf node in the final wiring step (Stage 3). Use `'success'` for happy-path exits and `'failure'` for retry-exhaustion/error exits.
-
-### `delete_edge`
-
-| Parameter | Description |
-|-----------|-------------|
-| `plan_name` | Name of the session plan (required) |
-| `from` | ID of the source (parent) node (required) |
-| `to` | ID of the target (child) node to disconnect — node is not deleted, only the edge (required) |
-
-### `delete_node`
-
-| Parameter | Description |
-|-----------|-------------|
-| `plan_name` | Name of the session plan (required) |
-| `nodeId` | ID of the node to delete — all edges to and from it are removed; children become orphaned (required) |
-
-### `get_compact_dag_draft`
-
-| Parameter | Description |
-|-----------|-------------|
-| `target` | Session plan name or raw path to plan.jsonl (required) |
-
-Returns the DAG in a compact format showing connected nodes, orphaned groups, and entry/exit status. Use this to inspect structure during design.
-
-### `get_dag_draft_diagram`
-
-| Parameter | Description |
-|-----------|-------------|
-| `target` | Session plan name or raw path to plan.jsonl (required) |
-
-### `present_dag_diagram`
-
-| Parameter | Description |
-|-----------|-------------|
-| `plan_name` | Session plan name — throws if the DAG has structural errors (required) |
-
-### `validate_dag`
-
-| Parameter | Description |
-|-----------|-------------|
-| `plan_name` | Session plan name — throws on any structural issue (required) |
+validate_dag — throws on any structural issue. Call when all construction or revision is complete.
+</tools>

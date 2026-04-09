@@ -2,41 +2,26 @@
 name: junior-dev
 description: Teaches how to dispatch junior-dev for goal-oriented code implementation with investigation-driven approach.
 ---
+<overview>
+junior-dev investigates the codebase before making any changes, then implements targeted edits to achieve the stated goal. It reads and writes files — no shell commands, builds, tests, or documentation.
+</overview>
 
-# What does this skill teach?
+<what-junior-dev-does>
+Investigates with semantic search and call tracing before changing anything.
+Makes targeted edits to achieve the goal.
+Responds with what was accomplished and why key decisions were made.
+</what-junior-dev-does>
 
-In this skill, you learn how to delegate to junior-dev, a goal-oriented implementer that investigates the codebase and makes targeted code changes.
+<example name="delegation">
+Goal: Add input validation to the data ingestion pipeline so that malformed records are rejected before processing rather than causing failures downstream.
 
-# What does junior-dev do?
+Context: The ingestion pipeline is the central path for all incoming data. Upstream components pass records without validating format or required fields. Downstream processing assumes records are well-formed and fails in hard-to-debug ways when they are not.
 
-- Investigates the codebase using semantic search and call tracing before making any changes
-- Makes targeted edits to achieve the stated goal
-- Reads and writes files — does not run shell commands, build, test, or write documentation
-- Reports what was changed, which files were modified, and why
+Scope: Validation logic only — do not touch downstream processing, storage, or how errors are surfaced to callers. Follow whatever validation patterns already exist in the codebase.
 
-# How to delegate to junior-dev
+Constraints: Rejection must be explicit and distinguishable from a processing failure — callers need to know whether a record was rejected vs failed to process.
 
-Use the `task` tool to delegate using the prompt template below, filling in each section for the current goal:
+Plan Name: ingestion-validation
 
-```prompt
-**Goal:** <what to implement or change, and why it matters>
-
-**Context:** <relevant background about where the code lives, what it does, and what depends on it>
-
-**Scope:** <what is in scope to change, and what must be left alone>
-
-**Constraints:** <any requirements the implementation must satisfy — patterns to follow, interfaces to preserve, behaviors to maintain>
-
-**Plan Name:** <plan name to store findings under, or N/A if not working within a plan session>
-
-Report what was changed, which files were modified, and the reasoning behind each change.
-```
-
-# Thinking through your delegation prompt
-
-<|think|>
-- Have I described the goal in terms of what to achieve, not which files to edit or which functions to call?
-- Have I provided enough context about the surrounding code so the agent can investigate dependencies correctly?
-- Are the scope boundaries precise — does the agent know exactly what to touch and what to leave alone?
-- Have I listed constraints that would be invisible from code alone — patterns, interfaces, behaviors to preserve?
-- Is the prompt self-contained — can the agent complete this without needing to ask follow-up questions?
+Report what was accomplished and any notable implementation decisions made.
+</example>

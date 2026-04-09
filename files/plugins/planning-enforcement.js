@@ -110874,7 +110874,7 @@ ${missingPrompts.join(`
           const planPath = resolveDagPath(target, worktree);
           const { metadata, nodes } = readDagV3(planPath);
           const { mermaid, warnings } = dagToMermaidCompactV3(metadata, nodes);
-          const ascii = await renderMermaidASCII(mermaid, {
+          const ascii = renderMermaidASCII(mermaid, {
             colorMode: "none"
           });
           let result = "";
@@ -111896,7 +111896,7 @@ ${ascii}`;
             parts: [
               {
                 type: "text",
-                text: "**Useful Tip!** Call `get_dag_draft_diagram` for a full mermaid ascii rendering"
+                text: "**Useful Tip!** Reload your DAG skills often as a refresher! (This message was auto generated.)"
               }
             ]
           }

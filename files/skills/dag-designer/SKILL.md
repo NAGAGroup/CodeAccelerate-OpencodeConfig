@@ -2,44 +2,28 @@
 name: dag-designer
 description: Teaches how to dispatch dag-designer to build a first-pass MVP execution DAG from the core component library.
 ---
+<overview>
+dag-designer builds first-pass MVP execution DAGs from the core component catalogue. It produces a structurally valid skeleton — a reviewer and reviser improve it in subsequent passes.
+</overview>
 
-# What does this skill teach?
+<what-dag-designer-does>
+Loads the core catalogue (variant="core") before designing — never the full catalogue.
+Builds phase clusters independently then wires them together.
+Defaults to 1 retry per verify-retry structure.
+Validates structure throughout and at completion.
+Responds with plan name, phase structure rationale, and key structural decisions.
+</what-dag-designer-does>
 
-In this skill, you learn how to delegate to dag-designer, a first-pass DAG construction specialist that builds MVP execution DAGs from the core component catalogue. The designer produces a structurally valid skeleton — a reviewer and reviser will improve it in subsequent passes.
+<template name="delegation-prompt">
+Plan Name: the plan name — required, used for all add_node calls
 
-# What does dag-designer do?
+Goal: what the execution plan needs to accomplish — describe in terms of work phases and decision points, not specific files or commands
 
-- Reads the core component catalogue (`variant="core"`) before designing — never the full catalogue
-- Plans the full adjacency list before calling any DAG tool
-- Creates all nodes at once with `add_nodes_to_dag` and wires all edges per phase in a single `connect_nodes` call
-- Defaults to 1 retry per verify-retry structure
-- Validates structure throughout construction and at completion
-- Reports the completed DAG name and rationale for key design decisions
+Planning findings: summary of what was discovered during planning — the problem, constraints, risks, and relevant context
 
-# How to delegate to dag-designer
+Scope boundaries: what is in scope for this plan and what must be excluded
 
-Use the `task` tool to delegate using the prompt template below, filling in each section for the current goal:
+DAG objectives: the phases of work, where decisions need to happen, what could fail and need a retry path, and what success looks like
 
-```prompt
-**Plan Name:** <the plan name — required, used for all add_node calls>
-
-**Goal:** <what the execution plan needs to accomplish — describe in terms of work phases and decision points, not specific files or commands>
-
-**Planning findings:** <summary of what was discovered during planning — the problem, constraints, risks, and relevant context>
-
-**Scope boundaries:** <what is in scope for this plan and what must be excluded>
-
-**DAG objectives:** <the phases of work, where decisions need to happen, what could fail and need a retry path, and what success looks like>
-
-**First-pass guidance:** This is a first-pass MVP build. Use only the core catalogue (variant="core"). Focus on getting the phases, verification, and convergence structure right. Default to 1 retry per verify chain. A reviewer and reviser will add specialist nodes and adjust retry counts in subsequent passes.
-```
-
-# Thinking through your delegation prompt
-
-<|think|>
-- Have I included the plan name explicitly — the designer cannot call add_node without it?
-- Have I described work phases and decision points rather than specific files, functions, or commands?
-- Have I passed all accumulated planning findings so the designer understands the full context?
-- Are the scope boundaries clear enough that the designer knows what to include and what to leave out?
-- Have I included the first-pass guidance reminding the designer to use core catalogue only?
-- Have I noted what could fail and needs a retry path so the designer can include verify nodes?
+First-pass guidance: This is a first-pass MVP build. Use only the core catalogue (variant="core"). Focus on phases, verification, and convergence. Default to 1 retry per verify chain. A reviewer and reviser will add specialist nodes in subsequent passes.
+</template>
