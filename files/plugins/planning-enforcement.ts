@@ -1986,8 +1986,23 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         const state = readState(statePath);
         if (!state) return;
 
-        // No prompt for terminal nodes (session just completed)
-        if (state.status === "complete") return;
+        // When status is "complete" after a next_step call, there are two cases:
+        //   1. True terminal: next_step was called on a node with no children — the execute
+        //      handler completed the session and already returned "PLANNING SESSION COMPLETE".
+        //      No prompt injection needed.
+        //   2. Passthrough terminal: next_step advanced to a zero-enforcement leaf node
+        //      (e.g. plan-success). The execute handler set status="complete" immediately via
+        //      the passthrough block, but the node's prompt has not been injected yet.
+        //      We MUST inject it so the agent sees the node instructions.
+        //
+        // Distinguishing factor: in case (1) the current node has enforcement items (it just
+        // exhausted them). In case (2) the current node has zero enforcement (passthrough).
+        if (state.status === "complete") {
+          const currentNode = state.node_map[state.current_node];
+          // True terminal — no injection needed
+          if (!currentNode || currentNode.enforcement.length > 0) return;
+          // Passthrough terminal — fall through to inject its prompt below
+        }
 
         const currentNode = state.node_map[state.current_node];
         if (!currentNode) return;

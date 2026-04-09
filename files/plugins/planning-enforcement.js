@@ -111826,8 +111826,11 @@ ${ascii}`;
         const state2 = readState(statePath2);
         if (!state2)
           return;
-        if (state2.status === "complete")
-          return;
+        if (state2.status === "complete") {
+          const currentNode2 = state2.node_map[state2.current_node];
+          if (!currentNode2 || currentNode2.enforcement.length > 0)
+            return;
+        }
         const currentNode = state2.node_map[state2.current_node];
         if (!currentNode)
           return;
