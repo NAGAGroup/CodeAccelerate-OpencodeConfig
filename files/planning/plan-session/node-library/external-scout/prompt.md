@@ -4,7 +4,7 @@
 **Optional Tools:** None
 **Questions Allowed?:** Yes
 
-# DAG Node: Research
+# DAG Node: External Scout
 
 ## Goal
 Conduct focused external research with user approval before dispatching.

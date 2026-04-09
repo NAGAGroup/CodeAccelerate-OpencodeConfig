@@ -57,9 +57,9 @@
         // Node library: project-search-and-analysis
         "planning/plan-session/node-library/project-search-and-analysis/node-spec.json",
         "planning/plan-session/node-library/project-search-and-analysis/prompt.md",
-        // Node library: research
-        "planning/plan-session/node-library/research/node-spec.json",
-        "planning/plan-session/node-library/research/prompt.md",
+        // Node library: external-scout
+        "planning/plan-session/node-library/external-scout/node-spec.json",
+        "planning/plan-session/node-library/external-scout/prompt.md",
         // Node library: deep-research
         "planning/plan-session/node-library/deep-research/node-spec.json",
         "planning/plan-session/node-library/deep-research/prompt.md",
@@ -114,8 +114,10 @@
         "agents/context-insurgent.md",
         "agents/context-scout.md",
         "agents/documentation-expert.md",
+        "agents/deep-researcher.md",
         "agents/external-scout.md",
         "agents/dag-designer.md",
+        "agents/dag-description-author.md",
         "agents/dag-reviewer.md",
         "agents/dag-reviser.md",
         "agents/headwrench.md",
@@ -132,6 +134,7 @@
          "skills/dag-designer/SKILL.md",
          "skills/dag-reviewer/SKILL.md",
          "skills/dag-reviser/SKILL.md",
+         "skills/deep-researcher/SKILL.md",
          "skills/documentation-expert/SKILL.md",
          "skills/external-scout/SKILL.md",
          "skills/junior-dev/SKILL.md",
@@ -139,11 +142,14 @@
          "skills/build-dags/SKILL.md",
          "skills/build-dags-core/SKILL.md",
          "skills/dag-design-example/SKILL.md",
+         "skills/dag-revision-example/SKILL.md",
          "skills/dag-review-criteria/SKILL.md",
          "skills/dag-tools/SKILL.md",
+         "skills/editing/SKILL.md",
          "skills/following-plans/SKILL.md",
          "skills/grepai/SKILL.md",
          "skills/qdrant-notes/SKILL.md",
+         "skills/searching-deeper/SKILL.md",
          "skills/web-research/SKILL.md"
       ]
     },

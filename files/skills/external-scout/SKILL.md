@@ -7,6 +7,8 @@ description: Teaches how to dispatch external-scout for external research on pub
 
 In this skill, you learn how to delegate to external-scout, a research specialist that searches public sources and returns findings tagged with confidence levels.
 
+External-scout handles routine research: evaluating established options, checking API documentation, verifying library behavior, scoping implementation details. For novel or frontier research — cutting-edge algorithms, advanced techniques, niche patterns that require deep multi-source investigation — use `deep-researcher` instead. If there is any ambiguity about which to use, it's almost certainly external-scout.
+
 # What does external-scout do?
 
 - Searches public sources: documentation, community resources, published guides, official references

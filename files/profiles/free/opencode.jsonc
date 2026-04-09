@@ -32,6 +32,9 @@
     "external-scout": {
       "model": "opencode/nemotron-3-super-free"
     },
+    "deep-researcher": {
+      "model": "opencode/big-pickle"
+    },
     "tailwrench": {
       "model": "opencode/big-pickle"
     },
@@ -41,7 +44,13 @@
     "dag-designer": {
       "model": "opencode/big-pickle"
     },
+    "dag-description-author": {
+      "model": "opencode/nemotron-3-super-free"
+    },
     "dag-reviewer": {
+      "model": "opencode/big-pickle"
+    },
+    "dag-reviser": {
       "model": "opencode/big-pickle"
     },
     "compaction": {

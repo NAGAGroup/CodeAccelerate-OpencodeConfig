@@ -67,6 +67,9 @@
     "external-scout": {
       "model": "ollama/opencode-model"
     },
+    "deep-researcher": {
+      "model": "ollama/opencode-model"
+    },
     "tailwrench": {
       "model": "ollama/opencode-model"
     },
@@ -76,7 +79,13 @@
     "dag-designer": {
       "model": "ollama/opencode-model"
     },
+    "dag-description-author": {
+      "model": "ollama/opencode-model"
+    },
     "dag-reviewer": {
+      "model": "ollama/opencode-model"
+    },
+    "dag-reviser": {
       "model": "ollama/opencode-model"
     },
     "compaction": {

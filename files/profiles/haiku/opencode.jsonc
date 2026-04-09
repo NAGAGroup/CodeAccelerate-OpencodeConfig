@@ -46,6 +46,9 @@
     "external-scout": {
       "model": "anthropic/claude-haiku-4-5"
     },
+    "deep-researcher": {
+      "model": "anthropic/claude-haiku-4-5"
+    },
     "tailwrench": {
       "model": "anthropic/claude-haiku-4-5"
     },
@@ -55,7 +58,13 @@
     "dag-designer": {
       "model": "anthropic/claude-haiku-4-5"
     },
+    "dag-description-author": {
+      "model": "anthropic/claude-haiku-4-5"
+    },
     "dag-reviewer": {
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "dag-reviser": {
       "model": "anthropic/claude-haiku-4-5"
     },
     "compaction": {

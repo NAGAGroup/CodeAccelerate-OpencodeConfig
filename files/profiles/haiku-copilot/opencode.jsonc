@@ -49,6 +49,9 @@
     "external-scout": {
       "model": "github-copilot/claude-haiku-4.5"
     },
+    "deep-researcher": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
     "tailwrench": {
       "model": "github-copilot/claude-haiku-4.5"
     },
@@ -58,7 +61,13 @@
     "dag-designer": {
       "model": "github-copilot/claude-haiku-4.5"
     },
+    "dag-description-author": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
     "dag-reviewer": {
+      "model": "github-copilot/claude-haiku-4.5"
+    },
+    "dag-reviser": {
       "model": "github-copilot/claude-haiku-4.5"
     },
     "compaction": {

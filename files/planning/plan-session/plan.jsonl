@@ -6,5 +6,5 @@
 {"id":"dag-design","prompt":"dag-design.md","enforcement":["init_dag","task"],"children":["hw-assessment"]}
 {"id":"hw-assessment","prompt":"hw-assessment.md","enforcement":["qdrant_qdrant-find","qdrant_qdrant-store"],"children":["dag-review"]}
 {"id":"dag-review","prompt":"dag-review.md","enforcement":["task"],"children":["dag-revision"]}
-{"id":"dag-revision","prompt":"dag-revision.md","enforcement":["task"],"children":["plan-success"]}
+{"id":"dag-revision","prompt":"dag-revision.md","enforcement":["reset_entry_exit_points","task"],"children":["plan-success"]}
 {"id":"plan-success","prompt":"plan-success.md","enforcement":[],"children":[]}

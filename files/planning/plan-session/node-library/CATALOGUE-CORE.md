@@ -31,5 +31,5 @@ This catalogue contains the structural building blocks for execution DAGs. Use o
 
 | Component | Description |
 |-----------|-------------|
-| `run-project-commands` | Shell operations — installing dependencies, running build scripts, running tests. |
+| `run-project-commands` | Shell command execution via tailwrench. Required when work-items depend on state that only a command can produce — installing dependencies, running build/generation tools, executing scaffolding CLIs, initializing submodules, or running setup scripts. Place before the work-item that needs the result. |
 | `commit` | Git checkpoint at a meaningful save point. Placed after successful verify. |

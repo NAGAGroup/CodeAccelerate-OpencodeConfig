@@ -110042,6 +110042,11 @@ function validateDagV3(metadata, nodes) {
   if (unreachable.length > 0) {
     throw new Error(`Unreachable nodes (no path from entry): ${unreachable.join(", ")}`);
   }
+  const overBranched = nodes.filter((n) => (n.children ?? []).length > 2);
+  if (overBranched.length > 0) {
+    const details = overBranched.map((n) => `"${n.id}" has ${n.children.length} children: [${n.children.join(", ")}]`).join("; ");
+    throw new Error(`Branching limit violated — nodes may have at most 2 children. ${details}. ` + `Decision gates and verify nodes must have exactly 2 children. ` + `Decompose wider branches into nested binary decisions.`);
+  }
   const visited = new Set;
   const recStack = new Set;
   function hasCycle(nodeId) {
@@ -110071,6 +110076,8 @@ function flattenTreeV3(metadata, nodes) {
     const flat = { id: node.id, prompt: node.prompt, enforcement: node.enforcement };
     if (node.children && node.children.length > 0)
       flat.children = node.children;
+    if (node.description)
+      flat.description = node.description;
     map2[node.id] = flat;
   }
   return map2;
@@ -110099,6 +110106,12 @@ function dagToMermaidCompactV3(metadata, nodes) {
   const nodeMap = {};
   for (const node of filteredNodes)
     nodeMap[node.id] = node;
+  for (const node of filteredNodes) {
+    const children = (node.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+    if (children.length > 2) {
+      warnings.push(`BRANCHING VIOLATION: "${node.id}" has ${children.length} children [${children.join(", ")}] — max 2 allowed. Decompose into nested binary decisions.`);
+    }
+  }
   for (const node of filteredNodes) {
     for (const childId of node.children ?? []) {
       if (!nodeMap[childId] && !PROTECTED_IDS.has(childId)) {
@@ -110234,7 +110247,10 @@ function dagToMermaidCompactV3(metadata, nodes) {
   const lines = ["flowchart TD"];
   for (const group of groups) {
     const isOrphan = orphans.has(group.ids[0]) || group.ids.some((id) => orphans.has(id));
-    const label = group.ids.join("<br/>");
+    const label = group.ids.map((id) => {
+      const comp = nodeMap[id]?.component;
+      return comp ? `${id} (${comp})` : id;
+    }).join("<br/>");
     const safeLabel = label.replace(/"/g, "'");
     const groupExitType = group.ids.reduce((acc, id) => {
       if (exitAnnotations[id] === "success")
@@ -110282,52 +110298,81 @@ function formatCompactDagDraft(metadata, nodes) {
     nodeMap[n.id] = n;
   function renderGroup(group) {
     const groupIds = new Set(group.map((n) => n.id));
-    const hasParentInGroup = new Set;
+    const inGroupParents = {};
+    for (const n of group)
+      inGroupParents[n.id] = 0;
     for (const n of group) {
-      for (const childId of n.children ?? []) {
-        if (groupIds.has(childId))
-          hasParentInGroup.add(childId);
+      for (const childId of (n.children ?? []).filter((c) => !PROTECTED_IDS.has(c))) {
+        if (groupIds.has(childId)) {
+          inGroupParents[childId] = (inGroupParents[childId] ?? 0) + 1;
+        }
       }
     }
-    const roots = group.filter((n) => !hasParentInGroup.has(n.id));
-    if (roots.length === 0 && group.length > 0)
-      roots.push(group[0]);
+    const inDegree = {};
+    for (const id of groupIds)
+      inDegree[id] = inGroupParents[id] ?? 0;
+    const kahnQueue = [];
+    for (const n of group) {
+      if (inDegree[n.id] === 0)
+        kahnQueue.push(n.id);
+    }
+    const topoOrder = [];
+    while (kahnQueue.length > 0) {
+      const id = kahnQueue.shift();
+      topoOrder.push(id);
+      for (const childId of (nodeMap[id]?.children ?? []).filter((c) => !PROTECTED_IDS.has(c))) {
+        if (groupIds.has(childId)) {
+          inDegree[childId]--;
+          if (inDegree[childId] === 0)
+            kahnQueue.push(childId);
+        }
+      }
+    }
+    for (const n of group) {
+      if (!topoOrder.includes(n.id))
+        topoOrder.push(n.id);
+    }
+    function nodeLabel(id) {
+      const comp = nodeMap[id]?.component;
+      return comp ? `(${id}: ${comp})` : `(${id})`;
+    }
     const rendered = new Set;
     const chains = [];
-    function walkChain(startId) {
+    for (const startId of topoOrder) {
+      if (rendered.has(startId))
+        continue;
       const parts = [];
-      let currentId = startId;
-      while (currentId && !rendered.has(currentId)) {
-        rendered.add(currentId);
-        const node = nodeMap[currentId];
+      let cur = startId;
+      while (cur && !rendered.has(cur)) {
+        rendered.add(cur);
+        const node = nodeMap[cur];
         if (!node)
           break;
         const children = (node.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
         if (children.length === 0) {
-          parts.push(`(${currentId})`);
-          currentId = null;
+          parts.push(nodeLabel(cur));
+          cur = null;
         } else if (children.length === 1) {
-          parts.push(`(${currentId})`);
-          currentId = children[0];
-        } else {
-          const childList = children.join(", ");
-          parts.push(`(${currentId}) → [${childList}]`);
-          currentId = null;
-          for (const childId of children) {
-            if (groupIds.has(childId) && !rendered.has(childId)) {
-              chains.push(walkChain(childId));
-            }
+          const nextId = children[0];
+          if (groupIds.has(nextId) && !rendered.has(nextId) && (inGroupParents[nextId] ?? 0) <= 1) {
+            parts.push(nodeLabel(cur));
+            cur = nextId;
+          } else {
+            parts.push(nodeLabel(cur));
+            parts.push(`[→ ${nextId}]`);
+            cur = null;
           }
+        } else {
+          const annotations = children.map((childId) => rendered.has(childId) || !groupIds.has(childId) ? `→ ${childId}` : childId);
+          parts.push(`${nodeLabel(cur)} → [${annotations.join(", ")}]`);
+          cur = null;
         }
       }
-      if (currentId && !rendered.has(currentId) && !PROTECTED_IDS.has(currentId)) {
-        parts.push(`(${currentId})`);
+      if (cur && rendered.has(cur)) {
+        parts.push(`[→ ${cur}]`);
       }
-      return parts.join(" → ");
-    }
-    for (const root of roots) {
-      if (!rendered.has(root.id)) {
-        chains.push(walkChain(root.id));
+      if (parts.length > 0) {
+        chains.push(parts.join(" → "));
       }
     }
     return chains.filter((c) => c.length > 0).join(`
@@ -110370,6 +110415,7 @@ function formatCompactDagDraft(metadata, nodes) {
   if (connectedWork.length > 0) {
     lines.push(renderGroup(connectedWork));
   }
+  const orphanIds = new Set(orphanedWork.map((n) => n.id));
   const orphanWorkGroups = [];
   const visitedOrphans = new Set;
   for (const orphan of orphanedWork) {
@@ -110386,7 +110432,7 @@ function formatCompactDagDraft(metadata, nodes) {
       if (n && !PROTECTED_IDS.has(n.id)) {
         group.push(n);
         for (const childId of n.children ?? []) {
-          if (!PROTECTED_IDS.has(childId))
+          if (!PROTECTED_IDS.has(childId) && orphanIds.has(childId))
             groupQueue.push(childId);
         }
       }
@@ -110516,23 +110562,20 @@ function suggestRecoveryActions(report) {
 }
 
 // planning-enforcement.ts
+function withDescription(promptText, description) {
+  if (!description)
+    return promptText;
+  return `${promptText}
+
+---
+
+## Node Context
+
+${description}`;
+}
 var PlanningEnforcementPlugin = async (_ctx) => {
   const { client } = _ctx;
   const resolveWorktree = (_ctx2) => process.cwd();
-  const pendingInjections = new Map;
-  const deferredInjectPrompt = (sessionID, text) => {
-    const queue = pendingInjections.get(sessionID) ?? [];
-    queue.push(text);
-    pendingInjections.set(sessionID, queue);
-  };
-  const injectPrompt = async (sessionID, text) => {
-    await client.session.prompt({
-      path: { id: sessionID },
-      body: {
-        parts: [{ type: "text", text }]
-      }
-    });
-  };
   let _dagActiveThisTurn = false;
   ensureOpenCodeIgnore(resolveWorktree(_ctx));
   return {
@@ -110541,47 +110584,12 @@ var PlanningEnforcementPlugin = async (_ctx) => {
         description: "Start a /plan-session planning session. Copies the global planning DAG locally and activates it.",
         args: {},
         async execute(_args, context) {
-          try {
-            const worktree = resolveWorktree(context);
-            const { localPlanPath, metadata, nodes } = copyPlanningDag("plan-session", context.sessionID, worktree);
-            const plan_name = `plan-session-${context.sessionID}`;
-            const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
-            for (const node of nodes) {
-              if (!node.prompt.includes("/"))
-                node.prompt = `${promptsPrefix}${node.prompt}`;
-            }
-            const nodeMap = flattenTreeV3(metadata, nodes);
-            const entryNode = nodeMap[metadata.entry_node_id];
-            if (!entryNode)
-              throw new Error(`Entry node "${metadata.entry_node_id}" not found in DAG`);
-            const statePath = dagStatePath(worktree, context.sessionID);
-            const state = {
-              dag_id: metadata.id,
-              plan_path: localPlanPath,
-              status: "running",
-              current_node: metadata.entry_node_id,
-              todo_index: 0,
-              started_at: now(),
-              updated_at: now(),
-              decisions: [],
-              node_map: nodeMap,
-              planning_session_id: plan_name
-            };
-            writeState(statePath, state);
-            const sessionPath = `.opencode/session-plans/${plan_name}`;
-            const promptText = readPrompt(entryNode.prompt, worktree, sessionPath, { planning_session_id: plan_name });
-            if (entryNode.enforcement.length === 0) {
-              const hasNext = entryNode.children && entryNode.children.length > 0;
-              state.status = hasNext ? "waiting_step" : "complete";
-              writeState(statePath, state);
-            }
-            deferredInjectPrompt(context.sessionID, promptText);
-            const result = `DAG "${metadata.id}" activated. Your next task, "${metadata.entry_node_id}", will be presented in the following message.`;
-            return result;
-          } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err);
-            throw new Error(`Error activating plan-session: ${msg}`);
-          }
+          const worktree = resolveWorktree(context);
+          const statePath = dagStatePath(worktree, context.sessionID);
+          const state = readState(statePath);
+          if (!state)
+            return "Failed to activate plan session.";
+          return `DAG "${state.dag_id}" activated. Your next task, "${state.current_node}", will be presented in the following message.`;
         }
       }),
       activate_plan: tool({
@@ -110591,51 +110599,11 @@ var PlanningEnforcementPlugin = async (_ctx) => {
         },
         async execute({ plan_name }, context) {
           const worktree = resolveWorktree(context);
-          const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
-          try {
-            const { metadata, nodes } = readDagV3(planPath);
-            const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
-            for (const node of nodes) {
-              if (!node.prompt.includes("/")) {
-                node.prompt = `${promptsPrefix}${node.prompt}`;
-              }
-            }
-            const nodeMap = flattenTreeV3(metadata, nodes);
-            const entryNode = nodeMap[metadata.entry_node_id];
-            if (!entryNode) {
-              throw new Error(`Entry node "${metadata.entry_node_id}" not found in DAG "${plan_name}"`);
-            }
-            const statePath = dagStatePath(worktree, context.sessionID);
-            const state = {
-              dag_id: metadata.id,
-              plan_path: planPath,
-              status: "running",
-              current_node: metadata.entry_node_id,
-              todo_index: 0,
-              started_at: now(),
-              updated_at: now(),
-              decisions: [],
-              node_map: nodeMap
-            };
-            writeState(statePath, state);
-            const sessionPath = `.opencode/session-plans/${plan_name}`;
-            const promptText = readPrompt(entryNode.prompt, worktree, sessionPath);
-            if (entryNode.enforcement.length === 0) {
-              if (entryNode.children && entryNode.children.length > 0) {
-                state.status = "waiting_step";
-                writeState(statePath, state);
-              } else {
-                state.status = "complete";
-                writeState(statePath, state);
-              }
-            }
-            deferredInjectPrompt(context.sessionID, promptText);
-            const result = `DAG "${metadata.id}" activated. Your next task, "${metadata.entry_node_id}", will be presented in the following message.`;
-            return result;
-          } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err);
-            throw new Error(`Error activating plan "${plan_name}": ${msg}`);
-          }
+          const statePath = dagStatePath(worktree, context.sessionID);
+          const state = readState(statePath);
+          if (!state)
+            return `Failed to activate plan "${plan_name}".`;
+          return `DAG "${state.dag_id}" activated. Your next task, "${state.current_node}", will be presented in the following message.`;
         }
       }),
       next_step: tool({
@@ -110646,41 +110614,32 @@ var PlanningEnforcementPlugin = async (_ctx) => {
         async execute({ next }, context) {
           const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
           const state = readState(statePath);
-          if (!state) {
-            return "No active DAG session. Start one with plan_session() or activate_plan().";
-          }
-          if (state.status === "complete") {
-            return "DAG session is already complete.";
-          }
-          if (state.status !== "waiting_step") {
-            const currentNode = state.node_map[state.current_node];
-            const remaining = currentNode ? currentNode.enforcement.length - state.todo_index : 0;
-            const nextExpected = currentNode ? currentNode.enforcement[state.todo_index] ?? "none" : "unknown";
-            return `Cannot call next_step — node "${state.current_node}" still has ${remaining} enforcement item(s) pending. ` + `Next expected tool: "${nextExpected}". Call "${nextExpected}" to continue, ` + `then call next_step when all enforcement items are complete.`;
-          }
+          if (!state)
+            return "No active DAG session.";
           const node = state.node_map[state.current_node];
-          if (!node) {
+          if (!node)
             return `Current node "${state.current_node}" not found in DAG.`;
-          }
           const children = node.children ?? [];
           if (children.length === 0) {
             state.status = "complete";
             state.updated_at = now();
             writeState(statePath, state);
-            return `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.
+            const isPlanningSession = state.dag_id.startsWith("plan-session");
+            if (isPlanningSession) {
+              return `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.
 
 ` + `---
 
-` + `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` + `Present a summary of what was produced to the user. ` + `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`;
+` + `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` + `Present the final DAG to the user by calling \`present_dag_diagram\` with the plan name, then ` + `present a summary of what was produced. ` + `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`;
+            } else {
+              return `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.
+
+` + `---
+
+` + `**EXECUTION COMPLETE.** Do NOT continue executing tasks. ` + `Present a summary to the user of what was accomplished, any deferred items, and known limitations.`;
+            }
           }
           if (children.length > 1) {
-            if (!next) {
-              return `[BRANCH REQUIRED] Node "${state.current_node}" has multiple children.
-Call next_step with the next parameter. Valid options: [${children.join(", ")}].`;
-            }
-            if (!children.includes(next)) {
-              return `Invalid branch "${next}". Valid options: [${children.join(", ")}]`;
-            }
             state.decisions.push({
               node_id: state.current_node,
               timestamp: now(),
@@ -110696,22 +110655,15 @@ Call next_step with the next parameter. Valid options: [${children.join(", ")}].
           state.status = "running";
           state.updated_at = now();
           writeState(statePath, state);
-          const sessionPath = `.opencode/session-plans/${state.dag_id}`;
-          const promptText = readPrompt(nextNode.prompt, resolveWorktree(context), sessionPath, {
-            plan_name: state.plan_name,
-            planning_session_id: state.planning_session_id
-          });
           if (nextNode.enforcement.length === 0) {
             const nextChildren = nextNode.children ?? [];
             if (nextChildren.length > 0) {
               state.status = "waiting_step";
-              writeState(statePath, state);
             } else {
               state.status = "complete";
-              writeState(statePath, state);
             }
+            writeState(statePath, state);
           }
-          deferredInjectPrompt(context.sessionID, promptText);
           const { metadata } = readDagV3(state.plan_path);
           const isFromEntryNode = node.id === metadata.entry_node_id;
           let result = "";
@@ -110762,10 +110714,10 @@ Call next_step with the next parameter. Valid options: [${children.join(", ")}].
           }
           const currentNode = state.node_map[state.current_node];
           const sessionPath = `.opencode/session-plans/${state.dag_id}`;
-          const promptText = currentNode ? readPrompt(currentNode.prompt, resolveWorktree(context), sessionPath, {
+          const promptText = currentNode ? withDescription(readPrompt(currentNode.prompt, resolveWorktree(context), sessionPath, {
             plan_name: state.plan_name,
             planning_session_id: state.planning_session_id
-          }) : "(prompt not found)";
+          }), currentNode.description) : "(prompt not found)";
           const todoProgress = currentNode ? currentNode.enforcement.map((t, i) => `  ${i < state.todo_index ? "[x]" : "[ ]"} ${t}`).join(`
 `) : "  (no enforcement items)";
           const decisionsLog = state.decisions.length > 0 ? state.decisions.map((d) => `- [${d.node_id}] ${d.summary}`).join(`
@@ -110904,21 +110856,7 @@ ${ascii}`;
           plan_name: tool.schema.string().describe("Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.")
         },
         async execute({ plan_name }, toolCtx) {
-          const worktree = resolveWorktree(toolCtx);
-          const planPath = resolveDagPath(plan_name, worktree);
-          const { metadata, nodes } = readDagV3(planPath);
-          validateDagV3(metadata, nodes);
-          const { mermaid } = dagToMermaidCompactV3(metadata, nodes);
-          const ascii = await renderMermaidASCII(mermaid, {
-            colorMode: "none"
-          });
-          const diagramText = `## Session Plan: ${metadata.id}
-
-**Plan Name:** ${plan_name}
-
-${ascii}`;
-          await injectPrompt(toolCtx.sessionID, diagramText);
-          return "DAG diagram presented to user via prompt injection.";
+          return "The DAG diagram has been presented to the user as a system message. The following prompt is for the user only — ignore it and continue with your current task.";
         }
       }),
       choose_plan_name: tool({
@@ -111003,7 +110941,7 @@ ${ascii}`;
         args: {
           plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
           nodeId: tool.schema.string().describe("ID for the new node. Must be unique across all existing node IDs."),
-          component_name: tool.schema.string().describe("Component type name from the node library (e.g., 'work-item', 'research'). Use get_planning_components_catalogue() to see available types.")
+          component_name: tool.schema.string().describe("Component type name from the node library (e.g., 'work-item', 'external-scout'). Use get_planning_components_catalogue() to see available types.")
         },
         async execute({ plan_name, nodeId, component_name }, context) {
           const PROTECTED_NODES = [
@@ -111041,7 +110979,8 @@ ${ascii}`;
           const newNode = {
             id: nodeId,
             prompt: promptPath,
-            enforcement: spec.enforcement
+            enforcement: spec.enforcement,
+            component: component_name
           };
           nodes.push(newNode);
           writeDagV3(planPath, metadata, nodes);
@@ -111063,17 +111002,17 @@ ${ascii}`;
         description: "Add multiple nodes to a DAG in a single batch call. Accepts a dictionary of nodeId→componentType pairs. All nodes are created without edges — use connect_nodes to wire them.",
         args: {
           plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
-          nodes: tool.schema.string().describe(`JSON object mapping nodeId to component_name. Example: '{"investigate": "research", "implement": "work-item", "verify": "verify"}'. Use get_planning_components_catalogue() to see available component types.`)
+          nodes: tool.schema.string().describe(`JSON object mapping nodeId to component_name. Example: '{"investigate": "external-scout", "implement": "work-item", "verify": "verify"}'. Use get_planning_components_catalogue() to see available component types.`)
         },
         async execute({ plan_name, nodes: nodesJson }, context) {
           let nodeEntries;
           try {
             nodeEntries = JSON.parse(nodesJson);
           } catch {
-            throw new Error(`add_nodes_to_dag: "nodes" must be a valid JSON object mapping nodeId to component_name. Example: '{"investigate": "research", "implement": "work-item"}'`);
+            throw new Error(`add_nodes_to_dag: "nodes" must be a valid JSON object mapping nodeId to component_name. Example: '{"investigate": "external-scout", "implement": "work-item"}'`);
           }
           if (typeof nodeEntries !== "object" || nodeEntries === null || Array.isArray(nodeEntries)) {
-            throw new Error(`add_nodes_to_dag: "nodes" must be a JSON object (not an array or primitive). Example: '{"investigate": "research", "implement": "work-item"}'`);
+            throw new Error(`add_nodes_to_dag: "nodes" must be a JSON object (not an array or primitive). Example: '{"investigate": "external-scout", "implement": "work-item"}'`);
           }
           const PROTECTED_NODES = [
             "execution-kickoff",
@@ -111117,7 +111056,8 @@ ${ascii}`;
             nodes.push({
               id: nodeId,
               prompt: promptPath,
-              enforcement: spec.enforcement
+              enforcement: spec.enforcement,
+              component: componentName
             });
             created.push(`${nodeId} (${componentName})`);
           }
@@ -111137,6 +111077,33 @@ ${errors3.join(`
 ` + `Use connect_nodes to wire these nodes into the DAG.
 
 ` + formatCompactDagDraft(metadata, nodes);
+        }
+      }),
+      add_description_to_node: tool({
+        description: "Set a planner-authored description on a DAG node. The description provides execution context — what this specific node should accomplish. Descriptions are injected into the node's prompt at execution time.",
+        args: {
+          plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
+          nodeId: tool.schema.string().describe("ID of the node to add a description to. Must already exist in the DAG."),
+          description: tool.schema.string().describe("The description text. Should explain what this specific node should accomplish in the context of the plan — not generic component behavior, but the specific work or investigation needed here.")
+        },
+        async execute({ plan_name, nodeId, description }, context) {
+          const worktree = resolveWorktree(context);
+          const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
+          if (!fs6.existsSync(planPath)) {
+            throw new Error(`plan.jsonl not found for "${plan_name}". Initialize with init_dag first.`);
+          }
+          const { metadata, nodes } = readDagV3(planPath);
+          const node = nodes.find((n) => n.id === nodeId);
+          if (!node) {
+            throw new Error(`Node "${nodeId}" not found in DAG "${plan_name}". Available nodes: [${nodes.map((n) => n.id).join(", ")}]`);
+          }
+          node.description = description;
+          writeDagV3(planPath, metadata, nodes);
+          return `## add_description_to_node: Description set for "${nodeId}"
+
+` + `Node: ${nodeId}
+` + `Description: ${description}
+`;
         }
       }),
       connect_nodes: tool({
@@ -111204,6 +111171,12 @@ ${errors3.join(`
             if (!parent.children)
               parent.children = [];
             parent.children.push(to);
+            const workChildren = parent.children.filter((c) => c !== "plan-success" && c !== "plan-fail" && c !== "execution-kickoff");
+            if (workChildren.length > 2) {
+              parent.children.pop();
+              errors3.push(`"${from}" already has ${workChildren.length - 1} work-node children (${workChildren.slice(0, -1).join(", ")}). ` + `Adding "${to}" would give it ${workChildren.length} — max is 2. ` + `Decompose wider branches into nested binary decisions.`);
+              continue;
+            }
             wired.push(`"${from}" → "${to}"`);
           }
           if (errors3.length > 0 && wired.length === 0) {
@@ -111211,7 +111184,11 @@ ${errors3.join(`
 ${errors3.map((e) => `- ${e}`).join(`
 `)}`);
           }
-          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+          const PROTECTED_IDS = new Set([
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail"
+          ]);
           const protectedErrors = [];
           for (const { from, to } of edgePairs) {
             if (PROTECTED_IDS.has(from)) {
@@ -111335,6 +111312,66 @@ ${errors3.map((e) => `- ${e}`).join(`
 ` + formatCompactDagDraft(metadata, nodes);
         }
       }),
+      insert_between: tool({
+        description: "Atomically insert an existing node between two connected nodes. Removes the edge from→to and adds from→new_node→to in one operation. Use this when adding a node mid-chain to avoid accidentally creating extra children.",
+        args: {
+          plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
+          from: tool.schema.string().describe("ID of the upstream (parent) node."),
+          new_node: tool.schema.string().describe("ID of the node to insert between from and to. Must already exist in the DAG."),
+          to: tool.schema.string().describe("ID of the downstream (child) node.")
+        },
+        async execute({ plan_name, from, new_node, to }, context) {
+          const worktree = resolveWorktree(context);
+          const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
+          const { metadata, nodes } = readDagV3(planPath);
+          const parentNode = nodes.find((n) => n.id === from);
+          if (!parentNode)
+            throw new Error(`Source node "${from}" not found in DAG.`);
+          const insertNode = nodes.find((n) => n.id === new_node);
+          if (!insertNode)
+            throw new Error(`Node "${new_node}" not found in DAG. Create it first with add_node or add_nodes_to_dag.`);
+          const childNode = nodes.find((n) => n.id === to);
+          if (!childNode)
+            throw new Error(`Target node "${to}" not found in DAG.`);
+          if (!parentNode.children?.includes(to)) {
+            throw new Error(`"${to}" is not a child of "${from}" — cannot insert between them.
+
+` + formatCompactDagDraft(metadata, nodes));
+          }
+          const ancestorsOfFrom = new Set;
+          const queue = [from];
+          const descendantsOfNewNode = new Set;
+          const dQueue = [...insertNode.children ?? []];
+          while (dQueue.length > 0) {
+            const id = dQueue.pop();
+            if (descendantsOfNewNode.has(id))
+              continue;
+            descendantsOfNewNode.add(id);
+            const n = nodes.find((x) => x.id === id);
+            if (n?.children)
+              dQueue.push(...n.children);
+          }
+          if (descendantsOfNewNode.has(from)) {
+            throw new Error(`Inserting "${new_node}" between "${from}" and "${to}" would create a cycle.`);
+          }
+          parentNode.children = parentNode.children.filter((id) => id !== to);
+          if (!parentNode.children.includes(new_node)) {
+            parentNode.children.push(new_node);
+          }
+          if (!insertNode.children)
+            insertNode.children = [];
+          if (!insertNode.children.includes(to)) {
+            insertNode.children.push(to);
+          }
+          writeDagV3(planPath, metadata, nodes);
+          return `## insert_between: Inserted "${new_node}" between "${from}" and "${to}"
+
+` + `- Removed: "${from}" → "${to}"
+` + `- Added: "${from}" → "${new_node}" → "${to}"
+
+` + formatCompactDagDraft(metadata, nodes);
+        }
+      }),
       set_entry_point: tool({
         description: "Set the DAG's entry point — the first node that executes when the plan starts. Call this once in the final wiring step after all work nodes are connected.",
         args: {
@@ -111350,7 +111387,11 @@ ${errors3.map((e) => `- ${e}`).join(`
             throw new Error(`Node "${node_id}" not found in DAG.
 
 ${formatCompactDagDraft(metadata, nodes)}`);
-          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+          const PROTECTED_IDS = new Set([
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail"
+          ]);
           if (PROTECTED_IDS.has(node_id))
             throw new Error(`"${node_id}" cannot be used as an entry point.`);
           const kickoff = nodes.find((n) => n.id === "execution-kickoff");
@@ -111387,9 +111428,18 @@ ${formatCompactDagDraft(metadata, nodes)}`);
             throw new Error(`Node "${node_id}" not found in DAG.
 
 ${formatCompactDagDraft(metadata, nodes)}`);
-          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+          const PROTECTED_IDS = new Set([
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail"
+          ]);
           if (PROTECTED_IDS.has(node_id))
             throw new Error(`"${node_id}" cannot be used as an exit point.`);
+          if (target.component && target.component !== "write-notes") {
+            throw new Error(`"${node_id}" is a "${target.component}" node — only write-notes nodes can be exit points. ` + `Every terminal path must end with a write-notes node to capture context before exit.
+
+` + formatCompactDagDraft(metadata, nodes));
+          }
           const terminalId = exitType === "success" ? "plan-success" : "plan-fail";
           if (target.children?.includes(terminalId)) {
             throw new Error(`"${node_id}" is already marked as a ${exitType} exit.
@@ -111401,6 +111451,39 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           target.children.push(terminalId);
           writeDagV3(planPath, metadata, nodes);
           return `## set_exit_point: "${node_id}" marked as ${exitType} exit
+
+` + formatCompactDagDraft(metadata, nodes);
+        }
+      }),
+      reset_entry_exit_points: tool({
+        description: "Strip all entry and exit point markers from a DAG, leaving only the work node structure. " + "Clears the execution-kickoff → entry edge and removes plan-success/plan-fail from all work node children. " + "Use this before delegating to the reviser so it starts with a clean structural slate.",
+        args: {
+          plan_name: tool.schema.string().describe("Name of the session plan.")
+        },
+        async execute({ plan_name }, context) {
+          const worktree = resolveWorktree(context);
+          const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
+          const { metadata, nodes } = readDagV3(planPath);
+          const TERMINAL_IDS = new Set(["plan-success", "plan-fail"]);
+          const kickoff = nodes.find((n) => n.id === "execution-kickoff");
+          if (kickoff) {
+            kickoff.children = [];
+          }
+          let exitEdgesRemoved = 0;
+          for (const node of nodes) {
+            if (node.id === "execution-kickoff" || TERMINAL_IDS.has(node.id))
+              continue;
+            const before = node.children?.length ?? 0;
+            if (node.children) {
+              node.children = node.children.filter((c) => !TERMINAL_IDS.has(c));
+            }
+            exitEdgesRemoved += before - (node.children?.length ?? 0);
+          }
+          writeDagV3(planPath, metadata, nodes);
+          return `## reset_entry_exit_points: Cleared entry/exit markers
+
+` + `- Entry point cleared
+` + `- ${exitEdgesRemoved} exit edge(s) removed
 
 ` + formatCompactDagDraft(metadata, nodes);
         }
@@ -111514,6 +111597,133 @@ ${formatCompactDagDraft(metadata, nodes)}`);
     "tool.execute.before": async (input, output) => {
       if (!input.tool || !input.sessionID)
         return;
+      if (input.tool === "plan_session") {
+        const worktree2 = resolveWorktree(_ctx);
+        const { localPlanPath, metadata, nodes } = copyPlanningDag("plan-session", input.sessionID, worktree2);
+        const plan_name = `plan-session-${input.sessionID}`;
+        const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
+        for (const node2 of nodes) {
+          if (!node2.prompt.includes("/"))
+            node2.prompt = `${promptsPrefix}${node2.prompt}`;
+        }
+        const nodeMap = flattenTreeV3(metadata, nodes);
+        const entryNode = nodeMap[metadata.entry_node_id];
+        if (!entryNode)
+          throw new Error(`Entry node "${metadata.entry_node_id}" not found in DAG`);
+        const statePath2 = dagStatePath(worktree2, input.sessionID);
+        const state2 = {
+          dag_id: metadata.id,
+          plan_path: localPlanPath,
+          status: "running",
+          current_node: metadata.entry_node_id,
+          todo_index: 0,
+          started_at: now(),
+          updated_at: now(),
+          decisions: [],
+          node_map: nodeMap,
+          planning_session_id: plan_name
+        };
+        writeState(statePath2, state2);
+        if (entryNode.enforcement.length === 0) {
+          const hasNext = entryNode.children && entryNode.children.length > 0;
+          state2.status = hasNext ? "waiting_step" : "complete";
+          writeState(statePath2, state2);
+        }
+        return;
+      }
+      if (input.tool === "activate_plan") {
+        const plan_name = output.args?.plan_name;
+        if (!plan_name)
+          throw new Error("plan_name is required");
+        const worktree2 = resolveWorktree(_ctx);
+        const planPath = path6.join(worktree2, ".opencode", "session-plans", plan_name, "plan.jsonl");
+        const { metadata, nodes } = readDagV3(planPath);
+        const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
+        for (const node2 of nodes) {
+          if (!node2.prompt.includes("/")) {
+            node2.prompt = `${promptsPrefix}${node2.prompt}`;
+          }
+        }
+        const nodeMap = flattenTreeV3(metadata, nodes);
+        const entryNode = nodeMap[metadata.entry_node_id];
+        if (!entryNode) {
+          throw new Error(`Entry node "${metadata.entry_node_id}" not found in DAG "${plan_name}"`);
+        }
+        const statePath2 = dagStatePath(worktree2, input.sessionID);
+        const state2 = {
+          dag_id: metadata.id,
+          plan_path: planPath,
+          status: "running",
+          current_node: metadata.entry_node_id,
+          todo_index: 0,
+          started_at: now(),
+          updated_at: now(),
+          decisions: [],
+          node_map: nodeMap,
+          plan_name
+        };
+        writeState(statePath2, state2);
+        if (entryNode.enforcement.length === 0) {
+          if (entryNode.children && entryNode.children.length > 0) {
+            state2.status = "waiting_step";
+            writeState(statePath2, state2);
+          } else {
+            state2.status = "complete";
+            writeState(statePath2, state2);
+          }
+        }
+        return;
+      }
+      if (input.tool === "present_dag_diagram") {
+        const plan_name = output.args?.plan_name;
+        if (!plan_name)
+          throw new Error("plan_name is required");
+        const worktree2 = resolveWorktree(_ctx);
+        const planPath = resolveDagPath(plan_name, worktree2);
+        const { metadata, nodes } = readDagV3(planPath);
+        validateDagV3(metadata, nodes);
+        return;
+      }
+      if (input.tool === "next_step") {
+        const worktree2 = resolveWorktree(_ctx);
+        const statePath2 = dagStatePath(worktree2, input.sessionID);
+        const state2 = readState(statePath2);
+        if (!state2) {
+          throw new Error("No active DAG session. Start one with plan_session() or activate_plan().");
+        }
+        if (state2.status === "complete") {
+          throw new Error("DAG session is already complete.");
+        }
+        if (state2.status !== "waiting_step") {
+          const currentNode = state2.node_map[state2.current_node];
+          const remaining = currentNode ? currentNode.enforcement.length - state2.todo_index : 0;
+          const nextExpected = currentNode ? currentNode.enforcement[state2.todo_index] ?? "none" : "unknown";
+          throw new Error(`Cannot call next_step — node "${state2.current_node}" still has ${remaining} enforcement item(s) pending. ` + `Next expected tool: "${nextExpected}". Call "${nextExpected}" to continue, ` + `then call next_step when all enforcement items are complete.`);
+        }
+        const node2 = state2.node_map[state2.current_node];
+        if (!node2) {
+          throw new Error(`Current node "${state2.current_node}" not found in DAG.`);
+        }
+        const children = node2.children ?? [];
+        if (children.length === 0) {
+          return;
+        }
+        const next = output.args?.next;
+        if (children.length > 1) {
+          if (!next) {
+            throw new Error(`[BRANCH REQUIRED] Node "${state2.current_node}" has multiple children.
+` + `Call next_step with the next parameter. Valid options: [${children.join(", ")}].`);
+          }
+          if (!children.includes(next)) {
+            throw new Error(`Invalid branch "${next}". Valid options: [${children.join(", ")}]`);
+          }
+        }
+        const nextId = children.length === 1 ? children[0] : next;
+        const nextNode = state2.node_map[nextId];
+        if (!nextNode)
+          throw new Error(`Next node "${nextId}" not found in DAG`);
+        return;
+      }
       if (isExempt(input.tool))
         return;
       const worktree = resolveWorktree(_ctx);
@@ -111547,6 +111757,91 @@ ${formatCompactDagDraft(metadata, nodes)}`);
         return;
       if (output.error)
         return;
+      if (input.tool === "plan_session") {
+        const worktree2 = resolveWorktree(_ctx);
+        const statePath2 = dagStatePath(worktree2, input.sessionID);
+        const state2 = readState(statePath2);
+        if (!state2)
+          return;
+        const entryNode = state2.node_map[state2.current_node];
+        if (!entryNode)
+          return;
+        const sessionPath = `.opencode/session-plans/${state2.planning_session_id}`;
+        const promptText = readPrompt(entryNode.prompt, worktree2, sessionPath, {
+          planning_session_id: state2.planning_session_id
+        });
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: { parts: [{ type: "text", text: promptText }] }
+        });
+        return;
+      }
+      if (input.tool === "activate_plan") {
+        const worktree2 = resolveWorktree(_ctx);
+        const statePath2 = dagStatePath(worktree2, input.sessionID);
+        const state2 = readState(statePath2);
+        if (!state2)
+          return;
+        const entryNode = state2.node_map[state2.current_node];
+        if (!entryNode)
+          return;
+        const sessionPath = `.opencode/session-plans/${state2.plan_name}`;
+        const promptText = withDescription(readPrompt(entryNode.prompt, worktree2, sessionPath, {
+          plan_name: state2.plan_name
+        }), entryNode.description);
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: { parts: [{ type: "text", text: promptText }] }
+        });
+        return;
+      }
+      if (input.tool === "present_dag_diagram") {
+        const plan_name = output.args?.plan_name;
+        if (!plan_name)
+          return;
+        const worktree2 = resolveWorktree(_ctx);
+        const planPath = resolveDagPath(plan_name, worktree2);
+        const { metadata, nodes } = readDagV3(planPath);
+        const { mermaid } = dagToMermaidCompactV3(metadata, nodes);
+        const ascii = await renderMermaidASCII(mermaid, {
+          colorMode: "none"
+        });
+        const diagramText = `## Session Plan: ${metadata.id}
+
+**Plan Name:** ${plan_name}
+
+${ascii}`;
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: {
+            parts: [{ type: "text", text: diagramText }],
+            noReply: true
+          }
+        });
+        return;
+      }
+      if (input.tool === "next_step") {
+        const worktree2 = resolveWorktree(_ctx);
+        const statePath2 = dagStatePath(worktree2, input.sessionID);
+        const state2 = readState(statePath2);
+        if (!state2)
+          return;
+        if (state2.status === "complete")
+          return;
+        const currentNode = state2.node_map[state2.current_node];
+        if (!currentNode)
+          return;
+        const sessionPath = `.opencode/session-plans/${state2.plan_name ?? state2.planning_session_id ?? state2.dag_id}`;
+        const promptText = withDescription(readPrompt(currentNode.prompt, worktree2, sessionPath, {
+          plan_name: state2.plan_name,
+          planning_session_id: state2.planning_session_id
+        }), currentNode.description);
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: { parts: [{ type: "text", text: promptText }] }
+        });
+        return;
+      }
       const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
@@ -111572,27 +111867,6 @@ ${formatCompactDagDraft(metadata, nodes)}`);
           writeState(statePath, state);
         } else {
           writeState(statePath, state);
-        }
-      }
-    },
-    event: async ({ event }) => {
-      if (event.type === "session.idle") {
-        const sessionID = event.properties?.sessionID;
-        if (!sessionID)
-          return;
-        const queue = pendingInjections.get(sessionID);
-        if (!queue || queue.length === 0)
-          return;
-        pendingInjections.delete(sessionID);
-        for (const text of queue) {
-          try {
-            await client.session.prompt({
-              path: { id: sessionID },
-              body: {
-                parts: [{ type: "text", text }]
-              }
-            });
-          } catch {}
         }
       }
     },

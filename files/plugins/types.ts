@@ -5,6 +5,8 @@ export interface DagNodeV3 {
   prompt: string;
   enforcement: string[];
   children?: string[]; // absent/empty = terminal, length 1 = linear, length 2+ = branching
+  description?: string; // planner-authored context for what this specific node should accomplish
+  component?: string; // component type from node library (e.g., 'work-item', 'write-notes')
 }
 
 export interface DagMetadataV3 {
@@ -19,6 +21,7 @@ export interface FlatNode {
   prompt: string;
   enforcement: string[];
   children?: string[];
+  description?: string;
 }
 
 export interface DecisionEntry {

@@ -44,6 +44,19 @@ export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void
     throw new Error(`Unreachable nodes (no path from entry): ${unreachable.join(", ")}`);
   }
 
+  // Branching limit: no node may have more than 2 children
+  const overBranched = nodes.filter((n) => (n.children ?? []).length > 2);
+  if (overBranched.length > 0) {
+    const details = overBranched
+      .map((n) => `"${n.id}" has ${n.children!.length} children: [${n.children!.join(", ")}]`)
+      .join("; ");
+    throw new Error(
+      `Branching limit violated — nodes may have at most 2 children. ${details}. ` +
+      `Decision gates and verify nodes must have exactly 2 children. ` +
+      `Decompose wider branches into nested binary decisions.`
+    );
+  }
+
   // Cycle detection (DFS with recursion stack)
   const visited = new Set<string>();
   const recStack = new Set<string>();
@@ -73,6 +86,7 @@ export function flattenTreeV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): Reco
     }
     const flat: FlatNode = { id: node.id, prompt: node.prompt, enforcement: node.enforcement };
     if (node.children && node.children.length > 0) flat.children = node.children;
+    if (node.description) flat.description = node.description;
     map[node.id] = flat;
   }
   return map;
@@ -132,6 +146,16 @@ export function dagToMermaidCompactV3(
   for (const node of filteredNodes) nodeMap[node.id] = node;
 
   // ── Detect structural issues (don't throw) ────────────────────────────────
+
+  // Branching limit: no node may have more than 2 children
+  for (const node of filteredNodes) {
+    const children = (node.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+    if (children.length > 2) {
+      warnings.push(
+        `BRANCHING VIOLATION: "${node.id}" has ${children.length} children [${children.join(", ")}] — max 2 allowed. Decompose into nested binary decisions.`
+      );
+    }
+  }
 
   // Broken child references (skip protected node references — those are internal plumbing)
   for (const node of filteredNodes) {
@@ -285,7 +309,10 @@ export function dagToMermaidCompactV3(
   const lines: string[] = ["flowchart TD"];
   for (const group of groups) {
     const isOrphan = orphans.has(group.ids[0]) || group.ids.some((id) => orphans.has(id));
-    const label = group.ids.join("<br/>");
+    const label = group.ids.map((id) => {
+      const comp = nodeMap[id]?.component;
+      return comp ? `${id} (${comp})` : id;
+    }).join("<br/>");
     const safeLabel = label.replace(/"/g, "'");
 
     // Check if any node in this group is an exit point
@@ -350,65 +377,105 @@ export function formatCompactDagDraft(
   const nodeMap: Record<string, DagNodeV3> = {};
   for (const n of nodes) nodeMap[n.id] = n;
 
-  // Render a group of nodes in arrow format.
-  // Finds root(s) (nodes not referenced as children within the group),
-  // then walks each chain: a → b → [c, d] ; d → e → f
+  // Render a group of nodes in compact arrow format.
+  //
+  // Uses topological sort (Kahn's algorithm) for ordering — no dependency on
+  // entry node. Roots naturally appear first, leaves last. Linear chains
+  // (single-child → single-parent) are collapsed into one line. Branching
+  // nodes show children in brackets. Convergence points (nodes with multiple
+  // parents) start their own line and are referenced with → arrows.
   function renderGroup(group: DagNodeV3[]): string {
     const groupIds = new Set(group.map((n) => n.id));
-    // Find children within this group
-    const hasParentInGroup = new Set<string>();
+
+    // ── In-group parent counts (for chain collapse decisions) ──────────────
+    const inGroupParents: Record<string, number> = {};
+    for (const n of group) inGroupParents[n.id] = 0;
     for (const n of group) {
-      for (const childId of n.children ?? []) {
-        if (groupIds.has(childId)) hasParentInGroup.add(childId);
+      for (const childId of (n.children ?? []).filter((c) => !PROTECTED_IDS.has(c))) {
+        if (groupIds.has(childId)) {
+          inGroupParents[childId] = (inGroupParents[childId] ?? 0) + 1;
+        }
       }
     }
-    const roots = group.filter((n) => !hasParentInGroup.has(n.id));
-    if (roots.length === 0 && group.length > 0) roots.push(group[0]); // cycle fallback
 
+    // ── Topological sort (Kahn's) — gives top-to-bottom order ─────────────
+    const inDegree: Record<string, number> = {};
+    for (const id of groupIds) inDegree[id] = inGroupParents[id] ?? 0;
+    const kahnQueue: string[] = [];
+    for (const n of group) {
+      if (inDegree[n.id] === 0) kahnQueue.push(n.id);
+    }
+    const topoOrder: string[] = [];
+    while (kahnQueue.length > 0) {
+      const id = kahnQueue.shift()!;
+      topoOrder.push(id);
+      for (const childId of (nodeMap[id]?.children ?? []).filter((c) => !PROTECTED_IDS.has(c))) {
+        if (groupIds.has(childId)) {
+          inDegree[childId]--;
+          if (inDegree[childId] === 0) kahnQueue.push(childId);
+        }
+      }
+    }
+    // Append cycle members not reached by Kahn's
+    for (const n of group) {
+      if (!topoOrder.includes(n.id)) topoOrder.push(n.id);
+    }
+
+    // ── Format helpers ────────────────────────────────────────────────────
+    function nodeLabel(id: string): string {
+      const comp = nodeMap[id]?.component;
+      return comp ? `(${id}: ${comp})` : `(${id})`;
+    }
+
+    // ── Walk chains in topo order ─────────────────────────────────────────
     const rendered = new Set<string>();
     const chains: string[] = [];
 
-    function walkChain(startId: string): string {
+    for (const startId of topoOrder) {
+      if (rendered.has(startId)) continue;
+
       const parts: string[] = [];
-      let currentId: string | null = startId;
-      while (currentId && !rendered.has(currentId)) {
-        rendered.add(currentId);
-        const node = nodeMap[currentId];
+      let cur: string | null = startId;
+
+      while (cur && !rendered.has(cur)) {
+        rendered.add(cur);
+        const node = nodeMap[cur];
         if (!node) break;
-        // Filter out protected nodes — they're invisible to the agent
         const children = (node.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+
         if (children.length === 0) {
-          // Leaf node — just append the id
-          parts.push(`(${currentId})`);
-          currentId = null;
+          // Leaf
+          parts.push(nodeLabel(cur));
+          cur = null;
         } else if (children.length === 1) {
-          // Linear — append and continue
-          parts.push(`(${currentId})`);
-          currentId = children[0];
-        } else {
-          // Branching — append with bracket notation
-          const childList = children.join(", ");
-          parts.push(`(${currentId}) → [${childList}]`);
-          currentId = null;
-          // Queue sub-chains for unvisited children within this group
-          for (const childId of children) {
-            if (groupIds.has(childId) && !rendered.has(childId)) {
-              chains.push(walkChain(childId));
-            }
+          const nextId = children[0];
+          // Continue chain only if child is in-group, unrendered, single-parent
+          if (groupIds.has(nextId) && !rendered.has(nextId) && (inGroupParents[nextId] ?? 0) <= 1) {
+            parts.push(nodeLabel(cur));
+            cur = nextId;
+          } else {
+            // End chain with forward reference
+            parts.push(nodeLabel(cur));
+            parts.push(`[→ ${nextId}]`);
+            cur = null;
           }
+        } else {
+          // Branching — show children in brackets, mark already-rendered or out-of-group
+          const annotations = children.map((childId) =>
+            (rendered.has(childId) || !groupIds.has(childId)) ? `→ ${childId}` : childId,
+          );
+          parts.push(`${nodeLabel(cur)} → [${annotations.join(", ")}]`);
+          cur = null;
         }
       }
-      // If we stopped at a node already rendered or outside group, add it as a reference
-      if (currentId && !rendered.has(currentId) && !PROTECTED_IDS.has(currentId)) {
-        // Outside group — show as outgoing reference
-        parts.push(`(${currentId})`);
-      }
-      return parts.join(" → ");
-    }
 
-    for (const root of roots) {
-      if (!rendered.has(root.id)) {
-        chains.push(walkChain(root.id));
+      // Stopped at already-rendered node — show convergence
+      if (cur && rendered.has(cur)) {
+        parts.push(`[→ ${cur}]`);
+      }
+
+      if (parts.length > 0) {
+        chains.push(parts.join(" → "));
       }
     }
 
@@ -468,6 +535,8 @@ export function formatCompactDagDraft(
   }
 
   // Re-group orphaned work nodes into connected components
+  // Only include nodes that are themselves orphaned — don't follow children into the connected set
+  const orphanIds = new Set(orphanedWork.map((n) => n.id));
   const orphanWorkGroups: DagNodeV3[][] = [];
   const visitedOrphans = new Set<string>();
   for (const orphan of orphanedWork) {
@@ -482,7 +551,8 @@ export function formatCompactDagDraft(
       if (n && !PROTECTED_IDS.has(n.id)) {
         group.push(n);
         for (const childId of n.children ?? []) {
-          if (!PROTECTED_IDS.has(childId)) groupQueue.push(childId);
+          // Only follow children that are also orphaned
+          if (!PROTECTED_IDS.has(childId) && orphanIds.has(childId)) groupQueue.push(childId);
         }
       }
     }

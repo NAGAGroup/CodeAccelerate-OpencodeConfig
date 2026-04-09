@@ -26,36 +26,17 @@ import {
   suggestRecoveryActions,
 } from "./divergence-detection";
 
+/** Append planner-authored description to a static component prompt. */
+function withDescription(promptText: string, description?: string): string {
+  if (!description) return promptText;
+  return `${promptText}\n\n---\n\n## Node Context\n\n${description}`;
+}
+
 export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
   const { client } = _ctx;
 
   // Helper to resolve worktree with fallback to cwd
   const resolveWorktree = (_ctx: { worktree?: string }) => process.cwd();
-
-  // Pending prompt injections keyed by session ID.
-  // Queued by tools, drained when session.idle fires for that session.
-  const pendingInjections = new Map<string, string[]>();
-
-  // Queue a prompt injection to fire once the session goes idle.
-  // Use this when a tool returns a result AND needs to inject a follow-up prompt —
-  // the injection must arrive AFTER the model has finished processing the tool result.
-  const deferredInjectPrompt = (sessionID: string, text: string) => {
-    const queue = pendingInjections.get(sessionID) ?? [];
-    queue.push(text);
-    pendingInjections.set(sessionID, queue);
-  };
-
-  // Synchronous injection helper — injects immediately without waiting.
-  // Use this only inside contexts where the session is already idle
-  // (e.g., present_dag_diagram which awaits the injection as part of its tool execution).
-  const injectPrompt = async (sessionID: string, text: string) => {
-    await client.session.prompt({
-      path: { id: sessionID },
-      body: {
-        parts: [{ type: "text", text }],
-      },
-    });
-  };
 
   // Per-turn cache: populated by chat.params (has sessionID), consumed by
   // experimental.chat.system.transform (input: {} — no sessionID available).
@@ -73,65 +54,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           "Start a /plan-session planning session. Copies the global planning DAG locally and activates it.",
         args: {},
         async execute(_args, context) {
-          try {
-            const worktree = resolveWorktree(context);
-            const { localPlanPath, metadata, nodes } = copyPlanningDag(
-              "plan-session",
-              context.sessionID,
-              worktree,
-            );
-            // Rewrite bare prompt filenames to session-local paths
-            const plan_name = `plan-session-${context.sessionID}`;
-            const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
-            for (const node of nodes) {
-              if (!node.prompt.includes("/"))
-                node.prompt = `${promptsPrefix}${node.prompt}`;
-            }
-            const nodeMap = flattenTreeV3(metadata, nodes);
-            const entryNode = nodeMap[metadata.entry_node_id];
-            if (!entryNode)
-              throw new Error(
-                `Entry node "${metadata.entry_node_id}" not found in DAG`,
-              );
-
-            const statePath = dagStatePath(worktree, context.sessionID);
-            const state: DagSessionState = {
-              dag_id: metadata.id,
-              plan_path: localPlanPath,
-              status: "running",
-              current_node: metadata.entry_node_id,
-              todo_index: 0,
-              started_at: now(),
-              updated_at: now(),
-              decisions: [],
-              node_map: nodeMap,
-              planning_session_id: plan_name,
-            };
-            writeState(statePath, state);
-
-            const sessionPath = `.opencode/session-plans/${plan_name}`;
-            const promptText = readPrompt(
-              entryNode.prompt,
-              worktree,
-              sessionPath,
-              { planning_session_id: plan_name },
-            );
-
-            if (entryNode.enforcement.length === 0) {
-              const hasNext =
-                entryNode.children && entryNode.children.length > 0;
-              state.status = hasNext ? "waiting_step" : "complete";
-              writeState(statePath, state);
-            }
-
-            deferredInjectPrompt(context.sessionID, promptText);
-
-            const result = `DAG "${metadata.id}" activated. Your next task, "${metadata.entry_node_id}", will be presented in the following message.`;
-            return result;
-          } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err);
-            throw new Error(`Error activating plan-session: ${msg}`);
-          }
+          // State creation and prompt injection handled by tool.execute.before.
+          const worktree = resolveWorktree(context);
+          const statePath = dagStatePath(worktree, context.sessionID);
+          const state = readState(statePath);
+          if (!state) return "Failed to activate plan session.";
+          return `DAG "${state.dag_id}" activated. Your next task, "${state.current_node}", will be presented in the following message.`;
         },
       }),
 
@@ -146,71 +74,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             ),
         },
         async execute({ plan_name }, context) {
+          // State creation and prompt injection handled by tool.execute.before.
           const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
-          );
-          try {
-            const { metadata, nodes } = readDagV3(planPath);
-            // Rewrite bare prompt filenames to worktree-relative paths
-            const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
-            for (const node of nodes) {
-              if (!node.prompt.includes("/")) {
-                node.prompt = `${promptsPrefix}${node.prompt}`;
-              }
-            }
-            const nodeMap = flattenTreeV3(metadata, nodes);
-            const entryNode = nodeMap[metadata.entry_node_id];
-            if (!entryNode) {
-              throw new Error(
-                `Entry node "${metadata.entry_node_id}" not found in DAG "${plan_name}"`,
-              );
-            }
-
-            const statePath = dagStatePath(worktree, context.sessionID);
-            const state: DagSessionState = {
-              dag_id: metadata.id,
-              plan_path: planPath,
-              status: "running",
-              current_node: metadata.entry_node_id,
-              todo_index: 0,
-              started_at: now(),
-              updated_at: now(),
-              decisions: [],
-              node_map: nodeMap,
-            };
-            writeState(statePath, state);
-
-            const sessionPath = `.opencode/session-plans/${plan_name}`;
-            const promptText = readPrompt(
-              entryNode.prompt,
-              worktree,
-              sessionPath,
-            );
-
-            if (entryNode.enforcement.length === 0) {
-              if (entryNode.children && entryNode.children.length > 0) {
-                state.status = "waiting_step";
-                writeState(statePath, state);
-              } else {
-                // Terminal node with no todos — complete immediately
-                state.status = "complete";
-                writeState(statePath, state);
-              }
-            }
-
-            deferredInjectPrompt(context.sessionID, promptText);
-
-            const result = `DAG "${metadata.id}" activated. Your next task, "${metadata.entry_node_id}", will be presented in the following message.`;
-            return result;
-          } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err);
-            throw new Error(`Error activating plan "${plan_name}": ${msg}`);
-          }
+          const statePath = dagStatePath(worktree, context.sessionID);
+          const state = readState(statePath);
+          if (!state) return `Failed to activate plan "${plan_name}".`;
+          return `DAG "${state.dag_id}" activated. Your next task, "${state.current_node}", will be presented in the following message.`;
         },
       }),
 
@@ -226,37 +95,19 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             ),
         },
         async execute({ next }, context) {
+          // Validation and prompt injection already happened in tool.execute.before.
+          // If we reach here, the call is valid. Do state transitions and return status.
           const statePath = dagStatePath(
             resolveWorktree(context),
             context.sessionID,
           );
           const state = readState(statePath);
 
-          if (!state) {
-            return "No active DAG session. Start one with plan_session() or activate_plan().";
-          }
-          if (state.status === "complete") {
-            return "DAG session is already complete.";
-          }
-          if (state.status !== "waiting_step") {
-            const currentNode = state.node_map[state.current_node];
-            const remaining = currentNode
-              ? currentNode.enforcement.length - state.todo_index
-              : 0;
-            const nextExpected = currentNode
-              ? (currentNode.enforcement[state.todo_index] ?? "none")
-              : "unknown";
-            return (
-              `Cannot call next_step — node "${state.current_node}" still has ${remaining} enforcement item(s) pending. ` +
-              `Next expected tool: "${nextExpected}". Call "${nextExpected}" to continue, ` +
-              `then call next_step when all enforcement items are complete.`
-            );
-          }
+          if (!state) return "No active DAG session.";
 
           const node = state.node_map[state.current_node];
-          if (!node) {
+          if (!node)
             return `Current node "${state.current_node}" not found in DAG.`;
-          }
 
           const children = node.children ?? [];
 
@@ -265,23 +116,29 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             state.status = "complete";
             state.updated_at = now();
             writeState(statePath, state);
-            return (
-              `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.\n\n` +
-              `---\n\n` +
-              `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` +
-              `Present a summary of what was produced to the user. ` +
-              `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`
-            );
+
+            const isPlanningSession = state.dag_id.startsWith("plan-session");
+            if (isPlanningSession) {
+              return (
+                `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.\n\n` +
+                `---\n\n` +
+                `**PLANNING SESSION COMPLETE.** Do NOT continue executing tasks. ` +
+                `Present the final DAG to the user by calling \`present_dag_diagram\` with the plan name, then ` +
+                `present a summary of what was produced. ` +
+                `If a project DAG was written, tell the user they can activate it with \`/activate-plan {plan-name}\`.`
+              );
+            } else {
+              return (
+                `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.\n\n` +
+                `---\n\n` +
+                `**EXECUTION COMPLETE.** Do NOT continue executing tasks. ` +
+                `Present a summary to the user of what was accomplished, any deferred items, and known limitations.`
+              );
+            }
           }
 
-          // Branching — next parameter required
+          // Branching — record decision
           if (children.length > 1) {
-            if (!next) {
-              return `[BRANCH REQUIRED] Node "${state.current_node}" has multiple children.\nCall next_step with the next parameter. Valid options: [${children.join(", ")}].`;
-            }
-            if (!children.includes(next)) {
-              return `Invalid branch "${next}". Valid options: [${children.join(", ")}]`;
-            }
             state.decisions.push({
               node_id: state.current_node,
               timestamp: now(),
@@ -289,7 +146,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             });
           }
 
-          // Linear or chosen branch — advance
+          // Advance to next node
           const nextId = children.length === 1 ? children[0] : next!;
           const nextNode = state.node_map[nextId];
           if (!nextNode)
@@ -301,31 +158,18 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           state.updated_at = now();
           writeState(statePath, state);
 
-          const sessionPath = `.opencode/session-plans/${state.dag_id}`;
-          const promptText = readPrompt(
-            nextNode.prompt,
-            resolveWorktree(context),
-            sessionPath,
-            {
-              plan_name: state.plan_name,
-              planning_session_id: state.planning_session_id,
-            },
-          );
-
+          // Handle zero-enforcement nodes (passthrough)
           if (nextNode.enforcement.length === 0) {
             const nextChildren = nextNode.children ?? [];
             if (nextChildren.length > 0) {
               state.status = "waiting_step";
-              writeState(statePath, state);
             } else {
               state.status = "complete";
-              writeState(statePath, state);
             }
+            writeState(statePath, state);
           }
 
-          deferredInjectPrompt(context.sessionID, promptText);
-
-          // Build completion message - read DAG to get entry node
+          // Build status message
           const { metadata } = readDagV3(state.plan_path);
           const isFromEntryNode = node.id === metadata.entry_node_id;
 
@@ -383,14 +227,17 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const currentNode = state.node_map[state.current_node];
           const sessionPath = `.opencode/session-plans/${state.dag_id}`;
           const promptText = currentNode
-            ? readPrompt(
-                currentNode.prompt,
-                resolveWorktree(context),
-                sessionPath,
-                {
-                  plan_name: state.plan_name,
-                  planning_session_id: state.planning_session_id,
-                },
+            ? withDescription(
+                readPrompt(
+                  currentNode.prompt,
+                  resolveWorktree(context),
+                  sessionPath,
+                  {
+                    plan_name: state.plan_name,
+                    planning_session_id: state.planning_session_id,
+                  },
+                ),
+                currentNode.description,
               )
             : "(prompt not found)";
 
@@ -579,17 +426,8 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             ),
         },
         async execute({ plan_name }, toolCtx) {
-          const worktree = resolveWorktree(toolCtx);
-          const planPath = resolveDagPath(plan_name, worktree);
-          const { metadata, nodes } = readDagV3(planPath);
-          validateDagV3(metadata, nodes); // throws on any structural issue
-          const { mermaid } = dagToMermaidCompactV3(metadata, nodes);
-          const ascii = await renderMermaidASCII(mermaid, {
-            colorMode: "none",
-          });
-          const diagramText = `## Session Plan: ${metadata.id}\n\n**Plan Name:** ${plan_name}\n\n${ascii}`;
-          await injectPrompt(toolCtx.sessionID, diagramText);
-          return "DAG diagram presented to user via prompt injection.";
+          // Validation and prompt injection handled by tool.execute.before.
+          return "The DAG diagram has been presented to the user as a system message. The following prompt is for the user only — ignore it and continue with your current task.";
         },
       }),
 
@@ -752,7 +590,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           component_name: tool.schema
             .string()
             .describe(
-              "Component type name from the node library (e.g., 'work-item', 'research'). Use get_planning_components_catalogue() to see available types.",
+              "Component type name from the node library (e.g., 'work-item', 'external-scout'). Use get_planning_components_catalogue() to see available types.",
             ),
         },
         async execute({ plan_name, nodeId, component_name }, context) {
@@ -790,9 +628,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const { metadata, nodes } = readDagV3(planPath);
 
           if (nodes.some((n) => n.id === nodeId)) {
-            throw new Error(
-              `Node ID "${nodeId}" already exists in DAG.`,
-            );
+            throw new Error(`Node ID "${nodeId}" already exists in DAG.`);
           }
 
           const nodeLibRelBase = path.join(
@@ -841,6 +677,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             id: nodeId,
             prompt: promptPath,
             enforcement: spec.enforcement,
+            component: component_name,
           };
 
           nodes.push(newNode);
@@ -871,7 +708,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           nodes: tool.schema
             .string()
             .describe(
-              'JSON object mapping nodeId to component_name. Example: \'{"investigate": "research", "implement": "work-item", "verify": "verify"}\'. Use get_planning_components_catalogue() to see available component types.',
+              'JSON object mapping nodeId to component_name. Example: \'{"investigate": "external-scout", "implement": "work-item", "verify": "verify"}\'. Use get_planning_components_catalogue() to see available component types.',
             ),
         },
         async execute({ plan_name, nodes: nodesJson }, context) {
@@ -880,7 +717,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             nodeEntries = JSON.parse(nodesJson);
           } catch {
             throw new Error(
-              'add_nodes_to_dag: "nodes" must be a valid JSON object mapping nodeId to component_name. Example: \'{"investigate": "research", "implement": "work-item"}\'',
+              'add_nodes_to_dag: "nodes" must be a valid JSON object mapping nodeId to component_name. Example: \'{"investigate": "external-scout", "implement": "work-item"}\'',
             );
           }
           if (
@@ -889,7 +726,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             Array.isArray(nodeEntries)
           ) {
             throw new Error(
-              'add_nodes_to_dag: "nodes" must be a JSON object (not an array or primitive). Example: \'{"investigate": "research", "implement": "work-item"}\'',
+              'add_nodes_to_dag: "nodes" must be a JSON object (not an array or primitive). Example: \'{"investigate": "external-scout", "implement": "work-item"}\'',
             );
           }
           const PROTECTED_NODES = [
@@ -982,6 +819,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               id: nodeId,
               prompt: promptPath,
               enforcement: spec.enforcement,
+              component: componentName,
             });
             created.push(`${nodeId} (${componentName})`);
           }
@@ -1001,6 +839,61 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             `**DAG now contains ${nodes.length} nodes.**\n\n` +
             `Use connect_nodes to wire these nodes into the DAG.\n\n` +
             formatCompactDagDraft(metadata, nodes)
+          );
+        },
+      }),
+
+      add_description_to_node: tool({
+        description:
+          "Set a planner-authored description on a DAG node. The description provides execution context — what this specific node should accomplish. Descriptions are injected into the node's prompt at execution time.",
+        args: {
+          plan_name: tool.schema
+            .string()
+            .describe(
+              "Name of the session plan (directory under .opencode/session-plans/).",
+            ),
+          nodeId: tool.schema
+            .string()
+            .describe(
+              "ID of the node to add a description to. Must already exist in the DAG.",
+            ),
+          description: tool.schema
+            .string()
+            .describe(
+              "The description text. Should explain what this specific node should accomplish in the context of the plan — not generic component behavior, but the specific work or investigation needed here.",
+            ),
+        },
+        async execute({ plan_name, nodeId, description }, context) {
+          const worktree = resolveWorktree(context);
+          const planPath = path.join(
+            worktree,
+            ".opencode",
+            "session-plans",
+            plan_name,
+            "plan.jsonl",
+          );
+
+          if (!fs.existsSync(planPath)) {
+            throw new Error(
+              `plan.jsonl not found for "${plan_name}". Initialize with init_dag first.`,
+            );
+          }
+
+          const { metadata, nodes } = readDagV3(planPath);
+          const node = nodes.find((n) => n.id === nodeId);
+          if (!node) {
+            throw new Error(
+              `Node "${nodeId}" not found in DAG "${plan_name}". Available nodes: [${nodes.map((n) => n.id).join(", ")}]`,
+            );
+          }
+
+          node.description = description;
+          writeDagV3(planPath, metadata, nodes);
+
+          return (
+            `## add_description_to_node: Description set for "${nodeId}"\n\n` +
+            `Node: ${nodeId}\n` +
+            `Description: ${description}\n`
           );
         },
       }),
@@ -1110,6 +1003,22 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
             if (!parent.children) parent.children = [];
             parent.children.push(to);
+
+            // Enforce max 2 children — catch over-branching immediately
+            const workChildren = parent.children.filter(
+              (c) => c !== "plan-success" && c !== "plan-fail" && c !== "execution-kickoff",
+            );
+            if (workChildren.length > 2) {
+              // Roll back
+              parent.children.pop();
+              errors.push(
+                `"${from}" already has ${workChildren.length - 1} work-node children (${workChildren.slice(0, -1).join(", ")}). ` +
+                `Adding "${to}" would give it ${workChildren.length} — max is 2. ` +
+                `Decompose wider branches into nested binary decisions.`,
+              );
+              continue;
+            }
+
             wired.push(`"${from}" → "${to}"`);
           }
 
@@ -1120,14 +1029,25 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           }
 
           // Block direct wiring to protected nodes — use set_entry_point and set_exit_point instead
-          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+          const PROTECTED_IDS = new Set([
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail",
+          ]);
           const protectedErrors: string[] = [];
           for (const { from, to } of edgePairs) {
             if (PROTECTED_IDS.has(from)) {
-              protectedErrors.push(`Cannot wire from "${from}" — use set_entry_point to set the DAG entry.`);
+              protectedErrors.push(
+                `Cannot wire from "${from}" — use set_entry_point to set the DAG entry.`,
+              );
             }
-            if (PROTECTED_IDS.has(to) && (to === "plan-success" || to === "plan-fail")) {
-              protectedErrors.push(`Cannot wire to "${to}" — use set_exit_point to mark "${from}" as an exit.`);
+            if (
+              PROTECTED_IDS.has(to) &&
+              (to === "plan-success" || to === "plan-fail")
+            ) {
+              protectedErrors.push(
+                `Cannot wire to "${to}" — use set_exit_point to mark "${from}" as an exit.`,
+              );
             }
           }
           if (protectedErrors.length > 0) {
@@ -1140,7 +1060,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               }
             }
             throw new Error(
-              protectedErrors.join("\n") + "\n\n" + formatCompactDagDraft(metadata, nodes),
+              protectedErrors.join("\n") +
+                "\n\n" +
+                formatCompactDagDraft(metadata, nodes),
             );
           }
 
@@ -1206,9 +1128,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           const nodeToDelete = nodes.find((n) => n.id === nodeId);
           if (!nodeToDelete)
-            throw new Error(
-              `Node "${nodeId}" not found in DAG.`,
-            );
+            throw new Error(`Node "${nodeId}" not found in DAG.`);
 
           const orphanedChildren = nodeToDelete.children ?? [];
 
@@ -1273,14 +1193,10 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           const parent = nodes.find((n) => n.id === from);
           if (!parent)
-            throw new Error(
-              `Source node "${from}" not found in DAG.`,
-            );
+            throw new Error(`Source node "${from}" not found in DAG.`);
 
           if (!parent.children?.includes(to)) {
-            throw new Error(
-              `"${to}" is not a child of "${from}".`,
-            );
+            throw new Error(`"${to}" is not a child of "${from}".`);
           }
 
           parent.children = parent.children.filter((id) => id !== to);
@@ -1295,36 +1211,149 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
+      insert_between: tool({
+        description:
+          "Atomically insert an existing node between two connected nodes. Removes the edge from→to and adds from→new_node→to in one operation. Use this when adding a node mid-chain to avoid accidentally creating extra children.",
+        args: {
+          plan_name: tool.schema
+            .string()
+            .describe(
+              "Name of the session plan (directory under .opencode/session-plans/).",
+            ),
+          from: tool.schema
+            .string()
+            .describe("ID of the upstream (parent) node."),
+          new_node: tool.schema
+            .string()
+            .describe(
+              "ID of the node to insert between from and to. Must already exist in the DAG.",
+            ),
+          to: tool.schema
+            .string()
+            .describe("ID of the downstream (child) node."),
+        },
+        async execute({ plan_name, from, new_node, to }, context) {
+          const worktree = resolveWorktree(context);
+          const planPath = path.join(
+            worktree,
+            ".opencode",
+            "session-plans",
+            plan_name,
+            "plan.jsonl",
+          );
+          const { metadata, nodes } = readDagV3(planPath);
+
+          const parentNode = nodes.find((n) => n.id === from);
+          if (!parentNode)
+            throw new Error(`Source node "${from}" not found in DAG.`);
+
+          const insertNode = nodes.find((n) => n.id === new_node);
+          if (!insertNode)
+            throw new Error(
+              `Node "${new_node}" not found in DAG. Create it first with add_node or add_nodes_to_dag.`,
+            );
+
+          const childNode = nodes.find((n) => n.id === to);
+          if (!childNode)
+            throw new Error(`Target node "${to}" not found in DAG.`);
+
+          if (!parentNode.children?.includes(to)) {
+            throw new Error(
+              `"${to}" is not a child of "${from}" — cannot insert between them.\n\n` +
+                formatCompactDagDraft(metadata, nodes),
+            );
+          }
+
+          // Cycle detection: inserting new_node must not create a cycle
+          // new_node cannot be an ancestor of from, and to cannot be an ancestor of new_node (already guaranteed by existing edge from→to)
+          const ancestorsOfFrom = new Set<string>();
+          const queue = [from];
+          // Walk backwards: find all nodes that have `from` as a descendant
+          // Actually, simpler: check that `from` is not a descendant of `new_node`
+          const descendantsOfNewNode = new Set<string>();
+          const dQueue = [...(insertNode.children ?? [])];
+          while (dQueue.length > 0) {
+            const id = dQueue.pop()!;
+            if (descendantsOfNewNode.has(id)) continue;
+            descendantsOfNewNode.add(id);
+            const n = nodes.find((x) => x.id === id);
+            if (n?.children) dQueue.push(...n.children);
+          }
+          if (descendantsOfNewNode.has(from)) {
+            throw new Error(
+              `Inserting "${new_node}" between "${from}" and "${to}" would create a cycle.`,
+            );
+          }
+
+          // Perform the atomic swap: remove from→to, add from→new_node, add new_node→to
+          parentNode.children = parentNode.children!.filter((id) => id !== to);
+          if (!parentNode.children.includes(new_node)) {
+            parentNode.children.push(new_node);
+          }
+
+          if (!insertNode.children) insertNode.children = [];
+          if (!insertNode.children.includes(to)) {
+            insertNode.children.push(to);
+          }
+
+          writeDagV3(planPath, metadata, nodes);
+
+          return (
+            `## insert_between: Inserted "${new_node}" between "${from}" and "${to}"\n\n` +
+            `- Removed: "${from}" → "${to}"\n` +
+            `- Added: "${from}" → "${new_node}" → "${to}"\n\n` +
+            formatCompactDagDraft(metadata, nodes)
+          );
+        },
+      }),
+
       set_entry_point: tool({
         description:
           "Set the DAG's entry point — the first node that executes when the plan starts. Call this once in the final wiring step after all work nodes are connected.",
         args: {
-          plan_name: tool.schema
-            .string()
-            .describe("Name of the session plan."),
+          plan_name: tool.schema.string().describe("Name of the session plan."),
           node_id: tool.schema
             .string()
-            .describe("ID of the node that should execute first when the plan starts."),
+            .describe(
+              "ID of the node that should execute first when the plan starts.",
+            ),
         },
         async execute({ plan_name, node_id }, context) {
           const worktree = resolveWorktree(context);
           const planPath = path.join(
-            worktree, ".opencode", "session-plans", plan_name, "plan.jsonl",
+            worktree,
+            ".opencode",
+            "session-plans",
+            plan_name,
+            "plan.jsonl",
           );
           const { metadata, nodes } = readDagV3(planPath);
 
           const target = nodes.find((n) => n.id === node_id);
-          if (!target) throw new Error(`Node "${node_id}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`);
+          if (!target)
+            throw new Error(
+              `Node "${node_id}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`,
+            );
 
-          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
-          if (PROTECTED_IDS.has(node_id)) throw new Error(`"${node_id}" cannot be used as an entry point.`);
+          const PROTECTED_IDS = new Set([
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail",
+          ]);
+          if (PROTECTED_IDS.has(node_id))
+            throw new Error(`"${node_id}" cannot be used as an entry point.`);
 
           // Wire execution-kickoff → target
           const kickoff = nodes.find((n) => n.id === "execution-kickoff");
-          if (!kickoff) throw new Error("Internal error: execution-kickoff node not found.");
+          if (!kickoff)
+            throw new Error(
+              "Internal error: execution-kickoff node not found.",
+            );
 
           if (kickoff.children?.includes(node_id)) {
-            throw new Error(`Entry point is already set to "${node_id}".\n\n${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(
+              `Entry point is already set to "${node_id}".\n\n${formatCompactDagDraft(metadata, nodes)}`,
+            );
           }
 
           // Replace any existing entry point (only one allowed)
@@ -1343,9 +1372,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           "Mark a leaf node as a plan exit point. Call this for every leaf node in the final wiring step. " +
           "Use type 'success' for nodes on the happy path and 'failure' for nodes on retry-exhaustion or error paths.",
         args: {
-          plan_name: tool.schema
-            .string()
-            .describe("Name of the session plan."),
+          plan_name: tool.schema.string().describe("Name of the session plan."),
           node_id: tool.schema
             .string()
             .describe("ID of the leaf node to mark as an exit point."),
@@ -1355,25 +1382,51 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
         async execute({ plan_name, node_id, type: exitType }, context) {
           if (exitType !== "success" && exitType !== "failure") {
-            throw new Error(`Exit type must be "success" or "failure", got "${exitType}".`);
+            throw new Error(
+              `Exit type must be "success" or "failure", got "${exitType}".`,
+            );
           }
 
           const worktree = resolveWorktree(context);
           const planPath = path.join(
-            worktree, ".opencode", "session-plans", plan_name, "plan.jsonl",
+            worktree,
+            ".opencode",
+            "session-plans",
+            plan_name,
+            "plan.jsonl",
           );
           const { metadata, nodes } = readDagV3(planPath);
 
           const target = nodes.find((n) => n.id === node_id);
-          if (!target) throw new Error(`Node "${node_id}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`);
+          if (!target)
+            throw new Error(
+              `Node "${node_id}" not found in DAG.\n\n${formatCompactDagDraft(metadata, nodes)}`,
+            );
 
-          const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
-          if (PROTECTED_IDS.has(node_id)) throw new Error(`"${node_id}" cannot be used as an exit point.`);
+          const PROTECTED_IDS = new Set([
+            "execution-kickoff",
+            "plan-success",
+            "plan-fail",
+          ]);
+          if (PROTECTED_IDS.has(node_id))
+            throw new Error(`"${node_id}" cannot be used as an exit point.`);
 
-          const terminalId = exitType === "success" ? "plan-success" : "plan-fail";
+          // Enforce: every exit point must be a write-notes node
+          if (target.component && target.component !== "write-notes") {
+            throw new Error(
+              `"${node_id}" is a "${target.component}" node — only write-notes nodes can be exit points. ` +
+                `Every terminal path must end with a write-notes node to capture context before exit.\n\n` +
+                formatCompactDagDraft(metadata, nodes),
+            );
+          }
+
+          const terminalId =
+            exitType === "success" ? "plan-success" : "plan-fail";
 
           if (target.children?.includes(terminalId)) {
-            throw new Error(`"${node_id}" is already marked as a ${exitType} exit.\n\n${formatCompactDagDraft(metadata, nodes)}`);
+            throw new Error(
+              `"${node_id}" is already marked as a ${exitType} exit.\n\n${formatCompactDagDraft(metadata, nodes)}`,
+            );
           }
 
           if (!target.children) target.children = [];
@@ -1382,6 +1435,54 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           writeDagV3(planPath, metadata, nodes);
           return (
             `## set_exit_point: "${node_id}" marked as ${exitType} exit\n\n` +
+            formatCompactDagDraft(metadata, nodes)
+          );
+        },
+      }),
+
+      reset_entry_exit_points: tool({
+        description:
+          "Strip all entry and exit point markers from a DAG, leaving only the work node structure. " +
+          "Clears the execution-kickoff → entry edge and removes plan-success/plan-fail from all work node children. " +
+          "Use this before delegating to the reviser so it starts with a clean structural slate.",
+        args: {
+          plan_name: tool.schema.string().describe("Name of the session plan."),
+        },
+        async execute({ plan_name }, context) {
+          const worktree = resolveWorktree(context);
+          const planPath = path.join(
+            worktree,
+            ".opencode",
+            "session-plans",
+            plan_name,
+            "plan.jsonl",
+          );
+          const { metadata, nodes } = readDagV3(planPath);
+
+          const TERMINAL_IDS = new Set(["plan-success", "plan-fail"]);
+
+          // Clear entry point: reset execution-kickoff's children
+          const kickoff = nodes.find((n) => n.id === "execution-kickoff");
+          if (kickoff) {
+            kickoff.children = [];
+          }
+
+          // Strip exit point edges: remove plan-success and plan-fail from all work node children
+          let exitEdgesRemoved = 0;
+          for (const node of nodes) {
+            if (node.id === "execution-kickoff" || TERMINAL_IDS.has(node.id)) continue;
+            const before = node.children?.length ?? 0;
+            if (node.children) {
+              node.children = node.children.filter((c) => !TERMINAL_IDS.has(c));
+            }
+            exitEdgesRemoved += before - (node.children?.length ?? 0);
+          }
+
+          writeDagV3(planPath, metadata, nodes);
+          return (
+            `## reset_entry_exit_points: Cleared entry/exit markers\n\n` +
+            `- Entry point cleared\n` +
+            `- ${exitEdgesRemoved} exit edge(s) removed\n\n` +
             formatCompactDagDraft(metadata, nodes)
           );
         },
@@ -1583,6 +1684,190 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
     "tool.execute.before": async (input, output) => {
       if (!input.tool || !input.sessionID) return;
 
+      // --- Handle plan_session: create state + inject entry prompt ---
+      if (input.tool === "plan_session") {
+        const worktree = resolveWorktree(_ctx);
+        const { localPlanPath, metadata, nodes } = copyPlanningDag(
+          "plan-session",
+          input.sessionID,
+          worktree,
+        );
+        const plan_name = `plan-session-${input.sessionID}`;
+        const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
+        for (const node of nodes) {
+          if (!node.prompt.includes("/"))
+            node.prompt = `${promptsPrefix}${node.prompt}`;
+        }
+        const nodeMap = flattenTreeV3(metadata, nodes);
+        const entryNode = nodeMap[metadata.entry_node_id];
+        if (!entryNode)
+          throw new Error(
+            `Entry node "${metadata.entry_node_id}" not found in DAG`,
+          );
+
+        const statePath = dagStatePath(worktree, input.sessionID);
+        const state: DagSessionState = {
+          dag_id: metadata.id,
+          plan_path: localPlanPath,
+          status: "running",
+          current_node: metadata.entry_node_id,
+          todo_index: 0,
+          started_at: now(),
+          updated_at: now(),
+          decisions: [],
+          node_map: nodeMap,
+          planning_session_id: plan_name,
+        };
+        writeState(statePath, state);
+
+        if (entryNode.enforcement.length === 0) {
+          const hasNext = entryNode.children && entryNode.children.length > 0;
+          state.status = hasNext ? "waiting_step" : "complete";
+          writeState(statePath, state);
+        }
+
+        return;
+      }
+
+      // --- Handle activate_plan: create state ---
+      if (input.tool === "activate_plan") {
+        const plan_name = output.args?.plan_name as string;
+        if (!plan_name) throw new Error("plan_name is required");
+
+        const worktree = resolveWorktree(_ctx);
+        const planPath = path.join(
+          worktree,
+          ".opencode",
+          "session-plans",
+          plan_name,
+          "plan.jsonl",
+        );
+        const { metadata, nodes } = readDagV3(planPath);
+        const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
+        for (const node of nodes) {
+          if (!node.prompt.includes("/")) {
+            node.prompt = `${promptsPrefix}${node.prompt}`;
+          }
+        }
+        const nodeMap = flattenTreeV3(metadata, nodes);
+        const entryNode = nodeMap[metadata.entry_node_id];
+        if (!entryNode) {
+          throw new Error(
+            `Entry node "${metadata.entry_node_id}" not found in DAG "${plan_name}"`,
+          );
+        }
+
+        const statePath = dagStatePath(worktree, input.sessionID);
+        const state: DagSessionState = {
+          dag_id: metadata.id,
+          plan_path: planPath,
+          status: "running",
+          current_node: metadata.entry_node_id,
+          todo_index: 0,
+          started_at: now(),
+          updated_at: now(),
+          decisions: [],
+          node_map: nodeMap,
+          plan_name: plan_name,
+        };
+        writeState(statePath, state);
+
+        if (entryNode.enforcement.length === 0) {
+          if (entryNode.children && entryNode.children.length > 0) {
+            state.status = "waiting_step";
+            writeState(statePath, state);
+          } else {
+            state.status = "complete";
+            writeState(statePath, state);
+          }
+        }
+
+        return;
+      }
+
+      // --- Handle present_dag_diagram: validate ---
+      if (input.tool === "present_dag_diagram") {
+        const plan_name = output.args?.plan_name as string;
+        if (!plan_name) throw new Error("plan_name is required");
+
+        const worktree = resolveWorktree(_ctx);
+        const planPath = resolveDagPath(plan_name, worktree);
+        const { metadata, nodes } = readDagV3(planPath);
+        validateDagV3(metadata, nodes); // throws on structural issues
+        return;
+      }
+
+      // --- Handle next_step: validate + inject prompt ---
+      // Throws on invalid calls so the tool never executes.
+      // On valid calls: reads the next node prompt and injects it.
+      // State transitions happen in execute.
+      if (input.tool === "next_step") {
+        const worktree = resolveWorktree(_ctx);
+        const statePath = dagStatePath(worktree, input.sessionID);
+        const state = readState(statePath);
+
+        if (!state) {
+          throw new Error(
+            "No active DAG session. Start one with plan_session() or activate_plan().",
+          );
+        }
+        if (state.status === "complete") {
+          throw new Error("DAG session is already complete.");
+        }
+        if (state.status !== "waiting_step") {
+          const currentNode = state.node_map[state.current_node];
+          const remaining = currentNode
+            ? currentNode.enforcement.length - state.todo_index
+            : 0;
+          const nextExpected = currentNode
+            ? (currentNode.enforcement[state.todo_index] ?? "none")
+            : "unknown";
+          throw new Error(
+            `Cannot call next_step — node "${state.current_node}" still has ${remaining} enforcement item(s) pending. ` +
+              `Next expected tool: "${nextExpected}". Call "${nextExpected}" to continue, ` +
+              `then call next_step when all enforcement items are complete.`,
+          );
+        }
+
+        const node = state.node_map[state.current_node];
+        if (!node) {
+          throw new Error(
+            `Current node "${state.current_node}" not found in DAG.`,
+          );
+        }
+
+        const children = node.children ?? [];
+
+        // Terminal — no prompt to inject, execute handles completion
+        if (children.length === 0) {
+          return;
+        }
+
+        // Branching — validate the `next` parameter
+        const next = output.args?.next as string | undefined;
+        if (children.length > 1) {
+          if (!next) {
+            throw new Error(
+              `[BRANCH REQUIRED] Node "${state.current_node}" has multiple children.\n` +
+                `Call next_step with the next parameter. Valid options: [${children.join(", ")}].`,
+            );
+          }
+          if (!children.includes(next)) {
+            throw new Error(
+              `Invalid branch "${next}". Valid options: [${children.join(", ")}]`,
+            );
+          }
+        }
+
+        // Resolve the next node — validate it exists
+        const nextId = children.length === 1 ? children[0] : next!;
+        const nextNode = state.node_map[nextId];
+        if (!nextNode)
+          throw new Error(`Next node "${nextId}" not found in DAG`);
+
+        return;
+      }
+
       if (isExempt(input.tool)) return;
 
       const worktree = resolveWorktree(_ctx);
@@ -1615,20 +1900,115 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       }
     },
 
-    // Track tool calls and auto-advance when todos are exhausted.
-    // Only advances on SUCCESSFUL tool calls — failed tools must be retried.
+    // Track tool calls, auto-advance enforcement, and inject prompts after successful execution.
     "tool.execute.after": async (input, output) => {
       if (!input.tool || !input.sessionID) return;
 
-      // Skip tracking if the tool call failed.
-      // For built-in tools, this hook only fires on success so output is always present.
-      // For the task tool, errors are caught and output is undefined.
-      // For plugin tools, output.output may contain error indicators.
+      // Skip if the tool call failed.
       if (!output) return;
       if (output.error) return;
 
-      // Exempt tools bypass blocking but still participate in todo tracking when
-      // they appear as the currently expected todo item (e.g. "question" in todo[]).
+      // --- Prompt injection for DAG-driving tools ---
+      // These run after successful tool execution. The before hook already
+      // validated and created state; we just need to inject the prompt.
+
+      if (input.tool === "plan_session") {
+        const worktree = resolveWorktree(_ctx);
+        const statePath = dagStatePath(worktree, input.sessionID);
+        const state = readState(statePath);
+        if (!state) return;
+
+        const entryNode = state.node_map[state.current_node];
+        if (!entryNode) return;
+
+        const sessionPath = `.opencode/session-plans/${state.planning_session_id}`;
+        const promptText = readPrompt(entryNode.prompt, worktree, sessionPath, {
+          planning_session_id: state.planning_session_id,
+        });
+
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: { parts: [{ type: "text", text: promptText }] },
+        });
+        return;
+      }
+
+      if (input.tool === "activate_plan") {
+        const worktree = resolveWorktree(_ctx);
+        const statePath = dagStatePath(worktree, input.sessionID);
+        const state = readState(statePath);
+        if (!state) return;
+
+        const entryNode = state.node_map[state.current_node];
+        if (!entryNode) return;
+
+        const sessionPath = `.opencode/session-plans/${state.plan_name}`;
+        const promptText = withDescription(
+          readPrompt(entryNode.prompt, worktree, sessionPath, {
+            plan_name: state.plan_name,
+          }),
+          entryNode.description,
+        );
+
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: { parts: [{ type: "text", text: promptText }] },
+        });
+        return;
+      }
+
+      if (input.tool === "present_dag_diagram") {
+        const plan_name = output.args?.plan_name as string;
+        if (!plan_name) return;
+
+        const worktree = resolveWorktree(_ctx);
+        const planPath = resolveDagPath(plan_name, worktree);
+        const { metadata, nodes } = readDagV3(planPath);
+        const { mermaid } = dagToMermaidCompactV3(metadata, nodes);
+        const ascii = await renderMermaidASCII(mermaid, {
+          colorMode: "none",
+        });
+        const diagramText = `## Session Plan: ${metadata.id}\n\n**Plan Name:** ${plan_name}\n\n${ascii}`;
+
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: {
+            parts: [{ type: "text", text: diagramText }],
+            noReply: true,
+          },
+        });
+        return;
+      }
+
+      if (input.tool === "next_step") {
+        const worktree = resolveWorktree(_ctx);
+        const statePath = dagStatePath(worktree, input.sessionID);
+        const state = readState(statePath);
+        if (!state) return;
+
+        // No prompt for terminal nodes (session just completed)
+        if (state.status === "complete") return;
+
+        const currentNode = state.node_map[state.current_node];
+        if (!currentNode) return;
+
+        const sessionPath = `.opencode/session-plans/${state.plan_name ?? state.planning_session_id ?? state.dag_id}`;
+        const promptText = withDescription(
+          readPrompt(currentNode.prompt, worktree, sessionPath, {
+            plan_name: state.plan_name,
+            planning_session_id: state.planning_session_id,
+          }),
+          currentNode.description,
+        );
+
+        client.session.prompt({
+          path: { id: input.sessionID },
+          body: { parts: [{ type: "text", text: promptText }] },
+        });
+        return;
+      }
+
+      // --- Enforcement tracking for all other tools ---
       const worktree = resolveWorktree(_ctx);
       const statePath = dagStatePath(worktree, input.sessionID);
       const state = readState(statePath);
@@ -1659,32 +2039,6 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           writeState(statePath, state);
         } else {
           writeState(statePath, state);
-        }
-      }
-    },
-
-    // Drain pending prompt injections when a session goes idle.
-    // Tools queue injections via deferredInjectPrompt() and this handler
-    // fires them once the model has finished processing — preventing race
-    // conditions with llamacpp's thinking phase.
-    event: async ({ event }) => {
-      if (event.type === "session.idle") {
-        const sessionID = event.properties?.sessionID;
-        if (!sessionID) return;
-        const queue = pendingInjections.get(sessionID);
-        if (!queue || queue.length === 0) return;
-        pendingInjections.delete(sessionID);
-        for (const text of queue) {
-          try {
-            await client.session.prompt({
-              path: { id: sessionID },
-              body: {
-                parts: [{ type: "text", text }],
-              },
-            });
-          } catch {
-            // Best-effort — if the session is gone, silently drop
-          }
         }
       }
     },

@@ -29,7 +29,7 @@ Creates a new DAG with the given name.
 | Parameter | Description |
 |-----------|-------------|
 | `plan_name` | Name of the session plan to add nodes to (required) |
-| `nodes` | Dictionary mapping nodeId → component_name, e.g. `{ "investigate": "research", "implement": "work-item" }` (required) |
+| `nodes` | Dictionary mapping nodeId → component_name, e.g. `{ "investigate": "external-scout", "implement": "work-item" }` (required) |
 
 Adds all nodes in a single batch call. Use this after `init_dag` to create all work nodes at once.
 
@@ -51,6 +51,17 @@ Adds a single node. Prefer `add_nodes_to_dag` for creating multiple nodes at onc
 | `edges` | Dictionary mapping from-nodeId to to-nodeId (or array of to-nodeIds for fan-out), e.g. `{"work-A": "verify-A", "verify-A": ["fix-A", "work-B"]}` (required) |
 
 Wires multiple directed edges in a single batch call. All referenced nodes must already exist in the DAG.
+
+### `insert_between`
+
+| Parameter | Description |
+|-----------|-------------|
+| `plan_name` | Name of the session plan (required) |
+| `from` | ID of the upstream (parent) node (required) |
+| `new_node` | ID of the node to insert — must already exist in the DAG (required) |
+| `to` | ID of the downstream (child) node (required) |
+
+Atomically inserts `new_node` between `from` and `to`. Removes the edge `from → to` and adds `from → new_node → to` in one operation. Use this when adding a node mid-chain to avoid accidentally creating orphans or extra children. The node must already exist (create it first with `add_node` or `add_nodes_to_dag`).
 
 ### `set_entry_point`
 

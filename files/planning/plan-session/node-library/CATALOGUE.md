@@ -13,8 +13,8 @@
 |-----------|-------------|
 | `work-item` | Any project mutation — code changes, file edits, refactors, documentation updates. |
 | `project-search-and-analysis` | Investigation without mutation. Use before work-item when current state needs to be understood first. |
-| `research` | External research via external-scout behind a user approval gate. |
-| `deep-research` | Extended external research without an approval gate. |
+| `external-scout` | External research via external-scout behind a user approval gate. |
+| `deep-research` | Comprehensive research on novel or frontier topics via deep-researcher. Rarely needed — most research belongs in external-scout. |
 | `write-notes` | Store accumulated findings, decisions, and constraints to semantic notes. Use as leaf nodes to capture context before exit — both success and failure paths should end with a write-notes node. |
 | `compress` | Compress closed conversation sections to free context window space. Always followed by kickoff-refresher. |
 | `kickoff-refresher` | Realign the agent after context compression. Always placed after compress. |
@@ -32,7 +32,7 @@
 
 | Component | Description |
 |-----------|-------------|
-| `run-project-commands` | Shell operations — installing dependencies, running build scripts, running tests. |
+| `run-project-commands` | Shell command execution via tailwrench. Required when work-items depend on state that only a command can produce — installing dependencies, running build/generation tools, executing scaffolding CLIs, initializing submodules, or running setup scripts. Place before the work-item that needs the result. |
 | `commit` | Git checkpoint at a meaningful save point. Placed after successful verify. |
 
 ## General

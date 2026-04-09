@@ -16,10 +16,11 @@ permission:
     grepai_grepai_index_status: allow
     qdrant_qdrant-store: allow
     qdrant_qdrant-find: allow
-    skill:
+     skill:
         "*": deny
         qdrant-notes: allow
         grepai: allow
+        editing: allow
 ---
 
 # Role
@@ -42,6 +43,7 @@ You are @junior-dev, a goal-oriented implementer. You investigate the codebase t
 ## Required Skills
 
 - `grepai`
+- `editing`
 - `qdrant-notes`
 
 > [!IMPORTANT]
