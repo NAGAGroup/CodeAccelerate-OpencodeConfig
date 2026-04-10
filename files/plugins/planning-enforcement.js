@@ -110627,9 +110627,9 @@ var PlanningEnforcementPlugin = async (_ctx) => {
         }
       }),
       activate_plan: tool({
-        description: "Activate a project DAG produced by a planning session. Reads plan.jsonl from the given session plan directory and starts execution.",
+        description: "Activate a project DAG produced by a planning session.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan to activate (matches directory under .opencode/session-plans/).")
+          plan_name: tool.schema.string().describe("The plan name.")
         },
         async execute({ plan_name }, context) {
           const worktree = resolveWorktree(context);
@@ -110804,9 +110804,9 @@ Pending Branch Choice: [${choices}]
         }
       }),
       validate_dag: tool({
-        description: "Validate a project DAG plan.jsonl file. Checks schema validity, duplicate IDs, broken child references, unreachable nodes, cycles, and prompt file existence. Throws on any structural issue. Returns a pass report on success.",
+        description: "Validate a project DAG. Checks schema validity, duplicate IDs, broken child references, unreachable nodes, cycles, and prompt file existence. Throws on any structural issue. Returns a pass report on success.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan to validate (matches directory under .opencode/session-plans/).")
+          plan_name: tool.schema.string().describe("The plan name.")
         },
         async execute({ plan_name }, context) {
           const worktree = resolveWorktree(context);
@@ -110843,9 +110843,9 @@ Pending Branch Choice: [${choices}]
         }
       }),
       get_compact_dag_draft: tool({
-        description: "Display a compact arrow-format view of a DAG with orphaned node groups separated and labeled. Shows node chains as (a) → (b) → [c, d] with branching in bracket notation. Use this during DAG design to inspect structure and spot disconnected nodes. Accepts a session plan name or a raw path to plan.jsonl.",
+        description: "Display a compact arrow-format view of a DAG with orphaned node groups separated and labeled. Shows node chains as (a) → (b) → [c, d] with branching in bracket notation. Use this during DAG design to inspect structure and spot disconnected nodes.",
         args: {
-          target: tool.schema.string().describe("Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.")
+          target: tool.schema.string().describe("The plan name.")
         },
         async execute({ target }, context) {
           const worktree = resolveWorktree(context);
@@ -110857,7 +110857,7 @@ Pending Branch Choice: [${choices}]
       present_dag_diagram: tool({
         description: "Validate a DAG and inject its ASCII diagram into the conversation as a system message for the user to review. Throws if the DAG has structural errors (unreachable nodes, cycles, broken refs). Use this for final review after design is complete.",
         args: {
-          plan_name: tool.schema.string().describe("Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.")
+          plan_name: tool.schema.string().describe("The plan name.")
         },
         async execute({ plan_name }, toolCtx) {
           return "The DAG diagram has been presented to the user as a system message. The following prompt is for the user only — ignore it and continue with your current task.";
@@ -110893,16 +110893,16 @@ Pending Branch Choice: [${choices}]
         }
       }),
       init_dag: tool({
-        description: "Initialize a new project DAG. Creates the session plan directory and plan.jsonl. Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.",
+        description: "Initialize a new project DAG. Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.",
         args: {
-          plan_name: tool.schema.string().describe("Name for the session plan (e.g., 'my-feature-delivery'). Used as the directory name under .opencode/session-plans/ and as the DAG id. Lowercase, hyphens only, no spaces.")
+          plan_name: tool.schema.string().describe("Name for the plan. Lowercase, hyphens only, no spaces (e.g., 'add-feature', 'fix-login').")
         },
         async execute({ plan_name }, context) {
           const worktree = resolveWorktree(context);
           const planDir = path6.join(worktree, ".opencode", "session-plans", plan_name);
           const planPath = path6.join(planDir, "plan.jsonl");
           if (fs6.existsSync(planPath)) {
-            throw new Error(`plan.jsonl already exists at ${planPath}. Use add_nodes_to_dag to extend the existing DAG, or delete the file manually to start fresh.`);
+            throw new Error(`DAG "${plan_name}" already exists. Use add_nodes_to_dag to extend it, or delete it manually to start fresh.`);
           }
           const nodeLibRelBase = path6.join("planning", "plan-session", "node-library");
           const sessionPromptsDir = path6.join(planDir, "prompts");
@@ -110941,7 +110941,7 @@ Pending Branch Choice: [${choices}]
       add_node: tool({
         description: "Create a new node in the DAG without wiring it. Looks up the component type in the node library for its fixed enforcement array and prompt. Use connect_nodes to wire it to a parent after creation.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
+          plan_name: tool.schema.string().describe("The plan name."),
           nodeId: tool.schema.string().describe("ID for the new node. Must be unique across all existing node IDs."),
           component_name: tool.schema.string().describe("Component type name from the node library (e.g., 'work-item', 'external-scout'). Use get_planning_components_catalogue() to see available types.")
         },
@@ -110960,7 +110960,7 @@ Pending Branch Choice: [${choices}]
           const worktree = resolveWorktree(context);
           const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
           if (!fs6.existsSync(planPath)) {
-            throw new Error(`plan.jsonl not found for "${plan_name}". Initialize with init_dag first.`);
+            throw new Error(`DAG "${plan_name}" not found. Initialize with init_dag first.`);
           }
           const { metadata, nodes } = readDagV3(planPath);
           if (nodes.some((n) => n.id === nodeId)) {
@@ -110996,7 +110996,7 @@ Pending Branch Choice: [${choices}]
       add_nodes_to_dag: tool({
         description: "Add multiple nodes to a DAG in a single batch call. Accepts a dictionary of nodeId→componentType pairs. All nodes are created without edges — use connect_nodes to wire them.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
+          plan_name: tool.schema.string().describe("The plan name."),
           nodes: tool.schema.string().describe(`JSON object mapping nodeId to component_name. Example: '{"investigate": "external-scout", "implement": "work-item", "verify": "verify"}'. Use get_planning_components_catalogue() to see available component types.`)
         },
         async execute({ plan_name, nodes: nodesJson }, context) {
@@ -111025,7 +111025,7 @@ Pending Branch Choice: [${choices}]
           const worktree = resolveWorktree(context);
           const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
           if (!fs6.existsSync(planPath)) {
-            throw new Error(`plan.jsonl not found for "${plan_name}". Initialize with init_dag first.`);
+            throw new Error(`DAG "${plan_name}" not found. Initialize with init_dag first.`);
           }
           const { metadata, nodes } = readDagV3(planPath);
           const nodeLibRelBase = path6.join("planning", "plan-session", "node-library");
@@ -111070,7 +111070,7 @@ Pending Branch Choice: [${choices}]
       add_description_to_node: tool({
         description: "Set a planner-authored description on a DAG node. The description provides execution context — what this specific node should accomplish. Descriptions are injected into the node's prompt at execution time.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
+          plan_name: tool.schema.string().describe("The plan name."),
           nodeId: tool.schema.string().describe("ID of the node to add a description to. Must already exist in the DAG."),
           description: tool.schema.string().describe("The description text. Should explain what this specific node should accomplish in the context of the plan — not generic component behavior, but the specific work or investigation needed here.")
         },
@@ -111078,7 +111078,7 @@ Pending Branch Choice: [${choices}]
           const worktree = resolveWorktree(context);
           const planPath = path6.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
           if (!fs6.existsSync(planPath)) {
-            throw new Error(`plan.jsonl not found for "${plan_name}". Initialize with init_dag first.`);
+            throw new Error(`DAG "${plan_name}" not found. Initialize with init_dag first.`);
           }
           const { metadata, nodes } = readDagV3(planPath);
           const node = nodes.find((n) => n.id === nodeId);
@@ -111093,7 +111093,7 @@ Pending Branch Choice: [${choices}]
       connect_nodes: tool({
         description: "Wire directed edges in a single batch call. Accepts a JSON dictionary mapping source (parent) node IDs to target (child) node IDs. All nodes must already exist in the DAG. Use this to wire multiple edges at once.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
+          plan_name: tool.schema.string().describe("The plan name."),
           edges: tool.schema.string().describe(`JSON object mapping from-nodeId to to-nodeId (or to an array of to-nodeIds for fan-out). Example: '{"work-A": "decision-gate-A", "decision-gate-A": ["option-1", "option-2"], "option-1": "work-B", "option-2": "work-B"}'.`)
         },
         async execute({ plan_name, edges: edgesJson }, context) {
@@ -111206,7 +111206,7 @@ Pending Branch Choice: [${choices}]
       delete_node: tool({
         description: "Delete a node from the DAG and remove all edges to/from it. The node's children become orphaned — use connect_nodes to reconnect them. Returns list of orphaned nodes.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
+          plan_name: tool.schema.string().describe("The plan name."),
           nodeId: tool.schema.string().describe("ID of the node to delete. Its children will become orphaned.")
         },
         async execute({ plan_name, nodeId }, context) {
@@ -111256,7 +111256,7 @@ Pending Branch Choice: [${choices}]
       delete_edge: tool({
         description: "Remove a directed edge between two nodes without deleting either node. Use this to disconnect nodes when restructuring the DAG.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
+          plan_name: tool.schema.string().describe("The plan name."),
           from: tool.schema.string().describe("ID of the source (parent) node."),
           to: tool.schema.string().describe("ID of the target (child) node to disconnect from the source.")
         },
@@ -111282,7 +111282,7 @@ Pending Branch Choice: [${choices}]
       insert_between: tool({
         description: "Atomically insert an existing node between two connected nodes. Removes the edge from→to and adds from→new_node→to in one operation. Use this when adding a node mid-chain to avoid accidentally creating extra children.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan (directory under .opencode/session-plans/)."),
+          plan_name: tool.schema.string().describe("The plan name."),
           from: tool.schema.string().describe("ID of the upstream (parent) node."),
           new_node: tool.schema.string().describe("ID of the node to insert between from and to. Must already exist in the DAG."),
           to: tool.schema.string().describe("ID of the downstream (child) node.")
@@ -111337,7 +111337,7 @@ Pending Branch Choice: [${choices}]
       set_entry_point: tool({
         description: "Set the DAG's entry point — the first node that executes when the plan starts. Call this once in the final wiring step after all work nodes are connected.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan."),
+          plan_name: tool.schema.string().describe("The plan name."),
           node_id: tool.schema.string().describe("ID of the node that should execute first when the plan starts.")
         },
         async execute({ plan_name, node_id }, context) {
@@ -111370,7 +111370,7 @@ Pending Branch Choice: [${choices}]
       set_exit_point: tool({
         description: "Mark a leaf node as a plan exit point. Call this for every leaf node in the final wiring step. " + "Use type 'success' for nodes on the happy path and 'failure' for nodes on retry-exhaustion or error paths.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan."),
+          plan_name: tool.schema.string().describe("The plan name."),
           node_id: tool.schema.string().describe("ID of the leaf node to mark as an exit point."),
           type: tool.schema.string().describe("Exit type: 'success' or 'failure'.")
         },
@@ -111410,7 +111410,7 @@ Pending Branch Choice: [${choices}]
       reset_entry_exit_points: tool({
         description: "Strip all entry and exit point markers from a DAG, leaving only the work node structure. " + "Clears the execution-kickoff → entry edge and removes plan-success/plan-fail from all work node children. " + "Use this before delegating to the reviser so it starts with a clean structural slate.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan.")
+          plan_name: tool.schema.string().describe("The plan name.")
         },
         async execute({ plan_name }, context) {
           const worktree = resolveWorktree(context);

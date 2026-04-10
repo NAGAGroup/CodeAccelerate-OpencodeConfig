@@ -65,12 +65,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       activate_plan: tool({
         description:
-          "Activate a project DAG produced by a planning session. Reads plan.jsonl from the given session plan directory and starts execution.",
+          "Activate a project DAG produced by a planning session.",
         args: {
           plan_name: tool.schema
             .string()
             .describe(
-              "Name of the session plan to activate (matches directory under .opencode/session-plans/).",
+              "The plan name.",
             ),
         },
         async execute({ plan_name }, context) {
@@ -303,12 +303,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       validate_dag: tool({
         description:
-          "Validate a project DAG plan.jsonl file. Checks schema validity, duplicate IDs, broken child references, unreachable nodes, cycles, and prompt file existence. Throws on any structural issue. Returns a pass report on success.",
+          "Validate a project DAG. Checks schema validity, duplicate IDs, broken child references, unreachable nodes, cycles, and prompt file existence. Throws on any structural issue. Returns a pass report on success.",
         args: {
           plan_name: tool.schema
             .string()
             .describe(
-              "Name of the session plan to validate (matches directory under .opencode/session-plans/).",
+              "The plan name.",
             ),
         },
         async execute({ plan_name }, context) {
@@ -381,12 +381,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       get_compact_dag_draft: tool({
         description:
-          "Display a compact arrow-format view of a DAG with orphaned node groups separated and labeled. Shows node chains as (a) → (b) → [c, d] with branching in bracket notation. Use this during DAG design to inspect structure and spot disconnected nodes. Accepts a session plan name or a raw path to plan.jsonl.",
+          "Display a compact arrow-format view of a DAG with orphaned node groups separated and labeled. Shows node chains as (a) → (b) → [c, d] with branching in bracket notation. Use this during DAG design to inspect structure and spot disconnected nodes.",
         args: {
           target: tool.schema
             .string()
             .describe(
-              "Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.",
+              "The plan name.",
             ),
         },
         async execute({ target }, context) {
@@ -433,7 +433,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           plan_name: tool.schema
             .string()
             .describe(
-              "Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.",
+              "The plan name.",
             ),
         },
         async execute({ plan_name }, toolCtx) {
@@ -493,12 +493,12 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       init_dag: tool({
         description:
-          "Initialize a new project DAG. Creates the session plan directory and plan.jsonl. Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.",
+          "Initialize a new project DAG. Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.",
         args: {
           plan_name: tool.schema
             .string()
             .describe(
-              "Name for the session plan (e.g., 'my-feature-delivery'). Used as the directory name under .opencode/session-plans/ and as the DAG id. Lowercase, hyphens only, no spaces.",
+              "Name for the plan. Lowercase, hyphens only, no spaces (e.g., 'add-feature', 'fix-login').",
             ),
         },
         async execute({ plan_name }, context) {
@@ -513,7 +513,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           if (fs.existsSync(planPath)) {
             throw new Error(
-              `plan.jsonl already exists at ${planPath}. Use add_nodes_to_dag to extend the existing DAG, or delete the file manually to start fresh.`,
+              `DAG "${plan_name}" already exists. Use add_nodes_to_dag to extend it, or delete it manually to start fresh.`,
             );
           }
 
@@ -590,7 +590,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           plan_name: tool.schema
             .string()
             .describe(
-              "Name of the session plan (directory under .opencode/session-plans/).",
+              "The plan name.",
             ),
           nodeId: tool.schema
             .string()
@@ -631,7 +631,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           if (!fs.existsSync(planPath)) {
             throw new Error(
-              `plan.jsonl not found for "${plan_name}". Initialize with init_dag first.`,
+              `DAG "${plan_name}" not found. Initialize with init_dag first.`,
             );
           }
 
@@ -708,7 +708,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           plan_name: tool.schema
             .string()
             .describe(
-              "Name of the session plan (directory under .opencode/session-plans/).",
+              "The plan name.",
             ),
           nodes: tool.schema
             .string()
@@ -765,7 +765,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           if (!fs.existsSync(planPath)) {
             throw new Error(
-              `plan.jsonl not found for "${plan_name}". Initialize with init_dag first.`,
+              `DAG "${plan_name}" not found. Initialize with init_dag first.`,
             );
           }
 
@@ -852,7 +852,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           plan_name: tool.schema
             .string()
             .describe(
-              "Name of the session plan (directory under .opencode/session-plans/).",
+              "The plan name.",
             ),
           nodeId: tool.schema
             .string()
@@ -877,7 +877,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           if (!fs.existsSync(planPath)) {
             throw new Error(
-              `plan.jsonl not found for "${plan_name}". Initialize with init_dag first.`,
+              `DAG "${plan_name}" not found. Initialize with init_dag first.`,
             );
           }
 
@@ -903,7 +903,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           plan_name: tool.schema
             .string()
             .describe(
-              "Name of the session plan (directory under .opencode/session-plans/).",
+              "The plan name.",
             ),
           edges: tool.schema
             .string()
@@ -1081,7 +1081,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           plan_name: tool.schema
             .string()
             .describe(
-              "Name of the session plan (directory under .opencode/session-plans/).",
+              "The plan name.",
             ),
           nodeId: tool.schema
             .string()
@@ -1159,7 +1159,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           plan_name: tool.schema
             .string()
             .describe(
-              "Name of the session plan (directory under .opencode/session-plans/).",
+              "The plan name.",
             ),
           from: tool.schema
             .string()
@@ -1207,7 +1207,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           plan_name: tool.schema
             .string()
             .describe(
-              "Name of the session plan (directory under .opencode/session-plans/).",
+              "The plan name.",
             ),
           from: tool.schema
             .string()
@@ -1297,7 +1297,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         description:
           "Set the DAG's entry point — the first node that executes when the plan starts. Call this once in the final wiring step after all work nodes are connected.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan."),
+          plan_name: tool.schema.string().describe("The plan name."),
           node_id: tool.schema
             .string()
             .describe(
@@ -1351,7 +1351,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           "Mark a leaf node as a plan exit point. Call this for every leaf node in the final wiring step. " +
           "Use type 'success' for nodes on the happy path and 'failure' for nodes on retry-exhaustion or error paths.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan."),
+          plan_name: tool.schema.string().describe("The plan name."),
           node_id: tool.schema
             .string()
             .describe("ID of the leaf node to mark as an exit point."),
@@ -1416,7 +1416,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           "Clears the execution-kickoff → entry edge and removes plan-success/plan-fail from all work node children. " +
           "Use this before delegating to the reviser so it starts with a clean structural slate.",
         args: {
-          plan_name: tool.schema.string().describe("Name of the session plan."),
+          plan_name: tool.schema.string().describe("The plan name."),
         },
         async execute({ plan_name }, context) {
           const worktree = resolveWorktree(context);
