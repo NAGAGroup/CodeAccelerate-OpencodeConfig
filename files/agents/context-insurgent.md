@@ -39,7 +39,7 @@ Unknowns: [what was examined but couldn't be determined, assumptions made, what 
 </output_format>
 
 <getting started>
-1. Load your grepai skill. Write down how you will use it for this investigation.
+1. Load your grepai skill. Write down how you will use it for this investigation. Do not use workspaces in your grepai calls.
 2. Load your searching-deeper skill. Write down how it extends your investigation.
 3. Load your qdrant-notes skill. Write down how you will use it.
 4. If a plan name was provided, search session notes, using the plan name as qdrants collection, for existing findings before beginning.
