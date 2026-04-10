@@ -1,5 +1,5 @@
 <rules>
-Acyclic. No loops. Retries are unrolled sequences: work-item → verify → fix → verify-retry → pass-path or write-notes-failure. Each retry adds explicit nodes. There is no loop-back construct.
+Acyclic. No loops. Retries are unrolled sequences: work-item → verify → fix → verify-retry → write-notes-pass or write-notes-failure. Each retry adds explicit nodes. There is no loop-back construct.
 Every path ends at a write-notes leaf. No dead ends.
 verify has exactly 2 children: pass path and fail path.
 decision-gate and user-decision-gate have exactly 2 children: mutually exclusive branches.
