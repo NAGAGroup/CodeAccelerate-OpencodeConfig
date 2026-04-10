@@ -14,7 +14,6 @@ permission:
     set_entry_point: allow
     set_exit_point: allow
     get_compact_dag_draft: allow
-    get_dag_draft_diagram: allow
     validate_dag: allow
     get_planning_components_catalogue: allow
     qdrant_qdrant-store: allow

@@ -37,8 +37,6 @@ set_exit_point — marks a write-notes leaf as a plan exit.
 get_compact_dag_draft — returns connected node chains, orphaned groups, and entry/exit status.
   Call after each structural change.
 
-get_dag_draft_diagram — returns a visual ASCII diagram of the full DAG structure.
-
 present_dag_diagram — validates the DAG and injects the diagram as a system message.
   Throws if the DAG has structural errors.
 

@@ -6,7 +6,6 @@ mode: subagent
 permission:
     "*": deny
     get_compact_dag_draft: allow
-    get_dag_draft_diagram: allow
     validate_dag: allow
     get_planning_components_catalogue: allow
     qdrant_qdrant-store: allow
