@@ -111494,7 +111494,6 @@ Pending Branch Choice: [${choices}]
 ` + `When re-delegating to an existing subagent instance:
 ` + `  task(description="...", prompt="...", subagent_type="...", session_id="...")`);
         }
-        return;
       }
       if (input.tool === "plan_session") {
         const worktree2 = resolveWorktree(_ctx);

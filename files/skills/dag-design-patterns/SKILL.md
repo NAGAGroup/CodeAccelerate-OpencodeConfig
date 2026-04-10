@@ -4,10 +4,13 @@ description: Patterns for DAG construction — sequential phases, verify-retry s
 ---
 
 <example>
+// connect_nodes edges format: {from: to} — left node runs before right node
+// {A: B} means A → B in execution order, matching the compact draft notation (A) → (B)
+
 Building a sequential phase:
 add_nodes_to_dag(plan_name=[plan name], nodes={[A]: [component], [B]: [component], [C]: [component]})
-connect_nodes(plan_name=[plan name], edges={[A]: [B], [B]: [C]})
-get_compact_dag_draft(target=[plan name])
+connect_nodes(plan_name=[plan name], edges={[A]: [B], [B]: [C]}) // A runs first, then B, then C
+get_compact_dag_draft(target=[plan name]) // expected: (A) → (B) → (C)
 
 Building a verify-retry structure (default 1 retry):
 add_nodes_to_dag(plan_name=[plan name], nodes={[work]: "work-item", [verify]: "verify", [fix]: "work-item", [verify-retry]: "verify", [exit-fail]: "write-notes"})

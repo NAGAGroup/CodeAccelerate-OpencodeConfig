@@ -1676,7 +1676,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             `  task(description="...", prompt="...", subagent_type="...", session_id="...")`
           );
         }
-        return;
+        // args are valid — fall through to enforcement tracking
       }
 
       // --- Handle plan_session: create state + inject entry prompt ---

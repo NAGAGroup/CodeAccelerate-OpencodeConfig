@@ -17,5 +17,5 @@ Use get_compact_dag_draft frequently to check your work as you go. Do not wait u
 <getting started>
 1. Search session notes for design goals, constraints, and planning context.
 2. Plan ahead. Decide what phases you need and what the key structural decisions are. Make your best effort, it doesn't need to be perfect — you can adjust as you go.
-3. Once you've mapped out your approach, begin working and do not stop until you have finished. Build the DAG in stages, checking your work frequently with get_compact_dag_draft and adjusting as needed until validate_dag returns successfully.
+3. Once you've mapped out your approach, begin working and do not stop until you have finished. After your first connect_nodes call, immediately call get_compact_dag_draft and verify the edges flow in the correct direction before continuing. Build in stages, checking frequently with get_compact_dag_draft and adjusting as needed until validate_dag returns successfully.
 </getting started>

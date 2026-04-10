@@ -47,6 +47,7 @@ Final DAG State: [one sentence confirming validation passed and summarizing the 
 
 <getting started>
 1. Load the qdrant-notes skill. Search session notes, using the plan name as qdrants collection, for the reviewer's critique and design context.
-2. Load the following skills: revise-dags + dag-revision-patterns. Explain how the inform your approach.
-3. Work through your plan until all changes are made, all issues are addressed, and validate_dag returns successfully. Then return to the user with a summary of your revisions and the final state of the DAG.
+2. Load the revise-dags skill. Explain the structural rules and constraints.
+3. Load the dag-revision-patterns skill. Explain the patterns you will use, paying particular attention to the connect_nodes edge format.
+4. Call get_compact_dag_draft(plan_name=[insert the plan name provided]) to get the current state and begin working.
 </getting started>

@@ -14,5 +14,5 @@ Use the get_compact_dag_draft and validate_dag tools frequently to check your wo
 <getting started>
 1. Search the plan notes for any additional revision or planning info that wasn't provided already.
 2. Plan ahead. Decide which tool calls are needed and in what order. Make your best effort, it doesn't need to be perfect. It just helps to have a roadmap before you start making changes. You can adjust as you go.
-3. Once you've mapped out the tool call plan, begin working and do not stop until you have finished.
+3. Once you've mapped out the tool call plan, begin working and do not stop until you have finished. After any connect_nodes call, immediately call get_compact_dag_draft and verify the edges flow in the correct direction before continuing.
 </getting started>
