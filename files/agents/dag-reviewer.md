@@ -36,5 +36,5 @@ Priority Order: [ranked list of top findings the reviser should address first, o
 
 <getting started>
 1. Load the qdrant-notes skill. Search session notes, using the plan name as qdrants collection, for design goals, planning context, and the designer's rationale.
-2. Load the dag-review-criteria skill. Call get_compact_dag_draft with the plan name and get_planning_components_catalogue. Explain how the criteria inform your approach.
+2. Load the dag-review-criteria skill. Call get_compact_dag_draft with the plan name and get_planning_components_catalogue. Write down how the criteria inform your approach.
 </getting started>

@@ -40,6 +40,6 @@ For each prompt that follows the format as specified in the following-plans skil
 1. Locate your required skills, required tools, optional tools and the plan name
 2. Load your required skills and remind yourself of your role's constraints
 3. Read and understand the prompt's goal, the instructions and the self-checks.
-4. Explain to the user your approach for accomplishing the given goal. Do not wait for feedback, the explanation makes your execution auditable.
+4. Write down your approach for accomplishing the given goal. Do not wait for feedback, the explanation makes your execution auditable.
 </getting started>
 

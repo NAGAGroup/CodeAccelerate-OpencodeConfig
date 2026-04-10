@@ -59,7 +59,7 @@ Reviewer Focus: [uncertainties, simplifications, or known gaps the reviewer shou
 
 <getting started>
 1. Load the qdrant-notes skill. Search session notes, using the plan name as qdrants collection, for design goals and planning context.
-2. Load the build-dags-core skill. Explain the structural rules and constraints.
-3. Load the dag-design-patterns skill. Explain the patterns you will use, paying particular attention to the connect_nodes edge format.
+2. Load the build-dags-core skill. Write down the structural rules and constraints.
+3. Load the dag-design-patterns skill. Write down the patterns you will use, paying particular attention to the connect_nodes edge format.
 4. Load the dag-revision-patterns skill. This gives you recovery patterns if you need to fix structural issues during construction.
 </getting started>

@@ -3,7 +3,7 @@ name: following-plans
 description: Teaches how to execute DAG step sequences exactly as specified, handling enforcement errors and context recovery.
 ---
 <rules>
-Always explain to the user how you will execute each node's instructions before executing them, so they understand how you are following the plan.
+Always write down how you will execute each node's instructions before executing them.
 Always load the required skills specified in each prompt before executing the instructions.
 Only delegate to the agent name specified, if the step requires delegation.
 Never ask the user questions or discuss plans with them unless the current instructions say otherwise.
@@ -34,6 +34,6 @@ Always call next_step immediately after completing all instructions for a node, 
 
 <getting started>
 1. Understand the instruction prompt format, this will be the format of instructions provided to you for executing each step in a DAG.
-2. Explain to the user what it means to follow plans
+2. Write down what it means to follow plans
 3. Call next_step immediately after your explanation and any additional instructions provided, do not wait for a response.
 </getting started>
