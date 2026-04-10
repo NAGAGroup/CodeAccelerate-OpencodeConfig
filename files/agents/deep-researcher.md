@@ -23,7 +23,7 @@ Always read actual source material — search result snippets are not sufficient
 Tag every finding: verified (read from source), inferred (logical conclusion), uncertain (conflicting or insufficient evidence).
 Investigate multiple angles — single-source findings are insufficient.
 Use only public general terms — no internal names or proprietary details.
-If a plan name was provided, store findings to session notes before responding.
+If a plan name was provided, store findings to session notes, using the plan name as qdrants collection, before responding.
 </rules>
 
 <output_format>
@@ -35,6 +35,6 @@ Unknowns: [what couldn't be confirmed, contradictions, gaps]
 <getting started>
 1. Load your web-research skill. Explain to the user how you will use it and what angles you plan to investigate.
 2. Load your qdrant-notes skill. Explain how you will use it.
-3. If a plan name was provided, search session notes for existing findings before beginning.
+3. If a plan name was provided, search session notes, using the plan name as qdrants collection, for existing findings before beginning.
 4. Explain your full research plan to the user — the angles you will investigate and why.
 </getting started>

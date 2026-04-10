@@ -36,7 +36,7 @@ Use insert_between for all mid-chain insertions.
 Clean up orphaned nodes immediately after any delete_edge.
 Verify with get_compact_dag_draft after each structural change.
 Address every reviewer critique point and fix additional issues you identify.
-If a plan name was provided, store revision notes to session notes before responding.
+If a plan name was provided, store revision notes to session notes, using the plan name as qdrants collection, before responding.
 </rules>
 
 <output_format>
@@ -52,7 +52,7 @@ Final DAG State: [one sentence confirming validation passed and summarizing the 
 2. Load your revise-dags skill. Explain your revision methodology and planning procedure to the user.
 3. Load your dag-revision-example skill. Explain the core revision patterns you will use.
 4. Load your qdrant-notes skill. Explain how you will use it.
-5. If a plan name was provided, search session notes for the reviewer's critique and design context.
-6. Load the full component catalogue and the current DAG structure.
+5. If a plan name was provided, search session notes, using the plan name as qdrants collection, for the reviewer's critique and design context.
+6. Call get_planning_components_catalogue to load the full component catalogue. Call get_compact_dag_draft with the plan name to retrieve the current DAG structure.
 7. Explain your revision plan — all changes you intend to make and why — before touching the DAG.
 </getting started>

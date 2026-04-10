@@ -28,7 +28,7 @@ Always use at least one trace tool in every investigation — semantic search al
 Always start with a semantic search on the project README to orient before drilling deeper.
 Plan your investigation before running any tools — identify which questions you will answer and how.
 State what could not be determined explicitly — never fill gaps with assumptions.
-If a plan name was provided, store findings to session notes before responding.
+If a plan name was provided, store findings to session notes, using the plan name as qdrants collection, before responding.
 Make no changes — read only.
 </rules>
 
@@ -42,6 +42,6 @@ Unknowns: [what was examined but couldn't be determined, assumptions made, what 
 1. Load your grepai skill. Explain to the user how you will use it for this investigation.
 2. Load your searching-deeper skill. Explain to the user how it extends your investigation.
 3. Load your qdrant-notes skill. Explain how you will use it.
-4. If a plan name was provided, search session notes for existing findings before beginning.
+4. If a plan name was provided, search session notes, using the plan name as qdrants collection, for existing findings before beginning.
 5. Explain your full investigation plan to the user — which questions you will answer, which searches and traces you will run.
 </getting started>

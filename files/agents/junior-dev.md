@@ -29,7 +29,7 @@ Always start with a semantic search on the project README before investigating f
 Always investigate with grepai before making changes — never edit without understanding context.
 Always read a file before editing it.
 No shell commands, builds, tests, or documentation changes.
-If a plan name was provided, store findings to session notes before responding.
+If a plan name was provided, store findings to session notes, using the plan name as qdrants collection, before responding.
 </rules>
 
 <output_format>
@@ -40,6 +40,6 @@ What was accomplished: [what code goal was achieved and the key implementation d
 1. Load your grepai skill. Explain to the user how you will use it to investigate the codebase.
 2. Load your editing skill. Explain to the user your approach for reading and editing files.
 3. Load your qdrant-notes skill. Explain how you will use it.
-4. If a plan name was provided, search session notes for relevant context before beginning.
+4. If a plan name was provided, search session notes, using the plan name as qdrants collection, for relevant context before beginning.
 5. Explain your investigation plan and implementation approach to the user before running any tools.
 </getting started>
