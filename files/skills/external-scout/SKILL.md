@@ -2,25 +2,25 @@
 name: external-scout
 description: Teaches how to dispatch external-scout for external research on public information and documentation.
 ---
-<overview>
-external-scout handles routine research: evaluating established options, checking API documentation, verifying library behavior, scoping implementation details. For novel or frontier research requiring multi-source synthesis, use deep-researcher instead. When in doubt, use external-scout.
-</overview>
+<rules>
+Your prompt must match the template, filling in only the placeholder content and including the rest verbatim.
+Use only public general terms — no internal names, proprietary identifiers, or confidential context.
+Use external-scout for routine research. Use deep-researcher for novel or frontier topics requiring multi-source synthesis.
+</rules>
 
-<what-external-scout-does>
-Searches public sources and reads actual source material — no search snippet reliance.
-Tags every finding as verified (read from source), inferred (logical conclusion), or uncertain (conflicting or insufficient evidence).
-Has no access to internal project files — public information only.
-Includes an explicit unknowns section.
-</what-external-scout-does>
+<prompt template>
+prompt="Research goal: [what to find out — general public terms only]
 
-<template name="delegation-prompt">
-Research goal: what to find out — use general public terms, no internal identifiers or proprietary details
+Background: [what is already known so the scout focuses on new information]
 
-Background: what is already known so the scout focuses on new information
+Specific questions:
+[question 1]
+[question 2]
 
-Specific questions: the questions the research should answer
+Plan Name: [plan name or N/A]
 
-Plan Name: plan name to store findings under, or N/A if not working within a plan session
+Tag every finding as verified, inferred, or uncertain. Include an explicit unknowns section covering what could not be confirmed, contradictions between sources, and gaps."
 
-Tag every finding as verified, inferred, or uncertain. Include an explicit unknowns section covering what was searched for but could not be confirmed, contradictions between sources, and gaps in available information.
-</template>
+description="[3-5 word description for the user]"
+subagent_type="external-scout"
+</prompt template>

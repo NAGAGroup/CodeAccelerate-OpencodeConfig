@@ -1,54 +1,30 @@
 ---
 name: grepai
-description: Teaches how to use GrepAI semantic search and code intelligence tools for code investigation and dependency tracing.
+description: Teaches how to use GrepAI semantic search and code intelligence tools for project exploration.
 ---
-<tools>
-grepai_grepai_index_status — index health and file coverage. No parameters required.
+<rules>
+Always describe what code does in queries, not what it is called. Replace all example queries with semantic searches relevant to your task.
+Always run multiple varied queries — stopping at the first result misses relevant code.
+Always start with semantic searches on the README, if it exists, with compact=False
+Always ask yourself if there are more queries you should run before stopping.
+</rules>
 
-grepai_grepai_search — semantic search. Required: query. Optional: limit (default 10), compact (paths/lines only, no content), format ("toon" saves tokens), path (restrict to directory or file).
-
-grepai_grepai_trace_callers — everything that calls a function. Required: symbol. Optional: compact.
-
-grepai_grepai_trace_callees — everything a function calls. Required: symbol. Optional: compact.
-
-grepai_grepai_trace_graph — full call graph. Required: symbol. Optional: depth (default 2).
-
-Trace tools are not available to all agents. Skip those steps if you do not have access.
-</tools>
-
-<example name="good-vs-bad-queries">
+<example>
 Bad — keyword, too narrow:
   grepai_grepai_search(query="config")
   grepai_grepai_search(query="processor.ts")
 
-Good — describes what the code does:
-  grepai_grepai_search(query="loads and validates configuration at startup")
-  grepai_grepai_search(query="transforms input data before passing to the next stage")
+Bad — single call
+   grepai_grepai_search(query="processJob")
+
+Good — many varied queries:
+  grepai_grepai_index_status() // check the health of the index to make sure unhealthy index doesn't corrupt search quality, inform the user of unhealthy indexes
+  grepai_grepai_search(query=[ semantic query of the README], path=README.md)
+  grepai_grepai_search(query=[README query informs query on project as a whole], compact=True, format="toon")
+  grepai_grepai_search(query=[semantic query, from the user's stated goals, on the project as a whole], compact=True, format="toon")
+  grepai_grepai_search(query=[project-wide queries inform non-compact queries on specific part of the project], compact=False, path=src/)
+  grepai_grepai_search(query=[non-compact query informs more focused query on module-b], path=src/module-b, compact=False)
+  grepai_grepai_search(query=[non-compact query also informs more focused query on module-c], path=src/module-c, compact=False, limit=5)
+  grepai_grepai_search(query=[run another compact query on src/ to see how the two modules connect], compact=True, format="toon", path=src/)
+  ... // and so on, running many varied queries to get a broad understanding of the landscape instead of a narrow deep dive that misses important context.
 </example>
-
-<example name="discovery-pass">
-Check index first:
-  grepai_grepai_index_status()
-
-Broad discovery with compact+toon to map the landscape cheaply:
-  grepai_grepai_search(query="entry point and application bootstrap", compact=True, format="toon")
-  grepai_grepai_search(query="handles incoming work and routes it to the right handler", compact=True, format="toon")
-  grepai_grepai_search(query="reads and writes persistent state", compact=True, format="toon")
-  grepai_grepai_search(query="configuration and environment setup", compact=True, format="toon")
-
-Each query targets a different aspect. Run as many as the goal requires.
-</example>
-
-<example name="targeted-read">
-Once discovery identifies where things are, drill into a specific area:
-  grepai_grepai_search(query="manages the lifecycle of long-running operations", path="src/core/")
-
-Then trace if available:
-  grepai_grepai_trace_callers(symbol="processJob", compact=True)
-</example>
-
-<rules>
-Describe what code does in queries, not what it is called.
-Use compact=True and format="toon" for discovery. Reserve full reads for targeted follow-up.
-Run multiple varied queries — stopping at the first result misses relevant code.
-</rules>

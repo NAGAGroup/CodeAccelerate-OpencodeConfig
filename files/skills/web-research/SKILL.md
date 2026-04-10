@@ -2,30 +2,27 @@
 name: web-research
 description: Teaches how to search public information and documentation using web search, URL reading, and library documentation tools.
 ---
-<tools>
-searxng_searxng_web_search — web search. Parameters: query (required), time_range ("day", "month", "year" — optional), language (e.g. "en" — optional), pageno (default 1 — optional).
-
-searxng_web_url_read — reads the content of a URL. Parameters: url (required), section (extract content under a specific heading — optional), readHeadings (return only headings — optional), paragraphRange (e.g. "1-5" — optional), maxLength (optional), startChar (optional).
-
-context7_resolve-library-id — resolves a library name to a Context7 ID. Parameters: libraryName (official name with proper punctuation, e.g. "Next.js" not "nextjs" — required), query (the task you need help with — required).
-
-context7_query-docs — queries library documentation. Parameters: libraryId (from context7_resolve-library-id — required), query (specific question — required).
-</tools>
-
-<procedure name="general-research">
-1. Run searxng_searxng_web_search with a focused query.
-2. Read actual source content with searxng_web_url_read for each relevant result — do not rely on search snippets alone.
-3. Search from additional angles if the first results do not fully answer the question.
-</procedure>
-
-<procedure name="library-research">
-1. Call context7_resolve-library-id to get the correct library ID — use the official library name.
-2. Call context7_query-docs with a specific question — vague queries return poor results.
-3. Supplement with searxng_searxng_web_search for community resources, examples, and edge cases.
-</procedure>
-
 <rules>
-Use general public terms only — no internal names, proprietary identifiers, or confidential context.
-Read actual source material — search snippets are not evidence.
+Always read actual source material — search result snippets are not evidence.
 Tag findings: verified (read from source), inferred (logical conclusion), uncertain (conflicting or insufficient evidence).
+Use only public general terms — no internal names, proprietary identifiers, or confidential context.
+Search from multiple angles if first results do not fully answer the question.
 </rules>
+
+<example>
+General research:
+  searxng_searxng_web_search(query="[focused question]")
+  searxng_web_url_read(url="[relevant result URL]")  // read actual source, not just snippets
+  searxng_web_url_read(url="[second relevant result]")  // search from additional angles
+
+Library documentation:
+  context7_resolve-library-id(libraryName="[official name with proper punctuation, e.g. Next.js not nextjs]", query="[task]")
+  context7_query-docs(libraryId="[id from above]", query="[specific question — vague queries return poor results]")
+  searxng_searxng_web_search(query="[supplement with community resources and examples]")
+
+Tool parameters:
+  searxng_searxng_web_search — query (required), time_range ("day"/"month"/"year"), language (e.g. "en"), pageno (default 1)
+  searxng_web_url_read — url (required), section (heading to extract), readHeadings (headings only), paragraphRange (e.g. "1-5"), maxLength
+  context7_resolve-library-id — libraryName (required), query (required)
+  context7_query-docs — libraryId (required), query (required)
+</example>

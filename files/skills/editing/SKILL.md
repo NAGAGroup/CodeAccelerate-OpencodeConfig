@@ -2,26 +2,28 @@
 name: editing
 description: Teaches how to use grepai for orientation, read for full context, and edit/write for targeted changes.
 ---
-<overview>
-Three-step workflow: orient with grepai, understand with read, then change with edit or write. Skipping orient leads to missed dependencies. Skipping read leads to failed edits.
-</overview>
+<rules>
+Always orient with grepai before editing — never edit without understanding context.
+Always read a file before editing it — the edit tool requires exact string matching and guessing causes failures.
+If trace tools are available, use them to understand how code connects to the rest of the codebase before editing.
+Prefer edit over write for existing files — write overwrites the entire file.
+</rules>
 
-<procedure name="orient">
-Use grepai_grepai_search to find where relevant code lives. Describe what the code does in natural language. Use compact=true for discovery, then targeted queries with path to drill into specific areas.
+<example>
+Step 1 — Orient.
+Use grepai_grepai_search to find where relevant code lives. Describe what the code does, not what it is called. Use compact=True for discovery, then targeted queries with path to drill into specific areas.
 
-If trace tools are available (grepai_grepai_trace_callers, grepai_grepai_trace_callees, grepai_grepai_trace_graph), use them to understand how the code connects to the rest of the codebase before editing.
-</procedure>
+Step 2 — Understand.
+Use read to get full file content with line numbers before making any changes.
+Read a directory to understand project structure around the area being edited.
+Use offset and limit for large files.
 
-<procedure name="understand">
-Use read to see the full content before changing anything.
+Step 3 — Change.
+edit — for modifying existing files.
+  oldString: copied exactly from read output, same indentation and whitespace
+  newString: the replacement
+  If the string appears multiple times, provide more surrounding context or use replaceAll.
 
-Read a directory to understand project structure around the area being edited. Read a file to get full content with line numbers. Use offset and limit for large files.
-
-You must read every file before editing it. The edit tool requires exact string matching — guessing at content from grepai snippets causes edits to fail.
-</procedure>
-
-<procedure name="change">
-edit — for modifying existing files. Provide oldString (copied exactly from read output) and newString. The old string must match exactly: same indentation, same whitespace, same content. If the string appears multiple times, provide more surrounding context or use replaceAll.
-
-write — for creating new files or completely rewriting existing ones. You must have read the file first if it exists. Prefer edit over write for existing files — write overwrites the entire file.
-</procedure>
+write — for new files or complete rewrites.
+  Must have read the file first if it already exists.
+</example>
