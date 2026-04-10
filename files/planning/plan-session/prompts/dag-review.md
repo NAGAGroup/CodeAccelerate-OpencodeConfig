@@ -9,7 +9,7 @@ Evaluate the first-pass execution DAG through structural validation and deep ana
 </goal>
 
 <instructions>
-1. Use the dag-reviewer skill to compose a dispatch prompt — include your tentative assessment answers from the previous step alongside the user's goal and review scope.
+1. Load the dag-reviewer skill. Use it to compose a dispatch prompt — include your tentative assessment answers from the previous step alongside the user's goal and review scope.
 2. Dispatch dag-reviewer using the task tool with plan name {{PLAN_NAME}}, the user's goal, your tentative assessment answers, and the review scope.
 3. Call next_step.
 </instructions>

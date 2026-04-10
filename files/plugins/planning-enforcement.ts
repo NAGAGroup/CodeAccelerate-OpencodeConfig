@@ -1653,6 +1653,32 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
     "tool.execute.before": async (input, output) => {
       if (!input.tool || !input.sessionID) return;
 
+      // --- Intercept task tool with incorrect or missing arguments ---
+      if (input.tool === "task") {
+        const args = output.args as Record<string, unknown> | undefined;
+        const hasCommand = args && "command" in args;
+        const missingPrompt = !args?.prompt;
+        const missingDescription = !args?.description;
+        const missingSubagentType = !args?.subagent_type;
+
+        if (hasCommand || missingPrompt || missingDescription || missingSubagentType) {
+          const issues: string[] = [];
+          if (hasCommand) issues.push('use "prompt" not "command" for the delegation text');
+          if (missingPrompt) issues.push('"prompt" is required');
+          if (missingDescription) issues.push('"description" is required (3-5 word UX label)');
+          if (missingSubagentType) issues.push('"subagent_type" is required');
+
+          throw new Error(
+            `task called incorrectly — ${issues.join("; ")}.\n\n` +
+            `Correct schema:\n` +
+            `  task(description="...", prompt="...", subagent_type="...")\n\n` +
+            `When re-delegating to an existing subagent instance:\n` +
+            `  task(description="...", prompt="...", subagent_type="...", session_id="...")`
+          );
+        }
+        return;
+      }
+
       // --- Handle plan_session: create state + inject entry prompt ---
       if (input.tool === "plan_session") {
         const worktree = resolveWorktree(_ctx);

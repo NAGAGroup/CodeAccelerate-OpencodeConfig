@@ -9,7 +9,7 @@ Conduct comprehensive external research covering multiple angles of a novel or f
 </goal>
 
 <instructions>
-1. Use the deep-researcher skill to compose a comprehensive research brief — think through what domain needs exploration, what angles are most valuable, and what scope protects proprietary information.
+1. Load the deep-researcher skill. Use it to compose a comprehensive research brief — think through what domain needs exploration, what angles are most valuable, and what scope protects proprietary information.
 2. Dispatch deep-researcher using the task tool with plan name {{PLAN_NAME}}.
 3. Call next_step.
 </instructions>

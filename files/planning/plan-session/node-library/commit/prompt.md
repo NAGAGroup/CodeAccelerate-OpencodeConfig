@@ -9,7 +9,7 @@ Stage and commit changes at a meaningful save point.
 </goal>
 
 <instructions>
-1. Use the tailwrench skill to compose a dispatch prompt — think through what changed since the last commit, whether the project is in a stable committable state, and what the commit message should convey.
+1. Load the tailwrench skill. Use it to compose a dispatch prompt — think through what changed since the last commit, whether the project is in a stable committable state, and what the commit message should convey.
 2. Dispatch tailwrench using the task tool with plan name {{PLAN_NAME}}.
 3. Call next_step.
 </instructions>

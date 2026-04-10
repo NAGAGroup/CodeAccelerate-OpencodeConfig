@@ -9,7 +9,7 @@ Research external public information that the project depends on or that scout f
 </goal>
 
 <instructions>
-1. Use the external-scout skill to compose a dispatch prompt — identify specific research areas from the scout findings: frameworks, libraries, APIs, domain knowledge, or assumptions to verify.
+1. Load the external-scout skill. Use it to compose a dispatch prompt — identify specific research areas from the scout findings: frameworks, libraries, APIs, domain knowledge, or assumptions to verify.
 2. Dispatch external-scout using the task tool with plan name {{PLAN_NAME}}.
 3. Call next_step.
 </instructions>

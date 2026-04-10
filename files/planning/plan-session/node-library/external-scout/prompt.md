@@ -9,7 +9,7 @@ Conduct focused external research with user approval before dispatching.
 </goal>
 
 <instructions>
-1. Use the external-scout skill to compose a research query — think through what external information is needed and what scope protects proprietary information.
+1. Load the external-scout skill. Use it to compose a research query — think through what external information is needed and what scope protects proprietary information.
 2. Use the question tool to present the exact research query to the user for approval before dispatching.
 3. If approved, dispatch external-scout using the task tool with plan name {{PLAN_NAME}}. If declined, dispatch external-scout with instructions to return immediately without research — this satisfies the enforcement sequence.
 4. Call next_step.

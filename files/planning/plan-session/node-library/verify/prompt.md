@@ -9,7 +9,7 @@ Verify the most recent change meets its acceptance criteria.
 </goal>
 
 <instructions>
-1. Use the tailwrench skill to compose a dispatch prompt — think through what was just implemented, what the acceptance criteria are, and what a passing verification looks like.
+1. Load the tailwrench skill. Use it to compose a dispatch prompt — think through what was just implemented, what the acceptance criteria are, and what a passing verification looks like.
 2. Dispatch tailwrench using the task tool with plan name {{PLAN_NAME}}.
 3. Call next_step.
 </instructions>

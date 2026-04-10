@@ -3,9 +3,10 @@ name: grepai
 description: Teaches how to use GrepAI semantic search and code intelligence tools for project exploration.
 ---
 <rules>
+grepai searches this project's local codebase only — not the internet or general domain knowledge. If results are clearly irrelevant to the goal, stop and report the limitation in your unknowns section rather than synthesizing from memory.
 Always describe what code does in queries, not what it is called. Replace all example queries with semantic searches relevant to your task.
 Always run multiple varied queries — stopping at the first result misses relevant code.
-Always start with semantic searches on the README, if it exists, with compact=False
+Always start with semantic searches on the README, if it exists, with compact=False.
 Always ask yourself if there are more queries you should run before stopping.
 </rules>
 

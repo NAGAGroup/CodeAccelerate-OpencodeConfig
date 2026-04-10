@@ -10,7 +10,7 @@ Substantially improve the execution DAG using the full component library and the
 
 <instructions>
 1. Call reset_entry_exit_points with plan name {{PLAN_NAME}} to clear the entry/exit markers from the first-pass DAG — this gives the reviser a clean structural slate to work with.
-2. Use the dag-reviser skill to compose a dispatch prompt — think through the reviewer's critique, your tentative assessment, and how they inform the improvements needed.
+2. Load the dag-reviser skill. Use it to compose a dispatch prompt — think through the reviewer's critique, your tentative assessment, and how they inform the improvements needed.
 3. Dispatch dag-reviser using the task tool with plan name {{PLAN_NAME}}, the reviewer's critique verbatim or closely paraphrased, your tentative assessment, and clear instructions that this is a second-pass improvement to address every critique point.
 4. Call next_step.
 </instructions>

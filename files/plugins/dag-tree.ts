@@ -481,8 +481,7 @@ export function formatCompactDagDraft(
 
     // ── Format helpers ────────────────────────────────────────────────────
     function nodeLabel(id: string): string {
-      const comp = nodeMap[id]?.component;
-      return comp ? `(${id}: ${comp})` : `(${id})`;
+      return `(${id})`;
     }
 
     // ── Walk chains in topo order ─────────────────────────────────────────
@@ -519,9 +518,13 @@ export function formatCompactDagDraft(
           }
         } else {
           // Branching — show children in brackets, mark already-rendered or out-of-group
-          const annotations = children.map((childId) =>
-            (rendered.has(childId) || !groupIds.has(childId)) ? `→ ${childId}` : childId,
-          );
+          // Also mark in-group leaf children as rendered so they don't get standalone lines
+          const annotations = children.map((childId) => {
+            if (rendered.has(childId) || !groupIds.has(childId)) return `→ ${childId}`;
+            const childChildren = (nodeMap[childId]?.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+            if (childChildren.length === 0) rendered.add(childId); // leaf — mark rendered, no standalone line
+            return childId;
+          });
           parts.push(`${nodeLabel(cur)} → [${annotations.join(", ")}]`);
           cur = null;
         }
@@ -581,6 +584,17 @@ export function formatCompactDagDraft(
   lines.push(`// failure exits: ${failureExits.length > 0 ? failureExits.join(", ") : "(none)"}`);
   if (unsetLeaves.length > 0) {
     lines.push(`// unset leaf nodes: ${unsetLeaves.map((n) => n.id).join(", ")}`);
+  }
+  lines.push("");
+
+  // Node types index — flat lookup of all node IDs and their component types
+  lines.push(BANNER);
+  lines.push("// NODE TYPES");
+  lines.push(BANNER);
+  for (const n of workNodes) {
+    if (n.component) {
+      lines.push(`// ${n.id} [type: ${n.component}]`);
+    }
   }
   lines.push("");
 

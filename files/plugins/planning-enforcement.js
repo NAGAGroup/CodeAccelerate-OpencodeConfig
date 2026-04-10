@@ -110367,8 +110367,7 @@ function formatCompactDagDraft(metadata, nodes) {
         topoOrder.push(n.id);
     }
     function nodeLabel(id) {
-      const comp = nodeMap[id]?.component;
-      return comp ? `(${id}: ${comp})` : `(${id})`;
+      return `(${id})`;
     }
     const rendered = new Set;
     const chains = [];
@@ -110397,7 +110396,14 @@ function formatCompactDagDraft(metadata, nodes) {
             cur = null;
           }
         } else {
-          const annotations = children.map((childId) => rendered.has(childId) || !groupIds.has(childId) ? `→ ${childId}` : childId);
+          const annotations = children.map((childId) => {
+            if (rendered.has(childId) || !groupIds.has(childId))
+              return `→ ${childId}`;
+            const childChildren = (nodeMap[childId]?.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+            if (childChildren.length === 0)
+              rendered.add(childId);
+            return childId;
+          });
           parts.push(`${nodeLabel(cur)} → [${annotations.join(", ")}]`);
           cur = null;
         }
@@ -110441,6 +110447,15 @@ function formatCompactDagDraft(metadata, nodes) {
   lines.push(`// failure exits: ${failureExits.length > 0 ? failureExits.join(", ") : "(none)"}`);
   if (unsetLeaves.length > 0) {
     lines.push(`// unset leaf nodes: ${unsetLeaves.map((n) => n.id).join(", ")}`);
+  }
+  lines.push("");
+  lines.push(BANNER);
+  lines.push("// NODE TYPES");
+  lines.push(BANNER);
+  for (const n of workNodes) {
+    if (n.component) {
+      lines.push(`// ${n.id} [type: ${n.component}]`);
+    }
   }
   lines.push("");
   lines.push(BANNER);
@@ -111455,6 +111470,32 @@ Pending Branch Choice: [${choices}]
     "tool.execute.before": async (input, output) => {
       if (!input.tool || !input.sessionID)
         return;
+      if (input.tool === "task") {
+        const args = output.args;
+        const hasCommand = args && "command" in args;
+        const missingPrompt = !args?.prompt;
+        const missingDescription = !args?.description;
+        const missingSubagentType = !args?.subagent_type;
+        if (hasCommand || missingPrompt || missingDescription || missingSubagentType) {
+          const issues = [];
+          if (hasCommand)
+            issues.push('use "prompt" not "command" for the delegation text');
+          if (missingPrompt)
+            issues.push('"prompt" is required');
+          if (missingDescription)
+            issues.push('"description" is required (3-5 word UX label)');
+          if (missingSubagentType)
+            issues.push('"subagent_type" is required');
+          throw new Error(`task called incorrectly — ${issues.join("; ")}.
+
+` + `Correct schema:
+` + `  task(description="...", prompt="...", subagent_type="...")
+
+` + `When re-delegating to an existing subagent instance:
+` + `  task(description="...", prompt="...", subagent_type="...", session_id="...")`);
+        }
+        return;
+      }
       if (input.tool === "plan_session") {
         const worktree2 = resolveWorktree(_ctx);
         const { localPlanPath, metadata, nodes } = copyPlanningDag("plan-session", input.sessionID, worktree2);

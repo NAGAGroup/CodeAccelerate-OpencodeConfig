@@ -9,9 +9,9 @@ Investigate current state then implement a scoped change.
 </goal>
 
 <instructions>
-1. Use the context-scout skill to compose a dispatch prompt — think through what the scout needs to understand about the area that needs to change: existing patterns, what will be affected, and any pain points.
+1. Load the context-scout skill. Use it to compose a dispatch prompt — think through what the scout needs to understand about the area that needs to change: existing patterns, what will be affected, and any pain points.
 2. Dispatch context-scout using the task tool with plan name {{PLAN_NAME}}.
-3. Use the junior-dev skill to compose a dispatch prompt based on what the scout reported — think through what the implementation goal is, what boundaries apply, and what constraints the implementer needs to know.
+3. Load the junior-dev skill. Use it to compose a dispatch prompt based on what the scout reported — think through what the implementation goal is, what boundaries apply, and what constraints the implementer needs to know.
 4. Dispatch junior-dev using the task tool with plan name {{PLAN_NAME}}.
 5. Call next_step.
 </instructions>

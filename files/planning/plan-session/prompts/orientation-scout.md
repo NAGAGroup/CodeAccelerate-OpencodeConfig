@@ -9,7 +9,7 @@ Build broad understanding of the project and user's goal through wide-shallow ex
 </goal>
 
 <instructions>
-1. Use the context-scout skill to compose a dispatch prompt — think through what areas to survey and what questions the scout should answer about the project structure, relationships, and constraints.
+1. Load the context-scout skill. Use it to compose a dispatch prompt — think through what areas to survey and what questions the scout should answer about the project structure, relationships, and constraints.
 2. Dispatch context-scout using the task tool with plan name {{PLAN_NAME}}.
 3. Call next_step.
 </instructions>

@@ -9,7 +9,7 @@ Populate every work node in the execution DAG with a per-node context descriptio
 </goal>
 
 <instructions>
-1. Use the dag-description-author skill to compose a dispatch prompt — include the plan name, the user's goal, and a summary of key planning findings so the author can prime their understanding before querying qdrant.
+1. Load the dag-description-author skill. Use it to compose a dispatch prompt — include the plan name, the user's goal, and a summary of key planning findings so the author can prime their understanding before querying qdrant.
 2. Dispatch dag-description-author using the task tool with plan name {{PLAN_NAME}}, the user's goal, and a planning context summary drawn from what you know from the session.
 3. Call next_step.
 </instructions>
