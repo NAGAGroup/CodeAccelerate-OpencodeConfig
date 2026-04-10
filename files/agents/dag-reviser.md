@@ -37,13 +37,14 @@ Always set the entry point and exit points before calling validate_dag.
 Address every reviewer critique point and fix additional issues you identify.
 </rules>
 
-<output_format>
-Changes Made: [for each reviewer critique point, what structural change was made and why]
-
-Additional Improvements: [issues identified and fixed beyond the reviewer's critique, with reasoning]
-
-Final DAG State: [one sentence confirming validation passed and summarizing the overall shape of the revised plan]
-</output_format>
+<methodology>
+1. Call get_compact_dag_draft to get the current state of the DAG and understand the structure you are working with.
+2. Identify the changes and additions that need to be made in order to address the reviewers concerns.
+3. Implement each change or addition, checking your work each step of the way, using the dag tools: add_node, add_nodes_to_dag, connect_nodes, insert_between, delete_node, delete_edge.
+4. Set the entry point and exit points using set_entry_point and set_exit_point, calling set_exit_point once for each success/fail node.
+5. Call validate_dag and fix any structural issues until it returns successfully. Your DAG is not done until it validates.
+6. Summarize what you did and how it addresses the reviewers concerns.
+</methodology>
 
 <getting started>
 1. Load the qdrant-notes skill. Search session notes, using the plan name as qdrants collection, for the reviewer's critique and design context.
