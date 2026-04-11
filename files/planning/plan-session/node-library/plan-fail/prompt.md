@@ -13,7 +13,4 @@ Store a detailed failure summary and terminate execution.
 2. Respond to the user explaining what failed and why.
 </instructions>
 
-<check>
-1. Have I captured enough detail about what failed so a future planning session can avoid the same outcome?
-2. Have I included what was learned — not just what went wrong, but what it implies about the approach?
-</check>
+

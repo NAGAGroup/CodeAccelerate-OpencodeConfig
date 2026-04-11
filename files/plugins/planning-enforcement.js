@@ -110002,7 +110002,11 @@ function writeDagV3(planPath, metadata, nodes) {
 
 // dag-tree.ts
 function validateDagV3(metadata, nodes) {
-  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+  const PROTECTED_IDS = new Set([
+    "execution-kickoff",
+    "plan-success",
+    "plan-fail"
+  ]);
   const workNodes = nodes.filter((n) => !PROTECTED_IDS.has(n.id));
   const ids = new Set;
   const duplicates = [];
@@ -110065,6 +110069,24 @@ function validateDagV3(metadata, nodes) {
     }).join("; ");
     throw new Error(`Branching limit violated — nodes may have at most 2 children. ${details}. ` + `Decision gates and verify nodes must have exactly 2 children. ` + `Decompose wider branches into nested binary decisions.`);
   }
+  const BRANCHING_COMPONENTS = new Set([
+    "verify-work-item",
+    "decision-gate",
+    "user-decision-gate"
+  ]);
+  const illegalBranching = workNodes.filter((n) => {
+    const visibleChildren = (n.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+    if (visibleChildren.length < 2)
+      return false;
+    return !n.component || !BRANCHING_COMPONENTS.has(n.component);
+  });
+  if (illegalBranching.length > 0) {
+    const details = illegalBranching.map((n) => {
+      const visibleChildren = (n.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+      return `"${n.id}" (${n.component ?? "unknown type"}) has ${visibleChildren.length} children: [${visibleChildren.join(", ")}]`;
+    }).join("; ");
+    throw new Error(`Parallel work detected — only decision-gate, user-decision-gate, and verify-work-item may have multiple children. ${details}. ` + `Branches represent mutually exclusive routing paths, not parallel execution.`);
+  }
   const visited = new Set;
   const recStack = new Set;
   function hasCycle(nodeId) {
@@ -110086,7 +110108,11 @@ function validateDagV3(metadata, nodes) {
   if (hasCycle(effectiveEntryId)) {
     throw new Error("DAG contains a cycle (circular dependency detected)");
   }
-  const BINARY_COMPONENTS = new Set(["verify", "decision-gate", "user-decision-gate"]);
+  const BINARY_COMPONENTS = new Set([
+    "verify-work-item",
+    "decision-gate",
+    "user-decision-gate"
+  ]);
   const underBranched = workNodes.filter((n) => {
     if (!n.component || !BINARY_COMPONENTS.has(n.component))
       return false;
@@ -110107,7 +110133,11 @@ function flattenTreeV3(metadata, nodes) {
     if (map2[node.id]) {
       throw new Error(`DAG validation error: duplicate node id "${node.id}".`);
     }
-    const flat = { id: node.id, prompt: node.prompt, enforcement: node.enforcement };
+    const flat = {
+      id: node.id,
+      prompt: node.prompt,
+      enforcement: node.enforcement
+    };
     if (node.children && node.children.length > 0)
       flat.children = node.children;
     if (node.description)
@@ -110118,7 +110148,11 @@ function flattenTreeV3(metadata, nodes) {
 }
 function dagToMermaidCompactV3(metadata, nodes) {
   const warnings = [];
-  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+  const PROTECTED_IDS = new Set([
+    "execution-kickoff",
+    "plan-success",
+    "plan-fail"
+  ]);
   const kickoff = nodes.find((n) => n.id === "execution-kickoff");
   const effectiveEntryId = kickoff?.children?.[0] ?? metadata.entry_node_id;
   const exitAnnotations = {};
@@ -110178,7 +110212,9 @@ function dagToMermaidCompactV3(metadata, nodes) {
   }
   const depth = {};
   if (nodeMap[virtualMetadata.entry_node_id]) {
-    const queue = [{ id: virtualMetadata.entry_node_id, d: 0 }];
+    const queue = [
+      { id: virtualMetadata.entry_node_id, d: 0 }
+    ];
     while (queue.length > 0) {
       const { id, d } = queue.shift();
       if (depth[id] !== undefined)
@@ -110326,7 +110362,11 @@ function formatCompactDagDraft(metadata, nodes) {
     if (n?.children)
       queue.push(...n.children);
   }
-  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+  const PROTECTED_IDS = new Set([
+    "execution-kickoff",
+    "plan-success",
+    "plan-fail"
+  ]);
   const nodeMap = {};
   for (const n of nodes)
     nodeMap[n.id] = n;
@@ -110614,13 +110654,7 @@ function suggestRecoveryActions(report) {
 function withDescription(promptText, description) {
   if (!description)
     return promptText;
-  return `${promptText}
-
----
-
-## Node Context
-
-${description}`;
+  return promptText.replace("{{DESCRIPTION}}", description);
 }
 var PlanningEnforcementPlugin = async (_ctx) => {
   const { client } = _ctx;
@@ -110717,6 +110751,24 @@ var PlanningEnforcementPlugin = async (_ctx) => {
           }
           result += `Please wait for your next task.`;
           return result;
+        }
+      }),
+      get_branch_options: tool({
+        description: "Returns the two branch node IDs available for next_step on the current branching node. Call this before making a routing decision to know the valid options.",
+        args: {},
+        async execute(_args, context) {
+          const statePath = dagStatePath(resolveWorktree(context), context.sessionID);
+          const state = readState(statePath);
+          if (!state)
+            return "No active DAG session.";
+          const node = state.node_map[state.current_node];
+          if (!node)
+            return `Current node "${state.current_node}" not found in DAG.`;
+          const children = node.children ?? [];
+          if (children.length !== 2) {
+            return `Node "${state.current_node}" is not a branching node — it has ${children.length} child(ren).`;
+          }
+          return `Branch options for next_step: [${children.join(", ")}]`;
         }
       }),
       recover_context: tool({
@@ -111176,6 +111228,18 @@ Pending Branch Choice: [${choices}]
               errors3.push(`"${from}" already has ${workChildren.length - 1} work-node children (${workChildren.slice(0, -1).join(", ")}). ` + `Adding "${to}" would give it ${workChildren.length} — max is 2. ` + `Decompose wider branches into nested binary decisions.`);
               continue;
             }
+            if (workChildren.length === 2) {
+              const BRANCHING_COMPONENTS = new Set([
+                "decision-gate",
+                "user-decision-gate",
+                "verify-work-item"
+              ]);
+              if (!parent.component || !BRANCHING_COMPONENTS.has(parent.component)) {
+                parent.children.pop();
+                errors3.push(`"${from}" (${parent.component ?? "unknown type"}) cannot have multiple children — ` + `only decision-gate, user-decision-gate, and verify-work-item may branch. ` + `Parallel work is not supported. If this is a decision point, use the appropriate gate node type.`);
+                continue;
+              }
+            }
             wired.push(`"${from}" → "${to}"`);
           }
           if (errors3.length > 0 && wired.length === 0) {
@@ -111453,15 +111517,12 @@ Pending Branch Choice: [${choices}]
         }
       }),
       get_planning_components_catalogue: tool({
-        description: "Retrieve the planning components catalogue listing all available node types. Returns CATALOGUE.md text verbatim from the global node-library installation. Use variant='core' for the minimal core component set, or omit/use 'full' for the complete catalogue.",
-        args: {
-          variant: tool.schema.string().optional().describe("Catalogue variant: 'core' for minimal structural components only, 'full' (default) for the complete catalogue including specialist nodes.")
-        },
-        async execute({ variant }, _context) {
-          const filename = variant === "core" ? "CATALOGUE-CORE.md" : "CATALOGUE.md";
-          const cataloguePath = path6.join(CONFIG_ROOT, "planning", "plan-session", "node-library", filename);
+        description: "Retrieve the planning components catalogue listing all available node types. Returns CATALOGUE.md text verbatim from the global node-library installation.",
+        args: {},
+        async execute(_args, _context) {
+          const cataloguePath = path6.join(CONFIG_ROOT, "planning", "plan-session", "node-library", "CATALOGUE.md");
           if (!fs6.existsSync(cataloguePath)) {
-            throw new Error(`Catalogue variant "${variant}" not found at ${cataloguePath}`);
+            throw new Error(`Catalogue not found at ${cataloguePath}`);
           }
           return fs6.readFileSync(cataloguePath, "utf-8");
         }

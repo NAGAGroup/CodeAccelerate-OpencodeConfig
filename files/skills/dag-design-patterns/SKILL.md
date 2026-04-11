@@ -6,6 +6,10 @@ description: Patterns for DAG construction — sequential phases, verify-retry s
 <example>
 // connect_nodes edges format: {from: to} — left node runs before right node
 // {A: B} means A → B in execution order, matching the compact draft notation (A) → (B)
+//
+// CRITICAL: JSON objects do not allow duplicate keys. To wire two children from one parent,
+// you MUST use an array: {A: [B, C]} — NOT {A: B, A: C} (the second key silently overwrites the first).
+// This is the most common wiring mistake. Always use arrays for branching nodes.
 
 Building a sequential phase:
 add_nodes_to_dag(plan_name=[plan name], nodes={[A]: [component], [B]: [component], [C]: [component]})

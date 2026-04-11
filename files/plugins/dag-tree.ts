@@ -2,9 +2,16 @@ import type { DagNodeV3, DagMetadataV3, FlatNode } from "./types";
 
 // ─── Validation ───────────────────────────────────────────────────────────────
 
-export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void {
+export function validateDagV3(
+  metadata: DagMetadataV3,
+  nodes: DagNodeV3[],
+): void {
   // Protected nodes are internal plumbing — never expose them in agent-facing error messages.
-  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+  const PROTECTED_IDS = new Set([
+    "execution-kickoff",
+    "plan-success",
+    "plan-fail",
+  ]);
   const workNodes = nodes.filter((n) => !PROTECTED_IDS.has(n.id));
 
   // Duplicate IDs
@@ -25,7 +32,9 @@ export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void
   for (const node of workNodes) {
     for (const childId of node.children ?? []) {
       if (!PROTECTED_IDS.has(childId) && !nodeMap[childId]) {
-        throw new Error(`Node "${node.id}" references child "${childId}" which does not exist`);
+        throw new Error(
+          `Node "${node.id}" references child "${childId}" which does not exist`,
+        );
       }
     }
   }
@@ -33,9 +42,13 @@ export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void
   // Entry point check — execution-kickoff must have exactly one work node child
   const kickoff = nodes.find((n) => n.id === "execution-kickoff");
   const effectiveEntryId = kickoff?.children?.[0];
-  if (!effectiveEntryId || PROTECTED_IDS.has(effectiveEntryId) || !nodeMap[effectiveEntryId]) {
+  if (
+    !effectiveEntryId ||
+    PROTECTED_IDS.has(effectiveEntryId) ||
+    !nodeMap[effectiveEntryId]
+  ) {
     throw new Error(
-      `No entry point has been set. Call \`set_entry_point\` with the first work node to resolve.`
+      `No entry point has been set. Call \`set_entry_point\` with the first work node to resolve.`,
     );
   }
 
@@ -47,14 +60,15 @@ export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void
     if (reachable.has(id)) continue;
     reachable.add(id);
     for (const childId of nodeMap[id]?.children ?? []) {
-      if (!PROTECTED_IDS.has(childId) && !reachable.has(childId)) queue.push(childId);
+      if (!PROTECTED_IDS.has(childId) && !reachable.has(childId))
+        queue.push(childId);
     }
   }
   const unreachableWork = workNodes.filter((n) => !reachable.has(n.id));
   if (unreachableWork.length > 0) {
     throw new Error(
       `Unreachable nodes (no path from entry): ${unreachableWork.map((n) => n.id).join(", ")}. ` +
-      `Connect them via \`connect_nodes\` or remove them with \`delete_node\`.`
+        `Connect them via \`connect_nodes\` or remove them with \`delete_node\`.`,
     );
   }
 
@@ -62,18 +76,20 @@ export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void
   const allExits = new Set<string>();
   for (const n of workNodes) {
     for (const childId of n.children ?? []) {
-      if (childId === "plan-success" || childId === "plan-fail") allExits.add(n.id);
+      if (childId === "plan-success" || childId === "plan-fail")
+        allExits.add(n.id);
     }
   }
   const unsetLeaves = workNodes.filter(
     (n) =>
-      (!n.children || n.children.filter((c) => !PROTECTED_IDS.has(c)).length === 0) &&
+      (!n.children ||
+        n.children.filter((c) => !PROTECTED_IDS.has(c)).length === 0) &&
       !allExits.has(n.id),
   );
   if (unsetLeaves.length > 0) {
     throw new Error(
       `The following leaf nodes are not connected or marked as exit points: ${unsetLeaves.map((n) => n.id).join(", ")}. ` +
-      `Connect them to another DAG node via \`connect_nodes\` or mark them as exit points via \`set_exit_point\`.`
+        `Connect them to another DAG node via \`connect_nodes\` or mark them as exit points via \`set_exit_point\`.`,
     );
   }
 
@@ -84,14 +100,44 @@ export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void
   if (overBranched.length > 0) {
     const details = overBranched
       .map((n) => {
-        const visibleChildren = n.children!.filter((c) => !PROTECTED_IDS.has(c));
+        const visibleChildren = n.children!.filter(
+          (c) => !PROTECTED_IDS.has(c),
+        );
         return `"${n.id}" has ${visibleChildren.length} children: [${visibleChildren.join(", ")}]`;
       })
       .join("; ");
     throw new Error(
       `Branching limit violated — nodes may have at most 2 children. ${details}. ` +
-      `Decision gates and verify nodes must have exactly 2 children. ` +
-      `Decompose wider branches into nested binary decisions.`
+        `Decision gates and verify nodes must have exactly 2 children. ` +
+        `Decompose wider branches into nested binary decisions.`,
+    );
+  }
+
+  // Parallel work prevention — only branching types may have multiple children
+  const BRANCHING_COMPONENTS = new Set([
+    "verify-work-item",
+    "decision-gate",
+    "user-decision-gate",
+  ]);
+  const illegalBranching = workNodes.filter((n) => {
+    const visibleChildren = (n.children ?? []).filter(
+      (c) => !PROTECTED_IDS.has(c),
+    );
+    if (visibleChildren.length < 2) return false;
+    return !n.component || !BRANCHING_COMPONENTS.has(n.component);
+  });
+  if (illegalBranching.length > 0) {
+    const details = illegalBranching
+      .map((n) => {
+        const visibleChildren = (n.children ?? []).filter(
+          (c) => !PROTECTED_IDS.has(c),
+        );
+        return `"${n.id}" (${n.component ?? "unknown type"}) has ${visibleChildren.length} children: [${visibleChildren.join(", ")}]`;
+      })
+      .join("; ");
+    throw new Error(
+      `Parallel work detected — only decision-gate, user-decision-gate, and verify-work-item may have multiple children. ${details}. ` +
+        `Branches represent mutually exclusive routing paths, not parallel execution.`,
     );
   }
 
@@ -115,35 +161,51 @@ export function validateDagV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): void
   }
 
   // Binary branching enforcement: verify, decision-gate, and user-decision-gate must have exactly 2 children
-  const BINARY_COMPONENTS = new Set(["verify", "decision-gate", "user-decision-gate"]);
+  const BINARY_COMPONENTS = new Set([
+    "verify-work-item",
+    "decision-gate",
+    "user-decision-gate",
+  ]);
   const underBranched = workNodes.filter((n) => {
     if (!n.component || !BINARY_COMPONENTS.has(n.component)) return false;
-    const visibleChildren = (n.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+    const visibleChildren = (n.children ?? []).filter(
+      (c) => !PROTECTED_IDS.has(c),
+    );
     return visibleChildren.length !== 2;
   });
   if (underBranched.length > 0) {
     const details = underBranched
       .map((n) => {
-        const visibleChildren = (n.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+        const visibleChildren = (n.children ?? []).filter(
+          (c) => !PROTECTED_IDS.has(c),
+        );
         return `"${n.id}" (${n.component}) has ${visibleChildren.length} children — needs exactly 2`;
       })
       .join("; ");
     throw new Error(
-      `Binary branching violated — verify, decision-gate, and user-decision-gate nodes must have exactly 2 children. ${details}.`
+      `Binary branching violated — verify, decision-gate, and user-decision-gate nodes must have exactly 2 children. ${details}.`,
     );
   }
 }
 
 // ─── Flatten ──────────────────────────────────────────────────────────────────
 
-export function flattenTreeV3(metadata: DagMetadataV3, nodes: DagNodeV3[]): Record<string, FlatNode> {
+export function flattenTreeV3(
+  metadata: DagMetadataV3,
+  nodes: DagNodeV3[],
+): Record<string, FlatNode> {
   const map: Record<string, FlatNode> = {};
   for (const node of nodes) {
     if (map[node.id]) {
       throw new Error(`DAG validation error: duplicate node id "${node.id}".`);
     }
-    const flat: FlatNode = { id: node.id, prompt: node.prompt, enforcement: node.enforcement };
-    if (node.children && node.children.length > 0) flat.children = node.children;
+    const flat: FlatNode = {
+      id: node.id,
+      prompt: node.prompt,
+      enforcement: node.enforcement,
+    };
+    if (node.children && node.children.length > 0)
+      flat.children = node.children;
     if (node.description) flat.description = node.description;
     map[node.id] = flat;
   }
@@ -175,7 +237,11 @@ export function dagToMermaidCompactV3(
 
   // Protected nodes are internal plumbing — hide them from the diagram.
   // Resolve the effective entry point (kickoff's child) and track exit annotations.
-  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+  const PROTECTED_IDS = new Set([
+    "execution-kickoff",
+    "plan-success",
+    "plan-fail",
+  ]);
   const kickoff = nodes.find((n) => n.id === "execution-kickoff");
   const effectiveEntryId = kickoff?.children?.[0] ?? metadata.entry_node_id;
 
@@ -210,7 +276,7 @@ export function dagToMermaidCompactV3(
     const children = (node.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
     if (children.length > 2) {
       warnings.push(
-        `BRANCHING VIOLATION: "${node.id}" has ${children.length} children [${children.join(", ")}] — max 2 allowed. Decompose into nested binary decisions.`
+        `BRANCHING VIOLATION: "${node.id}" has ${children.length} children [${children.join(", ")}] — max 2 allowed. Decompose into nested binary decisions.`,
       );
     }
   }
@@ -219,7 +285,9 @@ export function dagToMermaidCompactV3(
   for (const node of filteredNodes) {
     for (const childId of node.children ?? []) {
       if (!nodeMap[childId] && !PROTECTED_IDS.has(childId)) {
-        warnings.push(`Node "${node.id}" references missing child "${childId}"`);
+        warnings.push(
+          `Node "${node.id}" references missing child "${childId}"`,
+        );
       }
     }
   }
@@ -240,7 +308,10 @@ export function dagToMermaidCompactV3(
       recStack.delete(id);
       return false;
     }
-    if (nodeMap[virtualMetadata.entry_node_id] && detectCycle(virtualMetadata.entry_node_id)) {
+    if (
+      nodeMap[virtualMetadata.entry_node_id] &&
+      detectCycle(virtualMetadata.entry_node_id)
+    ) {
       hasCycle = true;
       warnings.push("DAG contains a cycle — diagram may not render correctly");
     }
@@ -250,7 +321,9 @@ export function dagToMermaidCompactV3(
 
   const depth: Record<string, number> = {};
   if (nodeMap[virtualMetadata.entry_node_id]) {
-    const queue: Array<{ id: string; d: number }> = [{ id: virtualMetadata.entry_node_id, d: 0 }];
+    const queue: Array<{ id: string; d: number }> = [
+      { id: virtualMetadata.entry_node_id, d: 0 },
+    ];
     while (queue.length > 0) {
       const { id, d } = queue.shift()!;
       if (depth[id] !== undefined) continue; // already visited (handles shared terminals)
@@ -279,7 +352,8 @@ export function dagToMermaidCompactV3(
   for (const node of filteredNodes) {
     if (!parentCount[node.id]) parentCount[node.id] = 0;
     for (const childId of node.children ?? []) {
-      if (nodeMap[childId]) parentCount[childId] = (parentCount[childId] ?? 0) + 1;
+      if (nodeMap[childId])
+        parentCount[childId] = (parentCount[childId] ?? 0) + 1;
     }
   }
 
@@ -304,7 +378,9 @@ export function dagToMermaidCompactV3(
   const edges: Array<{ from: string; to: string }> = [];
 
   // Process reachable nodes in BFS order (entry first)
-  const bfsQueue: string[] = nodeMap[virtualMetadata.entry_node_id] ? [virtualMetadata.entry_node_id] : [];
+  const bfsQueue: string[] = nodeMap[virtualMetadata.entry_node_id]
+    ? [virtualMetadata.entry_node_id]
+    : [];
   while (bfsQueue.length > 0) {
     const startId = bfsQueue.shift()!;
     if (visited.has(startId)) continue;
@@ -314,7 +390,9 @@ export function dagToMermaidCompactV3(
     visited.add(startId);
     let cur = startId;
     while (isCollapsible(cur)) {
-      const nextId = (nodeMap[cur].children ?? []).find((c) => nodeMap[c] && !visited.has(c));
+      const nextId = (nodeMap[cur].children ?? []).find(
+        (c) => nodeMap[c] && !visited.has(c),
+      );
       if (!nextId) break;
       chain.push(nextId);
       visited.add(nextId);
@@ -366,11 +444,14 @@ export function dagToMermaidCompactV3(
 
   const lines: string[] = ["flowchart TD"];
   for (const group of groups) {
-    const isOrphan = orphans.has(group.ids[0]) || group.ids.some((id) => orphans.has(id));
-    const label = group.ids.map((id) => {
-      const comp = nodeMap[id]?.component;
-      return comp ? `${id} (${comp})` : id;
-    }).join("<br/>");
+    const isOrphan =
+      orphans.has(group.ids[0]) || group.ids.some((id) => orphans.has(id));
+    const label = group.ids
+      .map((id) => {
+        const comp = nodeMap[id]?.component;
+        return comp ? `${id} (${comp})` : id;
+      })
+      .join("<br/>");
     const safeLabel = label.replace(/"/g, "'");
 
     // Check if any node in this group is an exit point
@@ -429,7 +510,11 @@ export function formatCompactDagDraft(
 
   // (Orphan grouping is done later, after separating work nodes from protected nodes)
 
-  const PROTECTED_IDS = new Set(["execution-kickoff", "plan-success", "plan-fail"]);
+  const PROTECTED_IDS = new Set([
+    "execution-kickoff",
+    "plan-success",
+    "plan-fail",
+  ]);
 
   // Build a node map for O(1) lookup
   const nodeMap: Record<string, DagNodeV3> = {};
@@ -449,7 +534,9 @@ export function formatCompactDagDraft(
     const inGroupParents: Record<string, number> = {};
     for (const n of group) inGroupParents[n.id] = 0;
     for (const n of group) {
-      for (const childId of (n.children ?? []).filter((c) => !PROTECTED_IDS.has(c))) {
+      for (const childId of (n.children ?? []).filter(
+        (c) => !PROTECTED_IDS.has(c),
+      )) {
         if (groupIds.has(childId)) {
           inGroupParents[childId] = (inGroupParents[childId] ?? 0) + 1;
         }
@@ -467,7 +554,9 @@ export function formatCompactDagDraft(
     while (kahnQueue.length > 0) {
       const id = kahnQueue.shift()!;
       topoOrder.push(id);
-      for (const childId of (nodeMap[id]?.children ?? []).filter((c) => !PROTECTED_IDS.has(c))) {
+      for (const childId of (nodeMap[id]?.children ?? []).filter(
+        (c) => !PROTECTED_IDS.has(c),
+      )) {
         if (groupIds.has(childId)) {
           inDegree[childId]--;
           if (inDegree[childId] === 0) kahnQueue.push(childId);
@@ -498,7 +587,9 @@ export function formatCompactDagDraft(
         rendered.add(cur);
         const node = nodeMap[cur];
         if (!node) break;
-        const children = (node.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+        const children = (node.children ?? []).filter(
+          (c) => !PROTECTED_IDS.has(c),
+        );
 
         if (children.length === 0) {
           // Leaf
@@ -507,7 +598,11 @@ export function formatCompactDagDraft(
         } else if (children.length === 1) {
           const nextId = children[0];
           // Continue chain only if child is in-group, unrendered, single-parent
-          if (groupIds.has(nextId) && !rendered.has(nextId) && (inGroupParents[nextId] ?? 0) <= 1) {
+          if (
+            groupIds.has(nextId) &&
+            !rendered.has(nextId) &&
+            (inGroupParents[nextId] ?? 0) <= 1
+          ) {
             parts.push(nodeLabel(cur));
             cur = nextId;
           } else {
@@ -520,8 +615,11 @@ export function formatCompactDagDraft(
           // Branching — show children in brackets, mark already-rendered or out-of-group
           // Also mark in-group leaf children as rendered so they don't get standalone lines
           const annotations = children.map((childId) => {
-            if (rendered.has(childId) || !groupIds.has(childId)) return `→ ${childId}`;
-            const childChildren = (nodeMap[childId]?.children ?? []).filter((c) => !PROTECTED_IDS.has(c));
+            if (rendered.has(childId) || !groupIds.has(childId))
+              return `→ ${childId}`;
+            const childChildren = (nodeMap[childId]?.children ?? []).filter(
+              (c) => !PROTECTED_IDS.has(c),
+            );
             if (childChildren.length === 0) rendered.add(childId); // leaf — mark rendered, no standalone line
             return childId;
           });
@@ -560,15 +658,20 @@ export function formatCompactDagDraft(
   const failureExits: string[] = [];
   for (const n of workNodes) {
     for (const childId of n.children ?? []) {
-      if (childId === "plan-success" && !successExits.includes(n.id)) successExits.push(n.id);
-      if (childId === "plan-fail" && !failureExits.includes(n.id)) failureExits.push(n.id);
+      if (childId === "plan-success" && !successExits.includes(n.id))
+        successExits.push(n.id);
+      if (childId === "plan-fail" && !failureExits.includes(n.id))
+        failureExits.push(n.id);
     }
   }
 
   // Find leaf work nodes that have no set_exit_point yet
   const allExits = new Set([...successExits, ...failureExits]);
   const unsetLeaves = workNodes.filter(
-    (n) => (!n.children || n.children.filter((c) => !PROTECTED_IDS.has(c)).length === 0) && !allExits.has(n.id),
+    (n) =>
+      (!n.children ||
+        n.children.filter((c) => !PROTECTED_IDS.has(c)).length === 0) &&
+      !allExits.has(n.id),
   );
 
   const lines: string[] = [];
@@ -580,10 +683,16 @@ export function formatCompactDagDraft(
   lines.push("// ENTRY / EXIT STATUS");
   lines.push(BANNER);
   lines.push(`// entry: ${entryNodeId ?? "(not set)"}`);
-  lines.push(`// success exits: ${successExits.length > 0 ? successExits.join(", ") : "(none)"}`);
-  lines.push(`// failure exits: ${failureExits.length > 0 ? failureExits.join(", ") : "(none)"}`);
+  lines.push(
+    `// success exits: ${successExits.length > 0 ? successExits.join(", ") : "(none)"}`,
+  );
+  lines.push(
+    `// failure exits: ${failureExits.length > 0 ? failureExits.join(", ") : "(none)"}`,
+  );
   if (unsetLeaves.length > 0) {
-    lines.push(`// unset leaf nodes: ${unsetLeaves.map((n) => n.id).join(", ")}`);
+    lines.push(
+      `// unset leaf nodes: ${unsetLeaves.map((n) => n.id).join(", ")}`,
+    );
   }
   lines.push("");
 
@@ -624,7 +733,8 @@ export function formatCompactDagDraft(
         group.push(n);
         for (const childId of n.children ?? []) {
           // Only follow children that are also orphaned
-          if (!PROTECTED_IDS.has(childId) && orphanIds.has(childId)) groupQueue.push(childId);
+          if (!PROTECTED_IDS.has(childId) && orphanIds.has(childId))
+            groupQueue.push(childId);
         }
       }
     }

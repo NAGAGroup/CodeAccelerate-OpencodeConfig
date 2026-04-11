@@ -1046,6 +1046,25 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               continue;
             }
 
+            // Parallel work prevention — only branching types may have 2 children
+            if (workChildren.length === 2) {
+              const BRANCHING_COMPONENTS = new Set([
+                "decision-gate",
+                "user-decision-gate",
+                "verify-work-item",
+              ]);
+              if (!parent.component || !BRANCHING_COMPONENTS.has(parent.component)) {
+                // Roll back
+                parent.children.pop();
+                errors.push(
+                  `"${from}" (${parent.component ?? "unknown type"}) cannot have multiple children — ` +
+                    `only decision-gate, user-decision-gate, and verify-work-item may branch. ` +
+                    `Parallel work is not supported. If this is a decision point, use the appropriate gate node type.`,
+                );
+                continue;
+              }
+            }
+
             wired.push(`"${from}" → "${to}"`);
           }
 

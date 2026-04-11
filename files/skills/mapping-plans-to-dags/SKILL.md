@@ -6,6 +6,9 @@ description: Teaches how to map a plain-language plan to an executable DAG using
 Branch nodes (decision-gate, user-decision-gate, verify-work-item) must have exactly 2 children.
 Every leaf node must be write-notes. No other node type may be a leaf.
 No cycles — no node may appear on a path that leads back to itself.
+Only decision-gate, user-decision-gate, and verify-work-item may have multiple children. All other node types are strictly sequential — one child maximum. Branches are mutually exclusive routing paths, not parallel execution.
+Only call set_exit_point on a true leaf node — a write-notes node with no children. A write-notes node that connects to further work is an intermediate node, not an exit point.
+When wiring two children from one parent node, always use an array in connect_nodes: {"parent": ["child-a", "child-b"]}. JSON objects do not allow duplicate keys — {"parent": "child-a", "parent": "child-b"} will silently drop one edge.
 </rules>
 
 <methodology>
