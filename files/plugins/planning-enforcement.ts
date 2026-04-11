@@ -26,10 +26,10 @@ import {
   suggestRecoveryActions,
 } from "./divergence-detection";
 
-/** Append planner-authored description to a static component prompt. */
+/** Inject planner-authored description into the {{DESCRIPTION}} placeholder in the prompt. */
 function withDescription(promptText: string, description?: string): string {
   if (!description) return promptText;
-  return `${promptText}\n\n---\n\n## Node Context\n\n${description}`;
+  return promptText.replace('{{DESCRIPTION}}', description);
 }
 
 export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
@@ -178,6 +178,32 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           result += `Please wait for your next task.`;
 
           return result;
+        },
+      }),
+
+      get_branch_options: tool({
+        description:
+          "Returns the two branch node IDs available for next_step on the current branching node. Call this before making a routing decision to know the valid options.",
+        args: {},
+        async execute(_args, context) {
+          const statePath = dagStatePath(
+            resolveWorktree(context),
+            context.sessionID,
+          );
+          const state = readState(statePath);
+
+          if (!state) return "No active DAG session.";
+
+          const node = state.node_map[state.current_node];
+          if (!node)
+            return `Current node "${state.current_node}" not found in DAG.`;
+
+          const children = node.children ?? [];
+          if (children.length !== 2) {
+            return `Node "${state.current_node}" is not a branching node — it has ${children.length} child(ren).`;
+          }
+
+          return `Branch options for next_step: [${children.join(", ")}]`;
         },
       }),
 
