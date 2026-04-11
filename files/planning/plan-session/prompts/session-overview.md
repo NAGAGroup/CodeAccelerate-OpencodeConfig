@@ -8,12 +8,12 @@
 Establish plan identity by choosing a short, descriptive execution plan name.
 </goal>
 
+<rules>
+Plan name must describe the goal, not the session.
+Plan name must be all lowercase with hyphens only
+</rules>
+
 <instructions>
 1. Use choose_plan_name to set a lowercase, hyphenated name that describes what the plan will accomplish — not the planning session itself.
 2. Call next_step.
 </instructions>
-
-<check>
-1. Does the name describe the goal, not the session?
-2. Is it lowercase with hyphens only, no spaces or special characters?
-</check>

@@ -5,18 +5,11 @@
 **Questions Allowed?:** No
 
 <goal>
-Build broad understanding of the project and user's goal through wide-shallow exploration.
+Build broad understanding of the project.
 </goal>
 
 <instructions>
 1. Load the context-scout skill. Use it to compose a dispatch prompt — think through what areas to survey and what questions the scout should answer about the project structure, relationships, and constraints.
-2. Dispatch context-scout using the task tool with plan name {{PLAN_NAME}}.
+2. Dispatch context-scout using the task tool, filling in the prompt template from the skill. Use {{PLAN_NAME}} for the plan name.
 3. Call next_step.
 </instructions>
-
-<check>
-1. What does the user's goal require me to understand about the project?
-2. What areas, relationships, and constraints should the scout survey?
-3. Have I asked for an unknowns section so gaps surface explicitly?
-4. Is the prompt goal-oriented — describing what to understand, not which files to read?
-</check>

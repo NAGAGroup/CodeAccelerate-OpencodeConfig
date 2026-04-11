@@ -2,10 +2,10 @@
 {"id":"session-overview","prompt":"session-overview.md","enforcement":["choose_plan_name"],"children":["orientation-scout"]}
 {"id":"orientation-scout","prompt":"orientation-scout.md","enforcement":["task"],"children":["external-research"]}
 {"id":"external-research","prompt":"external-research.md","enforcement":["task"],"children":["write-notes"]}
-{"id":"write-notes","prompt":"store-notes.md","enforcement":["qdrant_qdrant-store"],"children":["dag-design"]}
-{"id":"dag-design","prompt":"dag-design.md","enforcement":["init_dag","task"],"children":["hw-assessment"]}
-{"id":"hw-assessment","prompt":"hw-assessment.md","enforcement":["qdrant_qdrant-find","qdrant_qdrant-store"],"children":["dag-review"]}
+{"id":"write-notes","prompt":"store-notes.md","enforcement":["qdrant_qdrant-store"],"children":["draft-plan"]}
+{"id":"draft-plan","prompt":"draft-plan.md","enforcement":["qdrant_qdrant-store"],"children":["dag-design"]}
+{"id":"dag-design","prompt":"dag-design.md","enforcement":["init_dag","task"],"children":["dag-review"]}
 {"id":"dag-review","prompt":"dag-review.md","enforcement":["task"],"children":["dag-revision"]}
-{"id":"dag-revision","prompt":"dag-revision.md","enforcement":["reset_entry_exit_points","task"],"children":["dag-description"]}
-{"id":"dag-description","prompt":"dag-description.md","enforcement":["task"],"children":["plan-success"]}
-{"id":"plan-success","prompt":"plan-success.md","enforcement":[],"children":[]}
+{"id":"dag-revision","prompt":"dag-revision.md","enforcement":["qdrant_qdrant-store","reset_entry_exit_points","task"],"children":["dag-description"]}
+{"id":"dag-description","prompt":"dag-description.md","enforcement":["get_compact_dag_draft","task"],"children":["plan-success"]}
+{"id":"plan-success","prompt":"plan-success.md","enforcement":["present_dag_diagram","question"],"children":[]}
