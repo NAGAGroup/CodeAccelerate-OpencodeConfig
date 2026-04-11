@@ -1,20 +1,20 @@
 ---
 name: dag-description-author
-description: Teaches how to dispatch dag-description-author to write per-node context descriptions that guide the executing agent.
+description: Teaches how to dispatch dag-description-author to apply per-node context descriptions to an execution DAG.
 ---
 <rules>
 Your prompt must match the template, filling in only the placeholder content and including the rest verbatim.
-Include planning context in the prompt — the author also queries qdrant directly, but priming with context improves description quality.
 </rules>
 
 <prompt template>
 prompt="Plan Name: [the plan name]
 
-User's goal: [what the execution plan is supposed to accomplish]
+Node descriptions:
+[list each node ID and its description, one per line:
+- [node-id]: [description]
+- [node-id]: [description]]
 
-Planning context summary: [key findings, scope decisions, and user answers from the investigation phase]
-
-Instructions: Write per-node context descriptions for every work node in the DAG. Ground every description in the planning discoveries — do not invent requirements."
+Instructions: Apply each description exactly as provided using add_description_to_node. Do not skip any nodes."
 
 description="[3-5 word description for the user]"
 subagent_type="dag-description-author"

@@ -22,13 +22,13 @@ Always call next_step immediately after completing all instructions for a node, 
 [A clear, concise statement of what the outcome of this step should be. This is what you should focus on achieving in this step, using the required skills and tools. The instructions provided will guide you on how to achieve this goal, but the goal itself is the key focus.]
 </goal>
 
+<rules>
+[Binding constraints that apply throughout this node's execution. Rules take precedence over instructions if there is any conflict. Apply these before and during execution of every instruction.]
+</rules>
+
 <instructions>
 [Numbered instructions that you must follow to achieve the goal. These will often include calls to required tools, and may include calls to optional tools. You must follow these instructions exactly as specified, in order, and call next_step immediately after completing them. Do not wait for any user input or response unless explicitly allowed in the instructions.]
 </instructions>
-
-<check>
-[Checklist to verify that you have completed the instructions and achieved the goal. This is a self-check to ensure you have done everything required before calling next_step. You must go through this checklist and confirm that each item is complete before proceeding.]
-</check>
 </instruction prompt format>
 
 
