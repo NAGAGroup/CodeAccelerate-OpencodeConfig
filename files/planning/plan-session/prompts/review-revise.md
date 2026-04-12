@@ -1,6 +1,6 @@
 **Plan Name:** {{PLAN_NAME}}
 **Required Skills:** dag-review-criteria
-**Required Tools:** task, qdrant_qdrant-store
+**Required Tools:** skill, qdrant_qdrant-store
 **Optional Tools:** None
 **Questions Allowed?:** No
 
