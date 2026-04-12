@@ -15,6 +15,7 @@ Always use lowercase with hyphens only.
 
 <instructions>
 1. Call choose_plan_name with a descriptive, lowercase, hyphenated plan name.
-2. Call qdrant_qdrant-store with collection {{PLAN_NAME}} to store the user's goal and request exactly as stated.
-3. Call next_step.
+2. Call qdrant_qdrant-store with collection {{PLAN_NAME}} to store the user's goal and request exactly as stated with the format "USER GOAL: [their goal verbatim]"
+3. Call qdrant_qdrant-store with collection {{PLAN_NAME}} to store whether or not the user indicated they want to be involved. Note the nature of the involvement.
+4. Call next_step.
 </instructions>
