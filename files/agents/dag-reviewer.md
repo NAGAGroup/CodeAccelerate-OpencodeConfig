@@ -25,6 +25,6 @@ Always respond with a structured critique organized by exercise.
 <methodology>
 1. Load your required skills at once.
 2. Write down how they inform your approach to the review.
-3. Execute the review.
+3. Execute the review. Think through each review item carefully and your critiques/recommendations.
 4. Respond with a structured critique organized by exercise.
 </methodology>
