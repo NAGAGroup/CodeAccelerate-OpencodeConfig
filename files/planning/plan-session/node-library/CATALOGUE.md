@@ -1,10 +1,10 @@
 <node types>
 // Internal, project-based search and analysis
-context-scout: Broad and shallow project search. No analysis. Used as a first step in gathering project-specific information. Searches can either be entirely generic, useful for orienting the orchestrator on the project in early phases of plan execution, or for gathering broad project context on a specific phase of a plan, used to inform more targeted searches via context-insurgent. Do not overload a single context-scout node. Split into multiple sequential nodes if multiple distinct searches are needed.
-context-insurgent: Narrow and deep project search. Includes analysis. Used to gather specific information about the project to inform a specific decision or work-item. Place after a context-scout that gathered broad information about the topic, if needed.
+context-scout: Broad and shallow project search. No analysis. Used as a first step in gathering project-specific information. Searches can either be entirely generic, useful for orienting the orchestrator on the project in early phases of plan execution, or for gathering broad project context on a specific phase of a plan, used to inform more targeted searches via context-insurgent. Do not overload a single context-scout node. Split complex scouting tasks into multiple sequential nodes. This node is used extensively throughout a DAG.
+context-insurgent: Narrow and deep project search. Includes analysis. Used to gather specific information about the project to inform a specific decision or work-item. Place after a context-scout that gathered broad information about the topic, if needed. While work-item nodes have their own internal exploratory phases, they should always first be informed by an insurgent search and analysis in preceding steps.
 
 // External, web-based research
-external-scout: External research on any established library, framework, API, tool, or current practice. Scope each external-scout node to a specific topic, technology, or problem space.
+external-scout: Standard external research that any engineer or other professional would run as part of standard work. It is encouraged to use this node multiple times throughout a DAG (e.g. initial research exploring options, more targeted detailed searches before setting up dependencies, researching APIs/getting started guides/tutorials before doing work, etc.). Do not overload a single external-scout node. Split complex research tasks into multiple sequential nodes.
 deep-research: Comprehensive deep research into a topic, technology, or problem space. Rarely needed. If not obvious, likely not needed.
 
 // Doing work (Note: Use internal and external research to help inform work-item steps)
@@ -14,7 +14,7 @@ documentation-expert-work-item: Used to do documentation work. The documentation
 // Branching
 decision-gate: Routes based on accumulated evidence. Use for routing decisions, not verifying implementation outcomes. Exactly 2 children required.
 user-decision-gate: The decision requires user preference rather than executor judgment. Exactly 2 children required.
-verify-work-item: Branching check after a work-item. This includes a delegation to a specialized subagent that has access to shell commands, allowing for building, testing, reading over the changes made in work-items, etc. The agent surfaces failure or success findings to the orchestrator. Success continues forward more work or continues to a write-notes exit node marked as a success exit; fail either continues to a fix sequence or continues to a write-notes exit node marked as a failure exit. Chain multiple verify->fix->verify sequences to handle multiple retries for challenging work.
+verify-work-item: Branching check after a work-item. This includes a delegation to a specialized subagent that has access to shell commands, allowing for building, testing, reading over the changes made in work-items, etc. The agent surfaces failure or success findings to the orchestrator. Success continues forward more work or continues to a write-notes exit node marked as a success exit; fail either continues to a fix sequence or continues to a write-notes exit node marked as a failure exit. Chain multiple verify->fix->verify sequences to handle multiple retries for challenging work. DAGs can have multiple exit pathways, do not limit your DAG to a single exit/success exit node.
 
 // Special actions
 user-discussion: Use when user input would prevent wasted work, executing unstructured user discussion before a user-decision-gate, brainstorming ideas, etc.

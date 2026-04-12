@@ -40,10 +40,11 @@ Always call validate_dag before considering your work done. If it fails, keep wo
 
 <methodology>
 1. Read the provided draft plan document and identify the phases, decision points, and verification needs to be modelled.
-2. Call get_planning_components_catalogue and write down the relevant structural rules and mapping guidelines for how to translate plan components into DAG components. Decompose complext steps into multiple nodes. Do not overload a single node with too much work.
-3. For each phase build a sub-DAG, adding all nodes and making all connections. Do not connect phases together yet.
-4. After all sub-DAGs have been built, call get_compact_dag_draft to check your work. Make corrections as needed.
-5. Connect all phases together.
-6. Set the entry point and exit points.
-7. Call validate_dag. If it fails, call get_compact_dag_draft to inspect the current structure, identify the specific issue from the error message, and fix it using connect_nodes, delete_edge, or other tools. Repeat until it passes. Your DAG is not done until it validates — giving up is not an option.
+2. Load all skills at once.
+3. Call get_planning_components_catalogue and write down the relevant structural rules and mapping guidelines for how to translate plan components into DAG components. Decompose complext steps into multiple nodes. Do not overload a single node with too much work.
+4. For each phase build a sub-DAG, adding all nodes and making all connections. Do not connect phases together yet.
+5. After all sub-DAGs have been built, call get_compact_dag_draft to check your work. Make corrections as needed.
+6. Connect all phases together.
+7. Set the entry point and exit points.
+8. Call validate_dag. If it fails, call get_compact_dag_draft to inspect the current structure, identify the specific issue from the error message, and fix it using connect_nodes, delete_edge, or other tools. Repeat until it passes. Your DAG is not done until it validates — giving up is not an option.
 </methodology>

@@ -38,7 +38,8 @@ Make the DAG accurately reflect every phase and decision described in the finali
 </rules>
 
 <methodology>
-1. Call get_compact_dag_draft to get the current state of the DAG and understand the structure you are working with.
+0. Call get_compact_dag_draft to get the current state of the DAG and understand the structure you are working with.
+1. Load all skills at once.
 2. Call get_planning_components_catalogue and write down the relevant structural rules and mapping guidelines for how to translate plan components into DAG components. Decompose complex steps into multiple nodes. Do not overload a single node with too much work.
 3. Call qdrant_qdrant-find to review the session notes for the reviewer's DAG-level critique. Write down the specific structural issues identified and the specialist node recommendations, along with the rationale for each.
 4. Using the dag-revision-patterns, plan out how you will use the DAG tools to make your changes. Write it down.

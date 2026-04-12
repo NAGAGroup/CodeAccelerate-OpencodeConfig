@@ -3,7 +3,7 @@
 {"id":"orientation-scout","prompt":"orientation-scout.md","enforcement":["task"],"children":["external-research"]}
 {"id":"external-research","prompt":"external-research.md","enforcement":["task"],"children":["write-notes"]}
 {"id":"write-notes","prompt":"store-notes.md","enforcement":["qdrant_qdrant-store"],"children":["draft-plan"]}
-{"id":"draft-plan","prompt":"draft-plan.md","enforcement":["qdrant_qdrant-store"],"children":["dag-design"]}
+{"id":"draft-plan","prompt":"draft-plan.md","enforcement":["get_planning_components_catalogue", "qdrant_qdrant-store"],"children":["dag-design"]}
 {"id":"dag-design","prompt":"dag-design.md","enforcement":["init_dag","task"],"children":["dag-review"]}
 {"id":"dag-review","prompt":"dag-review.md","enforcement":["task"],"children":["dag-revision"]}
 {"id":"dag-revision","prompt":"dag-revision.md","enforcement":["qdrant_qdrant-store","reset_entry_exit_points","task"],"children":["dag-description"]}
