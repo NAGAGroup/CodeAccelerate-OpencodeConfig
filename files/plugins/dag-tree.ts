@@ -1,8 +1,8 @@
 import type { DagNodeV3, DagMetadataV3, FlatNode } from "./types";
 
-// ─── Validation ───────────────────────────────────────────────────────────────
+// ─── Validation (retained for reference — no longer called at runtime) ────────
 
-export function validateDagV3(
+function _validateDagV3_unused(
   metadata: DagMetadataV3,
   nodes: DagNodeV3[],
 ): void {

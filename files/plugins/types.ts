@@ -1,3 +1,34 @@
+// === Phase-based plan format (JSONL, schema_version "4.0") ===
+
+export type PhaseType =
+  | "external-research"
+  | "internal-research"
+  | "project-survey"
+  | "work"
+  | "project-commands"
+  | "user-discussion"
+  | "agentic-decision-gate"
+  | "write-notes"
+  | "early-exit";
+
+export const BRANCHING_PHASE_TYPES = new Set<PhaseType>([
+  "agentic-decision-gate",
+  "user-discussion",
+]);
+
+export interface PhaseRecord {
+  phase: string;        // descriptive phase ID, e.g. "2a-implement-auth"
+  phase_type: PhaseType;
+  phase_options: Record<string, unknown>;
+  children: string[];   // child phase IDs — length 0 = terminal, length 1 = sequential, length N = branching
+}
+
+export interface PhaseDagMetadata {
+  schema_version: "4.0";
+  id: string;
+  entry_phase_id: string;
+}
+
 // === DAG format (JSONL, schema_version "3.0") ===
 
 export interface DagNodeV3 {

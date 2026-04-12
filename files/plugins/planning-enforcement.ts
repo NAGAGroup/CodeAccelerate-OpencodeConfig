@@ -1,6 +1,6 @@
 import { tool } from "@opencode-ai/plugin";
 import type { Plugin } from "@opencode-ai/plugin";
-import { renderMermaidASCII } from "beautiful-mermaid";
+
 import * as fs from "fs";
 import * as path from "path";
 import type {
@@ -8,23 +8,86 @@ import type {
   DagSessionState,
   DagNodeV3,
   DagMetadataV3,
+  PhaseRecord,
+  PhaseDagMetadata,
+  PhaseType,
+  BRANCHING_PHASE_TYPES,
 } from "./types";
 import { exemptTools, isExempt, CONFIG_ROOT } from "./constants";
 import { dagStatePath, writeState, readState, now } from "./state-io";
 import { expandPath, readPrompt, resolveDagPath } from "./path-utils";
 import { readDagV3, writeDagV3 } from "./dag-io";
-import {
-  dagToMermaidCompactV3,
-  validateDagV3,
-  flattenTreeV3,
-  formatCompactDagDraft,
-} from "./dag-tree";
+import { flattenTreeV3 } from "./dag-tree";
 import { copyPlanningDag } from "./dag-lifecycle";
 import { ensureOpenCodeIgnore } from "./plugin-utils";
 import {
   detectDivergence,
   suggestRecoveryActions,
 } from "./divergence-detection";
+import { readPhaseDag, writePhaseDag, detectSchemaVersion } from "./phase-io";
+import { compilePhasesToNodes } from "./phase-expander";
+
+// Valid phase types for schema validation
+const VALID_PHASE_TYPES = new Set([
+  "external-research", "internal-research", "project-survey",
+  "work", "project-commands", "user-discussion",
+  "agentic-decision-gate", "write-notes", "early-exit",
+]);
+
+// Phase types allowed to have multiple children
+const BRANCHING_PHASE_TYPE_SET = new Set(["agentic-decision-gate", "user-discussion"]);
+
+/** Validate phase_options for a given phase type. Throws with a clear message on failure. */
+function validatePhaseOptions(phase_type: string, opts: Record<string, unknown>): void {
+  const require = (field: string, expectedType?: string) => {
+    if (!(field in opts) || opts[field] === null || opts[field] === undefined) {
+      throw new Error(`Phase type '${phase_type}' requires '${field}' in phase_options.`);
+    }
+    if (expectedType === "string" && typeof opts[field] !== "string") {
+      throw new Error(`'${field}' must be a string.`);
+    }
+    if (expectedType === "string[]" && !Array.isArray(opts[field])) {
+      throw new Error(`'${field}' must be an array of strings.`);
+    }
+  };
+
+  switch (phase_type) {
+    case "external-research":
+      require("questions", "string[]");
+      if (opts["research-type"] && !["standard", "deep"].includes(opts["research-type"] as string)) {
+        throw new Error(`Invalid value for 'research-type': '${opts["research-type"]}'. Expected: standard | deep.`);
+      }
+      break;
+    case "internal-research":
+      require("questions", "string[]");
+      break;
+    case "project-survey":
+      require("topics", "string[]");
+      break;
+    case "work":
+      require("goal", "string");
+      require("work-type", "string");
+      require("verify-description", "string");
+      if (!["code", "docs"].includes(opts["work-type"] as string)) {
+        throw new Error(`Invalid value for 'work-type': '${opts["work-type"]}'. Expected: code | docs.`);
+      }
+      break;
+    case "project-commands":
+      require("goal", "string");
+      break;
+    case "user-discussion":
+      require("topic", "string");
+      break;
+    case "agentic-decision-gate":
+      require("question", "string");
+      require("branches", "string[]");
+      break;
+    case "write-notes":
+    case "early-exit":
+      // All fields optional
+      break;
+  }
+}
 
 /** Inject planner-authored description into the {{DESCRIPTION}} placeholder in the prompt. */
 function withDescription(promptText: string, description?: string): string {
@@ -122,9 +185,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               return (
                 `Node "${node.id}" complete. DAG session "${state.dag_id}" finished.\n\n` +
                 `PLANNING SESSION COMPLETE. Do NOT continue executing tasks. ` +
-                `Present the final DAG to the user by calling present_dag_diagram with the plan name, then ` +
+                `Present the final plan to the user by calling present_plan_diagram with the plan name, then ` +
                 `present a summary of what was produced. ` +
-                `If a project DAG was written, tell the user they can activate it with /activate-plan {plan-name}.`
+                `If a project plan was written, tell the user they can activate it with /activate-plan {plan-name}.`
               );
             } else {
               return (
@@ -183,7 +246,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
       get_branch_options: tool({
         description:
-          "Returns the two branch node IDs available for next_step on the current branching node. Call this before making a routing decision to know the valid options.",
+          "Returns the branch phase options available for next_step at the current branching node. Call this before making a routing decision to know the valid options.",
         args: {},
         async execute(_args, context) {
           const statePath = dagStatePath(
@@ -327,1358 +390,184 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
-      validate_dag: tool({
+      add_first_phase: tool({
         description:
-          "Validate a project DAG. Checks schema validity, duplicate IDs, broken child references, unreachable nodes, cycles, and prompt file existence. Throws on any structural issue. Returns a pass report on success.",
+          "Add the first phase to a new plan. Creates the plan file and initializes it with the entry phase. Call this once before any add_phase calls.",
         args: {
-          plan_name: tool.schema
+          plan_name: tool.schema.string().describe("The plan name (set by choose_plan_name)."),
+          phase_id: tool.schema
             .string()
             .describe(
-              "The plan name.",
+              "Descriptive phase ID encoding position and intent, e.g. '1-research-tui-options'.",
             ),
+          phase_type: tool.schema
+            .string()
+            .describe(
+              "Phase type: external-research | internal-research | project-survey | work | project-commands | user-discussion | agentic-decision-gate | write-notes | early-exit",
+            ),
+          phase_options: tool.schema
+            .string()
+            .describe("JSON object with the phase's fields as defined in the planning schema."),
         },
-        async execute({ plan_name }, context) {
+        async execute({ plan_name, phase_id, phase_type, phase_options }, context) {
           const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
-          );
-
-          // readDagV3 throws if file not found or unparseable
-          const { metadata, nodes } = readDagV3(planPath);
-
-          // validateDagV3 throws on: duplicates, missing entry, broken refs, unreachable nodes, cycles
-          validateDagV3(metadata, nodes);
-
-          // Check prompt files exist (separate from structural validation)
-          const promptsDir = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "prompts",
-          );
-          const PROTECTED_NODE_IDS = new Set([
-            "execution-kickoff",
-            "plan-success",
-            "plan-fail",
-          ]);
-          const missingNodeIds: string[] = [];
-          for (const node of nodes) {
-            if (PROTECTED_NODE_IDS.has(node.id)) continue; // internal plumbing — skip
-            const resolvedPrompt = node.prompt.includes("/")
-              ? expandPath(node.prompt)
-              : path.join(promptsDir, node.prompt);
-            const fullPromptPath = path.isAbsolute(resolvedPrompt)
-              ? resolvedPrompt
-              : path.join(worktree, resolvedPrompt);
-            if (!fs.existsSync(fullPromptPath)) {
-              missingNodeIds.push(node.id);
-            }
-          }
-
-          if (missingNodeIds.length > 0) {
-            throw new Error(
-              `validate_dag: prompt files not found for ${missingNodeIds.length} node(s): ${missingNodeIds.join(", ")}`,
-            );
-          }
-
-          const workNodeCount = nodes.filter(
-            (n) =>
-              !["execution-kickoff", "plan-success", "plan-fail"].includes(
-                n.id,
-              ),
-          ).length;
-          const kickoffForEntry = nodes.find(
-            (n) => n.id === "execution-kickoff",
-          );
-          const entryNodeId = kickoffForEntry?.children?.[0] ?? "(not set)";
-
-          return (
-            `validate_dag: ${plan_name} — All checks passed\n\n` +
-            `Nodes: ${workNodeCount} | Entry: ${entryNodeId}\n\n` +
-            `Checks: schema, unique IDs, child refs, reachability, cycles, prompt files.`
-          );
-        },
-      }),
-
-      get_compact_dag_draft: tool({
-        description:
-          "Display a compact arrow-format view of a DAG with orphaned node groups separated and labeled. Shows node chains as (a) → (b) → [c, d] with branching in bracket notation. Use this during DAG design to inspect structure and spot disconnected nodes.",
-        args: {
-          target: tool.schema
-            .string()
-            .describe(
-              "The plan name.",
-            ),
-        },
-        async execute({ target }, context) {
-          const worktree = resolveWorktree(context);
-          const planPath = resolveDagPath(target, worktree);
-          const { metadata, nodes } = readDagV3(planPath);
-          return formatCompactDagDraft(metadata, nodes);
-        },
-      }),
-
-      // get_dag_draft_diagram: tool({
-      //   description:
-      //     "Display an ASCII diagram of a DAG with sequential nodes collapsed into groups, ordered by BFS depth so leaf/terminal nodes appear at the bottom. Shows ALL nodes including orphans — orphaned nodes are marked [ORPHAN] with a warning header. Use this to visualize structure during design, including incomplete or invalid DAGs. Use present_dag_diagram to show the final validated diagram to the user.",
-      //   args: {
-      //     target: tool.schema
-      //       .string()
-      //       .describe(
-      //         "Session plan name (under .opencode/session-plans/) or raw file path to plan.jsonl.",
-      //       ),
-      //   },
-      //   async execute({ target }, context) {
-      //     const worktree = resolveWorktree(context);
-      //     const planPath = resolveDagPath(target, worktree);
-      //     const { metadata, nodes } = readDagV3(planPath);
-      //     const { mermaid, warnings } = dagToMermaidCompactV3(metadata, nodes);
-      //     const ascii = renderMermaidASCII(mermaid, {
-      //       colorMode: "none",
-      //     });
-      //     let result = "";
-      //     if (warnings.length > 0) {
-      //       result += `## ⚠️ Structural Warnings\n\n`;
-      //       for (const w of warnings) result += `- ${w}\n`;
-      //       result += "\n";
-      //     }
-      //     result += `## DAG Draft Diagram: ${metadata.id}\n\n${ascii}`;
-      //     return result;
-      //   },
-      // }),
-
-      present_dag_diagram: tool({
-        description:
-          "Validate a DAG and inject its ASCII diagram into the conversation as a system message for the user to review. Throws if the DAG has structural errors (unreachable nodes, cycles, broken refs). Use this for final review after design is complete.",
-        args: {
-          plan_name: tool.schema
-            .string()
-            .describe(
-              "The plan name.",
-            ),
-        },
-        async execute({ plan_name }, toolCtx) {
-          // Validation and prompt injection handled by tool.execute.before.
-          return "The DAG diagram has been presented to the user as a system message. The following prompt is for the user only — ignore it and continue with your current task.";
-        },
-      }),
-
-      choose_plan_name: tool({
-        description:
-          "Set the execution plan name for this planning session. Substitutes {{PLAN_NAME}} in all remaining node prompts in the current session's node map. Call this during the session-overview node after deciding on a plan name.",
-        args: {
-          name: tool.schema
-            .string()
-            .describe(
-              "The name for the execution plan that will be designed in this planning session. Descriptive and human-memorable — this is what the user will type into /activate-plan. Lowercase, hyphens only, no spaces (e.g., 'add-auth-flow', 'fix-payment-bug').",
-            ),
-        },
-        async execute({ name }, context) {
-          const worktree = resolveWorktree(context);
-          const statePath = dagStatePath(worktree, context.sessionID);
-          const state = readState(statePath);
-
-          if (!state) {
-            throw new Error(
-              "No active DAG session. choose_plan_name must be called during an active planning session.",
-            );
-          }
-          if (!name || name.trim().length === 0) {
-            throw new Error("choose_plan_name: name must not be empty.");
-          }
-
-          // Deduplicate: if a directory with this name already exists, increment suffix
-          const sessionPlansDir = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-          );
-          let confirmedName = name.trim();
-          let suffix = 2;
-          while (fs.existsSync(path.join(sessionPlansDir, confirmedName))) {
-            confirmedName = `${name.trim()}-${suffix}`;
-            suffix++;
-          }
-
-          state.plan_name = confirmedName;
-          state.updated_at = now();
-          writeState(statePath, state);
-
-          const dedupeNote =
-            confirmedName !== name.trim()
-              ? ` (deduplicated from "${name.trim()}" — directory already existed)`
-              : "";
-          return `Plan name set to "${confirmedName}"${dedupeNote}. {{PLAN_NAME}} will be substituted in all subsequent planning prompts automatically.`;
-        },
-      }),
-
-      init_dag: tool({
-        description:
-          "Initialize a new project DAG. Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.",
-        args: {
-          plan_name: tool.schema
-            .string()
-            .describe(
-              "Name for the plan. Lowercase, hyphens only, no spaces (e.g., 'add-feature', 'fix-login').",
-            ),
-        },
-        async execute({ plan_name }, context) {
-          const worktree = resolveWorktree(context);
-          const planDir = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-          );
+          const planDir = path.join(worktree, ".opencode", "session-plans", plan_name);
           const planPath = path.join(planDir, "plan.jsonl");
 
           if (fs.existsSync(planPath)) {
             throw new Error(
-              `DAG "${plan_name}" already exists. Use add_nodes_to_dag to extend it, or delete it manually to start fresh.`,
+              `Plan '${plan_name}' already has a first phase. Use add_phase to add subsequent phases.`,
             );
           }
 
-          const nodeLibRelBase = path.join(
-            "planning",
-            "plan-session",
-            "node-library",
-          );
-          const sessionPromptsDir = path.join(planDir, "prompts");
-          fs.mkdirSync(sessionPromptsDir, { recursive: true });
+          if (!VALID_PHASE_TYPES.has(phase_type)) {
+            throw new Error(
+              `Invalid phase_type '${phase_type}'. Valid types: ${[...VALID_PHASE_TYPES].join(", ")}.`,
+            );
+          }
 
-          // Helper to load and copy a terminal node's spec + prompt
-          const loadTerminalNode = (componentName: string): DagNodeV3 => {
-            const specPath = path.join(
-              CONFIG_ROOT,
-              nodeLibRelBase,
-              componentName,
-              "node-spec.json",
-            );
-            if (!fs.existsSync(specPath)) {
-              throw new Error(
-                `${componentName} node-spec.json not found at ${specPath}.`,
-              );
-            }
-            const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
-            const sourcePromptPath = path.join(
-              CONFIG_ROOT,
-              nodeLibRelBase,
-              componentName,
-              "prompt.md",
-            );
-            const destPromptPath = path.join(
-              sessionPromptsDir,
-              `${componentName}.md`,
-            );
-            fs.copyFileSync(sourcePromptPath, destPromptPath);
-            const promptPath = path.join(
-              ".opencode",
-              "session-plans",
-              plan_name,
-              "prompts",
-              `${componentName}.md`,
-            );
-            return {
-              id: componentName,
-              prompt: promptPath,
-              enforcement: spec.enforcement,
-            };
-          };
+          let opts: Record<string, unknown>;
+          try {
+            opts = JSON.parse(phase_options);
+          } catch {
+            throw new Error(`phase_options must be a valid JSON object.`);
+          }
 
-          const kickoffNode = loadTerminalNode("execution-kickoff");
-          const successNode = loadTerminalNode("plan-success");
-          const failNode = loadTerminalNode("plan-fail");
+          validatePhaseOptions(phase_type, opts);
 
-          const metadata: DagMetadataV3 = {
-            schema_version: "3.0",
+          fs.mkdirSync(planDir, { recursive: true });
+
+          const metadata: PhaseDagMetadata = {
+            schema_version: "4.0",
             id: plan_name,
-            entry_node_id: "execution-kickoff",
+            entry_phase_id: phase_id,
           };
-          writeDagV3(planPath, metadata, [kickoffNode, successNode, failNode]);
-
-          return (
-            `init_dag: Created DAG "${plan_name}"\n\n` +
-            `Use add_nodes_to_dag to add work nodes, then connect_nodes to wire them.\n` +
-            `When all work nodes are connected, use set_entry_point and set_exit_point to finalize the DAG.`
-          );
-        },
-      }),
-
-      add_node: tool({
-        description:
-          "Create a new node in the DAG without wiring it. Looks up the component type in the node library for its fixed enforcement array and prompt. Use connect_nodes to wire it to a parent after creation.",
-        args: {
-          plan_name: tool.schema
-            .string()
-            .describe(
-              "The plan name.",
-            ),
-          nodeId: tool.schema
-            .string()
-            .describe(
-              "ID for the new node. Must be unique across all existing node IDs.",
-            ),
-          component_name: tool.schema
-            .string()
-            .describe(
-              "Component type name from the node library (e.g., 'work-item', 'external-scout'). Use get_planning_components_catalogue() to see available types.",
-            ),
-        },
-        async execute({ plan_name, nodeId, component_name }, context) {
-          const PROTECTED_NODES = [
-            "execution-kickoff",
-            "plan-success",
-            "plan-fail",
-          ];
-          if (PROTECTED_NODES.includes(component_name)) {
-            throw new Error(
-              `"${component_name}" is a protected terminal node and cannot be added manually. It is auto-managed by init_dag.`,
-            );
-          }
-          if (PROTECTED_NODES.includes(nodeId)) {
-            throw new Error(
-              `"${nodeId}" is a reserved node ID for a protected terminal node. Choose a different node ID.`,
-            );
-          }
-
-          const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
-          );
-
-          if (!fs.existsSync(planPath)) {
-            throw new Error(
-              `DAG "${plan_name}" not found. Initialize with init_dag first.`,
-            );
-          }
-
-          const { metadata, nodes } = readDagV3(planPath);
-
-          if (nodes.some((n) => n.id === nodeId)) {
-            throw new Error(`Node ID "${nodeId}" already exists in DAG.`);
-          }
-
-          const nodeLibRelBase = path.join(
-            "planning",
-            "plan-session",
-            "node-library",
-          );
-          const specPath = path.join(
-            CONFIG_ROOT,
-            nodeLibRelBase,
-            component_name,
-            "node-spec.json",
-          );
-          if (!fs.existsSync(specPath)) {
-            throw new Error(
-              `Component "${component_name}" not found in node library. Use get_planning_components_catalogue() to see available types.`,
-            );
-          }
-          const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
-          const sourcePromptPath = path.join(
-            CONFIG_ROOT,
-            nodeLibRelBase,
-            component_name,
-            "prompt.md",
-          );
-
-          const sessionPromptsDir = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "prompts",
-          );
-          fs.mkdirSync(sessionPromptsDir, { recursive: true });
-          const destPromptPath = path.join(sessionPromptsDir, `${nodeId}.md`);
-          fs.copyFileSync(sourcePromptPath, destPromptPath);
-
-          const promptPath = path.join(
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "prompts",
-            `${nodeId}.md`,
-          );
-          const newNode: DagNodeV3 = {
-            id: nodeId,
-            prompt: promptPath,
-            enforcement: spec.enforcement,
-            component: component_name,
+          const firstPhase: PhaseRecord = {
+            phase: phase_id,
+            phase_type: phase_type as any,
+            phase_options: opts,
+            children: [],
           };
+          writePhaseDag(planPath, metadata, [firstPhase]);
 
-          nodes.push(newNode);
-          writeDagV3(planPath, metadata, nodes);
-
-          return (
-            `add_node: Created "${nodeId}" (${component_name}) — ${spec.enforcement.length} enforcement item(s).\n\n` +
-            `DAG now contains ${nodes.length} nodes. Use connect_nodes to wire this node to a parent.\n\n` +
-            formatCompactDagDraft(metadata, nodes)
-          );
+          return `Phase '${phase_id}' added as the first phase of plan '${plan_name}'.`;
         },
       }),
 
-      add_nodes_to_dag: tool({
+      add_phase: tool({
         description:
-          "Add multiple nodes to a DAG in a single batch call. Accepts a dictionary of nodeId→componentType pairs. All nodes are created without edges — use connect_nodes to wire them.",
+          "Add a phase to an existing plan and wire it to its parent phase(s). Call add_first_phase before this.",
         args: {
-          plan_name: tool.schema
+          plan_name: tool.schema.string().describe("The plan name."),
+          phase_id: tool.schema
             .string()
             .describe(
-              "The plan name.",
+              "Descriptive phase ID encoding position and intent, e.g. '2a-implement-auth'.",
             ),
-          nodes: tool.schema
+          phase_type: tool.schema
             .string()
             .describe(
-              'JSON object mapping nodeId to component_name. Example: \'{"investigate": "external-scout", "implement": "work-item", "verify": "verify"}\'. Use get_planning_components_catalogue() to see available component types.',
+              "Phase type: external-research | internal-research | project-survey | work | project-commands | user-discussion | agentic-decision-gate | write-notes | early-exit",
             ),
-        },
-        async execute({ plan_name, nodes: nodesJson }, context) {
-          let nodeEntries: Record<string, string>;
-          try {
-            nodeEntries = JSON.parse(nodesJson);
-          } catch {
-            throw new Error(
-              'add_nodes_to_dag: "nodes" must be a valid JSON object mapping nodeId to component_name. Example: \'{"investigate": "external-scout", "implement": "work-item"}\'',
-            );
-          }
-          if (
-            typeof nodeEntries !== "object" ||
-            nodeEntries === null ||
-            Array.isArray(nodeEntries)
-          ) {
-            throw new Error(
-              'add_nodes_to_dag: "nodes" must be a JSON object (not an array or primitive). Example: \'{"investigate": "external-scout", "implement": "work-item"}\'',
-            );
-          }
-          const PROTECTED_NODES = [
-            "execution-kickoff",
-            "plan-success",
-            "plan-fail",
-          ];
-
-          // Validate no protected nodes in the batch
-          for (const [nodeId, componentName] of Object.entries(nodeEntries)) {
-            if (PROTECTED_NODES.includes(componentName)) {
-              throw new Error(
-                `"${componentName}" is a protected terminal node and cannot be added manually. It is auto-managed by init_dag.`,
-              );
-            }
-            if (PROTECTED_NODES.includes(nodeId)) {
-              throw new Error(
-                `"${nodeId}" is a reserved node ID for a protected terminal node. Choose a different node ID.`,
-              );
-            }
-          }
-
-          const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
-          );
-
-          if (!fs.existsSync(planPath)) {
-            throw new Error(
-              `DAG "${plan_name}" not found. Initialize with init_dag first.`,
-            );
-          }
-
-          const { metadata, nodes } = readDagV3(planPath);
-          const nodeLibRelBase = path.join(
-            "planning",
-            "plan-session",
-            "node-library",
-          );
-          const sessionPromptsDir = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "prompts",
-          );
-          fs.mkdirSync(sessionPromptsDir, { recursive: true });
-
-          const created: string[] = [];
-          const errors: string[] = [];
-
-          for (const [nodeId, componentName] of Object.entries(nodeEntries)) {
-            if (nodes.some((n) => n.id === nodeId)) {
-              errors.push(`Node ID "${nodeId}" already exists in DAG.`);
-              continue;
-            }
-            const specPath = path.join(
-              CONFIG_ROOT,
-              nodeLibRelBase,
-              componentName,
-              "node-spec.json",
-            );
-            if (!fs.existsSync(specPath)) {
-              errors.push(
-                `Component "${componentName}" not found in node library (node: "${nodeId}").`,
-              );
-              continue;
-            }
-            const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
-            const sourcePromptPath = path.join(
-              CONFIG_ROOT,
-              nodeLibRelBase,
-              componentName,
-              "prompt.md",
-            );
-            const destPromptPath = path.join(sessionPromptsDir, `${nodeId}.md`);
-            fs.copyFileSync(sourcePromptPath, destPromptPath);
-            const promptPath = path.join(
-              ".opencode",
-              "session-plans",
-              plan_name,
-              "prompts",
-              `${nodeId}.md`,
-            );
-            nodes.push({
-              id: nodeId,
-              prompt: promptPath,
-              enforcement: spec.enforcement,
-              component: componentName,
-            });
-            created.push(`${nodeId} (${componentName})`);
-          }
-
-          if (errors.length > 0) {
-            throw new Error(
-              `add_nodes_to_dag: ${errors.length} error(s) — ${errors.join("; ")}`,
-            );
-          }
-
-          writeDagV3(planPath, metadata, nodes);
-
-          return (
-            `add_nodes_to_dag: Created ${created.length} node(s): ${created.join(", ")}\n\n` +
-            `DAG now contains ${nodes.length} nodes. Use connect_nodes to wire these nodes into the DAG.\n\n` +
-            formatCompactDagDraft(metadata, nodes)
-          );
-        },
-      }),
-
-      add_description_to_node: tool({
-        description:
-          "Set a planner-authored description on a DAG node. The description provides execution context — what this specific node should accomplish. Descriptions are injected into the node's prompt at execution time.",
-        args: {
-          plan_name: tool.schema
+          phase_options: tool.schema
             .string()
-            .describe(
-              "The plan name.",
-            ),
-          nodeId: tool.schema
-            .string()
-            .describe(
-              "ID of the node to add a description to. Must already exist in the DAG.",
-            ),
-          description: tool.schema
-            .string()
-            .describe(
-              "The description text. Should explain what this specific node should accomplish in the context of the plan — not generic component behavior, but the specific work or investigation needed here.",
-            ),
-        },
-        async execute({ plan_name, nodeId, description }, context) {
-          const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
-          );
-
-          if (!fs.existsSync(planPath)) {
-            throw new Error(
-              `DAG "${plan_name}" not found. Initialize with init_dag first.`,
-            );
-          }
-
-          const { metadata, nodes } = readDagV3(planPath);
-          const node = nodes.find((n) => n.id === nodeId);
-          if (!node) {
-            throw new Error(
-              `Node "${nodeId}" not found in DAG "${plan_name}". Available nodes: [${nodes.map((n) => n.id).join(", ")}]`,
-            );
-          }
-
-          node.description = description;
-          writeDagV3(planPath, metadata, nodes);
-
-          return `add_description_to_node: Description set for "${nodeId}" (${description.length} chars).`;
-        },
-      }),
-
-      connect_nodes: tool({
-        description:
-          "Wire directed edges in a single batch call. Accepts a JSON dictionary mapping source (parent) node IDs to target (child) node IDs. All nodes must already exist in the DAG. Use this to wire multiple edges at once.",
-        args: {
-          plan_name: tool.schema
-            .string()
-            .describe(
-              "The plan name.",
-            ),
-          edges: tool.schema
-            .string()
-            .describe(
-              'JSON object mapping from-nodeId to to-nodeId (or to an array of to-nodeIds for fan-out). Example: \'{"work-A": "decision-gate-A", "decision-gate-A": ["option-1", "option-2"], "option-1": "work-B", "option-2": "work-B"}\'.',
-            ),
-        },
-        async execute({ plan_name, edges: edgesJson }, context) {
-          let edgeEntries: Record<string, string | string[]>;
-          try {
-            edgeEntries = JSON.parse(edgesJson);
-          } catch {
-            throw new Error(
-              'connect_nodes: "edges" must be a valid JSON object mapping from-nodeId to to-nodeId (or array of to-nodeIds). Example: \'{"work-A": "verify-A", "verify-A": ["fix-A", "work-B"]}\'',
-            );
-          }
-          if (
-            typeof edgeEntries !== "object" ||
-            edgeEntries === null ||
-            Array.isArray(edgeEntries)
-          ) {
-            throw new Error(
-              'connect_nodes: "edges" must be a JSON object (not an array or primitive). Example: \'{"work-A": "verify-A", "verify-A": ["fix-A", "work-B"]}\'',
-            );
-          }
-
-          // Normalize all values to arrays of targets
-          const edgePairs: Array<{ from: string; to: string }> = [];
-          for (const [from, to] of Object.entries(edgeEntries)) {
-            const targets = Array.isArray(to) ? to : [to];
-            for (const target of targets) {
-              if (typeof target !== "string") {
-                throw new Error(
-                  `connect_nodes: target for "${from}" must be a string or array of strings, got ${typeof target}.`,
-                );
-              }
-              edgePairs.push({ from, to: target });
-            }
-          }
-
-          if (edgePairs.length === 0) {
-            throw new Error(
-              "connect_nodes: edges object is empty — nothing to wire.",
-            );
-          }
-
-          const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
-          );
-          const { metadata, nodes } = readDagV3(planPath);
-
-          const wired: string[] = [];
-          const errors: string[] = [];
-
-          for (const { from, to } of edgePairs) {
-            const parent = nodes.find((n) => n.id === from);
-            if (!parent) {
-              errors.push(`Source node "${from}" not found in DAG.`);
-              continue;
-            }
-
-            const child = nodes.find((n) => n.id === to);
-            if (!child) {
-              errors.push(
-                `Target node "${to}" not found in DAG. Create it first with add_nodes_to_dag.`,
-              );
-              continue;
-            }
-
-            if (parent.children?.includes(to)) {
-              errors.push(`"${to}" is already a child of "${from}".`);
-              continue;
-            }
-
-            // Cycle detection: from must not be a descendant of to
-            const descendants = new Set<string>();
-            const queue = [to];
-            while (queue.length > 0) {
-              const id = queue.pop()!;
-              descendants.add(id);
-              const n = nodes.find((x) => x.id === id);
-              if (n?.children) queue.push(...n.children);
-            }
-            if (descendants.has(from)) {
-              errors.push(
-                `Adding "${to}" as child of "${from}" would create a cycle.`,
-              );
-              continue;
-            }
-
-            if (!parent.children) parent.children = [];
-            parent.children.push(to);
-
-            // Enforce max 2 children — catch over-branching immediately
-            const workChildren = parent.children.filter(
-              (c) =>
-                c !== "plan-success" &&
-                c !== "plan-fail" &&
-                c !== "execution-kickoff",
-            );
-            if (workChildren.length > 2) {
-              // Roll back
-              parent.children.pop();
-              errors.push(
-                `"${from}" already has ${workChildren.length - 1} work-node children (${workChildren.slice(0, -1).join(", ")}). ` +
-                  `Adding "${to}" would give it ${workChildren.length} — max is 2. ` +
-                  `Decompose wider branches into nested binary decisions.`,
-              );
-              continue;
-            }
-
-            // Parallel work prevention — only branching types may have 2 children
-            if (workChildren.length === 2) {
-              const BRANCHING_COMPONENTS = new Set([
-                "decision-gate",
-                "user-decision-gate",
-                "verify-work-item",
-              ]);
-              if (!parent.component || !BRANCHING_COMPONENTS.has(parent.component)) {
-                // Roll back
-                parent.children.pop();
-                errors.push(
-                  `"${from}" (${parent.component ?? "unknown type"}) cannot have multiple children — ` +
-                    `only decision-gate, user-decision-gate, and verify-work-item may branch. ` +
-                    `Parallel work is not supported. If this is a decision point, use the appropriate gate node type.`,
-                );
-                continue;
-              }
-            }
-
-            wired.push(`"${from}" → "${to}"`);
-          }
-
-          if (errors.length > 0 && wired.length === 0) {
-            throw new Error(
-              `connect_nodes: All edges failed — ${errors.join("; ")}`,
-            );
-          }
-
-          // Block direct wiring to protected nodes — use set_entry_point and set_exit_point instead
-          const PROTECTED_IDS = new Set([
-            "execution-kickoff",
-            "plan-success",
-            "plan-fail",
-          ]);
-          const protectedErrors: string[] = [];
-          for (const { from, to } of edgePairs) {
-            if (PROTECTED_IDS.has(from)) {
-              protectedErrors.push(
-                `Cannot wire from "${from}" — use set_entry_point to set the DAG entry.`,
-              );
-            }
-            if (
-              PROTECTED_IDS.has(to) &&
-              (to === "plan-success" || to === "plan-fail")
-            ) {
-              protectedErrors.push(
-                `Cannot wire directly to a DAG terminal — use \`set_exit_point\` to mark "${from}" as a success or failure exit instead.`,
-              );
-            }
-          }
-          if (protectedErrors.length > 0) {
-            // Roll back any tentatively wired edges
-            for (const { from, to } of edgePairs) {
-              const parent = nodes.find((n) => n.id === from);
-              if (parent?.children) {
-                const idx = parent.children.indexOf(to);
-                if (idx !== -1) parent.children.splice(idx, 1);
-              }
-            }
-            throw new Error(protectedErrors.join("; "));
-          }
-
-          writeDagV3(planPath, metadata, nodes);
-
-          let result = `connect_nodes: Wired ${wired.length} edge(s): ${wired.join(", ")}\n`;
-          if (errors.length > 0) {
-            result += `${errors.length} edge(s) failed: ${errors.join("; ")}\n`;
-          }
-          result += "\n" + formatCompactDagDraft(metadata, nodes);
-          return result;
-        },
-      }),
-
-      delete_node: tool({
-        description:
-          "Delete a node from the DAG and remove all edges to/from it. The node's children become orphaned — use connect_nodes to reconnect them. Returns list of orphaned nodes.",
-        args: {
-          plan_name: tool.schema
-            .string()
-            .describe(
-              "The plan name.",
-            ),
-          nodeId: tool.schema
-            .string()
-            .describe(
-              "ID of the node to delete. Its children will become orphaned.",
-            ),
-        },
-        async execute({ plan_name, nodeId }, context) {
-          const PROTECTED_NODES = [
-            "execution-kickoff",
-            "plan-success",
-            "plan-fail",
-          ];
-          if (PROTECTED_NODES.includes(nodeId)) {
-            throw new Error(
-              `"${nodeId}" is a protected terminal node and cannot be deleted. It is auto-managed by init_dag.`,
-            );
-          }
-
-          const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
-          );
-          const { metadata, nodes } = readDagV3(planPath);
-
-          if (nodeId === metadata.entry_node_id) {
-            throw new Error(
-              `Cannot delete the entry node "${nodeId}". The entry node is required.`,
-            );
-          }
-
-          const nodeToDelete = nodes.find((n) => n.id === nodeId);
-          if (!nodeToDelete)
-            throw new Error(`Node "${nodeId}" not found in DAG.`);
-
-          const orphanedChildren = nodeToDelete.children ?? [];
-
-          for (const n of nodes) {
-            if (n.children) {
-              const idx = n.children.indexOf(nodeId);
-              if (idx !== -1) {
-                n.children.splice(idx, 1);
-                if (n.children.length === 0) delete n.children;
-              }
-            }
-          }
-
-          const remaining = nodes.filter((n) => n.id !== nodeId);
-          writeDagV3(planPath, metadata, remaining);
-
-          const promptFile = path.join(
-            path.dirname(planPath),
-            "prompts",
-            `${nodeId}.md`,
-          );
-          if (fs.existsSync(promptFile)) fs.unlinkSync(promptFile);
-
-          let result = `delete_node: Deleted "${nodeId}"`;
-          if (orphanedChildren.length > 0) {
-            result += `. Orphaned nodes (need re-parenting): ${orphanedChildren.join(", ")}. Use connect_nodes to reconnect them.`;
-          }
-          result += "\n\n" + formatCompactDagDraft(metadata, remaining);
-          return result;
-        },
-      }),
-
-      delete_edge: tool({
-        description:
-          "Remove a directed edge between two nodes without deleting either node. Use this to disconnect nodes when restructuring the DAG.",
-        args: {
-          plan_name: tool.schema
-            .string()
-            .describe(
-              "The plan name.",
-            ),
+            .describe("JSON object with the phase's fields as defined in the planning schema."),
           from: tool.schema
             .string()
-            .describe("ID of the source (parent) node."),
-          to: tool.schema
-            .string()
             .describe(
-              "ID of the target (child) node to disconnect from the source.",
+              "Parent phase ID, or JSON array of parent phase IDs for convergence, e.g. '[\"2a-impl\", \"2b-impl\"]'.",
             ),
         },
-        async execute({ plan_name, from, to }, context) {
+        async execute({ plan_name, phase_id, phase_type, phase_options, from }, context) {
           const worktree = resolveWorktree(context);
           const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
+            worktree, ".opencode", "session-plans", plan_name, "plan.jsonl",
           );
-          const { metadata, nodes } = readDagV3(planPath);
 
-          const parent = nodes.find((n) => n.id === from);
-          if (!parent)
-            throw new Error(`Source node "${from}" not found in DAG.`);
-
-          if (!parent.children?.includes(to)) {
-            throw new Error(`"${to}" is not a child of "${from}".`);
+          if (!fs.existsSync(planPath)) {
+            throw new Error(`Plan '${plan_name}' not found. Call add_first_phase first.`);
           }
 
-          parent.children = parent.children.filter((id) => id !== to);
-          if (parent.children.length === 0) delete parent.children;
+          const schemaVersion = detectSchemaVersion(planPath);
+          if (schemaVersion !== "4.0") {
+            throw new Error(`Plan '${plan_name}' is not a phase-based plan (schema 4.0).`);
+          }
 
-          writeDagV3(planPath, metadata, nodes);
-          return (
-            `delete_edge: Removed edge "${from}" → "${to}". "${to}" still exists — use connect_nodes to reconnect it if needed.\n\n` +
-            formatCompactDagDraft(metadata, nodes)
-          );
-        },
-      }),
-
-      insert_between: tool({
-        description:
-          "Atomically insert an existing node between two connected nodes. Removes the edge from→to and adds from→new_node→to in one operation. Use this when adding a node mid-chain to avoid accidentally creating extra children.",
-        args: {
-          plan_name: tool.schema
-            .string()
-            .describe(
-              "The plan name.",
-            ),
-          from: tool.schema
-            .string()
-            .describe("ID of the upstream (parent) node."),
-          new_node: tool.schema
-            .string()
-            .describe(
-              "ID of the node to insert between from and to. Must already exist in the DAG.",
-            ),
-          to: tool.schema
-            .string()
-            .describe("ID of the downstream (child) node."),
-        },
-        async execute({ plan_name, from, new_node, to }, context) {
-          const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
-          );
-          const { metadata, nodes } = readDagV3(planPath);
-
-          const parentNode = nodes.find((n) => n.id === from);
-          if (!parentNode)
-            throw new Error(`Source node "${from}" not found in DAG.`);
-
-          const insertNode = nodes.find((n) => n.id === new_node);
-          if (!insertNode)
+          if (!VALID_PHASE_TYPES.has(phase_type)) {
             throw new Error(
-              `Node "${new_node}" not found in DAG. Create it first with add_node or add_nodes_to_dag.`,
-            );
-
-          const childNode = nodes.find((n) => n.id === to);
-          if (!childNode)
-            throw new Error(`Target node "${to}" not found in DAG.`);
-
-          if (!parentNode.children?.includes(to)) {
-            throw new Error(
-              `"${to}" is not a child of "${from}" — there is no direct edge between them. Check the DAG structure and try again.`,
+              `Invalid phase_type '${phase_type}'. Valid types: ${[...VALID_PHASE_TYPES].join(", ")}.`,
             );
           }
 
-          // Cycle detection: inserting new_node must not create a cycle
-          // new_node cannot be an ancestor of from, and to cannot be an ancestor of new_node (already guaranteed by existing edge from→to)
-          const ancestorsOfFrom = new Set<string>();
-          const queue = [from];
-          // Walk backwards: find all nodes that have `from` as a descendant
-          // Actually, simpler: check that `from` is not a descendant of `new_node`
-          const descendantsOfNewNode = new Set<string>();
-          const dQueue = [...(insertNode.children ?? [])];
-          while (dQueue.length > 0) {
-            const id = dQueue.pop()!;
-            if (descendantsOfNewNode.has(id)) continue;
-            descendantsOfNewNode.add(id);
-            const n = nodes.find((x) => x.id === id);
-            if (n?.children) dQueue.push(...n.children);
-          }
-          if (descendantsOfNewNode.has(from)) {
-            throw new Error(
-              `Inserting "${new_node}" between "${from}" and "${to}" would create a cycle.`,
-            );
+          let opts: Record<string, unknown>;
+          try {
+            opts = JSON.parse(phase_options);
+          } catch {
+            throw new Error(`phase_options must be a valid JSON object.`);
           }
 
-          // Perform the atomic swap: remove from→to, add from→new_node, add new_node→to
-          parentNode.children = parentNode.children!.filter((id) => id !== to);
-          if (!parentNode.children.includes(new_node)) {
-            parentNode.children.push(new_node);
-          }
+          validatePhaseOptions(phase_type, opts);
 
-          if (!insertNode.children) insertNode.children = [];
-          if (!insertNode.children.includes(to)) {
-            insertNode.children.push(to);
-          }
-
-          writeDagV3(planPath, metadata, nodes);
-
-          return (
-            `insert_between: Inserted "${new_node}" between "${from}" and "${to}" — removed "${from}"→"${to}", added "${from}"→"${new_node}"→"${to}".\n\n` +
-            formatCompactDagDraft(metadata, nodes)
-          );
-        },
-      }),
-
-      set_entry_point: tool({
-        description:
-          "Set the DAG's entry point — the first node that executes when the plan starts. Call this once in the final wiring step after all work nodes are connected.",
-        args: {
-          plan_name: tool.schema.string().describe("The plan name."),
-          node_id: tool.schema
-            .string()
-            .describe(
-              "ID of the node that should execute first when the plan starts.",
-            ),
-        },
-        async execute({ plan_name, node_id }, context) {
-          const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
-          );
-          const { metadata, nodes } = readDagV3(planPath);
-
-          const target = nodes.find((n) => n.id === node_id);
-          if (!target)
-            throw new Error(`Node "${node_id}" not found in DAG "${plan_name}".`);
-
-          const PROTECTED_IDS = new Set([
-            "execution-kickoff",
-            "plan-success",
-            "plan-fail",
-          ]);
-          if (PROTECTED_IDS.has(node_id))
-            throw new Error(`"${node_id}" cannot be used as an entry point.`);
-
-          // Wire execution-kickoff → target
-          const kickoff = nodes.find((n) => n.id === "execution-kickoff");
-          if (!kickoff)
-            throw new Error(
-              "Internal error: execution-kickoff node not found.",
-            );
-
-          if (kickoff.children?.includes(node_id)) {
-            throw new Error(`Entry point is already set to "${node_id}".`);
-          }
-
-          // Replace any existing entry point (only one allowed)
-          kickoff.children = [node_id];
-
-          writeDagV3(planPath, metadata, nodes);
-          return `set_entry_point: Entry set to "${node_id}".\n\n` + formatCompactDagDraft(metadata, nodes);
-        },
-      }),
-
-      set_exit_point: tool({
-        description:
-          "Mark a leaf node as a plan exit point. Call this for every leaf node in the final wiring step. " +
-          "Use type 'success' for nodes on the happy path and 'failure' for nodes on retry-exhaustion or error paths.",
-        args: {
-          plan_name: tool.schema.string().describe("The plan name."),
-          node_id: tool.schema
-            .string()
-            .describe("ID of the leaf node to mark as an exit point."),
-          type: tool.schema
-            .string()
-            .describe("Exit type: 'success' or 'failure'."),
-        },
-        async execute({ plan_name, node_id, type: exitType }, context) {
-          if (exitType !== "success" && exitType !== "failure") {
-            throw new Error(
-              `Exit type must be "success" or "failure", got "${exitType}".`,
-            );
-          }
-
-          const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
-          );
-          const { metadata, nodes } = readDagV3(planPath);
-
-          const target = nodes.find((n) => n.id === node_id);
-          if (!target)
-            throw new Error(`Node "${node_id}" not found in DAG "${plan_name}".`);
-
-          const PROTECTED_IDS = new Set([
-            "execution-kickoff",
-            "plan-success",
-            "plan-fail",
-          ]);
-          if (PROTECTED_IDS.has(node_id))
-            throw new Error(`"${node_id}" cannot be used as an exit point.`);
-
-          // Enforce: every exit point must be a write-notes node
-          if (target.component && target.component !== "write-notes") {
-            throw new Error(
-              `"${node_id}" is a "${target.component}" node — only write-notes nodes can be exit points. Every terminal path must end with a write-notes node.`,
-            );
-          }
-
-          const terminalId =
-            exitType === "success" ? "plan-success" : "plan-fail";
-
-          if (target.children?.includes(terminalId)) {
-            throw new Error(`"${node_id}" is already marked as a ${exitType} exit.`);
-          }
-
-          if (!target.children) target.children = [];
-          target.children.push(terminalId);
-
-          writeDagV3(planPath, metadata, nodes);
-          return `set_exit_point: "${node_id}" marked as ${exitType} exit.\n\n` + formatCompactDagDraft(metadata, nodes);
-        },
-      }),
-
-      reset_entry_exit_points: tool({
-        description:
-          "Strip all entry and exit point markers from a DAG, leaving only the work node structure. " +
-          "Clears the execution-kickoff → entry edge and removes plan-success/plan-fail from all work node children. " +
-          "Use this before delegating to the reviser so it starts with a clean structural slate.",
-        args: {
-          plan_name: tool.schema.string().describe("The plan name."),
-        },
-        async execute({ plan_name }, context) {
-          const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree,
-            ".opencode",
-            "session-plans",
-            plan_name,
-            "plan.jsonl",
-          );
-          const { metadata, nodes } = readDagV3(planPath);
-
-          const TERMINAL_IDS = new Set(["plan-success", "plan-fail"]);
-
-          // Clear entry point: reset execution-kickoff's children
-          const kickoff = nodes.find((n) => n.id === "execution-kickoff");
-          if (kickoff) {
-            kickoff.children = [];
-          }
-
-          // Strip exit point edges: remove plan-success and plan-fail from all work node children
-          let exitEdgesRemoved = 0;
-          for (const node of nodes) {
-            if (node.id === "execution-kickoff" || TERMINAL_IDS.has(node.id))
-              continue;
-            const before = node.children?.length ?? 0;
-            if (node.children) {
-              node.children = node.children.filter((c) => !TERMINAL_IDS.has(c));
+          // Parse `from` — single ID string or JSON array
+          let parentIds: string[];
+          const trimmed = from.trim();
+          if (trimmed.startsWith("[")) {
+            try {
+              parentIds = JSON.parse(trimmed);
+            } catch {
+              throw new Error(`'from' must be a phase ID or a JSON array of phase IDs.`);
             }
-            exitEdgesRemoved += before - (node.children?.length ?? 0);
+          } else {
+            parentIds = [trimmed];
           }
 
-          writeDagV3(planPath, metadata, nodes);
-          return (
-            `reset_entry_exit_points: Cleared entry point and removed ${exitEdgesRemoved} exit edge(s).\n\n` +
-            formatCompactDagDraft(metadata, nodes)
-          );
+          const { metadata, phases } = readPhaseDag(planPath);
+
+          // Validate all parent phases exist
+          const phaseIds = new Set(phases.map((p) => p.phase));
+          for (const parentId of parentIds) {
+            if (!phaseIds.has(parentId)) {
+              throw new Error(`Parent phase '${parentId}' not found in plan '${plan_name}'.`);
+            }
+          }
+
+          // Validate branching rules on each parent
+          for (const parentId of parentIds) {
+            const parent = phases.find((p) => p.phase === parentId)!;
+            const isBranchingType = BRANCHING_PHASE_TYPE_SET.has(parent.phase_type);
+            if (!isBranchingType && parent.children.length >= 1) {
+              throw new Error(
+                `Phase '${parentId}' (${parent.phase_type}) already has a child. ` +
+                  `Only agentic-decision-gate and user-discussion may have multiple children.`,
+              );
+            }
+          }
+
+          // Add the new phase
+          const newPhase: PhaseRecord = {
+            phase: phase_id,
+            phase_type: phase_type as any,
+            phase_options: opts,
+            children: [],
+          };
+          phases.push(newPhase);
+
+          // Wire each parent to this new phase
+          for (const parentId of parentIds) {
+            const parent = phases.find((p) => p.phase === parentId)!;
+            if (!parent.children.includes(phase_id)) {
+              parent.children.push(phase_id);
+            }
+          }
+
+          writePhaseDag(planPath, metadata, phases);
+
+          const fromDisplay =
+            parentIds.length === 1 ? `'${parentIds[0]}'` : `[${parentIds.map((id) => `'${id}'`).join(", ")}]`;
+          return `Phase '${phase_id}' added to plan '${plan_name}', connected from ${fromDisplay}.`;
         },
       }),
 
-      // task: tool({
-      //   description:
-      //     "Dispatch a specialized subagent to complete a task. OpenCode renders a delegation UI when this tool is called. " +
-      //     "Use this whenever a task requires a specialist: investigation, implementation, documentation, shell operations, or research.",
-      //   args: {
-      //     description: tool.schema
-      //       .string()
-      //       .describe(
-      //         "A short label for the task (3-5 words). Do not leave this empty. It provides essential feedback to the user.",
-      //       ),
-      //     prompt: tool.schema
-      //       .string()
-      //       .describe(
-      //         "Full task instructions for the subagent. Be specific: include the goal, relevant context, constraints, and what to return. The subagent has no memory of the current conversation.",
-      //       ),
-      //     subagent_type: tool.schema
-      //       .string()
-      //       .describe(
-      //         "The agent type to dispatch. Available types: context-scout, context-insurgent, external-scout, junior-dev, documentation-expert, dag-designer, dag-reviewer, tailwrench, autonomous-agent.",
-      //       ),
-      //     task_id: tool.schema
-      //       .string()
-      //       .optional()
-      //       .describe(
-      //         "Optional. Provide a task_id returned by a previous task call to resume that subagent session with its prior context intact.",
-      //       ),
-      //   },
-      //   async execute(
-      //     { description, prompt, subagent_type, task_id },
-      //     context,
-      //   ) {
-      //     // Get the running config — this is the source of truth for the active profile's
-      //     // agent settings including model, permissions, etc.
-      //     const configResponse = await client.config.get();
-      //     const config: any = configResponse.data ?? {};
-      //     const agentConfigs: Record<string, any> = config.agent ?? {};
-      //
-      //     // Get the agent list for validation and resolved permissions
-      //     const agentsResponse = await client.app.agents();
-      //     const agents: any[] = Array.isArray(agentsResponse.data)
-      //       ? agentsResponse.data
-      //       : [];
-      //     const agent = agents.find((a: any) => a.name === subagent_type);
-      //
-      //     if (!agent) {
-      //       const available = agents
-      //         .filter((a: any) => a.mode !== "primary")
-      //         .map((a: any) => a.name)
-      //         .join(", ");
-      //       throw new Error(
-      //         `Unknown agent type: "${subagent_type}" is not a valid agent type. Available: ${available || "none"}`,
-      //       );
-      //     }
-      //
-      //     // Use the resolved model from Agent.list() — populated when the profile has a model override
-      //     // for this agent. If absent, don't pass a model and let OpenCode resolve it.
-      //     const model: { providerID: string; modelID: string } | undefined =
-      //       agent.model ?? undefined;
-      //
-      //     // Request delegation permission — triggers the TUI delegation UI
-      //     await context.ask({
-      //       permission: "task",
-      //       patterns: [subagent_type],
-      //       always: ["*"],
-      //       metadata: { description, subagent_type },
-      //     });
-      //
-      //     // Derive tool restrictions from the agent's resolved permission rules.
-      //     const permissions: any[] = agent.permission ?? [];
-      //     const toolRestrictions: Record<string, boolean> = {};
-      //     for (const rule of permissions) {
-      //       if (
-      //         rule.action === "deny" &&
-      //         rule.pattern === "*" &&
-      //         typeof rule.permission === "string"
-      //       ) {
-      //         toolRestrictions[rule.permission] = false;
-      //       }
-      //       if (
-      //         rule.action === "allow" &&
-      //         typeof rule.permission === "string" &&
-      //         rule.permission !== "*"
-      //       ) {
-      //         toolRestrictions[rule.permission] = true;
-      //       }
-      //     }
-      //
-      //     // Get or create the child session
-      //     let session: any;
-      //     if (task_id) {
-      //       try {
-      //         const existing = await client.session.get({
-      //           path: { id: task_id },
-      //         });
-      //         if (existing.data) session = existing.data;
-      //       } catch {
-      //         /* not found, will create */
-      //       }
-      //     }
-      //     if (!session) {
-      //       const created = await client.session.create({
-      //         body: {
-      //           parentID: context.sessionID,
-      //           title: `${description} (@${agent.name} subagent)`,
-      //           permission: permissions,
-      //         },
-      //       });
-      //       session = created.data;
-      //     }
-      //     if (!session)
-      //       throw new Error("Failed to create or retrieve subagent session");
-      //
-      //     // Set initial metadata so TUI shows the delegation immediately
-      //     context.metadata({
-      //       title: description,
-      //       metadata: { sessionId: session.id, ...(model ? { model } : {}) },
-      //     });
-      //
-      //     // Abort handling
-      //     const handleAbort = () =>
-      //       client.session.abort({ path: { id: session.id } });
-      //     context.abort.addEventListener("abort", handleAbort);
-      //
-      //     try {
-      //       // Build prompt body matching OpenCode's native TaskTool contract:
-      //       // - agent: correct agent identity for the session
-      //       // - tools: restrictions derived from agent's permission config
-      //       // - model: from the running config (active profile), not from Agent.list()
-      //       const promptBody: Record<string, any> = {
-      //         agent: agent.name,
-      //         tools: toolRestrictions,
-      //         parts: [{ type: "text", text: prompt }],
-      //       };
-      //       if (model) {
-      //         promptBody.model = model;
-      //       }
-      //       const result = await client.session.prompt({
-      //         path: { id: session.id },
-      //         body: promptBody,
-      //       });
-      //
-      //       const resultParts: any[] = result.data?.parts ?? [];
-      //       const textParts = resultParts.filter((p: any) => p.type === "text");
-      //       const text = textParts[textParts.length - 1]?.text ?? "";
-      //
-      //       context.metadata({
-      //         title: description,
-      //         metadata: { sessionId: session.id, ...(model ? { model } : {}) },
-      //       });
-      //
-      //       return [text, "", `task_id: ${session.id}`].join("\n");
-      //     } finally {
-      //       context.abort.removeEventListener("abort", handleAbort);
-      //     }
-      //   },
-      // }),
-
-      get_planning_components_catalogue: tool({
-        description:
-          "Retrieve the planning components catalogue listing all available node types. Returns CATALOGUE.md text verbatim from the global node-library installation.",
-        args: {},
-        async execute(_args, _context) {
-          const cataloguePath = path.join(
-            CONFIG_ROOT,
-            "planning",
-            "plan-session",
-            "node-library",
-            "CATALOGUE.md",
-          );
-          if (!fs.existsSync(cataloguePath)) {
-            throw new Error(
-              `Catalogue not found at ${cataloguePath}`,
-            );
-          }
-          return fs.readFileSync(cataloguePath, "utf-8");
-        },
-      }),
     },
 
     // ── Hooks ────────────────────────────────────────────────────────────────
@@ -1773,14 +662,31 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           plan_name,
           "plan.jsonl",
         );
-        const { metadata, nodes } = readDagV3(planPath);
-        const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
-        for (const node of nodes) {
-          if (!node.prompt.includes("/")) {
-            node.prompt = `${promptsPrefix}${node.prompt}`;
+
+        // Detect schema version and compile if phase-based (4.0)
+        const schemaVersion = detectSchemaVersion(planPath);
+        let metadata: DagMetadataV3;
+        let nodeMap: Record<string, import("./types").FlatNode>;
+
+        if (schemaVersion === "4.0") {
+          // Phase-based plan: compile phases → nodes at activation time
+          const { metadata: phaseMeta, phases } = readPhaseDag(planPath);
+          const compiled = compilePhasesToNodes(plan_name, phases, phaseMeta.entry_phase_id);
+          metadata = compiled.metadata;
+          nodeMap = flattenTreeV3(compiled.metadata, compiled.nodes);
+        } else {
+          // Node-based plan (schema 3.0): use directly
+          const dagData = readDagV3(planPath);
+          metadata = dagData.metadata;
+          const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
+          for (const node of dagData.nodes) {
+            if (!node.prompt.includes("/")) {
+              node.prompt = `${promptsPrefix}${node.prompt}`;
+            }
           }
+          nodeMap = flattenTreeV3(dagData.metadata, dagData.nodes);
         }
-        const nodeMap = flattenTreeV3(metadata, nodes);
+
         const entryNode = nodeMap[metadata.entry_node_id];
         if (!entryNode) {
           throw new Error(
@@ -1816,26 +722,29 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         return;
       }
 
-      // --- Handle present_dag_diagram: validate ---
-      if (input.tool === "present_dag_diagram") {
+      // --- Handle present_plan_diagram: render phase-based plan for user ---
+      if (input.tool === "present_plan_diagram") {
         const plan_name = output.args?.plan_name as string;
         if (!plan_name) throw new Error("plan_name is required");
 
         const worktree = resolveWorktree(_ctx);
-        const planPath = resolveDagPath(plan_name, worktree);
-        const { metadata, nodes } = readDagV3(planPath);
-        validateDagV3(metadata, nodes); // throws on structural issues
+        const planPath = path.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
 
-        const { mermaid } = dagToMermaidCompactV3(metadata, nodes);
-        const ascii = renderMermaidASCII(mermaid, {
-          colorMode: "none",
-        });
-        const diagramText = `Session Plan: ${metadata.id}\n\nPlan Name: ${plan_name}\n\n${ascii}`;
+        const { metadata: phaseMeta, phases } = readPhaseDag(planPath);
+        const lines = [`Plan: ${phaseMeta.id}`, ""];
+        for (const phase of phases) {
+          const childStr = phase.children.length === 0
+            ? "(terminal)"
+            : phase.children.length === 1
+              ? `→ ${phase.children[0]}`
+              : `→ [${phase.children.join(", ")}]`;
+          lines.push(`(${phase.phase}) [${phase.phase_type}] ${childStr}`);
+        }
 
         client.session.prompt({
           path: { id: input.sessionID },
           body: {
-            parts: [{ type: "text", text: diagramText }],
+            parts: [{ type: "text", text: lines.join("\n") }],
             noReply: true,
           },
         });

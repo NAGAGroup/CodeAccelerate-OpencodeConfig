@@ -47,10 +47,6 @@
         // Node library: backend nodes
         "planning/plan-session/node-library/execution-kickoff/node-spec.json",
         "planning/plan-session/node-library/execution-kickoff/prompt.md",
-        "planning/plan-session/node-library/plan-success/node-spec.json",
-        "planning/plan-session/node-library/plan-success/prompt.md",
-        "planning/plan-session/node-library/plan-fail/node-spec.json",
-        "planning/plan-session/node-library/plan-fail/prompt.md",
         // Node library: search nodes
         "planning/plan-session/node-library/context-scout/node-spec.json",
         "planning/plan-session/node-library/context-scout/prompt.md",
