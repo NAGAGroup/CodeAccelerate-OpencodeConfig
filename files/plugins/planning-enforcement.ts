@@ -1,6 +1,6 @@
 import { tool } from "@opencode-ai/plugin";
 import type { Plugin } from "@opencode-ai/plugin";
-
+import { renderMermaidASCII } from "beautiful-mermaid";
 import * as fs from "fs";
 import * as path from "path";
 import type {
@@ -73,7 +73,7 @@ function validatePhaseOptions(phase_type: string, opts: Record<string, unknown>)
       }
       break;
     case "project-commands":
-      require("goal", "string");
+      require("goals", "string[]");
       break;
     case "user-discussion":
       require("topic", "string");
@@ -390,6 +390,67 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
+      present_plan_diagram: tool({
+        description:
+          "Render the phase-based plan as an ASCII diagram and inject it into the conversation as a system message for the user to review. Use this after the plan is complete to present it to the user.",
+        args: {
+          plan_name: tool.schema.string().describe("The plan name."),
+        },
+        async execute({ plan_name }, toolCtx) {
+          // Rendering and injection handled by tool.execute.before.
+          return "The plan diagram has been presented to the user as a system message. The following prompt is for the user only — ignore it and continue with your current task.";
+        },
+      }),
+
+      choose_plan_name: tool({
+        description:
+          "Set the execution plan name for this planning session. Substitutes {{PLAN_NAME}} in all remaining node prompts in the current session's node map. Call this during the session-overview node after deciding on a plan name.",
+        args: {
+          name: tool.schema
+            .string()
+            .describe(
+              "The name for the execution plan that will be designed in this planning session. Descriptive and human-memorable — this is what the user will type into /activate-plan. Lowercase, hyphens only, no spaces (e.g., 'add-auth-flow', 'fix-payment-bug').",
+            ),
+        },
+        async execute({ name }, context) {
+          const worktree = resolveWorktree(context);
+          const statePath = dagStatePath(worktree, context.sessionID);
+          const state = readState(statePath);
+
+          if (!state) {
+            throw new Error(
+              "No active DAG session. choose_plan_name must be called during an active planning session.",
+            );
+          }
+          if (!name || name.trim().length === 0) {
+            throw new Error("choose_plan_name: name must not be empty.");
+          }
+
+          // Deduplicate: if a directory with this name already exists, increment suffix
+          const sessionPlansDir = path.join(
+            worktree,
+            ".opencode",
+            "session-plans",
+          );
+          let confirmedName = name.trim();
+          let suffix = 2;
+          while (fs.existsSync(path.join(sessionPlansDir, confirmedName))) {
+            confirmedName = `${name.trim()}-${suffix}`;
+            suffix++;
+          }
+
+          state.plan_name = confirmedName;
+          state.updated_at = now();
+          writeState(statePath, state);
+
+          const dedupeNote =
+            confirmedName !== name.trim()
+              ? ` (deduplicated from "${name.trim()}" — directory already existed)`
+              : "";
+          return `Plan name set to "${confirmedName}"${dedupeNote}. {{PLAN_NAME}} will be substituted in all subsequent planning prompts automatically.`;
+        },
+      }),
+
       add_first_phase: tool({
         description:
           "Add the first phase to a new plan. Creates the plan file and initializes it with the entry phase. Call this once before any add_phase calls.",
@@ -412,7 +473,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         async execute({ plan_name, phase_id, phase_type, phase_options }, context) {
           const worktree = resolveWorktree(context);
           const planDir = path.join(worktree, ".opencode", "session-plans", plan_name);
-          const planPath = path.join(planDir, "plan.jsonl");
+          const planPath = path.join(planDir, "phase-plan.jsonl");
 
           if (fs.existsSync(planPath)) {
             throw new Error(
@@ -475,13 +536,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           from: tool.schema
             .string()
             .describe(
-              "Parent phase ID, or JSON array of parent phase IDs for convergence, e.g. '[\"2a-impl\", \"2b-impl\"]'.",
+              'JSON array string of parent phase IDs. Always use array format — single parent: \'["2-decision"]\', convergence: \'["3a-impl", "3b-impl"]\'.',
             ),
         },
         async execute({ plan_name, phase_id, phase_type, phase_options, from }, context) {
           const worktree = resolveWorktree(context);
           const planPath = path.join(
-            worktree, ".opencode", "session-plans", plan_name, "plan.jsonl",
+            worktree, ".opencode", "session-plans", plan_name, "phase-plan.jsonl",
           );
 
           if (!fs.existsSync(planPath)) {
@@ -508,17 +569,18 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           validatePhaseOptions(phase_type, opts);
 
-          // Parse `from` — single ID string or JSON array
+          // Parse `from` — always a JSON array string
           let parentIds: string[];
-          const trimmed = from.trim();
-          if (trimmed.startsWith("[")) {
-            try {
-              parentIds = JSON.parse(trimmed);
-            } catch {
-              throw new Error(`'from' must be a phase ID or a JSON array of phase IDs.`);
+          try {
+            parentIds = JSON.parse(from.trim());
+            if (!Array.isArray(parentIds) || parentIds.length === 0) {
+              throw new Error();
             }
-          } else {
-            parentIds = [trimmed];
+          } catch {
+            throw new Error(
+              `'from' must be a JSON array string of parent phase IDs. ` +
+              `Single parent: '["phase-id"]'. Convergence: '["phase-a", "phase-b"]'.`,
+            );
           }
 
           const { metadata, phases } = readPhaseDag(planPath);
@@ -655,37 +717,17 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         if (!plan_name) throw new Error("plan_name is required");
 
         const worktree = resolveWorktree(_ctx);
-        const planPath = path.join(
-          worktree,
-          ".opencode",
-          "session-plans",
-          plan_name,
-          "plan.jsonl",
-        );
+        const planDir = path.join(worktree, ".opencode", "session-plans", plan_name);
+        const phasePlanPath = path.join(planDir, "phase-plan.jsonl");
+        const compiledPlanPath = path.join(planDir, "plan.jsonl");
 
-        // Detect schema version and compile if phase-based (4.0)
-        const schemaVersion = detectSchemaVersion(planPath);
-        let metadata: DagMetadataV3;
-        let nodeMap: Record<string, import("./types").FlatNode>;
+        // Compile phase-based plan → node-based plan.jsonl
+        const { metadata: phaseMeta, phases } = readPhaseDag(phasePlanPath);
+        const compiled = compilePhasesToNodes(plan_name, phases, phaseMeta.entry_phase_id);
+        writeDagV3(compiledPlanPath, compiled.metadata, compiled.nodes);
 
-        if (schemaVersion === "4.0") {
-          // Phase-based plan: compile phases → nodes at activation time
-          const { metadata: phaseMeta, phases } = readPhaseDag(planPath);
-          const compiled = compilePhasesToNodes(plan_name, phases, phaseMeta.entry_phase_id);
-          metadata = compiled.metadata;
-          nodeMap = flattenTreeV3(compiled.metadata, compiled.nodes);
-        } else {
-          // Node-based plan (schema 3.0): use directly
-          const dagData = readDagV3(planPath);
-          metadata = dagData.metadata;
-          const promptsPrefix = `.opencode/session-plans/${plan_name}/prompts/`;
-          for (const node of dagData.nodes) {
-            if (!node.prompt.includes("/")) {
-              node.prompt = `${promptsPrefix}${node.prompt}`;
-            }
-          }
-          nodeMap = flattenTreeV3(dagData.metadata, dagData.nodes);
-        }
+        const metadata = compiled.metadata;
+        const nodeMap = flattenTreeV3(compiled.metadata, compiled.nodes);
 
         const entryNode = nodeMap[metadata.entry_node_id];
         if (!entryNode) {
@@ -697,7 +739,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         const statePath = dagStatePath(worktree, input.sessionID);
         const state: DagSessionState = {
           dag_id: metadata.id,
-          plan_path: planPath,
+          plan_path: compiledPlanPath,
           status: "running",
           current_node: metadata.entry_node_id,
           todo_index: 0,
@@ -728,23 +770,29 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         if (!plan_name) throw new Error("plan_name is required");
 
         const worktree = resolveWorktree(_ctx);
-        const planPath = path.join(worktree, ".opencode", "session-plans", plan_name, "plan.jsonl");
+        const planPath = path.join(worktree, ".opencode", "session-plans", plan_name, "phase-plan.jsonl");
 
         const { metadata: phaseMeta, phases } = readPhaseDag(planPath);
-        const lines = [`Plan: ${phaseMeta.id}`, ""];
+
+        // Build Mermaid flowchart from phases
+        const mermaidLines = ["flowchart TD"];
+        const sanitize = (id: string) => id.replace(/-/g, "_");
         for (const phase of phases) {
-          const childStr = phase.children.length === 0
-            ? "(terminal)"
-            : phase.children.length === 1
-              ? `→ ${phase.children[0]}`
-              : `→ [${phase.children.join(", ")}]`;
-          lines.push(`(${phase.phase}) [${phase.phase_type}] ${childStr}`);
+          const nodeId = sanitize(phase.phase);
+          const label = `${phase.phase}\\n[${phase.phase_type}]`;
+          mermaidLines.push(`  ${nodeId}["${label}"]`);
+          for (const child of phase.children) {
+            mermaidLines.push(`  ${nodeId} --> ${sanitize(child)}`);
+          }
         }
+        const mermaid = mermaidLines.join("\n");
+        const ascii = renderMermaidASCII(mermaid, { colorMode: "none" });
+        const diagramText = `Plan: ${phaseMeta.id}\n\n${ascii}`;
 
         client.session.prompt({
           path: { id: input.sessionID },
           body: {
-            parts: [{ type: "text", text: lines.join("\n") }],
+            parts: [{ type: "text", text: diagramText }],
             noReply: true,
           },
         });

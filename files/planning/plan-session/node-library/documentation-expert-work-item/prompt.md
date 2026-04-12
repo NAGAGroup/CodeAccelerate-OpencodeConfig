@@ -9,7 +9,7 @@
 </goal>
 
 <rules>
-The work is file edits only. Do not include shell operations in the dispatch — documentation-expert cannot run commands.
+Never include shell operations in the dispatch.
 </rules>
 
 <instructions>

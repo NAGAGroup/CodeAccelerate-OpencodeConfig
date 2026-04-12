@@ -6,7 +6,6 @@ description: Teaches how to search public information and documentation using we
 Always read actual source material — search result snippets are not evidence.
 Tag findings: verified (read from source), inferred (logical conclusion), uncertain (conflicting or insufficient evidence).
 Use only public general terms — no internal names, proprietary identifiers, or confidential context.
-Search from multiple angles if first results do not fully answer the question.
 </rules>
 
 <example>

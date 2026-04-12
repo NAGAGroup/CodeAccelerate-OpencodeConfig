@@ -9,7 +9,8 @@
 </goal>
 
 <rules>
-Commit only the work described. Do not stage or commit unrelated changes.
+Always commit only the work described in the goal.
+Never stage or commit unrelated changes.
 </rules>
 
 <instructions>

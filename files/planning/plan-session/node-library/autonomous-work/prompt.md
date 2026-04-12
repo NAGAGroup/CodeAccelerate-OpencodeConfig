@@ -6,10 +6,12 @@
 
 <goal>
 {{DESCRIPTION}}
+
+This node is reached only after all retry attempts in a fix→verify sequence have failed.
 </goal>
 
 <rules>
-Only reached after all retry attempts in a fix→verify sequence have failed. Provide full context of what was attempted, what failed, and what needs to be resolved.
+Always provide full context of what was attempted, what failed, and what needs to be resolved.
 </rules>
 
 <instructions>

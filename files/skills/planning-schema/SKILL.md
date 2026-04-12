@@ -1,0 +1,163 @@
+---
+name: planning-schema
+description: Phase types, field schemas, and naming conventions for writing executable plans.
+---
+<rules>
+Always precede every work phase with: project-survey, then external-research (if external dependencies are involved), then internal-research.
+Always include external-research before any work phase touching an external dependency — training data is not sufficient.
+Always include research phases throughout the plan as new dependencies emerge, not only at the start.
+Never put multiple distinct outcomes in a single work phase — split them.
+Always make every leaf a write-notes or early-exit phase.
+Never use a decision gate to inform a later phase — branches must split immediately from the gate.
+</rules>
+
+<phase types>
+
+## external-research
+Expands to one external-scout node per question.
+- questions: [list of strings] — required
+- research-type: standard | deep — optional, default: standard
+
+## internal-research
+Expands to one context-scout + context-insurgent pair per question.
+- questions: [list of strings] — required
+
+## project-survey
+Expands to one context-scout node per topic. For broad, shallow orientation.
+- topics: [list of strings] — required
+
+## work
+Expands to: work → verify → (fix → verify-retry) × retries.
+- goal: string — required. One bounded implementation goal.
+- work-type: code | docs — required
+- verify-description: string — required. What a passing verification looks like.
+- retries: int — optional, default: 1
+- commit: bool — optional, default: false
+
+## project-commands
+Pre-work setup via shell operations — creates the conditions that work phases depend on. Expands to one run-project-commands node per goal, chained sequentially. Self-correcting agent, no verify-retry loop.
+Use for: adding dependencies, running scaffolding or code generation tools, initializing submodules, environment or config setup.
+Do not use for: building, running tests, or verifying implementation — those are handled inside every work phase's verify chain.
+- goals: [list of strings] — required. Each string is one setup operation.
+- commit: bool — optional, default: false
+
+## user-discussion
+Open discussion before a decision or to gather user preference.
+- topic: string — required
+- branches: [list of labels] — optional, include if a routing decision follows
+
+## agentic-decision-gate
+Routes based on accumulated evidence. Executor decides.
+- question: string — required
+- branches: [list of labels] — required, one per child phase
+
+## write-notes
+Captures context. Use as a mid-plan checkpoint or leaf node.
+- context: string — optional
+
+## early-exit
+A valid planned stopping point. Structurally identical to write-notes.
+- reason: string — optional
+
+</phase types>
+
+<phase naming>
+Format: {number}{optional-letter}-{descriptive-name}
+
+Sequential:       1-survey-project, 2-research-framework, 3-implement-core
+Branching:        2-technology-decision → 3a-implement-option-a, 3b-implement-option-b
+Convergence:      3a and 3b both declare from: [3a-..., 3b-...] on the shared next phase
+Within a branch:  3c-early-exit (leaf, no children)
+
+The first phase has no from. Every subsequent phase explicitly declares from as a JSON array.
+Single parent: from: ["parent-id"]
+Convergence:   from: ["parent-a-id", "parent-b-id"]
+</phase naming>
+
+<examples>
+
+```markdown
+### 1-research-external-dependencies [external-research]
+questions:
+  - [specific question about an external technology, library, or API the plan depends on]
+  - [question about its integration requirements or usage constraints]
+
+---
+
+### 2-survey-project [project-survey]
+from: ["1-research-external-dependencies"]
+topics:
+  - [broad project area relevant to the plan goal]
+  - [another area to understand before making decisions]
+
+---
+
+### 3-research-specific-approach [internal-research]
+from: ["2-survey-project"]
+questions:
+  - [targeted question about how the project handles something specific to this plan]
+  - [another targeted project question]
+
+---
+
+### 4-approach-decision [agentic-decision-gate]
+from: ["3-research-specific-approach"]
+question: [the routing decision the executor makes based on accumulated evidence]
+branches: [option-a, option-b]
+
+---
+
+### 4a-implement-option-a [work]
+from: ["4-approach-decision"]
+goal: [single bounded implementation goal for this branch]
+work-type: code
+verify-description: [observable criteria that define a passing result]
+retries: 2
+commit: true
+
+---
+
+### 4b-implement-option-b [work]
+from: ["4-approach-decision"]
+goal: [single bounded implementation goal for the other branch]
+work-type: code
+verify-description: [observable criteria that define a passing result]
+retries: 1
+
+---
+
+### 5-integration-commands [project-commands]
+from: ["4a-implement-option-a", "4b-implement-option-b"]
+goals:
+  - [first shell operation or group, e.g. install the required dependency]
+  - [second shell operation, e.g. run the build to verify integration]
+commit: true
+
+---
+
+### 6-research-next-dependency [external-research]
+from: ["5-integration-commands"]
+questions:
+  - [question about a new external dependency surfaced by implementation]
+
+---
+
+### 7-user-review [user-discussion]
+from: ["6-research-next-dependency"]
+topic: [topic requiring user preference or approval before proceeding]
+branches: [proceed, abort-and-replan]
+
+---
+
+### 7a-early-exit [early-exit]
+from: ["7-user-review"]
+reason: [why stopping here is a valid planned outcome]
+
+---
+
+### 8-completion-notes [write-notes]
+from: ["7-user-review"]
+context: [what to document: outcomes, decisions made, follow-up work]
+```
+
+</examples>

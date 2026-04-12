@@ -9,7 +9,8 @@
 </goal>
 
 <rules>
-Scope commands strictly to what the goal requires. Do not run destructive or irreversible commands.
+Always scope commands strictly to what the goal requires.
+Never run destructive or irreversible commands.
 </rules>
 
 <instructions>

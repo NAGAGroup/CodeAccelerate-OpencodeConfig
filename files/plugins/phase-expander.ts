@@ -151,27 +151,34 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
     nodes.push(makeNode(initialVerifyId, "verify-work-item", verifyDescription, [EXIT]));
     exitSlots.push({ nodeId: initialVerifyId, childIndex: 0 });
   } else {
-    // Initial verify branches: success → EXIT, fail → fix-1
-    const fix1Id = `${phase.phase}-fix-1`;
+    // Initial verify branches: success → EXIT, fail → triage-1
+    const triage1Id = `${phase.phase}-triage-1`;
     nodes.push(makeNode(workId, workComponent, goal, [initialVerifyId]));
     nodes.push(
-      makeNode(initialVerifyId, "verify-work-item", verifyDescription, [EXIT, fix1Id]),
+      makeNode(initialVerifyId, "verify-work-item", verifyDescription, [EXIT, triage1Id]),
     );
     exitSlots.push({ nodeId: initialVerifyId, childIndex: 0 }); // success branch
 
-    // Fix-retry pairs
+    // Triage → project-commands-fix → fix → verify retry chain
     for (let r = 1; r <= retries; r++) {
+      const triageId = `${phase.phase}-triage-${r}`;
+      const pcmdFixId = `${phase.phase}-setup-fix-${r}`;
       const fixId = `${phase.phase}-fix-${r}`;
       const verifyRId = `${phase.phase}-verify-${r}`;
+
+      const triageDesc = `Investigate the verification failure for: ${verifyDescription}. Analyze error output, logs, and relevant code to identify the root cause.`;
+      const pcmdFixDesc = `Apply any command-level fixes identified in the triage (missing dependencies, environment setup, etc.). If no command-level fixes are needed, return immediately.`;
       const fixDesc = `Fix verification failures for: ${goal}`;
 
+      nodes.push(makeNode(triageId, "verify-triage", triageDesc, [pcmdFixId]));
+      nodes.push(makeNode(pcmdFixId, "run-project-commands", pcmdFixDesc, [fixId]));
       nodes.push(makeNode(fixId, workComponent, fixDesc, [verifyRId]));
 
       if (r < retries) {
-        // Non-final retry verify: branches to [EXIT, next-fix]
-        const nextFixId = `${phase.phase}-fix-${r + 1}`;
+        // Non-final retry verify: branches to [EXIT, next-triage]
+        const nextTriageId = `${phase.phase}-triage-${r + 1}`;
         nodes.push(
-          makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT, nextFixId]),
+          makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT, nextTriageId]),
         );
         exitSlots.push({ nodeId: verifyRId, childIndex: 0 }); // success branch
       } else {
@@ -203,27 +210,34 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
 }
 
 function expandProjectCommands(phase: PhaseRecord): PhaseExpansion {
-  const goal = phase.phase_options.goal as string;
+  const goals = phase.phase_options.goals as string[];
   const commit = (phase.phase_options.commit as boolean) ?? false;
-  const cmdId = `${phase.phase}-run`;
   const nodes: DagNodeV3[] = [];
+
+  // One run-project-commands node per goal, chained sequentially
+  for (let i = 0; i < goals.length; i++) {
+    const nodeId = `${phase.phase}-${i + 1}`;
+    const nextId = i < goals.length - 1 ? `${phase.phase}-${i + 2}` : EXIT;
+    nodes.push(makeNode(nodeId, "run-project-commands", goals[i], [nextId]));
+  }
+
+  const lastId = `${phase.phase}-${goals.length}`;
 
   if (commit) {
     const commitId = `${phase.phase}-commit`;
-    nodes.push(makeNode(cmdId, "run-project-commands", goal, [commitId]));
-    nodes.push(makeNode(commitId, "commit", `Commit checkpoint: ${goal}`, [EXIT]));
+    nodes.find((n) => n.id === lastId)!.children = [commitId];
+    nodes.push(makeNode(commitId, "commit", `Commit checkpoint after setup`, [EXIT]));
     return {
-      entryNodeId: cmdId,
+      entryNodeId: `${phase.phase}-1`,
       nodes,
       exitSlots: [{ nodeId: commitId, childIndex: 0 }],
     };
   }
 
-  nodes.push(makeNode(cmdId, "run-project-commands", goal, [EXIT]));
   return {
-    entryNodeId: cmdId,
+    entryNodeId: `${phase.phase}-1`,
     nodes,
-    exitSlots: [{ nodeId: cmdId, childIndex: 0 }],
+    exitSlots: [{ nodeId: lastId, childIndex: 0 }],
   };
 }
 
@@ -290,10 +304,11 @@ function expandWriteNotes(phase: PhaseRecord): PhaseExpansion {
   const context = phase.phase_options.context as string | undefined;
   const noteId = `${phase.phase}-notes`;
   const desc = context ?? "Document findings, decisions, and context for future reference.";
+  const node = makeNode(noteId, "write-notes", desc, [EXIT]);
   return {
     entryNodeId: noteId,
-    nodes: [makeNode(noteId, "write-notes", desc)],
-    exitSlots: [],
+    nodes: [node],
+    exitSlots: [{ nodeId: noteId, childIndex: 0 }],
   };
 }
 
@@ -301,10 +316,11 @@ function expandEarlyExit(phase: PhaseRecord): PhaseExpansion {
   const reason = phase.phase_options.reason as string | undefined;
   const exitId = `${phase.phase}-exit`;
   const desc = reason ?? "Early exit — document context, reasoning, and any follow-up work for future sessions.";
+  const node = makeNode(exitId, "write-notes", desc, [EXIT]);
   return {
     entryNodeId: exitId,
-    nodes: [makeNode(exitId, "write-notes", desc)],
-    exitSlots: [],
+    nodes: [node],
+    exitSlots: [{ nodeId: exitId, childIndex: 0 }],
   };
 }
 

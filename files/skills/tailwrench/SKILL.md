@@ -1,23 +1,24 @@
 ---
 name: tailwrench
-description: Teaches how to dispatch tailwrench for shell operations, verification checks, and git commands.
+description: Teaches headwrench what tailwrench can do and how to delegate to it effectively.
 ---
+<capabilities>
+tailwrench can run bash commands, read and edit files, search the project with grepai, and search the web.
+tailwrench is used for: running build and test commands, installing and managing dependencies, git operations, verifying implementation outcomes by running the project, and investigating failures.
+tailwrench cannot write application code — use junior-dev for that.
+</capabilities>
+
 <rules>
-Your prompt must match the template, filling in only the placeholder content and including the rest verbatim.
-Be specific about what to run and what a passing result looks like — tailwrench should not have to guess.
+Always give tailwrench a specific goal with clear success criteria.
+Always include context about the project's build system, package manager, and test framework.
+Always include relevant findings from prior steps (what was implemented, what failed, triage findings, etc.).
 </rules>
 
-<prompt template>
-prompt="Task: [what to do — verify, run commands, commit, or a combination]
-
-Commands or checks: [specific commands to run, or what to verify and how]
-
-Success criteria: [what a passing result looks like — required for verification tasks]
-
-Constraints: [anything that must not be run or modified]
-
-Plan Name: [plan name or N/A]"
-
-description="[3-5 word description for the user]"
-subagent_type="tailwrench"
-</prompt template>
+<methodology>
+1. Consider what context tailwrench needs to accomplish the goal — prior implementation details, failure reports, project tooling.
+2. Consider what success looks like and how tailwrench should recognize it.
+3. Consider scope — what tailwrench must not touch or change.
+4. Consider anything else that might be needed given the specific situation.
+5. Write down a complete, goal-oriented dispatch prompt from the findings in the previous steps.
+6. Use the task tool to delegate to tailwrench with your prompt.
+</methodology>

@@ -1,24 +1,24 @@
 ---
 name: documentation-expert
-description: Teaches how to dispatch documentation-expert for writing and editing documentation files.
+description: Teaches headwrench what documentation-expert can do and how to delegate to it effectively.
 ---
+<capabilities>
+documentation-expert can read files, write and edit files, and search the project with grepai.
+documentation-expert is used for: writing, updating, and improving documentation files.
+documentation-expert cannot run commands — use tailwrench for that.
+</capabilities>
+
 <rules>
-Your prompt must match the template, filling in only the placeholder content and including the rest verbatim.
+Always give documentation-expert a specific goal describing what the documentation should accomplish and who the audience is.
+Always include context: what existing documentation looks like, what conventions to follow, and what the content should cover.
+Always specify scope — what files or areas to touch and what to leave alone.
 </rules>
 
-<prompt template>
-prompt="Goal: [what the documentation should accomplish — audience, purpose, what it needs to convey]
-
-Scope: [what files or areas to document, and what to leave alone]
-
-Style reference: [existing files or conventions to match for tone, structure, and formatting]
-
-Constraints: [anything the documentation must or must not include]
-
-Plan Name: [plan name or N/A]
-
-Report what was accomplished and how any ambiguities were resolved."
-
-description="[3-5 word description for the user]"
-subagent_type="documentation-expert"
-</prompt template>
+<methodology>
+1. Consider what context documentation-expert needs — existing docs, style conventions, content requirements.
+2. Consider what the documentation must convey and to whom.
+3. Consider scope — what to document and what to leave untouched.
+4. Consider anything else that might be needed given the specific situation.
+5. Write down a complete, goal-oriented dispatch prompt from the findings in the previous steps.
+6. Use the task tool to delegate to documentation-expert with your prompt.
+</methodology>

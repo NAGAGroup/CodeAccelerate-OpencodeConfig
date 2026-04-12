@@ -92,11 +92,6 @@
       ],
       "enabled": true
     },
-    "grepai": {
-      "type": "local",
-      "command": ["grepai", "mcp-serve"],
-      "enabled": true
-    },
     // Semantic session memory. Stores and retrieves findings by meaning across DAG steps.
     // Connects to a shared Qdrant server instance (supports concurrent sessions).
     // Start the server once: docker run -d --name qdrant -p 6333:6333 qdrant/qdrant

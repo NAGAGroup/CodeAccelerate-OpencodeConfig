@@ -1,21 +1,53 @@
 ---
 name: mapping-plans-to-dags
-description: Teaches how to map a plain-language plan to an executable DAG using the node catalogue.
+description: Teaches how to translate a markdown phase plan into add_first_phase and add_phase tool calls.
 ---
 <rules>
-Branch nodes (decision-gate, user-decision-gate, verify-work-item) must have exactly 2 children.
-Every leaf node must be write-notes. No other node type may be a leaf.
-No cycles — no node may appear on a path that leads back to itself.
-Only decision-gate, user-decision-gate, and verify-work-item may have multiple children. All other node types are strictly sequential — one child maximum. Branches are mutually exclusive routing paths, not parallel execution.
-Only call set_exit_point on a true leaf node — a write-notes node with no children. A write-notes node that connects to further work is an intermediate node, not an exit point.
-When wiring two children from one parent node, always use an array in connect_nodes: {"parent": ["child-a", "child-b"]}. JSON objects do not allow duplicate keys — {"parent": "child-a", "parent": "child-b"} will silently drop one edge.
+Call add_first_phase exactly once — for the first phase in the plan (the one with no from).
+Call add_phase for every subsequent phase, in the order they appear in the plan.
+Translate each phase's markdown fields directly to phase_options JSON. Do not interpret or rewrite.
+The from argument is a single phase ID string, or a JSON array string for convergence: '["phase-a", "phase-b"]'.
 </rules>
 
-<methodology>
-1. Call get_planning_components_catalogue to retrieve the catalogue. Study it carefully — it defines what each node does, when to use it, and its structural constraints.
-2. Read the plan provided in your dispatch prompt. Identify the phases of work, decision points, verification needs, and how work flows from start to finish.
-3. Map each element of the plan to the most appropriate node type from the catalogue. Let the catalogue guide your choices.
-4. Plan the full DAG structure before building: entry point, exit paths (success and failure write-notes leaves), branching points, phase connections.
-5. Build or revise incrementally. Call get_compact_dag_draft after each structural change to verify before continuing.
-6. Set the entry point and all exit points. Call validate_dag when complete — do not consider work done until it passes.
-</methodology>
+<mapping>
+Each phase in the plan has this markdown structure:
+
+### [phase-id] [phase-type]
+from: [parent-phase-id]           ← absent on the first phase
+[field]: [value]
+[field]: [value]
+
+Translates to:
+
+// First phase (no from):
+add_first_phase(
+  plan_name={{PLAN_NAME}},
+  phase_id="[phase-id]",
+  phase_type="[phase-type]",
+  phase_options='{"[field]": "[value]", "[field]": "[value]"}'
+)
+
+// Every subsequent phase (from is always a JSON array string):
+add_phase(
+  plan_name={{PLAN_NAME}},
+  phase_id="[phase-id]",
+  phase_type="[phase-type]",
+  phase_options='{"[field]": "[value]", "[field]": "[value]"}',
+  from='["[parent-phase-id]"]'
+)
+
+// Convergence (multiple parents):
+add_phase(
+  ...,
+  from='["parent-a-id", "parent-b-id"]'
+)
+
+// from is ALWAYS a JSON array string — even for a single parent.
+// Never pass a plain string like from="phase-id". Always: from='["phase-id"]'
+
+Field types in phase_options JSON:
+- string fields → "value"
+- list fields (questions, topics, branches) → ["item1", "item2"]
+- bool fields → true or false (no quotes)
+- int fields → 1 (no quotes)
+</mapping>

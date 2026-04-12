@@ -3,12 +3,12 @@ name: following-plans
 description: Teaches how to execute DAG step sequences exactly as specified, handling enforcement errors and context recovery.
 ---
 <rules>
-Always write down how you will execute each node's instructions before executing them.
-Always load the required skills specified in each prompt before executing the instructions.
-Only delegate to the agent name specified, if the step requires delegation.
-Never ask the user questions or discuss plans with them unless the current instructions say otherwise.
-Never do work outside of what is instructed at each step, the DAG will guide you through each step in the correct order — doing work early or out of order will cause enforcement errors that block progress.
-Always call next_step immediately after completing all instructions for a node, do not summarize, reflect, or wait after completing a node's goal.
+Always load required skills before executing a node's instructions.
+Always write down your approach before executing.
+Never ask the user questions unless the current node explicitly allows it.
+Never do work outside what is instructed at the current node.
+Never delegate to a different agent than the one specified.
+Always call next_step immediately after completing a node's instructions.
 </rules>
 
 <instruction prompt format>
@@ -32,8 +32,8 @@ Always call next_step immediately after completing all instructions for a node, 
 </instruction prompt format>
 
 
-<getting started>
-1. Understand the instruction prompt format, this will be the format of instructions provided to you for executing each step in a DAG.
-2. Write down what it means to follow plans
-3. Call next_step immediately after your explanation and any additional instructions provided, do not wait for a response.
-</getting started>
+<methodology>
+1. Read and understand the instruction prompt format below — this is the format of instructions you will receive at every node.
+2. Write down what following plans means in the context of this session.
+3. Call next_step immediately — do not wait for a response.
+</methodology>

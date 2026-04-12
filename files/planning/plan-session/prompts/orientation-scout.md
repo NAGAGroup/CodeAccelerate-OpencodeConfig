@@ -5,11 +5,11 @@
 **Questions Allowed?:** No
 
 <goal>
-Build broad understanding of the project.
+Build broad understanding of the project structure, conventions, and constraints.
 </goal>
 
 <instructions>
-1. Load the context-scout skill. Use it to compose a dispatch prompt — think through what areas to survey and what questions the scout should answer about the project structure, relationships, and constraints.
-2. Dispatch context-scout using the task tool, filling in the prompt template from the skill. Use {{PLAN_NAME}} for the plan name.
+1. Load the context-scout skill. Compose a dispatch prompt tailored to the project.
+2. Dispatch context-scout using the task tool with plan name {{PLAN_NAME}}.
 3. Call next_step.
 </instructions>
