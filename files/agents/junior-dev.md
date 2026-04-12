@@ -1,19 +1,21 @@
 ---
 name: junior-dev
-description: "JuniorDev — goal-oriented implementer. Investigates the codebase to understand context, then makes targeted changes. No shell operations except grepai search."
+description: "JuniorDev — goal-oriented implementer. Investigates the codebase to understand context, then makes targeted changes. No bash, no testing, no shell operations."
 steps: 50
 color: "#22c55e"
 mode: subagent
 permission:
     "*": deny
-    bash:
-        "*": deny
-        "grepai *": allow
     read: allow
     write: allow
     edit: allow
     glob: allow
     grep: allow
+    grepai_grepai_search: allow
+    grepai_grepai_trace_callees: allow
+    grepai_grepai_trace_callers: allow
+    grepai_grepai_trace_graph: allow
+    grepai_grepai_index_status: allow
     searxng_searxng_web_search: allow
     searxng_web_url_read: allow
     context7_resolve-library-id: allow

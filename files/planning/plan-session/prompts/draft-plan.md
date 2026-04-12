@@ -20,11 +20,10 @@ Always make every leaf a write-notes or early-exit phase.
 1. Load the planning-schema skill. Study the phase types and format.
 2. Load the planning-patterns skill. Understand plan topologies.
 3. Call qdrant_qdrant-find with collection {{PLAN_NAME}} to retrieve the user's original goal.
-4. Before writing, reason through each question and write down your answer:
-   - What does the user need to decide or approve? Write down your answer.
-   - What research is needed before each phase can succeed? Write down your answer.
-   - What can be executed and decided autonomously? Write down your answer.
-5. Write the plan.
-6. Self-check format: correct headings, valid phase types, lowercase field names, `from:` as JSON array on every non-first phase, descriptive phase IDs, every branching phase has ≥2 direct children.
-7. Call next_step.
+4. To design the draft, reason through each question:
+   - What does the user need to decide or approve? Make a mental note of your answer.
+   - What research is needed before each phase can succeed? Make a mental note of your answer.
+   - What can be executed and decided autonomously? Make a mental note of your answer.
+5. Ensure your plan has correct headings, valid phase types, lowercase field names, `from:` as JSON array on every non-first phase, descriptive phase IDs, every branching phase has ≥2 direct children.
+6. Call next_step.
 </instructions>

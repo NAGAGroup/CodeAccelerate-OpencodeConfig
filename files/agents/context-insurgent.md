@@ -5,10 +5,7 @@ color: "#f59e0b"
 mode: subagent
 permission:
     "*": deny
-    bash:
-        "*": deny
-        "grepai *": allow
-    read: allow
+    qdrant_qdrant-store: allow
     glob: allow
     grep: allow
     qdrant_qdrant-store: allow

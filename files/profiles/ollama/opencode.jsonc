@@ -93,6 +93,11 @@
     }
   },
   "mcp": {
+    "grepai": {
+      "type": "local",
+      "command": ["grepai", "mcp-serve"],
+      "enabled": true
+    },
     "context7": {
       "type": "local",
       "command": ["npx", "-y", "@upstash/context7-mcp"],

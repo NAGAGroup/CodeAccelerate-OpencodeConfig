@@ -12,15 +12,15 @@ Never guess file paths — use Read only after grepai or glob/grep has identifie
 
 <workflow>
 Phase 1 — Semantic discovery (grepai):
-  grepai status  // check index health first
-  grepai search "[describe what the code does]" --toon --compact  // broad orientation
-  grepai search "[more specific angle]" --path [relevant-dir] --toon --compact  // focused
-  grepai search "[another angle]" --path [relevant-dir] --toon --limit 5  // vary approach
+  grepai_grepai_index_status()  // always check index health first
+  grepai_grepai_search(query="[describe what the code does]", compact=True, format="toon")
+  grepai_grepai_search(query="[more specific angle]", path="[relevant-dir]", compact=False)
+  grepai_grepai_search(query="[another angle]", path="[relevant-dir]", compact=True, format="toon", limit=5)
 
 Phase 2 — Relationship tracing (once you have a symbol):
-  grepai trace callers "[FunctionName]" --json  // who calls this?
-  grepai trace callees "[FunctionName]" --json  // what does this depend on?
-  grepai trace graph "[FunctionName]" --depth 2 --json  // full call graph
+  grepai_grepai_trace_callers(symbol="[FunctionName]", compact=False)  // who calls this?
+  grepai_grepai_trace_callees(symbol="[FunctionName]", compact=False)  // what does this depend on?
+  grepai_grepai_trace_graph(symbol="[FunctionName]", depth=2)          // full call graph
 
 Phase 3 — Precision targeting (glob/grep):
   Glob(pattern="**/*.ts")  // find files by name pattern

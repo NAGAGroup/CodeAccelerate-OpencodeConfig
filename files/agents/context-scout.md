@@ -6,9 +6,8 @@ color: "#06b6d4"
 mode: subagent
 permission:
     "*": deny
-    bash:
-        "*": deny
-        "grepai *": allow
+    grepai_grepai_search: allow
+    grepai_grepai_index_status: allow
     qdrant_qdrant-store: allow
     qdrant_qdrant-find: allow
     skill:
