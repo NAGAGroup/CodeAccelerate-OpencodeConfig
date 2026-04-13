@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** tailwrench
+**Required Skills:** None
 **Required Tools:** task
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -17,7 +17,7 @@ Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>
-1. Load the tailwrench skill. Compose a dispatch prompt asking tailwrench to investigate the failure reported in the previous verification step and identify the root cause.
+1. Compose a dispatch prompt asking tailwrench to investigate the failure from the previous step and identify the root cause.
 2. Dispatch tailwrench using the task tool.
 3. Call next_step.
 </instructions>

@@ -29,11 +29,6 @@ If a plan name was provided, store summary of your work to session notes, using 
 Always use the provided plan name as the qdrant collection name.
 </rules>
 
-<output_format>
-Analysis: [precise findings about the specific mechanism investigated — how it works, what it connects to, what constraints or edge cases matter]
-
-Unknowns: [what was investigated but couldn't be determined, what follow-up would resolve it]
-</output_format>
 
 <methodology>
 1. Load your required skills at once.

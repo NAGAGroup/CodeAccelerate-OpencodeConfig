@@ -1,6 +1,6 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** dag-builder
-**Required Tools:** task
+**Required Skills:** None
+**Required Tools:** qdrant_qdrant-find, task
 **Optional Tools:** None
 **Questions Allowed?:** No
 
@@ -15,9 +15,8 @@ Always continue to the next planning step. This is not the final planning step.
 </rules>
 
 <instructions>
-1. Load the dag-builder skill.
-2. One last check, does your plan match the markdown schema from the planning-schema exactly? If it does not, dag-builder will not be able to do its job correctly.
-3. Dispatch dag-builder using the task tool with plan name {{PLAN_NAME}} and the finalized plan verbatim. Do not summarize or paraphrase.
-4. Call next_step.
+1. Use qdrant_qdrant-find to retrieve the finalized plan from the vector database. Ensure that the retrieved plan is complete and meets all requirements before proceeding.
+2. Dispatch dag-builder using the task tool with plan name {{PLAN_NAME}} and the finalized plan verbatim. Do not summarize or paraphrase.
+3. Call next_step.
 </instructions>
 

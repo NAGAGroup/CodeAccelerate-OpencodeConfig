@@ -16,10 +16,7 @@
   },
   "autoupdate": false,
   "small_model": "opencode/big-pickle",
-  "plugin": [
-    "@tarquinen/opencode-dcp@latest",
-    "file://{env:HOME}/.config/opencode/plugins/planning-enforcement.js"
-  ],
+  "plugin": ["file://{env:HOME}/.config/opencode/plugins/planning-enforcement.js"],
   "default_agent": "headwrench",
   "agent": {
     "plan": {

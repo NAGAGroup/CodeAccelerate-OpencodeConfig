@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** external-scout
+**Required Skills:** None
 **Required Tools:** task
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -13,7 +13,6 @@ Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>
-1. Load the external-scout skill. Use it to compose a dispatch prompt tailored to the goal above.
-2. Dispatch external-scout using the task tool with plan name {{PLAN_NAME}}.
-3. Call next_step.
+1. Dispatch external-scout using the task tool with plan name {{PLAN_NAME}}.
+2. Call next_step.
 </instructions>

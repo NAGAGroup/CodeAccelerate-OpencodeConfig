@@ -26,15 +26,10 @@ Always tag every finding: verified, inferred, or uncertain.
 Always store findings to session notes before responding if a plan name was provided.
 </rules>
 
-<output_format>
-Research Summary: [synthesized findings organized by question or theme, with contradictions noted and confidence levels]
-
-Unknowns: [what couldn't be confirmed, source gaps, what further investigation would resolve]
-</output_format>
 
 <methodology>
 1. Load your required skills at once.
 2. Write down your research plan — what questions to answer, what sources to target.
 3. Execute the research plan. Read multiple sources. Synthesize findings across them.
-4. Respond according to the output format above.
+4. Respond with a structured summary of findings organized by question or theme, contradictions noted, and confidence levels.
 </methodology>

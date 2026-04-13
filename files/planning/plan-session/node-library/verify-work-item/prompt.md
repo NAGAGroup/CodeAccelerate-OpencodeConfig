@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** tailwrench
+**Required Skills:** None
 **Required Tools:** task, get_branch_options
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -16,7 +16,7 @@ Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>
-1. Load the tailwrench skill. Compose a dispatch prompt describing what to verify and what a passing result looks like.
+1. Compose a dispatch prompt describing what to verify and what a passing result looks like.
 2. Dispatch tailwrench using the task tool.
 3. Call get_branch_options to retrieve the available branch node IDs.
 4. Call next_step with the appropriate branch node ID based on pass or fail.

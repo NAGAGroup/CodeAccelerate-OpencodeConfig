@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** autonomous-agent
+**Required Skills:** None
 **Required Tools:** task
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -15,7 +15,6 @@ Always provide full context of what was attempted, what failed, and what needs t
 </rules>
 
 <instructions>
-1. Load the autonomous-agent skill. Use it to compose a dispatch prompt with full context so the autonomous agent can resolve the issue independently.
-2. Dispatch autonomous-agent using the task tool.
-3. Call next_step.
+1. Dispatch autonomous-agent using the task tool.
+2. Call next_step.
 </instructions>

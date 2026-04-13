@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** tailwrench
+**Required Skills:** None
 **Required Tools:** task
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -15,7 +15,6 @@ Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>
-1. Load the tailwrench skill. Use it to compose a dispatch prompt for a focused git commit of the work just completed.
-2. Dispatch tailwrench using the task tool.
-3. Call next_step.
+1. Dispatch tailwrench using the task tool.
+2. Call next_step.
 </instructions>

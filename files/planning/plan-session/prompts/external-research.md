@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** external-scout
+**Required Skills:** None
 **Required Tools:** task
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -15,7 +15,6 @@ Never compose specific searches for the scout — present planning questions and
 </rules>
 
 <instructions>
-1. Load the external-scout skill. Compose a dispatch prompt with the planning questions that need answering.
-2. Dispatch external-scout using the task tool with plan name {{PLAN_NAME}}.
-3. Call next_step.
+1. Dispatch external-scout using the task tool with plan name {{PLAN_NAME}}.
+2. Call next_step.
 </instructions>

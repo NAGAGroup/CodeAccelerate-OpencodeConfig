@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** tailwrench
+**Required Skills:** None
 **Required Tools:** task
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -15,7 +15,7 @@ Always skip this step if only file edits are needed. To skip, dispatch tailwrenc
 </rules>
 
 <instructions>
-1. Load the tailwrench skill. Use it to compose a dispatch prompt for the required shell operations.
+1. Compose a dispatch prompt for the required shell operations.
 2. Dispatch tailwrench using the task tool.
 3. Call next_step.
 </instructions>

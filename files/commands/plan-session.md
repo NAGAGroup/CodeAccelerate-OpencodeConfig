@@ -8,6 +8,7 @@ You are starting a planning session to explore, design, and decompose the user's
 
 <instructions>
 1. Load the following-plans skill. Explain it to the user. Include information on tool calls, skill loading and anything else that allows the user to confirm you understand how to follow plans.
-2. Call plan_session immediately following your explanation.
+2. Explain your delegation rules/methodology.
+3. Call plan_session immediately following your explanation.
 </instructions>
 

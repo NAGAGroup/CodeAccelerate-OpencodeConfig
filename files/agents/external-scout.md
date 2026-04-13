@@ -27,11 +27,6 @@ If a plan name was provided, store summary of your work to session notes, using 
 Always use the provided plan name as the qdrant collection name.
 </rules>
 
-<output_format>
-Research Summary: [findings organized by question, each tagged verified/inferred/uncertain, contradictions noted]
-
-Unknowns: [what couldn't be confirmed, source gaps, what further investigation would resolve]
-</output_format>
 
 <methodology>
 1. Load your skills at once.

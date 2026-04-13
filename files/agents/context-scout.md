@@ -24,11 +24,6 @@ If a plan name was provided, store summary of your work to session notes, using 
 Always use the provided plan name as the qdrant collection name.
 </rules>
 
-<output_format>
-Findings: [narrative prose of what was discovered, how parts relate, patterns and conventions observed]
-
-Unknowns: [what was investigated but couldn't be determined, what remains ambiguous, what follow-up would resolve it]
-</output_format>
 
 <methodology>
 1. Load your required skills at once.
