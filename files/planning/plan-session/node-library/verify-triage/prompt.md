@@ -5,11 +5,15 @@
 **Questions Allowed?:** No
 
 <goal>
+You are triaging the failure from the previous steps with the goal:
+
 {{DESCRIPTION}}
 </goal>
 
 <rules>
 Always surface specific, actionable findings — root cause, affected files or commands, and what the fix step needs to know.
+Never ask tailwrench to make edits to source code or documentation. The tailwrench subagent can only edit config files and build system config files.
+Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>

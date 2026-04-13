@@ -9,8 +9,9 @@
 </goal>
 
 <rules>
-Always scope commands strictly to what the goal requires.
-Never run destructive or irreversible commands.
+Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
+Never ask tailwrench to make edits to source code or documentation. The tailwrench subagent can only edit config files and build system config files.
+Always skip this step if only file edits are needed. To skip, dispatch tailwrench with instructions to immediately return.
 </rules>
 
 <instructions>

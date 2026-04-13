@@ -11,6 +11,8 @@
 <rules>
 Always produce a clear pass or fail outcome.
 Always surface findings before routing so the branch decision is evidence-based.
+Never ask tailwrench to make edits to source code or documentation. The tailwrench subagent can only edit config files and build system config files.
+Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>

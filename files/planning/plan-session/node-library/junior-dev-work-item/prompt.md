@@ -9,7 +9,7 @@
 </goal>
 
 <rules>
-Never include shell operations in the dispatch.
+Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>

@@ -4,6 +4,6 @@
 {"id":"external-research","prompt":"external-research.md","enforcement":["task"],"children":["write-notes"]}
 {"id":"write-notes","prompt":"store-notes.md","enforcement":["qdrant_qdrant-store"],"children":["draft-plan"]}
 {"id":"draft-plan","prompt":"draft-plan.md","enforcement":["qdrant_qdrant-find"],"children":["review-revise"]}
-{"id":"review-revise","prompt":"review-revise.md","enforcement":["skill","qdrant_qdrant-store"],"children":["dag-build"]}
+{"id":"review-revise","prompt":"review-revise.md","enforcement":["qdrant_qdrant-store"],"children":["dag-build"]}
 {"id":"dag-build","prompt":"dag-build.md","enforcement":["task"],"children":["plan-success"]}
 {"id":"plan-success","prompt":"plan-success.md","enforcement":["present_plan_diagram","question"],"children":[]}

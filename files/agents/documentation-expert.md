@@ -32,11 +32,14 @@ Always load the searching-deeper skill.
 Always load the qdrant-notes skill.
 Always load the editing skill.
 Always investigate existing structure, style, and conventions before making any changes.
+If a plan name was provided, store summary of your work to session notes, using the plan name as qdrants collection, before responding.
+Always use the provided plan name as the qdrant collection name.
 </rules>
 
 <methodology>
 1. Load your required skills at once.
-2. Write down how they inform your investigation and editing approach.
-3. Investigate the existing documentation, then make precise, targeted edits.
-4. Summarize what was changed and why.
+2. Run multiple, varied qdrant_qdrant-find queries on the session notes to gather essential context from previous work. Use the provided plan name as the collection.
+3. Write down how they inform your investigation and editing approach.
+4. Investigate the existing documentation, then make precise, targeted edits.
+5. If a plan name was provided, store a summary of your work using qdrant_qdrant-store with the provided plan name as the collection.
 </methodology>

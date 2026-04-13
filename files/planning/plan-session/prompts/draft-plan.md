@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** planning-schema, planning-patterns
+**Required Skills:** planning-schema
 **Required Tools:** qdrant_qdrant-find
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -9,26 +9,23 @@ Draft a complete phase-structured execution plan based on all investigation find
 </goal>
 
 <rules>
-Always write the plan in markdown using the phase block format defined in the planning-schema skill — never JSON, never prose without the phase structure.
+Always create a plan that follows the markdown schema exactly. If you do this incorrectly, future planning steps will fail.
 Never use agentic-decision-gate for user preference, creative choices, or undefined scope — use user-discussion.
-Always precede every work phase with project-survey, then external-research (if external deps), then internal-research.
 Always split decision branches directly from the gate — never deferred.
 Always make every leaf a write-notes or early-exit phase.
+Always reason through each essential question regarding plan aspects that often go missed:
+    - What is the exact markdown schema? How are branches handled in the schema? Are you following it?
+    - What decisions need to be made and how do they branch into different exeuction pathways? Are these user-driven decisions or agentic decisions? If they are user-driven decisions, then [user-discussion] phases are a hard requirement.
+    - Are decision points immediately branching into separate execution paths? If they are not, this is wrong. Branch phases must always immediately branch, not store decisions for later branch points.
+    - Are branch naming conventions being followed? Branches are indicated by a lowercase letter subscript. For example, <phase a start>a-<phase a end>a is branch "a". Phases don't need to merge back and can early-exit, have varying lenghts before merging to handle unknown complexities at planning, etc. They are completely separate execution pathways.
+    - Is there a work phase for scaffolding before any implementation work takes place? This includes things like integrating dependencies via package management and build system configuration files, any other project configuration changes, etc.
+Always continue to the next planning step immediately without waiting for user feedback. This is not the final planning step.
 </rules>
 
 <instructions>
 1. Load the planning-schema skill. Study the phase types and format.
-2. Load the planning-patterns skill. Understand plan topologies.
-3. Call qdrant_qdrant-find with collection {{PLAN_NAME}} to retrieve the user's original goal.
-4. To design the draft, reason through each essential question regarding plan aspects that often go missed:
-    - What decisions need to be made and how do they branch into different exeuction pathways?
-    - Do any work phases need to be split up into individual phases?
-    - What's the complexity for each work phase? How many retries do they require?
-    - Does every work phase have project-survey, external-research (when required), internal-research and project-commands (when required) phases directly preceding them (e.g. project-survey->external-research->internal-research->project-commands->work)? These phase types must be instanced multiple times, once for each work phase, and order matters. Running project commands to add dependencies is impossible without first doing external research on the dependencies and package management ecosystem first.
-    - Are project-commands incorrectly being used to build and verify? This happens implicilty within the work phases via verification and retry attempts and should.
-    - Are decision points immediately branching into separate execution paths? If they are not, this is wrong. Branch phases must always immediately branch, not store decisions for later branch points.
-    - Is user discussion incorporated? If the user's goal explicitly states that they wanted to be included, then this is a hard requirement.
-5. Ensure your draft plan matches the markdown schema from the planning-schema skill exactly. Do not modify capitalization, add fields, etc.
-6. Explain your drafted plan to the user and why you chose what you did. Explicitly address each question from above.
-7. Call next_step immediately after your explanation. Do not wait for user feedback.
+2. Draft your plan, pay special attention to the questions above. Present it to the user verbatim.
+3. Call qdrant_qdrant-find with collection {{PLAN_NAME}} to retrieve the user's original goal and desired involvement. Do they want to make architectural decisions? Do they want to be involved in ideation and brainstorming? These are the types of questions that, if yes, you must include [user-discussion] phases for. If they want to be involved in decision-making, then you must use [user-discussion] phases to capture their input at the appropriate points in the plan.
+4. Ensure your draft plan matches the markdown schema from the planning-schema skill exactly. Do not modify capitalization, add fields, etc.
+5. Call next_step immediately. You are not done with planning, do not begin executing the plan.
 </instructions>

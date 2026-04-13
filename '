@@ -44,12 +44,12 @@ Do not use for: building, running tests, or verifying implementation — those a
 ## user-discussion
 Open discussion before a decision or to gather user preference.
 - topic: string — required
-- branches: [list of phase labels, one for each branch] - required
+- branches: [list of labels]
 
 ## agentic-decision-gate
 Routes based on accumulated evidence. Executor decides.
 - question: string — required
-- branches: [list of phase labels, one for each branch] - required
+- branches: [list of labels] — required, one per child phase
 
 ## write-notes
 Captures context. Use as a mid-plan checkpoint or leaf node.
@@ -106,33 +106,7 @@ branches: ["4a-implement-option-a", "4b-implement-option-b"]
 
 ---
 
-### 4a-survey-option-a [project-survey]
-from: ["3-research-specific-approach"]
-topics:
-  - [specific project area to survey if option A is chosen]
-  ... // as many topics as needed to cover the project survey necessary for option A
-
-### 5a-research-option-a [external-research]
-from: ["4a-survey-option-a"]
-questions:
-  - [specific question about external dependencies, integration patterns, API usage, or best practices relevant to option A]
-  ... // as many questions as needed to cover the external research necessary for option A
-
-### 6a-project-deep-dive-option-a [internal-research]
-from: ["4a-research-option-a"]
-questions:
-  - [specific question about the project structure, conventions, or existing code relevant to implementing option A]
-  ... // as many questions as needed to cover the internal research necessary for option A
-
-### 7a-project-commands-option-a [project-commands]
-from: ["6a-project-deep-dive-option-a"]
-goals:
-    - [project commands to pull in dependencies]
-    - [project commands to integrate into build system]
-    - [project commands to check and update config files]
-    ... // as many goals as needed to set up the project for implementing option A
-
-### 8a-implement-option-a [work]
+### 4a-implement-option-a [work]
 from: ["4-approach-decision"]
 goal: [single bounded implementation goal for this branch]
 work-type: code
@@ -142,89 +116,17 @@ commit: true
 
 ---
 
-### 4b-project-survey-option-b-step-1 [project-survey]
-from: ["3-research-specific-approach"]
-topics:
-  - [specific project area to survey for option B, step 1]
-  ... // as many topics as needed to cover the project survey necessary for option B, step 1
-
-### 5b-external-research-option-b-step-1 [external-research]
-from: ["4b-project-survey-option-b-step-1"]
-questions:
-  - [specific question about external dependencies, integration patterns, API usage, or best practices relevant to option B, step 1]
-  ... // as many questions as needed to cover the external research necessary for option B, step 1
-
-### 6b-internal-research-option-b-step-1 [internal-research]
-from: ["5b-external-research-option-b-step-1"]
-questions:
-  - [specific question about the project structure, conventions, or existing code relevant to implementing option B, step 1]
-  ... // as many questions as needed to cover the internal research necessary for option B, step 1
-
-### 7b-project-commands-option-b-step-1 [project-commands]
-from: ["6b-internal-research-option-b-step-1"]
-goals:
-    - [project commands to pull in dependencies for step 1]
-    - [project commands to integrate into build system for step 1]
-    - [project commands to check and update config files for step 1]
-    ... // as many goals as needed to set up the project for implementing option B, step 1
-
-### 8b-implement-option-b-step-1 [work]
+### 4b-implement-option-b [work]
 from: ["4-approach-decision"]
-goal: [single bounded implementation goal for option B, step 1]
+goal: [single bounded implementation goal for the other branch]
 work-type: code
-verify-description: [observable criteria that define a passing result for step 1]
-retries: 4
-commit: true
-
-### 8b-early-merge-or-exit-decision [agentic-decision-gate]
-from: ["8b-implement-option-b-step-1"]
-question: [the routing decision the executor makes based on the outcome of implementing option B, step 1]
-branches: ["8b-implement-option-b-step-2", "5-research-next-dependency", "8b-early-exit"]
-
-### 9b-project-survey-option-b-step-2 [project-survey]
-from: ["8b-implement-option-b-step-1"]
-topics:
-  - [specific project area to survey for option B, step 2]
-  ... // as many topics as needed to cover the project survey necessary for option B, step 2
-
-### 10b-external-research-option-b-step-2 [external-research]
-from: ["9b-project-survey-option-b-step-2"]
-questions:
-  - [specific question about external dependencies, integration patterns, API usage, or best practices relevant to option B, step 2]
-  ... // as many questions as needed to cover the external research necessary for option B, step 2
-
-### 11b-internal-research-option-b-step-2 [internal-research]
-from: ["10b-external-research-option-b-step-2"]
-questions:
-  - [specific question about the project structure, conventions, or existing code relevant to implementing option B, step 2]
-  ... // as many questions as needed to cover the internal research necessary for option B, step 2
-
-### 12b-project-commands-option-b-step-2 [project-commands]
-from: ["11b-internal-research-option-b-step-2"]
-goals:
-    - [project commands to pull in dependencies for step 2]
-    - [project commands to integrate into build system for step 2]
-    - [project commands to check and update config files for step 2]
-    ... // as many goals as needed to set up the project for implementing option B, step 2
-
-### 13b-implement-option-b-step-2 [work]
-from: ["9b-project-survey-option-b-step-2"]
-goal: [single bounded implementation goal for option B, step 2]
-work-type: code
-verify-description: [observable criteria that define a passing result for step 2]
-retries: 3
-commit: true
-
----
-
-### 8b-early-exit [early-exit]
-from: ["8b-early-merge-or-exit-decision"]
-reason: [why stopping here is a valid planned outcome]
+verify-description: [observable criteria that define a passing result]
+retries: 1
 
 ---
 
 ### 5-integration-commands [project-commands]
-from: ["8a-implement-option-a", "13b-implement-option-b-step-2", "8b-early-merge-or-exit-decision"]
+from: ["4a-implement-option-a", "4b-implement-option-b"]
 goals:
   - [first shell operation or group, e.g. install the required dependency]
   - [second shell operation, e.g. run the build to verify integration]

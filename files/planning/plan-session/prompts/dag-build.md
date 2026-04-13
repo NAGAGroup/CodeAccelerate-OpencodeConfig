@@ -9,8 +9,9 @@ Dispatch the dag-builder to compile the finalized plan into a phase-based execut
 </goal>
 
 <rules>
-Never make DAG building decisions yourself — all phase creation is delegated to dag-builder.
-Always pass the finalized plan verbatim — never summarize or interpret it.
+Always perform one last check before dispatching to ensure the plan is sufficient and meets all requirements.
+Always pass the finalized plan verbatim to dag-builder — never summarize or interpret it.
+Always continue to the next planning step. This is not the final planning step.
 </rules>
 
 <instructions>
