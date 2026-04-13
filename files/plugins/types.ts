@@ -5,7 +5,7 @@ export type PhaseType =
   | "internal-research"
   | "project-survey"
   | "work"
-  | "project-commands"
+  | "project-setup"
   | "user-discussion"
   | "agentic-decision-gate"
   | "write-notes"

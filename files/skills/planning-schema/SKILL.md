@@ -34,8 +34,8 @@ Expands to: work → verify → (fix → verify-retry) × retries.
 - retries: int — optional, default: 1
 - commit: bool — optional, default: false
 
-## project-commands
-Pre-work setup via shell operations and edits to build/project configs — creates the conditions that work phases depend on. Expands to one run-project-commands node per goal, chained sequentially. Self-correcting agent, no verify-retry loop.
+## project-setup
+Pre-work setup via shell operations and edits to build/project configs — creates the conditions that work phases depend on. Expands to one project-setup node per goal, chained sequentially. Self-correcting agent, no verify-retry loop.
 Use for: adding dependencies, running scaffolding or code generation tools, initializing submodules, environment or config setup.
 Do not use for: building, running tests, or verifying implementation — those are handled inside every work phase's verify chain.
 - goals: [list of strings] — required. Each string is one setup operation.
@@ -124,7 +124,7 @@ questions:
   - [specific question about the project structure, conventions, or existing code relevant to implementing option A]
   ... // as many questions as needed to cover the internal research necessary for option A
 
-### 7a-project-commands-option-a [project-commands]
+### 7a-project-commands-option-a [project-setup]
 from: ["6a-project-deep-dive-option-a"]
 goals:
     - [project commands to pull in dependencies]
@@ -160,7 +160,7 @@ questions:
   - [specific question about the project structure, conventions, or existing code relevant to implementing option B, step 1]
   ... // as many questions as needed to cover the internal research necessary for option B, step 1
 
-### 7b-project-commands-option-b-step-1 [project-commands]
+### 7b-project-commands-option-b-step-1 [project-setup]
 from: ["6b-internal-research-option-b-step-1"]
 goals:
     - [project commands to pull in dependencies for step 1]
@@ -199,7 +199,7 @@ questions:
   - [specific question about the project structure, conventions, or existing code relevant to implementing option B, step 2]
   ... // as many questions as needed to cover the internal research necessary for option B, step 2
 
-### 12b-project-commands-option-b-step-2 [project-commands]
+### 12b-project-commands-option-b-step-2 [project-setup]
 from: ["11b-internal-research-option-b-step-2"]
 goals:
     - [project commands to pull in dependencies for step 2]
@@ -223,7 +223,7 @@ reason: [why stopping here is a valid planned outcome]
 
 ---
 
-### 5-integration-commands [project-commands]
+### 5-integration-commands [project-setup]
 from: ["8a-implement-option-a", "13b-implement-option-b-step-2", "8b-early-merge-or-exit-decision"]
 goals:
   - [first shell operation or group, e.g. install the required dependency]

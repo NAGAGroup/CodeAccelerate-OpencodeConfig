@@ -11,10 +11,10 @@ This node is reached only after all retry attempts in a fix→verify sequence ha
 </goal>
 
 <rules>
-Always provide full context of what was attempted, what failed, and what needs to be resolved.
+Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>
-1. Dispatch autonomous-agent using the task tool.
+1. Compose a dispatch prompt that includes full context of what was attempted, what failed, and what needs to be resolved. Then dispatch autonomous-agent using the task tool.
 2. Call next_step.
 </instructions>

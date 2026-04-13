@@ -13,6 +13,7 @@ Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>
-1. Dispatch junior-dev using the task tool with plan name {{PLAN_NAME}}.
-2. Call next_step.
+1. Compose a structured dispatch prompt based on the goal above and your delegation guidelines. If triage findings or verification failures from prior steps are available in context, include them in the prompt.
+2. Dispatch junior-dev using the task tool with plan name {{PLAN_NAME}}.
+3. Call next_step.
 </instructions>

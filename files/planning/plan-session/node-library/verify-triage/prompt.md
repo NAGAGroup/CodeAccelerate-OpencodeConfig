@@ -17,7 +17,7 @@ Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>
-1. Compose a dispatch prompt asking tailwrench to investigate the failure from the previous step and identify the root cause.
+1. Compose a dispatch prompt asking tailwrench to investigate the failure from the previous step and identify the root cause. Include the verification findings from the previous step in your prompt.
 2. Dispatch tailwrench using the task tool.
 3. Call next_step.
 </instructions>

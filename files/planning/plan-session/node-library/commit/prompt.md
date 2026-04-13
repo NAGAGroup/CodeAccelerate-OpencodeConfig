@@ -5,6 +5,8 @@
 **Questions Allowed?:** No
 
 <goal>
+Commit the following verified work:
+
 {{DESCRIPTION}}
 </goal>
 
@@ -15,6 +17,7 @@ Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>
-1. Dispatch tailwrench using the task tool.
-2. Call next_step.
+1. Compose a structured dispatch prompt based on the goal above and your delegation guidelines.
+2. Dispatch tailwrench using the task tool.
+3. Call next_step.
 </instructions>

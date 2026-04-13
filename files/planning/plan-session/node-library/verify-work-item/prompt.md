@@ -5,6 +5,8 @@
 **Questions Allowed?:** No
 
 <goal>
+Verify the implementation against the following success criteria:
+
 {{DESCRIPTION}}
 </goal>
 

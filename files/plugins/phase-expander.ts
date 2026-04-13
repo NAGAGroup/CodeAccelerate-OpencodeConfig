@@ -171,7 +171,7 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
       const fixDesc = `Fix verification failures for: ${goal}`;
 
       nodes.push(makeNode(triageId, "verify-triage", triageDesc, [pcmdFixId]));
-      nodes.push(makeNode(pcmdFixId, "run-project-commands", pcmdFixDesc, [fixId]));
+      nodes.push(makeNode(pcmdFixId, "project-setup", pcmdFixDesc, [fixId]));
       nodes.push(makeNode(fixId, workComponent, fixDesc, [verifyRId]));
 
       if (r < retries) {
@@ -214,11 +214,11 @@ function expandProjectCommands(phase: PhaseRecord): PhaseExpansion {
   const commit = (phase.phase_options.commit as boolean) ?? false;
   const nodes: DagNodeV3[] = [];
 
-  // One run-project-commands node per goal, chained sequentially
+  // One project-setup node per goal, chained sequentially
   for (let i = 0; i < goals.length; i++) {
     const nodeId = `${phase.phase}-${i + 1}`;
     const nextId = i < goals.length - 1 ? `${phase.phase}-${i + 2}` : EXIT;
-    nodes.push(makeNode(nodeId, "run-project-commands", goals[i], [nextId]));
+    nodes.push(makeNode(nodeId, "project-setup", goals[i], [nextId]));
   }
 
   const lastId = `${phase.phase}-${goals.length}`;
@@ -330,7 +330,7 @@ function expandPhase(phase: PhaseRecord): PhaseExpansion {
     case "internal-research":  return expandInternalResearch(phase);
     case "project-survey":     return expandProjectSurvey(phase);
     case "work":               return expandWork(phase);
-    case "project-commands":   return expandProjectCommands(phase);
+    case "project-setup":   return expandProjectCommands(phase);
     case "user-discussion":    return expandUserDiscussion(phase);
     case "agentic-decision-gate": return expandAgenticDecisionGate(phase);
     case "write-notes":        return expandWriteNotes(phase);

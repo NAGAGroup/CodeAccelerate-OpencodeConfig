@@ -17,7 +17,7 @@ These patterns show plan topologies using adjacency notation. Phase IDs, types, 
 {2, agentic-decision-gate} -> [3a, 3b]
 {3a, work} -> [4]
 {3b, work} -> [4]     // both branches converge at 4
-{4, project-commands} -> [5]
+{4, project-setup} -> [5]
 {5, write-notes}
 
 

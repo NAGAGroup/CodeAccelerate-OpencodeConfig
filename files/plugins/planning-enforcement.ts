@@ -30,7 +30,7 @@ import { compilePhasesToNodes } from "./phase-expander";
 // Valid phase types for schema validation
 const VALID_PHASE_TYPES = new Set([
   "external-research", "internal-research", "project-survey",
-  "work", "project-commands", "user-discussion",
+  "work", "project-setup", "user-discussion",
   "agentic-decision-gate", "write-notes", "early-exit",
 ]);
 
@@ -72,7 +72,7 @@ function validatePhaseOptions(phase_type: string, opts: Record<string, unknown>)
         throw new Error(`Invalid value for 'work-type': '${opts["work-type"]}'. Expected: code | docs.`);
       }
       break;
-    case "project-commands":
+    case "project-setup":
       require("goals", "string[]");
       break;
     case "user-discussion":

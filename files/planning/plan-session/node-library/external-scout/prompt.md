@@ -13,6 +13,7 @@ Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>
-1. Dispatch external-scout using the task tool with plan name {{PLAN_NAME}}.
-2. Call next_step.
+1. Compose a structured dispatch prompt based on the goal above and your delegation guidelines.
+2. Dispatch external-scout using the task tool with plan name {{PLAN_NAME}}.
+3. Call next_step.
 </instructions>

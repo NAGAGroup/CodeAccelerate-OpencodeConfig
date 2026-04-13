@@ -110266,7 +110266,7 @@ function expandWork(phase) {
       const pcmdFixDesc = `Apply any command-level fixes identified in the triage (missing dependencies, environment setup, etc.). If no command-level fixes are needed, return immediately.`;
       const fixDesc = `Fix verification failures for: ${goal}`;
       nodes.push(makeNode(triageId, "verify-triage", triageDesc, [pcmdFixId]));
-      nodes.push(makeNode(pcmdFixId, "run-project-commands", pcmdFixDesc, [fixId]));
+      nodes.push(makeNode(pcmdFixId, "project-setup", pcmdFixDesc, [fixId]));
       nodes.push(makeNode(fixId, workComponent, fixDesc, [verifyRId]));
       if (r < retries) {
         const nextTriageId = `${phase.phase}-triage-${r + 1}`;
@@ -110300,7 +110300,7 @@ function expandProjectCommands(phase) {
   for (let i = 0;i < goals.length; i++) {
     const nodeId = `${phase.phase}-${i + 1}`;
     const nextId = i < goals.length - 1 ? `${phase.phase}-${i + 2}` : EXIT;
-    nodes.push(makeNode(nodeId, "run-project-commands", goals[i], [nextId]));
+    nodes.push(makeNode(nodeId, "project-setup", goals[i], [nextId]));
   }
   const lastId = `${phase.phase}-${goals.length}`;
   if (commit) {
@@ -110397,7 +110397,7 @@ function expandPhase(phase) {
       return expandProjectSurvey(phase);
     case "work":
       return expandWork(phase);
-    case "project-commands":
+    case "project-setup":
       return expandProjectCommands(phase);
     case "user-discussion":
       return expandUserDiscussion(phase);
@@ -110508,7 +110508,7 @@ var VALID_PHASE_TYPES = new Set([
   "internal-research",
   "project-survey",
   "work",
-  "project-commands",
+  "project-setup",
   "user-discussion",
   "agentic-decision-gate",
   "write-notes",
@@ -110548,7 +110548,7 @@ function validatePhaseOptions(phase_type, opts) {
         throw new Error(`Invalid value for 'work-type': '${opts["work-type"]}'. Expected: code | docs.`);
       }
       break;
-    case "project-commands":
+    case "project-setup":
       require2("goals", "string[]");
       break;
     case "user-discussion":

@@ -19,7 +19,7 @@ verify-work-item: Branching check after a work-item. This includes a delegation 
 // Special actions
 user-discussion: Use when user input would prevent wasted work, executing unstructured user discussion before a user-decision-gate, brainstorming ideas, etc.
 write-notes: Stores findings, decisions, and context to semantic notes. Every leaf node must be write-notes, but not every write-notes node needs to be a leaf. Success leaves capture what was accomplished; failure leaves capture what went wrong.
-run-project-commands: Shell execution. Do not abuse. This is not a means to bypass the intended, predictable behavior of the DAG execution system, but is instead used to run scoped, non-destructive project commands. Use for things like updating dependencies, running build or generation tools, scaffolding, initializing submodules, etc.
+project-setup: Shell execution. Do not abuse. This is not a means to bypass the intended, predictable behavior of the DAG execution system, but is instead used to run scoped, non-destructive project commands. Use for things like updating dependencies, running build or generation tools, scaffolding, initializing submodules, etc.
 commit: Checkpoint step, ensuring DAG execution is auditable and future steps don't ruin work already verified as correct.
 autonomous-work: Delegates to a fully autonomous subagent. This is used only when the user specifies autonomous work is allowed. When this happens, this node should only be used as an escape hatch after all retry attempts have failed in a verify->fix->verify sequence. Should always be followed by one final verify-work-item branch that follows the same write-notes requirements for success and failure of the autonomous work.
 </node types>
