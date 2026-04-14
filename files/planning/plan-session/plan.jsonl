@@ -2,6 +2,5 @@
 {"id":"session-overview","prompt":"session-overview.md","enforcement":["choose_plan_name","qdrant_qdrant-store"],"children":["orientation-scout"]}
 {"id":"orientation-scout","prompt":"orientation-scout.md","enforcement":["task"],"children":["external-research"]}
 {"id":"external-research","prompt":"external-research.md","enforcement":["task"],"children":["draft-plan"]}
-{"id":"draft-plan","prompt":"draft-plan.md","enforcement":["qdrant_qdrant-find", "qdrant_qdrant-find"],"children":["review-revise"]}
-{"id":"review-revise","prompt":"review-revise.md","enforcement":["create_plan"],"children":["plan-success"]}
+{"id":"draft-plan","prompt":"draft-plan.md","enforcement":["qdrant_qdrant-find", "create_plan"],"children":["plan-success"]}
 {"id":"plan-success","prompt":"plan-success.md","enforcement":["present_plan_diagram","question"],"children":[]}

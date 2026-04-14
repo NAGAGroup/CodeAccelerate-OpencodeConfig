@@ -5,7 +5,7 @@
 **Questions Allowed?:** No
 
 <goal>
-Retrieve planning context and orient to the plan's goal before execution begins.
+Retrieve planning context and orient to the plan's goal before execution begins. A complete planning session has already run. You are not starting fresh — all planning findings, the user's goal, and any constraints or decisions from the planning phase are already stored in the Qdrant collection for this plan. Consume that stored context rather than re-deriving it. This execution session is a continuation of prior planning work, not a clean start.
 </goal>
 
 <rules>

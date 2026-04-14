@@ -100,14 +100,8 @@
         "commands/activate-plan.md",
         "commands/plan-session.md",
         // Skills
-         "skills/asking-questions/SKILL.md",
          "skills/planning-schema/SKILL.md",
-         "skills/editing/SKILL.md",
-         "skills/following-plans/SKILL.md",
-         "skills/grepai/SKILL.md",
-         "skills/qdrant-notes/SKILL.md",
-         "skills/searching-deeper/SKILL.md",
-         "skills/web-research/SKILL.md"
+         "skills/following-plans/SKILL.md"
       ]
     },
     {

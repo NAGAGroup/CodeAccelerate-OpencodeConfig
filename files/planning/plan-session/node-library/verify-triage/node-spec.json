@@ -1,1 +1,1 @@
-{"enforcement": ["task"]}
+{"enforcement": ["qdrant_qdrant-find", "task"]}

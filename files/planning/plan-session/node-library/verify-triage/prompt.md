@@ -1,28 +1,23 @@
 **Plan Name:** {{PLAN_NAME}}
 **Required Skills:** None
-**Required Tools:** task
+**Required Tools:** qdrant_qdrant-find, qdrant_qdrant-find, task
 **Optional Tools:** None
 **Questions Allowed?:** No
 
 <goal>
-You are triaging the failure from the previous steps with the goal:
-
-{{DESCRIPTION}}
+Retrieve the verification failure output from the prior verify step, then dispatch tailwrench to reproduce, diagnose, and apply project-level fixes.
 </goal>
 
 <rules>
-Always surface specific, actionable findings — root cause, affected files or commands, and what the fix step needs to know.
-Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
+Always include the plan name {{PLAN_NAME}} in the dispatch.
+Always provide the failed commands and error output retrieved from Qdrant — tailwrench cannot retrieve session context itself.
+Never instruct tailwrench on how to investigate — that is covered by tailwrench's own protocol.
 </rules>
 
 <instructions>
-1. Compose a dispatch prompt for tailwrench with the following requirements:
-   - State upfront that something is broken and the cause must be found and fixed at the project level — not confirmed, found and fixed.
-   - Include the full error output and failed commands from the previous verification step.
-   - Instruct tailwrench to re-run the failed commands first to reproduce the failure before doing anything else. Do not rely on visual code inspection — reproduction is mandatory.
-   - Instruct tailwrench to treat any code or config already reviewed in prior steps as suspect. Prior review does not rule anything out.
-   - Instruct tailwrench to apply any project-level fixes directly — missing dependencies, misconfigured environment, broken build config. These should be fixed now, not reported.
-   - Ask for a clear summary of what was found, what was fixed, and what remains for the source code fix step.
-2. Dispatch tailwrench using the task tool.
-3. Call next_step.
+1. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "verification failure output and failed commands" — retrieve the exact failed commands and their raw error output from the prior verify step.
+2. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "verification failure root cause or hypothesis" — retrieve any prior diagnostic findings from earlier triage cycles if this is a retry.
+3. Compose a dispatch prompt for tailwrench. Include: plan name {{PLAN_NAME}}, the failed commands from step 1, the exact error output from step 1, the goal from {{DESCRIPTION}}, and any prior triage findings from step 2.
+4. Dispatch tailwrench using the task tool.
+5. Call next_step.
 </instructions>

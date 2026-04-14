@@ -1,1 +1,1 @@
-{"enforcement": ["get_branch_options", "question"]}
+{"enforcement": ["qdrant_qdrant-find", "get_branch_options", "question"]}

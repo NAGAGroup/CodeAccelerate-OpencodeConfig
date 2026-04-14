@@ -486,42 +486,45 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
             .describe("Resume a previous task session"),
         },
         async execute(args, context) {
-          // Resolve or create the child session
           const { client } = _ctx;
-          const subagentSession = await client.session.create({
+
+          // 1. Resolve or create the child session
+          const created = await client.session.create({
             body: {
               parentID: context.sessionID,
               title: args.description,
             },
           });
+          const childId = created.data?.id;
 
-          // Set UI metadata immediately so the TUI shows the correct title,
-          // enables clicking into the child session, and tracks tool calls live.
           context.metadata({
             title: args.description,
-            metadata: { sessionId: subagentSession.data.id },
+            metadata: {
+              sessionId: childId,
+              description: args.description,
+            },
           });
 
-          // Prompt it with the subagent pinned
+          // 2. Prompt the child — awaited, so this blocks until the subagent finishes
           const result = await client.session.prompt({
-            path: { id: subagentSession.data.id },
+            path: { id: childId },
             body: {
               agent: args.subagent,
               parts: [{ type: "text", text: args.prompt }],
             },
           });
 
-          // Re-set title on completion — the server does not carry ToolStateRunning.title
-          // forward into ToolStateCompleted automatically.
-          context.metadata({
-            title: args.description,
-            metadata: { sessionId: subagentSession.data.id },
-          });
+          // 3. Extract the assistant's text output from the result promise and return the new promise
+          const parts = result.data?.parts ?? [];
+          const text = parts
+            .filter((p: any) => p.type === "text")
+            .map((p: any) => p.text)
+            .join("\n");
 
-          // Return text output + session ID for resumability
-          const text =
-            result.data.parts.findLast((p) => p.type === "text")?.text ?? "";
-          return `task_id: ${subagentSession.data.id}\n\n${text}`;
+          return (
+            text ||
+            `(subagent ${args.subagent} completed with no text output, session: ${childId})`
+          );
         },
       }),
 

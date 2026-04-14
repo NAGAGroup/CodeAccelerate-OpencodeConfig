@@ -110829,31 +110829,31 @@ Pending Branch Choice: [${choices}]
         },
         async execute(args, context) {
           const { client: client2 } = _ctx;
-          const subagentSession = await client2.session.create({
+          const created = await client2.session.create({
             body: {
               parentID: context.sessionID,
               title: args.description
             }
           });
+          const childId = created.data?.id;
           context.metadata({
             title: args.description,
-            metadata: { sessionId: subagentSession.data.id }
+            metadata: {
+              sessionId: childId,
+              description: args.description
+            }
           });
           const result = await client2.session.prompt({
-            path: { id: subagentSession.data.id },
+            path: { id: childId },
             body: {
               agent: args.subagent,
               parts: [{ type: "text", text: args.prompt }]
             }
           });
-          context.metadata({
-            title: args.description,
-            metadata: { sessionId: subagentSession.data.id }
-          });
-          const text = result.data.parts.findLast((p) => p.type === "text")?.text ?? "";
-          return `task_id: ${subagentSession.data.id}
-
-${text}`;
+          const parts = result.data?.parts ?? [];
+          const text = parts.filter((p) => p.type === "text").map((p) => p.text).join(`
+`);
+          return text || `(subagent ${args.subagent} completed with no text output, session: ${childId})`;
         }
       }),
       create_plan: tool({

@@ -1,6 +1,6 @@
 **Plan Name:** {{PLAN_NAME}}
 **Required Skills:** None
-**Required Tools:** task
+**Required Tools:** qdrant_qdrant-find, qdrant_qdrant-find, task
 **Optional Tools:** None
 **Questions Allowed?:** No
 
@@ -15,6 +15,9 @@ Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
 </rules>
 
 <instructions>
-1. Compose a dispatch prompt that includes full context of what was attempted, what failed, and what needs to be resolved. Then dispatch autonomous-agent using the task tool.
-2. Call next_step.
+1. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "user goal and work objective" to retrieve the original user request and what this phase was supposed to accomplish.
+2. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "failed attempts verification failures and error details" to retrieve the full failure history — what was attempted, what specifically failed, and the verification error output.
+3. Compose a structured dispatch prompt. Include: the plan name {{PLAN_NAME}}, the original goal from {{DESCRIPTION}}, the user goal and phase objective from step 1, the complete failure history from step 2 (all attempts, what each tried, why each failed), and an explicit statement that autonomous-agent must not retry approaches already attempted.
+4. Dispatch autonomous-agent using the task tool.
+5. Call next_step.
 </instructions>
