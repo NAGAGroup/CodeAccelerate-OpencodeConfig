@@ -110816,7 +110816,7 @@ Pending Branch Choice: [${choices}]
         description: "Delegate a task to a specialized subagent",
         args: {
           subagent: tool.schema.string().describe("The subagent type to use"),
-          description: tool.schema.string().describe("Short 3-5 word description of the task (for UX purposes)"),
+          description: tool.schema.string().describe("Short 3-5 word description of the task"),
           prompt: tool.schema.string().describe("The task for the agent to perform"),
           task_id: tool.schema.string().optional().describe("Resume a previous task session")
         },
@@ -110824,22 +110824,26 @@ Pending Branch Choice: [${choices}]
           const { client: client2 } = _ctx;
           const subagentSession = await client2.session.create({
             body: {
-              parentID: context.sessionID,
-              title: args.description
-            },
-            meta: { sessionId: context.sessionID }
+              parentID: context.sessionID
+            }
           });
-          const result = await client2.session.prompt({
+          context.metadata({
+            title: args.description,
+            metadata: { sessionId: subagentSession.data.id }
+          });
+          const result = client2.session.prompt({
             path: { id: subagentSession.data.id },
             body: {
               agent: args.subagent,
               parts: [{ type: "text", text: args.prompt }]
             }
           });
-          const text = result.data.parts.findLast((p) => p.type === "text")?.text ?? "";
-          return `task_id: ${subagentSession.data.id}
+          return result.then((res) => {
+            const text = res.data.parts.findLast((p) => p.type === "text")?.text ?? "";
+            return `task_id: ${subagentSession.data.id}
 
 ${text}`;
+          });
         }
       }),
       create_plan: tool({

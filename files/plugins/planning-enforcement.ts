@@ -476,9 +476,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           subagent: tool.schema.string().describe("The subagent type to use"),
           description: tool.schema
             .string()
-            .describe(
-              "Short 3-5 word description of the task (for UX purposes)",
-            ),
+            .describe("Short 3-5 word description of the task"),
           prompt: tool.schema
             .string()
             .describe("The task for the agent to perform"),
@@ -493,9 +491,14 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const subagentSession = await client.session.create({
             body: {
               parentID: context.sessionID,
-              title: args.description,
             },
-            meta: { sessionId: context.sessionID },
+          });
+
+          // Set UI metadata immediately so the TUI shows the correct title,
+          // enables clicking into the child session, and tracks tool calls live.
+          context.metadata({
+            title: args.description,
+            metadata: { sessionId: subagentSession.data.id },
           });
 
           // Prompt it with the subagent pinned
@@ -505,6 +508,13 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               agent: args.subagent,
               parts: [{ type: "text", text: args.prompt }],
             },
+          });
+
+          // Re-set title on completion — the server does not carry ToolStateRunning.title
+          // forward into ToolStateCompleted automatically.
+          context.metadata({
+            title: args.description,
+            metadata: { sessionId: subagentSession.data.id },
           });
 
           // Return text output + session ID for resumability
