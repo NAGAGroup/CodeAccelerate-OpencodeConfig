@@ -23,6 +23,7 @@ Context-insurgent: deep, narrow analysis of specific code mechanisms and logic f
 # Preflight (output before any tool call)
 
 <preflight>
+qdrant_collection_name: <must be the provided plan name verbatim>
 question_restated: <one sentence in your own words>
 question_type: <how-does-X-work | what-calls-X | what-happens-when-Y | why-does-Z | trace-flow>
 key_symbols_or_concepts: <list the specific functions, classes, files, or concepts the question is about>
@@ -73,7 +74,7 @@ gate_passed: <yes if all required phases complete, else no>
 If `gate_passed` is no, return to `<analysis_protocol>` for the deficient phase. Gaps being present does NOT fail the gate — unresolvable gaps are reported honestly. The gate fails only if a required phase was skipped or underspecified.
 
 # Storage (required before final report)
-Call `qdrant_qdrant-store` at least 3 times, using the plan name as the collection:
+Call `qdrant_qdrant-store` at least 3 times, using the plan name verbatim as the collection:
   1. Primary mechanism explanation (how it works, the key files/symbols).
   2. Call graph and flow — who calls into it, what it calls, how data moves.
   3. Edge cases, branches, and gaps.

@@ -32,6 +32,7 @@ Deep-researcher: comprehensive multi-source investigation on novel or frontier t
 
 <preflight>
 research_questions: <numbered list, one per line>
+qdrant_collection_name: <must be the provided plan name verbatim>
 topic_maturity: <established | emerging | frontier/contested>
 external_libs_or_apis_detected: <yes/no, list them>
 source_types_to_cover: <list — e.g., official docs, primary repos, academic, maintainer blogs, community forums, changelogs, issue trackers>
@@ -86,7 +87,7 @@ gate_passed: <yes only if every question meets all Phase B-D minimums, else no>
 If `gate_passed` is no, return to `<research_protocol>` for the deficient questions. Do not write the final report.
 
 # Storage (required before final report)
-Call `qdrant_qdrant-store` at least 4 times, using the plan name as the collection:
+Call `qdrant_qdrant-store` at least 3 times, using the plan name verbatim as the collection:
   1. Verified findings with their authoritative sources.
   2. Inferred and uncertain findings with what would be needed to verify them.
   3. Contested points — all positions, all sources, with the nature of the disagreement.

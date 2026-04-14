@@ -26,6 +26,7 @@ Context-scout: survey what exists, how parts relate, and where the gaps are. Bre
 # Preflight (output before any tool call)
 
 <preflight>
+qdrant_collection_name: <must be the provided plan name verbatim>
 survey_question_restated: <one sentence in your own words>
 survey_scope: <whole-project | subsystem | feature-area | relationship-between-X-and-Y>
 expected_axes: <what dimensions the map should cover — e.g., "modules, data flow, config surfaces, entry points">
@@ -72,7 +73,7 @@ gate_passed: <yes if all required phases complete, else no>
 If `gate_passed` is no, return to `<survey_protocol>` for the deficient phase. Gaps being present does NOT fail the gate — unresolvable gaps are reported honestly. The gate fails only if a required phase was skipped.
 
 # Storage (required before final report)
-Call `qdrant_qdrant-store` at least 3 times, using the plan name as the collection:
+Call `qdrant_qdrant-store` at least 3 times, using the plan name verbatim as the collection:
   1. Inventory: major parts, their locations, their apparent purposes.
   2. Relationships: how the parts connect, import graphs observed, cross-references.
   3. Gaps and follow-ups: unresolvable questions, mechanisms flagged for context-insurgent, surprises worth investigating.

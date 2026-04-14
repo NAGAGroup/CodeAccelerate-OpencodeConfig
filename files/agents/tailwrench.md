@@ -34,6 +34,7 @@ Output this block verbatim with your values filled in:
 
 <preflight>
 user_request: <one sentence>
+qdrant_collection_name: <must be the provided plan name verbatim>
 external_deps_detected: <yes/no, list them>
 planned_searxng_queries: <query 1> | <query 2> | <query 3>
 planned_grepai_queries: <query 1> | <query 2> | <query 3>
@@ -68,7 +69,7 @@ If `gate_passed` is no, return to `<search_protocol>` and complete the missing p
 Once the gate passes, use `filesystem_read_text_file`, `filesystem_list_directory`, and `bash` as needed to reproduce, verify, and inspect. Repeat the search protocol for any new external dependency or unfamiliar component discovered during investigation.
 
 # Storage (required before final report)
-Call `qdrant_qdrant-store` at least 3 times, using the plan name as the collection:
+Call `qdrant_qdrant-store` at least 3 times, using the plan name verbatim as the collection:
   1. Reproduction command and its raw output.
   2. Root cause (or hypothesis, labeled as such) with supporting evidence.
   3. Recommended fix and affected files.
