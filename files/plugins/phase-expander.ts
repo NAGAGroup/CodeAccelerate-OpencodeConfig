@@ -139,11 +139,49 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
   const workComponent =
     workType === "docs" ? "documentation-expert-work-item" : "junior-dev-work-item";
 
+  // Embedded pre-work research/setup fields
+  const surveyTopics = (phase.phase_options["project-survey-topics"] as string[]) ?? [];
+  const externalQuestions = (phase.phase_options["external-research-questions"] as string[]) ?? [];
+  const internalQuestions = (phase.phase_options["internal-research-questions"] as string[]) ?? [];
+  const setupGoals = (phase.phase_options["pre-work-project-setup"] as string[]) ?? [];
+
   const nodes: DagNodeV3[] = [];
   const exitSlots: Array<{ nodeId: string; childIndex: number }> = [];
 
+  // Build the pre-work chain: survey → external → internal → setup
+  const preWorkIds: string[] = [];
+
+  for (let i = 0; i < surveyTopics.length; i++) {
+    const id = `${phase.phase}-survey-${i + 1}`;
+    nodes.push(makeNode(id, "context-scout", surveyTopics[i], []));
+    preWorkIds.push(id);
+  }
+  for (let i = 0; i < externalQuestions.length; i++) {
+    const id = `${phase.phase}-ext-${i + 1}`;
+    nodes.push(makeNode(id, "external-scout", externalQuestions[i], []));
+    preWorkIds.push(id);
+  }
+  for (let i = 0; i < internalQuestions.length; i++) {
+    const id = `${phase.phase}-internal-${i + 1}`;
+    nodes.push(makeNode(id, "context-insurgent", internalQuestions[i], []));
+    preWorkIds.push(id);
+  }
+  for (let i = 0; i < setupGoals.length; i++) {
+    const id = `${phase.phase}-presetup-${i + 1}`;
+    nodes.push(makeNode(id, "project-setup", setupGoals[i], []));
+    preWorkIds.push(id);
+  }
+
   const workId = `${phase.phase}-work`;
   const initialVerifyId = `${phase.phase}-verify`;
+
+  // Wire pre-work chain: each node → next, last → workId
+  for (let i = 0; i < preWorkIds.length; i++) {
+    const nextId = i < preWorkIds.length - 1 ? preWorkIds[i + 1] : workId;
+    nodes.find((n) => n.id === preWorkIds[i])!.children = [nextId];
+  }
+
+  const entryNodeId = preWorkIds.length > 0 ? preWorkIds[0] : workId;
 
   if (retries === 0) {
     // Single linear verify — no fix loop
@@ -200,13 +238,13 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
       node.children![slot.childIndex] = commitId;
     }
     return {
-      entryNodeId: workId,
+      entryNodeId,
       nodes,
       exitSlots: [{ nodeId: commitId, childIndex: 0 }],
     };
   }
 
-  return { entryNodeId: workId, nodes, exitSlots };
+  return { entryNodeId, nodes, exitSlots };
 }
 
 function expandProjectCommands(phase: PhaseRecord): PhaseExpansion {
@@ -243,32 +281,9 @@ function expandProjectCommands(phase: PhaseRecord): PhaseExpansion {
 
 function expandUserDiscussion(phase: PhaseRecord): PhaseExpansion {
   const topic = phase.phase_options.topic as string;
-  const branches = phase.phase_options.branches as string[] | undefined;
   const discussionId = `${phase.phase}-discussion`;
   const nodes: DagNodeV3[] = [];
 
-  if (branches && branches.length > 0 && phase.children.length > 0) {
-    // User discussion followed by a user-decision-gate
-    const gateId = `${phase.phase}-gate`;
-    const gateDesc = `Route based on discussion outcome. Options: ${branches.join(" | ")}`;
-    nodes.push(makeNode(discussionId, "user-discussion", topic, [gateId]));
-    // Gate children will be filled in during wiring
-    const gateChildren = new Array(phase.children.length).fill(EXIT);
-    nodes.push(makeNode(gateId, "user-decision-gate", gateDesc, gateChildren));
-
-    const branchMap = new Map<string, number>();
-    phase.children.forEach((childId, i) => branchMap.set(childId, i));
-
-    return {
-      entryNodeId: discussionId,
-      nodes,
-      exitSlots: [], // all exits are via branchMap
-      branchMap,
-      gateNodeId: gateId,
-    };
-  }
-
-  // No decision: simple discussion node
   nodes.push(makeNode(discussionId, "user-discussion", topic, [EXIT]));
   return {
     entryNodeId: discussionId,
@@ -277,11 +292,31 @@ function expandUserDiscussion(phase: PhaseRecord): PhaseExpansion {
   };
 }
 
+function expandUserDecisionGate(phase: PhaseRecord): PhaseExpansion {
+  const question = phase.phase_options.question as string;
+  const gateId = `${phase.phase}-gate`;
+  const gateDesc = question;
+  const nodes: DagNodeV3[] = [];
+
+  const gateChildren = new Array(phase.children.length).fill(EXIT);
+  nodes.push(makeNode(gateId, "user-decision-gate", gateDesc, gateChildren));
+
+  const branchMap = new Map<string, number>();
+  phase.children.forEach((childId, i) => branchMap.set(childId, i));
+
+  return {
+    entryNodeId: gateId,
+    nodes,
+    exitSlots: [],
+    branchMap,
+    gateNodeId: gateId,
+  };
+}
+
 function expandAgenticDecisionGate(phase: PhaseRecord): PhaseExpansion {
   const question = phase.phase_options.question as string;
-  const branches = phase.phase_options.branches as string[];
   const gateId = `${phase.phase}-gate`;
-  const gateDesc = `${question} — options: ${branches.join(" | ")}`;
+  const gateDesc = question;
   const nodes: DagNodeV3[] = [];
 
   // Gate children placeholders — one per branch child phase
@@ -332,6 +367,7 @@ function expandPhase(phase: PhaseRecord): PhaseExpansion {
     case "work":               return expandWork(phase);
     case "project-setup":   return expandProjectCommands(phase);
     case "user-discussion":    return expandUserDiscussion(phase);
+    case "user-decision-gate": return expandUserDecisionGate(phase);
     case "agentic-decision-gate": return expandAgenticDecisionGate(phase);
     case "write-notes":        return expandWriteNotes(phase);
     case "early-exit":         return expandEarlyExit(phase);

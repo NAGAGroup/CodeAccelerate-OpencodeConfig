@@ -11,7 +11,6 @@ import type {
   PhaseRecord,
   PhaseDagMetadata,
   PhaseType,
-  BRANCHING_PHASE_TYPES,
 } from "./types";
 import { exemptTools, isExempt, CONFIG_ROOT } from "./constants";
 import { dagStatePath, writeState, readState, now } from "./state-io";
@@ -24,24 +23,38 @@ import {
   detectDivergence,
   suggestRecoveryActions,
 } from "./divergence-detection";
-import { readPhaseDag, writePhaseDag, detectSchemaVersion } from "./phase-io";
 import { compilePhasesToNodes } from "./phase-expander";
 
 // Valid phase types for schema validation
 const VALID_PHASE_TYPES = new Set([
-  "external-research", "internal-research", "project-survey",
-  "work", "project-setup", "user-discussion",
-  "agentic-decision-gate", "write-notes", "early-exit",
+  "external-research",
+  "internal-research",
+  "project-survey",
+  "work",
+  "project-setup",
+  "user-discussion",
+  "user-decision-gate",
+  "agentic-decision-gate",
+  "write-notes",
+  "early-exit",
 ]);
 
 // Phase types allowed to have multiple children
-const BRANCHING_PHASE_TYPE_SET = new Set(["agentic-decision-gate", "user-discussion"]);
+const BRANCHING_PHASE_TYPE_SET = new Set([
+  "agentic-decision-gate",
+  "user-decision-gate",
+]);
 
 /** Validate phase_options for a given phase type. Throws with a clear message on failure. */
-function validatePhaseOptions(phase_type: string, opts: Record<string, unknown>): void {
+function validatePhaseOptions(
+  phase_type: string,
+  opts: Record<string, unknown>,
+): void {
   const require = (field: string, expectedType?: string) => {
     if (!(field in opts) || opts[field] === null || opts[field] === undefined) {
-      throw new Error(`Phase type '${phase_type}' requires '${field}' in phase_options.`);
+      throw new Error(
+        `Phase type '${phase_type}' requires '${field}' in phase_options.`,
+      );
     }
     if (expectedType === "string" && typeof opts[field] !== "string") {
       throw new Error(`'${field}' must be a string.`);
@@ -54,8 +67,13 @@ function validatePhaseOptions(phase_type: string, opts: Record<string, unknown>)
   switch (phase_type) {
     case "external-research":
       require("questions", "string[]");
-      if (opts["research-type"] && !["standard", "deep"].includes(opts["research-type"] as string)) {
-        throw new Error(`Invalid value for 'research-type': '${opts["research-type"]}'. Expected: standard | deep.`);
+      if (
+        opts["research-type"] &&
+        !["standard", "deep"].includes(opts["research-type"] as string)
+      ) {
+        throw new Error(
+          `Invalid value for 'research-type': '${opts["research-type"]}'. Expected: standard | deep.`,
+        );
       }
       break;
     case "internal-research":
@@ -68,8 +86,12 @@ function validatePhaseOptions(phase_type: string, opts: Record<string, unknown>)
       require("goal", "string");
       require("work-type", "string");
       require("verify-description", "string");
+      require("project-survey-topics", "string[]");
+      require("internal-research-questions", "string[]");
       if (!["code", "docs"].includes(opts["work-type"] as string)) {
-        throw new Error(`Invalid value for 'work-type': '${opts["work-type"]}'. Expected: code | docs.`);
+        throw new Error(
+          `Invalid value for 'work-type': '${opts["work-type"]}'. Expected: code | docs.`,
+        );
       }
       break;
     case "project-setup":
@@ -78,9 +100,11 @@ function validatePhaseOptions(phase_type: string, opts: Record<string, unknown>)
     case "user-discussion":
       require("topic", "string");
       break;
+    case "user-decision-gate":
+      require("question", "string");
+      break;
     case "agentic-decision-gate":
       require("question", "string");
-      require("branches", "string[]");
       break;
     case "write-notes":
     case "early-exit":
@@ -92,7 +116,7 @@ function validatePhaseOptions(phase_type: string, opts: Record<string, unknown>)
 /** Inject planner-authored description into the {{DESCRIPTION}} placeholder in the prompt. */
 function withDescription(promptText: string, description?: string): string {
   if (!description) return promptText;
-  return promptText.replace('{{DESCRIPTION}}', description);
+  return promptText.replace("{{DESCRIPTION}}", description);
 }
 
 export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
@@ -127,14 +151,9 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
       }),
 
       activate_plan: tool({
-        description:
-          "Activate a project DAG produced by a planning session.",
+        description: "Activate a project DAG produced by a planning session.",
         args: {
-          plan_name: tool.schema
-            .string()
-            .describe(
-              "The plan name.",
-            ),
+          plan_name: tool.schema.string().describe("The plan name."),
         },
         async execute({ plan_name }, context) {
           // State creation and prompt injection handled by tool.execute.before.
@@ -451,185 +470,183 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
-      add_first_phase: tool({
-        description:
-          "Add the first phase to a new plan. Creates the plan file and initializes it with the entry phase. Call this once before any add_phase calls.",
+      task: tool({
+        description: "Delegate a task to a specialized subagent",
         args: {
-          plan_name: tool.schema.string().describe("The plan name (set by choose_plan_name)."),
-          phase_id: tool.schema
+          subagent: tool.schema.string().describe("The subagent type to use"),
+          description: tool.schema
             .string()
             .describe(
-              "Descriptive phase ID encoding position and intent, e.g. '1-research-tui-options'.",
+              "Short 3-5 word description of the task (for UX purposes)",
             ),
-          phase_type: tool.schema
+          prompt: tool.schema
             .string()
-            .describe(
-              "Phase type: external-research | internal-research | project-survey | work | project-commands | user-discussion | agentic-decision-gate | write-notes | early-exit",
-            ),
-          phase_options: tool.schema
+            .describe("The task for the agent to perform"),
+          task_id: tool.schema
             .string()
-            .describe("JSON object with the phase's fields as defined in the planning schema."),
+            .optional()
+            .describe("Resume a previous task session"),
         },
-        async execute({ plan_name, phase_id, phase_type, phase_options }, context) {
-          const worktree = resolveWorktree(context);
-          const planDir = path.join(worktree, ".opencode", "session-plans", plan_name);
-          const planPath = path.join(planDir, "phase-plan.jsonl");
+        async execute(args, context) {
+          // Resolve or create the child session
+          const { client } = _ctx;
+          const subagentSession = await client.session.create({
+            body: {
+              parentID: context.sessionID,
+              title: args.description,
+            },
+            meta: { sessionId: context.sessionID },
+          });
 
-          if (fs.existsSync(planPath)) {
-            throw new Error(
-              `Plan '${plan_name}' already has a first phase. Use add_phase to add subsequent phases.`,
-            );
-          }
+          // Prompt it with the subagent pinned
+          const result = await client.session.prompt({
+            path: { id: subagentSession.data.id },
+            body: {
+              agent: args.subagent,
+              parts: [{ type: "text", text: args.prompt }],
+            },
+          });
 
-          if (!VALID_PHASE_TYPES.has(phase_type)) {
-            throw new Error(
-              `Invalid phase_type '${phase_type}'. Valid types: ${[...VALID_PHASE_TYPES].join(", ")}.`,
-            );
-          }
-
-          let opts: Record<string, unknown>;
-          try {
-            opts = JSON.parse(phase_options);
-          } catch {
-            throw new Error(`phase_options must be a valid JSON object.`);
-          }
-
-          validatePhaseOptions(phase_type, opts);
-
-          fs.mkdirSync(planDir, { recursive: true });
-
-          const metadata: PhaseDagMetadata = {
-            schema_version: "4.0",
-            id: plan_name,
-            entry_phase_id: phase_id,
-          };
-          const firstPhase: PhaseRecord = {
-            phase: phase_id,
-            phase_type: phase_type as any,
-            phase_options: opts,
-            children: [],
-          };
-          writePhaseDag(planPath, metadata, [firstPhase]);
-
-          return `Phase '${phase_id}' added as the first phase of plan '${plan_name}'.`;
+          // Return text output + session ID for resumability
+          const text =
+            result.data.parts.findLast((p) => p.type === "text")?.text ?? "";
+          return `task_id: ${subagentSession.data.id}\n\n${text}`;
         },
       }),
 
-      add_phase: tool({
+      create_plan: tool({
         description:
-          "Add a phase to an existing plan and wire it to its parent phase(s). Call add_first_phase before this.",
+          "Compile a TOML phase plan into an executable DAG. Validates the plan, writes it to disk, and compiles it to a node graph ready for activation. Call this after the finalized plan has been reviewed and approved.",
         args: {
-          plan_name: tool.schema.string().describe("The plan name."),
-          phase_id: tool.schema
+          plan_name: tool.schema
             .string()
-            .describe(
-              "Descriptive phase ID encoding position and intent, e.g. '2a-implement-auth'.",
-            ),
-          phase_type: tool.schema
+            .describe("The plan name (set by choose_plan_name)."),
+          toml: tool.schema
             .string()
-            .describe(
-              "Phase type: external-research | internal-research | project-survey | work | project-commands | user-discussion | agentic-decision-gate | write-notes | early-exit",
-            ),
-          phase_options: tool.schema
-            .string()
-            .describe("JSON object with the phase's fields as defined in the planning schema."),
-          from: tool.schema
-            .string()
-            .describe(
-              'JSON array string of parent phase IDs. Always use array format — single parent: \'["2-decision"]\', convergence: \'["3a-impl", "3b-impl"]\'.',
-            ),
+            .describe("The complete finalized plan in TOML format."),
         },
-        async execute({ plan_name, phase_id, phase_type, phase_options, from }, context) {
+        async execute({ plan_name, toml }, context) {
           const worktree = resolveWorktree(context);
-          const planPath = path.join(
-            worktree, ".opencode", "session-plans", plan_name, "phase-plan.jsonl",
+          const planDir = path.join(
+            worktree,
+            ".opencode",
+            "session-plans",
+            plan_name,
           );
+          const phasePlanPath = path.join(planDir, "phase-plan.toml");
+          const compiledPlanPath = path.join(planDir, "plan.jsonl");
 
-          if (!fs.existsSync(planPath)) {
-            throw new Error(`Plan '${plan_name}' not found. Call add_first_phase first.`);
-          }
-
-          const schemaVersion = detectSchemaVersion(planPath);
-          if (schemaVersion !== "4.0") {
-            throw new Error(`Plan '${plan_name}' is not a phase-based plan (schema 4.0).`);
-          }
-
-          if (!VALID_PHASE_TYPES.has(phase_type)) {
-            throw new Error(
-              `Invalid phase_type '${phase_type}'. Valid types: ${[...VALID_PHASE_TYPES].join(", ")}.`,
-            );
-          }
-
-          let opts: Record<string, unknown>;
+          // Parse TOML
+          let parsed: Record<string, unknown>;
           try {
-            opts = JSON.parse(phase_options);
-          } catch {
-            throw new Error(`phase_options must be a valid JSON object.`);
+            parsed = Bun.TOML.parse(toml);
+          } catch (e: any) {
+            throw new Error(`Invalid TOML: ${e.message}`);
           }
 
-          validatePhaseOptions(phase_type, opts);
-
-          // Parse `from` — always a JSON array string
-          let parentIds: string[];
-          try {
-            parentIds = JSON.parse(from.trim());
-            if (!Array.isArray(parentIds) || parentIds.length === 0) {
-              throw new Error();
-            }
-          } catch {
-            throw new Error(
-              `'from' must be a JSON array string of parent phase IDs. ` +
-              `Single parent: '["phase-id"]'. Convergence: '["phase-a", "phase-b"]'.`,
-            );
+          const rawPhases = parsed.phases as
+            | Record<string, unknown>[]
+            | undefined;
+          if (!Array.isArray(rawPhases) || rawPhases.length === 0) {
+            throw new Error("Plan must contain at least one [[phases]] entry.");
           }
 
-          const { metadata, phases } = readPhaseDag(planPath);
+          // Extract phases and validate
+          const phaseIds = new Set<string>();
+          const phaseList: import("./types").PhaseRecord[] = [];
 
-          // Validate all parent phases exist
-          const phaseIds = new Set(phases.map((p) => p.phase));
-          for (const parentId of parentIds) {
-            if (!phaseIds.has(parentId)) {
-              throw new Error(`Parent phase '${parentId}' not found in plan '${plan_name}'.`);
-            }
-          }
+          for (const raw of rawPhases) {
+            const id = raw.id as string;
+            const phase_type = raw.type as string;
+            if (!id)
+              throw new Error("Every [[phases]] entry must have an id field.");
+            if (!phase_type)
+              throw new Error(`Phase '${id}' is missing a type field.`);
+            if (phaseIds.has(id))
+              throw new Error(`Duplicate phase id: '${id}'.`);
+            phaseIds.add(id);
 
-          // Validate branching rules on each parent
-          for (const parentId of parentIds) {
-            const parent = phases.find((p) => p.phase === parentId)!;
-            const isBranchingType = BRANCHING_PHASE_TYPE_SET.has(parent.phase_type);
-            if (!isBranchingType && parent.children.length >= 1) {
+            if (!VALID_PHASE_TYPES.has(phase_type)) {
               throw new Error(
-                `Phase '${parentId}' (${parent.phase_type}) already has a child. ` +
-                  `Only agentic-decision-gate and user-discussion may have multiple children.`,
+                `Phase '${id}': invalid type '${phase_type}'. Valid types: ${[...VALID_PHASE_TYPES].join(", ")}.`,
+              );
+            }
+
+            const fromRaw = raw.from as string[] | undefined;
+            const from = fromRaw ?? [];
+
+            // Everything except id, type, from becomes phase_options
+            const phase_options: Record<string, unknown> = {};
+            for (const [k, v] of Object.entries(raw)) {
+              if (k !== "id" && k !== "type" && k !== "from") {
+                phase_options[k] = v;
+              }
+            }
+
+            validatePhaseOptions(phase_type, phase_options);
+
+            phaseList.push({
+              phase: id,
+              phase_type: phase_type as any,
+              phase_options,
+              children: [],
+            });
+          }
+
+          // Derive children from from fields
+          const phaseMap = new Map(phaseList.map((p) => [p.phase, p]));
+          let entryPhaseId = phaseList[0].phase;
+
+          for (const raw of rawPhases) {
+            const fromRaw = raw.from as string[] | undefined;
+            if (!fromRaw) continue;
+            for (const parentId of fromRaw) {
+              if (!phaseMap.has(parentId)) {
+                throw new Error(
+                  `Phase '${raw.id}': from references unknown phase '${parentId}'.`,
+                );
+              }
+              const parent = phaseMap.get(parentId)!;
+              if (!parent.children.includes(raw.id as string)) {
+                parent.children.push(raw.id as string);
+              }
+            }
+          }
+
+          // Validate branching constraints
+          for (const phase of phaseList) {
+            if (
+              BRANCHING_PHASE_TYPE_SET.has(phase.phase_type) &&
+              phase.children.length < 2
+            ) {
+              throw new Error(
+                `Phase '${phase.phase}' (${phase.phase_type}) must have at least 2 child phases. Found ${phase.children.length}.`,
+              );
+            }
+            if (
+              !BRANCHING_PHASE_TYPE_SET.has(phase.phase_type) &&
+              phase.children.length > 1
+            ) {
+              throw new Error(
+                `Phase '${phase.phase}' (${phase.phase_type}) cannot have multiple children. Only agentic-decision-gate and user-decision-gate may branch.`,
               );
             }
           }
 
-          // Add the new phase
-          const newPhase: PhaseRecord = {
-            phase: phase_id,
-            phase_type: phase_type as any,
-            phase_options: opts,
-            children: [],
-          };
-          phases.push(newPhase);
+          // Write phase-plan.toml and compile to plan.jsonl
+          fs.mkdirSync(planDir, { recursive: true });
+          fs.writeFileSync(phasePlanPath, toml, "utf-8");
 
-          // Wire each parent to this new phase
-          for (const parentId of parentIds) {
-            const parent = phases.find((p) => p.phase === parentId)!;
-            if (!parent.children.includes(phase_id)) {
-              parent.children.push(phase_id);
-            }
-          }
+          const compiled = compilePhasesToNodes(
+            plan_name,
+            phaseList,
+            entryPhaseId,
+          );
+          writeDagV3(compiledPlanPath, compiled.metadata, compiled.nodes);
 
-          writePhaseDag(planPath, metadata, phases);
-
-          const fromDisplay =
-            parentIds.length === 1 ? `'${parentIds[0]}'` : `[${parentIds.map((id) => `'${id}'`).join(", ")}]`;
-          return `Phase '${phase_id}' added to plan '${plan_name}', connected from ${fromDisplay}.`;
+          return `Plan '${plan_name}' compiled successfully. ${phaseList.length} phases compiled to ${compiled.nodes.length} execution nodes. Use present_plan_diagram to present to the user, then activate with /activate-plan ${plan_name}.`;
         },
       }),
-
     },
 
     // ── Hooks ────────────────────────────────────────────────────────────────
@@ -639,32 +656,6 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
     // actionable error instead of a raw schema dump.
     "tool.execute.before": async (input, output) => {
       if (!input.tool || !input.sessionID) return;
-
-      // --- Intercept task tool with incorrect or missing arguments ---
-      if (input.tool === "task") {
-        const args = output.args as Record<string, unknown> | undefined;
-        const hasCommand = args && "command" in args;
-        const missingPrompt = !args?.prompt;
-        const missingDescription = !args?.description;
-        const missingSubagentType = !args?.subagent_type;
-
-        if (hasCommand || missingPrompt || missingDescription || missingSubagentType) {
-          const issues: string[] = [];
-          if (hasCommand) issues.push('use "prompt" not "command" for the delegation text');
-          if (missingPrompt) issues.push('"prompt" is required');
-          if (missingDescription) issues.push('"description" is required (3-5 word UX label)');
-          if (missingSubagentType) issues.push('"subagent_type" is required');
-
-          throw new Error(
-            `task called incorrectly — ${issues.join("; ")}.\n\n` +
-            `Correct schema:\n` +
-            `  task(description="...", prompt="...", subagent_type="...")\n\n` +
-            `When re-delegating to an existing subagent instance:\n` +
-            `  task(description="...", prompt="...", subagent_type="...", session_id="...")`
-          );
-        }
-        // args are valid — fall through to enforcement tracking
-      }
 
       // --- Handle plan_session: create state + inject entry prompt ---
       if (input.tool === "plan_session") {
@@ -711,19 +702,66 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         return;
       }
 
-      // --- Handle activate_plan: create state ---
+      // --- Handle activate_plan: always recompile from phase-plan.toml ---
       if (input.tool === "activate_plan") {
         const plan_name = output.args?.plan_name as string;
         if (!plan_name) throw new Error("plan_name is required");
 
         const worktree = resolveWorktree(_ctx);
-        const planDir = path.join(worktree, ".opencode", "session-plans", plan_name);
-        const phasePlanPath = path.join(planDir, "phase-plan.jsonl");
+        const planDir = path.join(
+          worktree,
+          ".opencode",
+          "session-plans",
+          plan_name,
+        );
+        const phasePlanPath = path.join(planDir, "phase-plan.toml");
         const compiledPlanPath = path.join(planDir, "plan.jsonl");
 
-        // Compile phase-based plan → node-based plan.jsonl
-        const { metadata: phaseMeta, phases } = readPhaseDag(phasePlanPath);
-        const compiled = compilePhasesToNodes(plan_name, phases, phaseMeta.entry_phase_id);
+        if (!fs.existsSync(phasePlanPath)) {
+          throw new Error(
+            `Plan '${plan_name}' not found. Create it first with create_plan.`,
+          );
+        }
+
+        // Always recompile from phase-plan.toml — picks up any manual edits
+        const toml = fs.readFileSync(phasePlanPath, "utf-8");
+        const parsed = Bun.TOML.parse(toml) as Record<string, unknown>;
+        const rawPhases = parsed.phases as Record<string, unknown>[];
+
+        const phaseList: import("./types").PhaseRecord[] = [];
+        const phaseMap = new Map<string, import("./types").PhaseRecord>();
+        for (const raw of rawPhases) {
+          const phase: import("./types").PhaseRecord = {
+            phase: raw.id as string,
+            phase_type: raw.type as any,
+            phase_options: Object.fromEntries(
+              Object.entries(raw).filter(
+                ([k]) => k !== "id" && k !== "type" && k !== "from",
+              ),
+            ),
+            children: [],
+          };
+          phaseList.push(phase);
+          phaseMap.set(phase.phase, phase);
+        }
+        for (const raw of rawPhases) {
+          const fromArr = raw.from as string[] | undefined;
+          if (fromArr) {
+            for (const parentId of fromArr) {
+              const parent = phaseMap.get(parentId);
+              if (parent && !parent.children.includes(raw.id as string)) {
+                parent.children.push(raw.id as string);
+              }
+            }
+          }
+        }
+
+        const entryPhaseId = phaseList[0].phase;
+        const compiled = compilePhasesToNodes(
+          plan_name,
+          phaseList,
+          entryPhaseId,
+        );
         writeDagV3(compiledPlanPath, compiled.metadata, compiled.nodes);
 
         const metadata = compiled.metadata;
@@ -770,24 +808,54 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         if (!plan_name) throw new Error("plan_name is required");
 
         const worktree = resolveWorktree(_ctx);
-        const planPath = path.join(worktree, ".opencode", "session-plans", plan_name, "phase-plan.jsonl");
+        const tomlPath = path.join(
+          worktree,
+          ".opencode",
+          "session-plans",
+          plan_name,
+          "phase-plan.toml",
+        );
 
-        const { metadata: phaseMeta, phases } = readPhaseDag(planPath);
+        if (!fs.existsSync(tomlPath)) {
+          throw new Error(
+            `Plan '${plan_name}' not found. Create it first with create_plan.`,
+          );
+        }
+
+        const toml = fs.readFileSync(tomlPath, "utf-8");
+        const parsed = Bun.TOML.parse(toml) as {
+          phases: Array<Record<string, unknown>>;
+        };
+        const rawPhases = parsed.phases ?? [];
+
+        // Rebuild children map from from fields
+        const childrenMap = new Map<string, string[]>();
+        for (const raw of rawPhases) childrenMap.set(raw.id as string, []);
+        for (const raw of rawPhases) {
+          const fromArr = raw.from as string[] | undefined;
+          if (fromArr) {
+            for (const parentId of fromArr) {
+              const siblings = childrenMap.get(parentId);
+              if (siblings) siblings.push(raw.id as string);
+            }
+          }
+        }
 
         // Build Mermaid flowchart from phases
         const mermaidLines = ["flowchart TD"];
         const sanitize = (id: string) => id.replace(/-/g, "_");
-        for (const phase of phases) {
-          const nodeId = sanitize(phase.phase);
-          const label = `${phase.phase}\\n[${phase.phase_type}]`;
+        for (const raw of rawPhases) {
+          const nodeId = sanitize(raw.id as string);
+          const phaseType = (raw.type as string) ?? "";
+          const label = `${raw.id}\n[${phaseType}]`;
           mermaidLines.push(`  ${nodeId}["${label}"]`);
-          for (const child of phase.children) {
+          for (const child of childrenMap.get(raw.id as string) ?? []) {
             mermaidLines.push(`  ${nodeId} --> ${sanitize(child)}`);
           }
         }
         const mermaid = mermaidLines.join("\n");
         const ascii = renderMermaidASCII(mermaid, { colorMode: "none" });
-        const diagramText = `Plan: ${phaseMeta.id}\n\n${ascii}`;
+        const diagramText = `Plan: ${plan_name}\n\n${ascii}`;
 
         client.session.prompt({
           path: { id: input.sessionID },

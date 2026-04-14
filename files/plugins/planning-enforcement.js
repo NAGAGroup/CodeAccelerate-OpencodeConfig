@@ -109883,7 +109883,7 @@ var MONO_FONT = "'JetBrains Mono'";
 var MONO_FONT_STACK = `${MONO_FONT}, 'SF Mono', 'Fira Code', ui-monospace, monospace`;
 
 // planning-enforcement.ts
-import * as fs8 from "fs";
+import * as fs7 from "fs";
 import * as path7 from "path";
 
 // constants.ts
@@ -109896,8 +109896,7 @@ var exemptTools = [
   "recover_context",
   "next_step",
   "exit_plan",
-  "skill",
-  "compress"
+  "skill"
 ];
 function isExempt(toolName) {
   return exemptTools.includes(toolName);
@@ -110113,54 +110112,8 @@ function suggestRecoveryActions(report) {
   return [...new Set(actions)];
 }
 
-// phase-io.ts
-import * as fs6 from "fs";
-function readPhaseDag(planPath) {
-  if (!fs6.existsSync(planPath)) {
-    throw new Error(`plan.jsonl not found at ${planPath}`);
-  }
-  const content = fs6.readFileSync(planPath, "utf-8");
-  const lines = content.split(`
-`).filter((l) => l.trim());
-  if (lines.length === 0)
-    throw new Error(`plan.jsonl is empty at ${planPath}`);
-  const metadata = JSON.parse(lines[0]);
-  if (metadata.schema_version !== "4.0") {
-    throw new Error(`Expected schema_version "4.0" but got "${metadata.schema_version}".`);
-  }
-  const phases = [];
-  for (let i = 1;i < lines.length; i++) {
-    try {
-      phases.push(JSON.parse(lines[i]));
-    } catch {
-      throw new Error(`Invalid JSON on line ${i + 1} of plan.jsonl at ${planPath}`);
-    }
-  }
-  return { metadata, phases };
-}
-function writePhaseDag(planPath, metadata, phases) {
-  const lines = [JSON.stringify(metadata), ...phases.map((p) => JSON.stringify(p))];
-  fs6.writeFileSync(planPath, lines.join(`
-`), "utf-8");
-}
-function detectSchemaVersion(planPath) {
-  if (!fs6.existsSync(planPath))
-    return null;
-  const content = fs6.readFileSync(planPath, "utf-8");
-  const firstLine = content.split(`
-`).find((l) => l.trim());
-  if (!firstLine)
-    return null;
-  try {
-    const meta = JSON.parse(firstLine);
-    return meta.schema_version ?? null;
-  } catch {
-    return null;
-  }
-}
-
 // phase-expander.ts
-import * as fs7 from "fs";
+import * as fs6 from "fs";
 import * as path6 from "path";
 var EXIT = "__EXIT__";
 function nodeLibPath(componentType) {
@@ -110173,10 +110126,10 @@ function loadNodeSpec(componentType) {
   const dir = nodeLibPath(componentType);
   const specPath = path6.join(dir, "node-spec.json");
   const promptPath = path6.join(dir, "prompt.md");
-  if (!fs7.existsSync(specPath)) {
+  if (!fs6.existsSync(specPath)) {
     throw new Error(`Node spec not found for component "${componentType}" at ${specPath}`);
   }
-  const spec = JSON.parse(fs7.readFileSync(specPath, "utf-8"));
+  const spec = JSON.parse(fs6.readFileSync(specPath, "utf-8"));
   const result = { enforcement: spec.enforcement, promptPath };
   specCache.set(componentType, result);
   return result;
@@ -110244,10 +110197,40 @@ function expandWork(phase) {
   const retries = phase.phase_options.retries ?? 1;
   const commit = phase.phase_options.commit ?? false;
   const workComponent = workType === "docs" ? "documentation-expert-work-item" : "junior-dev-work-item";
+  const surveyTopics = phase.phase_options["project-survey-topics"] ?? [];
+  const externalQuestions = phase.phase_options["external-research-questions"] ?? [];
+  const internalQuestions = phase.phase_options["internal-research-questions"] ?? [];
+  const setupGoals = phase.phase_options["pre-work-project-setup"] ?? [];
   const nodes = [];
   const exitSlots = [];
+  const preWorkIds = [];
+  for (let i = 0;i < surveyTopics.length; i++) {
+    const id = `${phase.phase}-survey-${i + 1}`;
+    nodes.push(makeNode(id, "context-scout", surveyTopics[i], []));
+    preWorkIds.push(id);
+  }
+  for (let i = 0;i < externalQuestions.length; i++) {
+    const id = `${phase.phase}-ext-${i + 1}`;
+    nodes.push(makeNode(id, "external-scout", externalQuestions[i], []));
+    preWorkIds.push(id);
+  }
+  for (let i = 0;i < internalQuestions.length; i++) {
+    const id = `${phase.phase}-internal-${i + 1}`;
+    nodes.push(makeNode(id, "context-insurgent", internalQuestions[i], []));
+    preWorkIds.push(id);
+  }
+  for (let i = 0;i < setupGoals.length; i++) {
+    const id = `${phase.phase}-presetup-${i + 1}`;
+    nodes.push(makeNode(id, "project-setup", setupGoals[i], []));
+    preWorkIds.push(id);
+  }
   const workId = `${phase.phase}-work`;
   const initialVerifyId = `${phase.phase}-verify`;
+  for (let i = 0;i < preWorkIds.length; i++) {
+    const nextId = i < preWorkIds.length - 1 ? preWorkIds[i + 1] : workId;
+    nodes.find((n) => n.id === preWorkIds[i]).children = [nextId];
+  }
+  const entryNodeId = preWorkIds.length > 0 ? preWorkIds[0] : workId;
   if (retries === 0) {
     nodes.push(makeNode(workId, workComponent, goal, [initialVerifyId]));
     nodes.push(makeNode(initialVerifyId, "verify-work-item", verifyDescription, [EXIT]));
@@ -110286,12 +110269,12 @@ function expandWork(phase) {
       node.children[slot.childIndex] = commitId;
     }
     return {
-      entryNodeId: workId,
+      entryNodeId,
       nodes,
       exitSlots: [{ nodeId: commitId, childIndex: 0 }]
     };
   }
-  return { entryNodeId: workId, nodes, exitSlots };
+  return { entryNodeId, nodes, exitSlots };
 }
 function expandProjectCommands(phase) {
   const goals = phase.phase_options.goals;
@@ -110321,25 +110304,8 @@ function expandProjectCommands(phase) {
 }
 function expandUserDiscussion(phase) {
   const topic = phase.phase_options.topic;
-  const branches = phase.phase_options.branches;
   const discussionId = `${phase.phase}-discussion`;
   const nodes = [];
-  if (branches && branches.length > 0 && phase.children.length > 0) {
-    const gateId = `${phase.phase}-gate`;
-    const gateDesc = `Route based on discussion outcome. Options: ${branches.join(" | ")}`;
-    nodes.push(makeNode(discussionId, "user-discussion", topic, [gateId]));
-    const gateChildren = new Array(phase.children.length).fill(EXIT);
-    nodes.push(makeNode(gateId, "user-decision-gate", gateDesc, gateChildren));
-    const branchMap = new Map;
-    phase.children.forEach((childId, i) => branchMap.set(childId, i));
-    return {
-      entryNodeId: discussionId,
-      nodes,
-      exitSlots: [],
-      branchMap,
-      gateNodeId: gateId
-    };
-  }
   nodes.push(makeNode(discussionId, "user-discussion", topic, [EXIT]));
   return {
     entryNodeId: discussionId,
@@ -110347,11 +110313,27 @@ function expandUserDiscussion(phase) {
     exitSlots: [{ nodeId: discussionId, childIndex: 0 }]
   };
 }
+function expandUserDecisionGate(phase) {
+  const question = phase.phase_options.question;
+  const gateId = `${phase.phase}-gate`;
+  const gateDesc = question;
+  const nodes = [];
+  const gateChildren = new Array(phase.children.length).fill(EXIT);
+  nodes.push(makeNode(gateId, "user-decision-gate", gateDesc, gateChildren));
+  const branchMap = new Map;
+  phase.children.forEach((childId, i) => branchMap.set(childId, i));
+  return {
+    entryNodeId: gateId,
+    nodes,
+    exitSlots: [],
+    branchMap,
+    gateNodeId: gateId
+  };
+}
 function expandAgenticDecisionGate(phase) {
   const question = phase.phase_options.question;
-  const branches = phase.phase_options.branches;
   const gateId = `${phase.phase}-gate`;
-  const gateDesc = `${question} — options: ${branches.join(" | ")}`;
+  const gateDesc = question;
   const nodes = [];
   const gateChildren = new Array(phase.children.length).fill(EXIT);
   nodes.push(makeNode(gateId, "decision-gate", gateDesc, gateChildren));
@@ -110401,6 +110383,8 @@ function expandPhase(phase) {
       return expandProjectCommands(phase);
     case "user-discussion":
       return expandUserDiscussion(phase);
+    case "user-decision-gate":
+      return expandUserDecisionGate(phase);
     case "agentic-decision-gate":
       return expandAgenticDecisionGate(phase);
     case "write-notes":
@@ -110510,11 +110494,15 @@ var VALID_PHASE_TYPES = new Set([
   "work",
   "project-setup",
   "user-discussion",
+  "user-decision-gate",
   "agentic-decision-gate",
   "write-notes",
   "early-exit"
 ]);
-var BRANCHING_PHASE_TYPE_SET = new Set(["agentic-decision-gate", "user-discussion"]);
+var BRANCHING_PHASE_TYPE_SET = new Set([
+  "agentic-decision-gate",
+  "user-decision-gate"
+]);
 function validatePhaseOptions(phase_type, opts) {
   const require2 = (field, expectedType) => {
     if (!(field in opts) || opts[field] === null || opts[field] === undefined) {
@@ -110544,6 +110532,8 @@ function validatePhaseOptions(phase_type, opts) {
       require2("goal", "string");
       require2("work-type", "string");
       require2("verify-description", "string");
+      require2("project-survey-topics", "string[]");
+      require2("internal-research-questions", "string[]");
       if (!["code", "docs"].includes(opts["work-type"])) {
         throw new Error(`Invalid value for 'work-type': '${opts["work-type"]}'. Expected: code | docs.`);
       }
@@ -110554,9 +110544,11 @@ function validatePhaseOptions(phase_type, opts) {
     case "user-discussion":
       require2("topic", "string");
       break;
+    case "user-decision-gate":
+      require2("question", "string");
+      break;
     case "agentic-decision-gate":
       require2("question", "string");
-      require2("branches", "string[]");
       break;
     case "write-notes":
     case "early-exit":
@@ -110809,7 +110801,7 @@ Pending Branch Choice: [${choices}]
           const sessionPlansDir = path7.join(worktree, ".opencode", "session-plans");
           let confirmedName = name.trim();
           let suffix = 2;
-          while (fs8.existsSync(path7.join(sessionPlansDir, confirmedName))) {
+          while (fs7.existsSync(path7.join(sessionPlansDir, confirmedName))) {
             confirmedName = `${name.trim()}-${suffix}`;
             suffix++;
           }
@@ -110820,146 +110812,123 @@ Pending Branch Choice: [${choices}]
           return `Plan name set to "${confirmedName}"${dedupeNote}. {{PLAN_NAME}} will be substituted in all subsequent planning prompts automatically.`;
         }
       }),
-      add_first_phase: tool({
-        description: "Add the first phase to a new plan. Creates the plan file and initializes it with the entry phase. Call this once before any add_phase calls.",
+      task: tool({
+        description: "Delegate a task to a specialized subagent",
         args: {
-          plan_name: tool.schema.string().describe("The plan name (set by choose_plan_name)."),
-          phase_id: tool.schema.string().describe("Descriptive phase ID encoding position and intent, e.g. '1-research-tui-options'."),
-          phase_type: tool.schema.string().describe("Phase type: external-research | internal-research | project-survey | work | project-commands | user-discussion | agentic-decision-gate | write-notes | early-exit"),
-          phase_options: tool.schema.string().describe("JSON object with the phase's fields as defined in the planning schema.")
+          subagent: tool.schema.string().describe("The subagent type to use"),
+          description: tool.schema.string().describe("Short 3-5 word description of the task (for UX purposes)"),
+          prompt: tool.schema.string().describe("The task for the agent to perform"),
+          task_id: tool.schema.string().optional().describe("Resume a previous task session")
         },
-        async execute({ plan_name, phase_id, phase_type, phase_options }, context) {
-          const worktree = resolveWorktree(context);
-          const planDir = path7.join(worktree, ".opencode", "session-plans", plan_name);
-          const planPath = path7.join(planDir, "phase-plan.jsonl");
-          if (fs8.existsSync(planPath)) {
-            throw new Error(`Plan '${plan_name}' already has a first phase. Use add_phase to add subsequent phases.`);
-          }
-          if (!VALID_PHASE_TYPES.has(phase_type)) {
-            throw new Error(`Invalid phase_type '${phase_type}'. Valid types: ${[...VALID_PHASE_TYPES].join(", ")}.`);
-          }
-          let opts;
-          try {
-            opts = JSON.parse(phase_options);
-          } catch {
-            throw new Error(`phase_options must be a valid JSON object.`);
-          }
-          validatePhaseOptions(phase_type, opts);
-          fs8.mkdirSync(planDir, { recursive: true });
-          const metadata = {
-            schema_version: "4.0",
-            id: plan_name,
-            entry_phase_id: phase_id
-          };
-          const firstPhase = {
-            phase: phase_id,
-            phase_type,
-            phase_options: opts,
-            children: []
-          };
-          writePhaseDag(planPath, metadata, [firstPhase]);
-          return `Phase '${phase_id}' added as the first phase of plan '${plan_name}'.`;
+        async execute(args, context) {
+          const { client: client2 } = _ctx;
+          const subagentSession = await client2.session.create({
+            body: {
+              parentID: context.sessionID,
+              title: args.description
+            },
+            meta: { sessionId: context.sessionID }
+          });
+          const result = await client2.session.prompt({
+            path: { id: subagentSession.data.id },
+            body: {
+              agent: args.subagent,
+              parts: [{ type: "text", text: args.prompt }]
+            }
+          });
+          const text = result.data.parts.findLast((p) => p.type === "text")?.text ?? "";
+          return `task_id: ${subagentSession.data.id}
+
+${text}`;
         }
       }),
-      add_phase: tool({
-        description: "Add a phase to an existing plan and wire it to its parent phase(s). Call add_first_phase before this.",
+      create_plan: tool({
+        description: "Compile a TOML phase plan into an executable DAG. Validates the plan, writes it to disk, and compiles it to a node graph ready for activation. Call this after the finalized plan has been reviewed and approved.",
         args: {
-          plan_name: tool.schema.string().describe("The plan name."),
-          phase_id: tool.schema.string().describe("Descriptive phase ID encoding position and intent, e.g. '2a-implement-auth'."),
-          phase_type: tool.schema.string().describe("Phase type: external-research | internal-research | project-survey | work | project-commands | user-discussion | agentic-decision-gate | write-notes | early-exit"),
-          phase_options: tool.schema.string().describe("JSON object with the phase's fields as defined in the planning schema."),
-          from: tool.schema.string().describe(`JSON array string of parent phase IDs. Always use array format — single parent: '["2-decision"]', convergence: '["3a-impl", "3b-impl"]'.`)
+          plan_name: tool.schema.string().describe("The plan name (set by choose_plan_name)."),
+          toml: tool.schema.string().describe("The complete finalized plan in TOML format.")
         },
-        async execute({ plan_name, phase_id, phase_type, phase_options, from }, context) {
+        async execute({ plan_name, toml }, context) {
           const worktree = resolveWorktree(context);
-          const planPath = path7.join(worktree, ".opencode", "session-plans", plan_name, "phase-plan.jsonl");
-          if (!fs8.existsSync(planPath)) {
-            throw new Error(`Plan '${plan_name}' not found. Call add_first_phase first.`);
-          }
-          const schemaVersion = detectSchemaVersion(planPath);
-          if (schemaVersion !== "4.0") {
-            throw new Error(`Plan '${plan_name}' is not a phase-based plan (schema 4.0).`);
-          }
-          if (!VALID_PHASE_TYPES.has(phase_type)) {
-            throw new Error(`Invalid phase_type '${phase_type}'. Valid types: ${[...VALID_PHASE_TYPES].join(", ")}.`);
-          }
-          let opts;
+          const planDir = path7.join(worktree, ".opencode", "session-plans", plan_name);
+          const phasePlanPath = path7.join(planDir, "phase-plan.toml");
+          const compiledPlanPath = path7.join(planDir, "plan.jsonl");
+          let parsed;
           try {
-            opts = JSON.parse(phase_options);
-          } catch {
-            throw new Error(`phase_options must be a valid JSON object.`);
+            parsed = Bun.TOML.parse(toml);
+          } catch (e) {
+            throw new Error(`Invalid TOML: ${e.message}`);
           }
-          validatePhaseOptions(phase_type, opts);
-          let parentIds;
-          try {
-            parentIds = JSON.parse(from.trim());
-            if (!Array.isArray(parentIds) || parentIds.length === 0) {
-              throw new Error;
+          const rawPhases = parsed.phases;
+          if (!Array.isArray(rawPhases) || rawPhases.length === 0) {
+            throw new Error("Plan must contain at least one [[phases]] entry.");
+          }
+          const phaseIds = new Set;
+          const phaseList = [];
+          for (const raw of rawPhases) {
+            const id = raw.id;
+            const phase_type = raw.type;
+            if (!id)
+              throw new Error("Every [[phases]] entry must have an id field.");
+            if (!phase_type)
+              throw new Error(`Phase '${id}' is missing a type field.`);
+            if (phaseIds.has(id))
+              throw new Error(`Duplicate phase id: '${id}'.`);
+            phaseIds.add(id);
+            if (!VALID_PHASE_TYPES.has(phase_type)) {
+              throw new Error(`Phase '${id}': invalid type '${phase_type}'. Valid types: ${[...VALID_PHASE_TYPES].join(", ")}.`);
             }
-          } catch {
-            throw new Error(`'from' must be a JSON array string of parent phase IDs. ` + `Single parent: '["phase-id"]'. Convergence: '["phase-a", "phase-b"]'.`);
+            const fromRaw = raw.from;
+            const from = fromRaw ?? [];
+            const phase_options = {};
+            for (const [k, v] of Object.entries(raw)) {
+              if (k !== "id" && k !== "type" && k !== "from") {
+                phase_options[k] = v;
+              }
+            }
+            validatePhaseOptions(phase_type, phase_options);
+            phaseList.push({
+              phase: id,
+              phase_type,
+              phase_options,
+              children: []
+            });
           }
-          const { metadata, phases } = readPhaseDag(planPath);
-          const phaseIds = new Set(phases.map((p) => p.phase));
-          for (const parentId of parentIds) {
-            if (!phaseIds.has(parentId)) {
-              throw new Error(`Parent phase '${parentId}' not found in plan '${plan_name}'.`);
+          const phaseMap = new Map(phaseList.map((p) => [p.phase, p]));
+          let entryPhaseId = phaseList[0].phase;
+          for (const raw of rawPhases) {
+            const fromRaw = raw.from;
+            if (!fromRaw)
+              continue;
+            for (const parentId of fromRaw) {
+              if (!phaseMap.has(parentId)) {
+                throw new Error(`Phase '${raw.id}': from references unknown phase '${parentId}'.`);
+              }
+              const parent = phaseMap.get(parentId);
+              if (!parent.children.includes(raw.id)) {
+                parent.children.push(raw.id);
+              }
             }
           }
-          for (const parentId of parentIds) {
-            const parent = phases.find((p) => p.phase === parentId);
-            const isBranchingType = BRANCHING_PHASE_TYPE_SET.has(parent.phase_type);
-            if (!isBranchingType && parent.children.length >= 1) {
-              throw new Error(`Phase '${parentId}' (${parent.phase_type}) already has a child. ` + `Only agentic-decision-gate and user-discussion may have multiple children.`);
+          for (const phase of phaseList) {
+            if (BRANCHING_PHASE_TYPE_SET.has(phase.phase_type) && phase.children.length < 2) {
+              throw new Error(`Phase '${phase.phase}' (${phase.phase_type}) must have at least 2 child phases. Found ${phase.children.length}.`);
+            }
+            if (!BRANCHING_PHASE_TYPE_SET.has(phase.phase_type) && phase.children.length > 1) {
+              throw new Error(`Phase '${phase.phase}' (${phase.phase_type}) cannot have multiple children. Only agentic-decision-gate and user-decision-gate may branch.`);
             }
           }
-          const newPhase = {
-            phase: phase_id,
-            phase_type,
-            phase_options: opts,
-            children: []
-          };
-          phases.push(newPhase);
-          for (const parentId of parentIds) {
-            const parent = phases.find((p) => p.phase === parentId);
-            if (!parent.children.includes(phase_id)) {
-              parent.children.push(phase_id);
-            }
-          }
-          writePhaseDag(planPath, metadata, phases);
-          const fromDisplay = parentIds.length === 1 ? `'${parentIds[0]}'` : `[${parentIds.map((id) => `'${id}'`).join(", ")}]`;
-          return `Phase '${phase_id}' added to plan '${plan_name}', connected from ${fromDisplay}.`;
+          fs7.mkdirSync(planDir, { recursive: true });
+          fs7.writeFileSync(phasePlanPath, toml, "utf-8");
+          const compiled = compilePhasesToNodes(plan_name, phaseList, entryPhaseId);
+          writeDagV3(compiledPlanPath, compiled.metadata, compiled.nodes);
+          return `Plan '${plan_name}' compiled successfully. ${phaseList.length} phases compiled to ${compiled.nodes.length} execution nodes. Use present_plan_diagram to present to the user, then activate with /activate-plan ${plan_name}.`;
         }
       })
     },
     "tool.execute.before": async (input, output) => {
       if (!input.tool || !input.sessionID)
         return;
-      if (input.tool === "task") {
-        const args = output.args;
-        const hasCommand = args && "command" in args;
-        const missingPrompt = !args?.prompt;
-        const missingDescription = !args?.description;
-        const missingSubagentType = !args?.subagent_type;
-        if (hasCommand || missingPrompt || missingDescription || missingSubagentType) {
-          const issues = [];
-          if (hasCommand)
-            issues.push('use "prompt" not "command" for the delegation text');
-          if (missingPrompt)
-            issues.push('"prompt" is required');
-          if (missingDescription)
-            issues.push('"description" is required (3-5 word UX label)');
-          if (missingSubagentType)
-            issues.push('"subagent_type" is required');
-          throw new Error(`task called incorrectly — ${issues.join("; ")}.
-
-` + `Correct schema:
-` + `  task(description="...", prompt="...", subagent_type="...")
-
-` + `When re-delegating to an existing subagent instance:
-` + `  task(description="...", prompt="...", subagent_type="...", session_id="...")`);
-        }
-      }
       if (input.tool === "plan_session") {
         const worktree2 = resolveWorktree(_ctx);
         const { localPlanPath, metadata, nodes } = copyPlanningDag("plan-session", input.sessionID, worktree2);
@@ -111000,10 +110969,39 @@ Pending Branch Choice: [${choices}]
           throw new Error("plan_name is required");
         const worktree2 = resolveWorktree(_ctx);
         const planDir = path7.join(worktree2, ".opencode", "session-plans", plan_name);
-        const phasePlanPath = path7.join(planDir, "phase-plan.jsonl");
+        const phasePlanPath = path7.join(planDir, "phase-plan.toml");
         const compiledPlanPath = path7.join(planDir, "plan.jsonl");
-        const { metadata: phaseMeta, phases } = readPhaseDag(phasePlanPath);
-        const compiled = compilePhasesToNodes(plan_name, phases, phaseMeta.entry_phase_id);
+        if (!fs7.existsSync(phasePlanPath)) {
+          throw new Error(`Plan '${plan_name}' not found. Create it first with create_plan.`);
+        }
+        const toml = fs7.readFileSync(phasePlanPath, "utf-8");
+        const parsed = Bun.TOML.parse(toml);
+        const rawPhases = parsed.phases;
+        const phaseList = [];
+        const phaseMap = new Map;
+        for (const raw of rawPhases) {
+          const phase = {
+            phase: raw.id,
+            phase_type: raw.type,
+            phase_options: Object.fromEntries(Object.entries(raw).filter(([k]) => k !== "id" && k !== "type" && k !== "from")),
+            children: []
+          };
+          phaseList.push(phase);
+          phaseMap.set(phase.phase, phase);
+        }
+        for (const raw of rawPhases) {
+          const fromArr = raw.from;
+          if (fromArr) {
+            for (const parentId of fromArr) {
+              const parent = phaseMap.get(parentId);
+              if (parent && !parent.children.includes(raw.id)) {
+                parent.children.push(raw.id);
+              }
+            }
+          }
+        }
+        const entryPhaseId = phaseList[0].phase;
+        const compiled = compilePhasesToNodes(plan_name, phaseList, entryPhaseId);
         writeDagV3(compiledPlanPath, compiled.metadata, compiled.nodes);
         const metadata = compiled.metadata;
         const nodeMap = flattenTreeV3(compiled.metadata, compiled.nodes);
@@ -111041,22 +111039,42 @@ Pending Branch Choice: [${choices}]
         if (!plan_name)
           throw new Error("plan_name is required");
         const worktree2 = resolveWorktree(_ctx);
-        const planPath = path7.join(worktree2, ".opencode", "session-plans", plan_name, "phase-plan.jsonl");
-        const { metadata: phaseMeta, phases } = readPhaseDag(planPath);
+        const tomlPath = path7.join(worktree2, ".opencode", "session-plans", plan_name, "phase-plan.toml");
+        if (!fs7.existsSync(tomlPath)) {
+          throw new Error(`Plan '${plan_name}' not found. Create it first with create_plan.`);
+        }
+        const toml = fs7.readFileSync(tomlPath, "utf-8");
+        const parsed = Bun.TOML.parse(toml);
+        const rawPhases = parsed.phases ?? [];
+        const childrenMap = new Map;
+        for (const raw of rawPhases)
+          childrenMap.set(raw.id, []);
+        for (const raw of rawPhases) {
+          const fromArr = raw.from;
+          if (fromArr) {
+            for (const parentId of fromArr) {
+              const siblings = childrenMap.get(parentId);
+              if (siblings)
+                siblings.push(raw.id);
+            }
+          }
+        }
         const mermaidLines = ["flowchart TD"];
         const sanitize = (id) => id.replace(/-/g, "_");
-        for (const phase of phases) {
-          const nodeId = sanitize(phase.phase);
-          const label = `${phase.phase}\\n[${phase.phase_type}]`;
+        for (const raw of rawPhases) {
+          const nodeId = sanitize(raw.id);
+          const phaseType = raw.type ?? "";
+          const label = `${raw.id}
+[${phaseType}]`;
           mermaidLines.push(`  ${nodeId}["${label}"]`);
-          for (const child of phase.children) {
+          for (const child of childrenMap.get(raw.id) ?? []) {
             mermaidLines.push(`  ${nodeId} --> ${sanitize(child)}`);
           }
         }
         const mermaid = mermaidLines.join(`
 `);
         const ascii = renderMermaidASCII(mermaid, { colorMode: "none" });
-        const diagramText = `Plan: ${phaseMeta.id}
+        const diagramText = `Plan: ${plan_name}
 
 ${ascii}`;
         client.session.prompt({

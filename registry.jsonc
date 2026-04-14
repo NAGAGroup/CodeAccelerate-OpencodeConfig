@@ -93,7 +93,6 @@
         "agents/documentation-expert.md",
         "agents/deep-researcher.md",
         "agents/external-scout.md",
-        "agents/dag-builder.md",
         "agents/headwrench.md",
         "agents/junior-dev.md",
         "agents/tailwrench.md",
@@ -102,9 +101,7 @@
         "commands/plan-session.md",
         // Skills
          "skills/asking-questions/SKILL.md",
-         "skills/mapping-plans-to-dags/SKILL.md",
          "skills/planning-schema/SKILL.md",
-         "skills/planning-patterns/SKILL.md",
          "skills/editing/SKILL.md",
          "skills/following-plans/SKILL.md",
          "skills/grepai/SKILL.md",

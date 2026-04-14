@@ -7,13 +7,14 @@ export type PhaseType =
   | "work"
   | "project-setup"
   | "user-discussion"
+  | "user-decision-gate"
   | "agentic-decision-gate"
   | "write-notes"
   | "early-exit";
 
 export const BRANCHING_PHASE_TYPES = new Set<PhaseType>([
   "agentic-decision-gate",
-  "user-discussion",
+  "user-decision-gate",
 ]);
 
 export interface PhaseRecord {
