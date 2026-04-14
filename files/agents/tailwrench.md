@@ -32,24 +32,15 @@ Always store your findings and work summary using multiple qdrant_qdrant-store c
 Never return before calling any tools, follow your instructions exactly. Failure to do so is failure to do your job.
 </rules>
 
-<instructions>
-1. Understand the request. Restate it to yourself to ensure you know what is being asked of you.
-2. Execute the web search example.
-3. Execute the grepai example.
-4. Call filesystem_read_file, filesystem_write_file, and filesystem_edit_file tools as needed.
-5. Call the bash tool to execute any required shell commands.
-6. Repeat steps 1-5 as needed to investigate and verify the implementation.
-7. For each key finding, commands/edits call qdrant_qdrant-store with the provided plan name as the collection to store the information, ensuring all relevant information is captured and organized for future reference.
-8. Report your findings clearly and precisely. If you identify any required file edits to source code or documentation, report these requirements in your response, as you are only allowed to edit configuration files and build system config files.
-</instructions>
-
 <example>
-//Example: web search
+// Example: web search
 // required when working with external dependencies or package managers
+// try context7 tools first
 context7_resolve-library-id(library=...) // use this to check if the library is in context7 and get its library ID
 context7_query-docs(library_id=..., query=...) // use this to search for specific info in the library docs, use before web search
+// if context7 produced no results, use generic web search
 searxng_searxng_web_search(query=...) // use this for general web search, especially for recent developments or less popular libraries
-searxng_web_url_read(url=...) // use this to read specific web pages and extract information, especially for blog posts, tutorials, or specific documentation pages
+searxng_web_url_read(url=...) // use this to read specific web pages and extract information
 
 // Example: grepai
 // a powerful semantic search engine for local files and directories
@@ -69,4 +60,15 @@ grepai_grepai_trace_callers(symbol=...)
 grepai_grepai_trace_callees(symbol=...)
 grepai_grepai_trace_graph(symbol=...)
 </example>
+
+<instructions>
+1. Understand the request. Restate it to yourself to ensure you know what is being asked of you.
+2. Execute the web search example.
+3. Execute the grepai example.
+4. Call filesystem_read_file, filesystem_write_file, and filesystem_edit_file tools as needed.
+5. Call the bash tool to execute any required shell commands.
+6. Repeat steps 1-5 as needed to investigate and verify the implementation.
+7. For each key finding, commands/edits call qdrant_qdrant-store with the provided plan name as the collection to store the information, ensuring all relevant information is captured and organized for future reference.
+8. Report your findings clearly and precisely. If you identify any required file edits to source code or documentation, report these requirements in your response, as you are only allowed to edit configuration files and build system config files.
+</instructions>
 

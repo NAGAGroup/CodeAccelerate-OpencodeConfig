@@ -26,16 +26,6 @@ Always return a structured response format rather than a dense, prose-only repor
 Never return before calling any tools, follow your instructions exactly. Failure to do so is failure to do your job.
 </rules>
 
-<instructions>
-1. Understand the request. Restate it to yourself to ensure you know what is being asked of you.
-2. Execute the grepai example to understand the documentation landscape and existing conventions.
-3. Execute the filesystem example to inspect existing documentation files for style and structure.
-4. Repeat steps 2-3 as needed until you have a thorough understanding of the existing documentation.
-5. Plan your documentation changes. Write it down before editing.
-6. Make your edits using filesystem_read_file, filesystem_write_file, and filesystem_edit_file.
-7. For each finding, documentation decision, and change made, call qdrant_qdrant-store with the provided plan name as the collection to store the information, ensuring all relevant information is captured and organized for future reference.
-</instructions>
-
 <example>
 // Example: grepai
 // a powerful semantic search engine for local files and directories
@@ -57,3 +47,13 @@ filesystem_list_directory(path=docs/) // browse documentation directory structur
 filesystem_read_file(path=docs/some-doc.md) // read a specific file for full context and style reference
 grep(pattern="## ", include="*.md") // find section headings to understand doc structure
 </example>
+
+<instructions>
+1. Understand the request. Restate it to yourself to ensure you know what is being asked of you.
+2. Execute the grepai example to understand the documentation landscape and existing conventions.
+3. Execute the filesystem example to inspect existing documentation files for style and structure.
+4. Repeat steps 2-3 as needed until you have a thorough understanding of the existing documentation.
+5. Plan your documentation changes. Write it down before editing.
+6. Make your edits using filesystem_read_file, filesystem_write_file, and filesystem_edit_file.
+7. For each finding, documentation decision, and change made, call qdrant_qdrant-store with the provided plan name as the collection to store the information, ensuring all relevant information is captured and organized for future reference.
+</instructions>

@@ -149,26 +149,35 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
   const exitSlots: Array<{ nodeId: string; childIndex: number }> = [];
 
   // Build the pre-work chain: survey → external → internal → setup
+  // Each group collapses to a single node with a bulleted description
   const preWorkIds: string[] = [];
 
-  for (let i = 0; i < surveyTopics.length; i++) {
-    const id = `${phase.phase}-survey-${i + 1}`;
-    nodes.push(makeNode(id, "context-scout", surveyTopics[i], []));
+  function bullets(items: string[]): string {
+    return items.map((q) => `- ${q}`).join("\n");
+  }
+
+  if (surveyTopics.length > 0) {
+    const id = `${phase.phase}-survey`;
+    const desc = `Surveying the following topics:\n\n${bullets(surveyTopics)}`;
+    nodes.push(makeNode(id, "context-scout", desc, []));
     preWorkIds.push(id);
   }
-  for (let i = 0; i < externalQuestions.length; i++) {
-    const id = `${phase.phase}-ext-${i + 1}`;
-    nodes.push(makeNode(id, "external-scout", externalQuestions[i], []));
+  if (externalQuestions.length > 0) {
+    const id = `${phase.phase}-ext`;
+    const desc = `Running external research for the following questions:\n\n${bullets(externalQuestions)}`;
+    nodes.push(makeNode(id, "external-scout", desc, []));
     preWorkIds.push(id);
   }
-  for (let i = 0; i < internalQuestions.length; i++) {
-    const id = `${phase.phase}-internal-${i + 1}`;
-    nodes.push(makeNode(id, "context-insurgent", internalQuestions[i], []));
+  if (internalQuestions.length > 0) {
+    const id = `${phase.phase}-internal`;
+    const desc = `Investigating the following questions:\n\n${bullets(internalQuestions)}`;
+    nodes.push(makeNode(id, "context-insurgent", desc, []));
     preWorkIds.push(id);
   }
-  for (let i = 0; i < setupGoals.length; i++) {
-    const id = `${phase.phase}-presetup-${i + 1}`;
-    nodes.push(makeNode(id, "project-setup", setupGoals[i], []));
+  if (setupGoals.length > 0) {
+    const id = `${phase.phase}-presetup`;
+    const desc = `Running the following setup steps:\n\n${bullets(setupGoals)}`;
+    nodes.push(makeNode(id, "project-setup", desc, []));
     preWorkIds.push(id);
   }
 
@@ -191,19 +200,16 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
   );
   exitSlots.push({ nodeId: initialVerifyId, childIndex: 0 }); // success branch
 
-  // Triage → setup-fix → fix → verify retry chain
+  // Triage → fix → verify retry chain
   for (let r = 1; r <= retries; r++) {
     const triageId = `${phase.phase}-triage-${r}`;
-    const pcmdFixId = `${phase.phase}-setup-fix-${r}`;
     const fixId = `${phase.phase}-fix-${r}`;
     const verifyRId = `${phase.phase}-verify-${r}`;
 
-    const triageDesc = `Investigate the verification failure for: ${verifyDescription}. Analyze error output, logs, and relevant code to identify the root cause.`;
-    const pcmdFixDesc = `Apply any command-level fixes identified in the triage (missing dependencies, environment setup, etc.). If no command-level fixes are needed, return immediately.`;
-    const fixDesc = `Fix verification failures for: ${goal}`;
+    const triageDesc = `Something is broken. Re-run the failed commands to reproduce the failure, apply any project-level fixes (dependencies, config, environment), then identify the root cause from the actual output.`;
+    const fixDesc = `Using the findings from triage and all previous failed attempts, address every identified issue to satisfy the original goal: ${goal}`;
 
-    nodes.push(makeNode(triageId, "verify-triage", triageDesc, [pcmdFixId]));
-    nodes.push(makeNode(pcmdFixId, "project-setup", pcmdFixDesc, [fixId]));
+    nodes.push(makeNode(triageId, "verify-triage", triageDesc, [fixId]));
     nodes.push(makeNode(fixId, workComponent, fixDesc, [verifyRId]));
 
     if (r < retries) {
@@ -224,7 +230,7 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
   // All exit slots → commit → exit destination
   if (commit) {
     const commitId = `${phase.phase}-commit`;
-    nodes.push(makeNode(commitId, "commit", `Commit checkpoint: ${goal}`, [EXIT]));
+    nodes.push(makeNode(commitId, "commit", `Commit checkpoint`, [EXIT]));
     // Redirect all current exit slots to the commit node
     for (const slot of exitSlots) {
       const node = nodes.find((n) => n.id === slot.nodeId)!;

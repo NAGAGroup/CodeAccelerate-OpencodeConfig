@@ -23,15 +23,6 @@ Always store your findings and analysis using multiple qdrant_qdrant-store calls
 Never return before calling any tools, follow your instructions exactly. Failure to do so is failure to do your job.
 </rules>
 
-<instructions>
-1. Understand the request. Restate it to yourself to ensure you know what is being asked of you.
-2. Execute the grepai example.
-3. Execute the filesystem example.
-4. Repeat steps 2-3 as needed until you have exhausted all avenues of search and analysis.
-5. Perform a final review of all information gathered and provide a comprehensive answer to the question at hand. Note any gaps or areas where further analysis may be needed.
-6. For each finding, analysis and unknown, call qdrant_qdrant-store to store the information, ensuring all relevant information is captured and organized for future reference.
-</instructions>
-
 <example>
 // Example: grepai
 // a powerful semantic search engine for local files and directories
@@ -57,3 +48,12 @@ filesystem_read_file(path=src/some/file.ts) // read a specific file for full con
 grep(pattern="someFunction", include="*.ts") // search file contents by exact string or regex
 grep(pattern="export.*Handler", include="*.ts")
 </example>
+
+<instructions>
+1. Understand the request. Restate it to yourself to ensure you know what is being asked of you.
+2. Execute the grepai example.
+3. Execute the filesystem example.
+4. Repeat steps 2-3 as needed until you have exhausted all avenues of search and analysis.
+5. Perform a final review of all information gathered and provide a comprehensive answer to the question at hand. Note any gaps or areas where further analysis may be needed.
+6. For each finding, analysis and unknown, call qdrant_qdrant-store to store the information, ensuring all relevant information is captured and organized for future reference.
+</instructions>

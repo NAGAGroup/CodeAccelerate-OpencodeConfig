@@ -10,6 +10,7 @@
 
 <rules>
 Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
+Never ask junior-dev to run shell commands. The junior-dev can only make file edits.
 </rules>
 
 <instructions>
