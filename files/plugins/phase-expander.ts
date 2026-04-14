@@ -134,7 +134,7 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
   const goal = phase.phase_options.goal as string;
   const workType = phase.phase_options["work-type"] as string;
   const verifyDescription = phase.phase_options["verify-description"] as string;
-  const retries = (phase.phase_options.retries as number) ?? 1;
+  const retries = 5;
   const commit = (phase.phase_options.commit as boolean) ?? false;
   const workComponent =
     workType === "docs" ? "documentation-expert-work-item" : "junior-dev-work-item";
@@ -183,47 +183,40 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
 
   const entryNodeId = preWorkIds.length > 0 ? preWorkIds[0] : workId;
 
-  if (retries === 0) {
-    // Single linear verify — no fix loop
-    nodes.push(makeNode(workId, workComponent, goal, [initialVerifyId]));
-    nodes.push(makeNode(initialVerifyId, "verify-work-item", verifyDescription, [EXIT]));
-    exitSlots.push({ nodeId: initialVerifyId, childIndex: 0 });
-  } else {
-    // Initial verify branches: success → EXIT, fail → triage-1
-    const triage1Id = `${phase.phase}-triage-1`;
-    nodes.push(makeNode(workId, workComponent, goal, [initialVerifyId]));
-    nodes.push(
-      makeNode(initialVerifyId, "verify-work-item", verifyDescription, [EXIT, triage1Id]),
-    );
-    exitSlots.push({ nodeId: initialVerifyId, childIndex: 0 }); // success branch
+  // Initial verify branches: success → EXIT, fail → triage-1
+  const triage1Id = `${phase.phase}-triage-1`;
+  nodes.push(makeNode(workId, workComponent, goal, [initialVerifyId]));
+  nodes.push(
+    makeNode(initialVerifyId, "verify-work-item", verifyDescription, [EXIT, triage1Id]),
+  );
+  exitSlots.push({ nodeId: initialVerifyId, childIndex: 0 }); // success branch
 
-    // Triage → project-commands-fix → fix → verify retry chain
-    for (let r = 1; r <= retries; r++) {
-      const triageId = `${phase.phase}-triage-${r}`;
-      const pcmdFixId = `${phase.phase}-setup-fix-${r}`;
-      const fixId = `${phase.phase}-fix-${r}`;
-      const verifyRId = `${phase.phase}-verify-${r}`;
+  // Triage → setup-fix → fix → verify retry chain
+  for (let r = 1; r <= retries; r++) {
+    const triageId = `${phase.phase}-triage-${r}`;
+    const pcmdFixId = `${phase.phase}-setup-fix-${r}`;
+    const fixId = `${phase.phase}-fix-${r}`;
+    const verifyRId = `${phase.phase}-verify-${r}`;
 
-      const triageDesc = `Investigate the verification failure for: ${verifyDescription}. Analyze error output, logs, and relevant code to identify the root cause.`;
-      const pcmdFixDesc = `Apply any command-level fixes identified in the triage (missing dependencies, environment setup, etc.). If no command-level fixes are needed, return immediately.`;
-      const fixDesc = `Fix verification failures for: ${goal}`;
+    const triageDesc = `Investigate the verification failure for: ${verifyDescription}. Analyze error output, logs, and relevant code to identify the root cause.`;
+    const pcmdFixDesc = `Apply any command-level fixes identified in the triage (missing dependencies, environment setup, etc.). If no command-level fixes are needed, return immediately.`;
+    const fixDesc = `Fix verification failures for: ${goal}`;
 
-      nodes.push(makeNode(triageId, "verify-triage", triageDesc, [pcmdFixId]));
-      nodes.push(makeNode(pcmdFixId, "project-setup", pcmdFixDesc, [fixId]));
-      nodes.push(makeNode(fixId, workComponent, fixDesc, [verifyRId]));
+    nodes.push(makeNode(triageId, "verify-triage", triageDesc, [pcmdFixId]));
+    nodes.push(makeNode(pcmdFixId, "project-setup", pcmdFixDesc, [fixId]));
+    nodes.push(makeNode(fixId, workComponent, fixDesc, [verifyRId]));
 
-      if (r < retries) {
-        // Non-final retry verify: branches to [EXIT, next-triage]
-        const nextTriageId = `${phase.phase}-triage-${r + 1}`;
-        nodes.push(
-          makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT, nextTriageId]),
-        );
-        exitSlots.push({ nodeId: verifyRId, childIndex: 0 }); // success branch
-      } else {
-        // Final retry verify: linear (both outcomes go forward)
-        nodes.push(makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT]));
-        exitSlots.push({ nodeId: verifyRId, childIndex: 0 });
-      }
+    if (r < retries) {
+      // Non-final retry verify: branches to [EXIT, next-triage]
+      const nextTriageId = `${phase.phase}-triage-${r + 1}`;
+      nodes.push(
+        makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT, nextTriageId]),
+      );
+      exitSlots.push({ nodeId: verifyRId, childIndex: 0 }); // success branch
+    } else {
+      // Final retry verify: linear (both outcomes go forward)
+      nodes.push(makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT]));
+      exitSlots.push({ nodeId: verifyRId, childIndex: 0 });
     }
   }
 

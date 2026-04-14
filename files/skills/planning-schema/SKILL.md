@@ -9,76 +9,118 @@ Never use a decision gate to inform a later phase — branches must split immedi
 Every branching phase (agentic-decision-gate, user-decision-gate) must have at least 2 direct child phases.
 </rules>
 
-<format>
-Plans are written in TOML. Each phase is a [[phases]] table entry with an id, type, optional from array, and type-specific fields.
-The first [[phases]] entry is the plan entry point — it has no from field.
-Every subsequent phase declares from as an array of parent phase ids.
-Single parent: from = ["parent-id"]
-Convergence:   from = ["parent-a", "parent-b"]
-Branching is implicit — multiple phases declaring from = ["same-gate-id"] define the branches of that gate.
-Use ... in arrays to indicate that more items can and should be added as needed.
-</format>
-
-<phase types>
-
 ## external-research
-Expands to one external-scout node per question.
-questions = ["...", ...]                   # required
+Researches external sources to answer specific questions before work begins.
+```toml
+[[phases]]
+id = "phase-id"           # unique descriptive identifier (required)
+type = "external-research" # phase type (required)
+from = ["parent-id"]      # parent phase ids (optional) -- omit for entry phase
+questions = ["...", ...]  # research questions (required)
+```
 
 ## internal-research
-Expands to one context-insurgent node per question.
-questions = ["...", ...]                   # required
+Investigates the codebase to answer specific questions before work begins.
+```toml
+[[phases]]
+id = "phase-id"           # unique descriptive identifier (required)
+type = "internal-research" # phase type (required)
+from = ["parent-id"]      # parent phase ids (optional) -- omit for entry phase
+questions = ["...", ...]  # research questions (required)
+```
 
 ## project-survey
-Expands to one context-scout node per topic.
-topics = ["...", ...]                      # required
+Broadly surveys the codebase to understand structure, conventions, and relevant areas.
+```toml
+[[phases]]
+id = "phase-id"           # unique descriptive identifier (required)
+type = "project-survey"   # phase type (required)
+from = ["parent-id"]      # parent phase ids (optional) -- omit for entry phase
+topics = ["...", ...]     # survey topics (required)
+```
 
 ## work
-Embeds a full research pipeline before implementation. Expands to survey → external → internal → setup → work → verify → (triage → setup-fix → fix → verify-retry) × retries.
-goal = "..."                               # required
-work-type = "code" | "docs"               # required
-verify-description = "..."                 # required
-project-survey-topics = ["...", ...]       # required
-internal-research-questions = ["...", ...] # required
-external-research-questions = ["...", ...] # optional — required if work involves external dependencies
-pre-work-project-setup = ["...", ...]      # optional
-retries = 1                               # optional, default 1
-commit = false                            # optional, default false
+Researches, implements, and verifies a goal. Includes automatic retries on failure.
+```toml
+[[phases]]
+id = "phase-id"                            # unique descriptive identifier (required)
+type = "work"                              # phase type (required)
+from = ["parent-id"]                       # parent phase ids (optional) -- omit for entry phase
+goal = "..."                               # what to implement (required)
+work-type = "code"                         # implementation type (required) -- "code" or "docs"
+verify-description = "..."                 # success criteria (required)
+project-survey-topics = ["...", ...]       # codebase areas to survey before work (required)
+internal-research-questions = ["...", ...] # codebase questions to answer before work (required)
+external-research-questions = ["...", ...] # external questions to answer before work (optional) -- required if work involves external dependencies
+pre-work-project-setup = ["...", ...]      # setup to run before work (optional) -- dependencies, scaffolding, env config
+commit = false                             # commit after successful verify (optional) -- default false
+```
 
 ## project-setup
-Shell operations and config/build system file edits. No verify-retry loop.
-goals = ["...", ...]                       # required
-commit = false                            # optional, default false
+Runs shell operations and edits config or build system files.
+```toml
+[[phases]]
+id = "phase-id"           # unique descriptive identifier (required)
+type = "project-setup"    # phase type (required)
+from = ["parent-id"]      # parent phase ids (optional) -- omit for entry phase
+goals = ["...", ...]      # setup goals (required)
+commit = false            # commit after setup (optional) -- default false
+```
 
 ## user-discussion
-Open-ended discussion with the user. Linear — no branching.
-topic = "..."                              # required
+Engages the user in open-ended discussion. Linear — no branching.
+```toml
+[[phases]]
+id = "phase-id"           # unique descriptive identifier (required)
+type = "user-discussion"  # phase type (required)
+from = ["parent-id"]      # parent phase ids (optional) -- omit for entry phase
+topic = "..."             # discussion topic or goal (required)
+```
 
 ## user-decision-gate
-User's choice routes execution into branches.
-question = "..."                           # required
+Asks the user to choose between branches.
+```toml
+[[phases]]
+id = "phase-id"              # unique descriptive identifier (required)
+type = "user-decision-gate"  # phase type (required)
+from = ["parent-id"]         # parent phase ids (optional) -- omit for entry phase
+question = "..."             # question to present to the user (required)
+```
 
 ## agentic-decision-gate
-Executor's evidence-based decision routes execution into branches.
-question = "..."                           # required
+Executor decides between branches based on evidence.
+```toml
+[[phases]]
+id = "phase-id"                 # unique descriptive identifier (required)
+type = "agentic-decision-gate"  # phase type (required)
+from = ["parent-id"]            # parent phase ids (optional) -- omit for entry phase
+question = "..."                # decision question for the executor to answer from evidence (required)
+```
 
 ## write-notes
-Captures context as a checkpoint or leaf.
-context = "..."                            # optional
+Documents findings, decisions, and context. Use as a checkpoint or leaf.
+```toml
+[[phases]]
+id = "phase-id"           # unique descriptive identifier (required)
+type = "write-notes"      # phase type (required)
+from = ["parent-id"]      # parent phase ids (optional) -- omit for entry phase
+context = "..."           # what to document (optional)
+```
 
 ## early-exit
-A valid planned stopping point. Identical to write-notes.
-reason = "..."                             # optional
+A valid planned stopping point. Documents context and hands off to a future session.
+```toml
+[[phases]]
+id = "phase-id"           # unique descriptive identifier (required)
+type = "early-exit"       # phase type (required)
+from = ["parent-id"]      # parent phase ids (optional) -- omit for entry phase
+reason = "..."            # reason for stopping (optional)
+```
 
-</phase types>
-
-<phase naming>
-Use descriptive ids only — no number prefixes required.
-Group all phases within a branch sequentially before the next branch or merge point.
-</phase naming>
 
 <example>
 
+```toml
 [[phases]]
 id = "research-approach"
 type = "external-research"
@@ -106,7 +148,6 @@ project-survey-topics = ["existing implementation patterns", "test conventions",
 external-research-questions = ["Approach A library API and integration patterns", ...]
 internal-research-questions = ["How is the existing module API structured?", ...]
 pre-work-project-setup = ["Install approach A dependency", "Configure build system", ...]
-retries = 2
 commit = true
 
 # Branch B — more complex path with nested viability check
@@ -119,7 +160,6 @@ work-type = "code"
 verify-description = "Core feature builds and basic functionality works"
 project-survey-topics = ["existing implementation patterns", ...]
 internal-research-questions = ["How is the existing module API structured?", ...]
-retries = 5
 commit = false
 
 [[phases]]
@@ -144,7 +184,6 @@ verify-description = "Edge cases handled and code reviewed"
 project-survey-topics = ["code quality conventions in the project", ...]
 internal-research-questions = ["What refactoring patterns are used here?", ...]
 pre-work-project-setup = ["Run scaffolding tool for additional module", ...]
-retries = 1
 commit = true
 
 # Branch C — immediate early-exit if no approach is viable from research alone
@@ -182,7 +221,6 @@ work-type = "docs"
 verify-description = "Documentation reviewed and accurate"
 project-survey-topics = ["Documentation standards and conventions", ...]
 internal-research-questions = ["What are the relevant changes to document?", ...]
-retries = 1
 commit = true
 
 [[phases]]
@@ -190,5 +228,6 @@ id = "completion-notes"
 type = "write-notes"
 from = ["documentation"]
 context = "Summarize the implementation process, key decisions, and any open questions for future work"
+```
 
 </example>

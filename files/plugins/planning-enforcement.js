@@ -110194,7 +110194,7 @@ function expandWork(phase) {
   const goal = phase.phase_options.goal;
   const workType = phase.phase_options["work-type"];
   const verifyDescription = phase.phase_options["verify-description"];
-  const retries = phase.phase_options.retries ?? 1;
+  const retries = 5;
   const commit = phase.phase_options.commit ?? false;
   const workComponent = workType === "docs" ? "documentation-expert-work-item" : "junior-dev-work-item";
   const surveyTopics = phase.phase_options["project-survey-topics"] ?? [];
@@ -110231,34 +110231,28 @@ function expandWork(phase) {
     nodes.find((n) => n.id === preWorkIds[i]).children = [nextId];
   }
   const entryNodeId = preWorkIds.length > 0 ? preWorkIds[0] : workId;
-  if (retries === 0) {
-    nodes.push(makeNode(workId, workComponent, goal, [initialVerifyId]));
-    nodes.push(makeNode(initialVerifyId, "verify-work-item", verifyDescription, [EXIT]));
-    exitSlots.push({ nodeId: initialVerifyId, childIndex: 0 });
-  } else {
-    const triage1Id = `${phase.phase}-triage-1`;
-    nodes.push(makeNode(workId, workComponent, goal, [initialVerifyId]));
-    nodes.push(makeNode(initialVerifyId, "verify-work-item", verifyDescription, [EXIT, triage1Id]));
-    exitSlots.push({ nodeId: initialVerifyId, childIndex: 0 });
-    for (let r = 1;r <= retries; r++) {
-      const triageId = `${phase.phase}-triage-${r}`;
-      const pcmdFixId = `${phase.phase}-setup-fix-${r}`;
-      const fixId = `${phase.phase}-fix-${r}`;
-      const verifyRId = `${phase.phase}-verify-${r}`;
-      const triageDesc = `Investigate the verification failure for: ${verifyDescription}. Analyze error output, logs, and relevant code to identify the root cause.`;
-      const pcmdFixDesc = `Apply any command-level fixes identified in the triage (missing dependencies, environment setup, etc.). If no command-level fixes are needed, return immediately.`;
-      const fixDesc = `Fix verification failures for: ${goal}`;
-      nodes.push(makeNode(triageId, "verify-triage", triageDesc, [pcmdFixId]));
-      nodes.push(makeNode(pcmdFixId, "project-setup", pcmdFixDesc, [fixId]));
-      nodes.push(makeNode(fixId, workComponent, fixDesc, [verifyRId]));
-      if (r < retries) {
-        const nextTriageId = `${phase.phase}-triage-${r + 1}`;
-        nodes.push(makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT, nextTriageId]));
-        exitSlots.push({ nodeId: verifyRId, childIndex: 0 });
-      } else {
-        nodes.push(makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT]));
-        exitSlots.push({ nodeId: verifyRId, childIndex: 0 });
-      }
+  const triage1Id = `${phase.phase}-triage-1`;
+  nodes.push(makeNode(workId, workComponent, goal, [initialVerifyId]));
+  nodes.push(makeNode(initialVerifyId, "verify-work-item", verifyDescription, [EXIT, triage1Id]));
+  exitSlots.push({ nodeId: initialVerifyId, childIndex: 0 });
+  for (let r = 1;r <= retries; r++) {
+    const triageId = `${phase.phase}-triage-${r}`;
+    const pcmdFixId = `${phase.phase}-setup-fix-${r}`;
+    const fixId = `${phase.phase}-fix-${r}`;
+    const verifyRId = `${phase.phase}-verify-${r}`;
+    const triageDesc = `Investigate the verification failure for: ${verifyDescription}. Analyze error output, logs, and relevant code to identify the root cause.`;
+    const pcmdFixDesc = `Apply any command-level fixes identified in the triage (missing dependencies, environment setup, etc.). If no command-level fixes are needed, return immediately.`;
+    const fixDesc = `Fix verification failures for: ${goal}`;
+    nodes.push(makeNode(triageId, "verify-triage", triageDesc, [pcmdFixId]));
+    nodes.push(makeNode(pcmdFixId, "project-setup", pcmdFixDesc, [fixId]));
+    nodes.push(makeNode(fixId, workComponent, fixDesc, [verifyRId]));
+    if (r < retries) {
+      const nextTriageId = `${phase.phase}-triage-${r + 1}`;
+      nodes.push(makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT, nextTriageId]));
+      exitSlots.push({ nodeId: verifyRId, childIndex: 0 });
+    } else {
+      nodes.push(makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT]));
+      exitSlots.push({ nodeId: verifyRId, childIndex: 0 });
     }
   }
   if (commit) {

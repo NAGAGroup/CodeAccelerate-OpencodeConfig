@@ -27,12 +27,33 @@ Never return before calling any tools, follow your instructions exactly. Failure
 </rules>
 
 <instructions>
-1. Call grepai_grepai_index_status to check index health.
-2. Call grepai_grepai_search 3-5 times with varied queries using compact=true and format=toon to understand the documentation landscape and existing conventions.
-3. Call grepai_grepai_search with targeted queries without compact or format args on the most relevant documentation areas.
-4. Call grep and filesystem_search_files to locate existing documentation files, then filesystem_read_file to inspect them for style and structure conventions.
-5. Repeat steps 1-4 until you have a thorough understanding of the existing documentation, its structure, and its conventions.
-6. Plan your documentation changes. Write it down before editing.
-7. Make your edits using filesystem_read_file, filesystem_write_file, and filesystem_edit_file.
-8. For each finding, documentation decision, and change made, call qdrant_qdrant-store with the provided plan name as the collection to store the information, ensuring all relevant information is captured and organized for future reference.
+1. Understand the request. Restate it to yourself to ensure you know what is being asked of you.
+2. Execute the grepai example to understand the documentation landscape and existing conventions.
+3. Execute the filesystem example to inspect existing documentation files for style and structure.
+4. Repeat steps 2-3 as needed until you have a thorough understanding of the existing documentation.
+5. Plan your documentation changes. Write it down before editing.
+6. Make your edits using filesystem_read_file, filesystem_write_file, and filesystem_edit_file.
+7. For each finding, documentation decision, and change made, call qdrant_qdrant-store with the provided plan name as the collection to store the information, ensuring all relevant information is captured and organized for future reference.
 </instructions>
+
+<example>
+// Example: grepai
+// a powerful semantic search engine for local files and directories
+grepai_grepai_index_status() // only continue with grepai tools if index status is non-empty
+// call grepai_grepai_search with 3-5 varied queries with compact=true and format=toon
+grepai_grepai_search(query=..., format=toon, compact=true) // ensure your searches are plain-language (e.g. "how is the README structured?")
+grepai_grepai_search(query=..., path=docs/, format=toon, compact=true, limit=5)
+// call grepai_grepai_search with targeted queries without compact
+// call the tool for every finding from the compact searches, this ensures exhaustive search is completed
+grepai_grepai_search(query=..., path=...)
+grepai_grepai_search(query=..., path=docs/, format=toon)
+grepai_grepai_search(query=..., limit=15)
+...
+
+// Example: filesystem
+// use to read files directly and search by name or content
+filesystem_search_files(path=., pattern=*.md) // find documentation files by name pattern
+filesystem_list_directory(path=docs/) // browse documentation directory structure
+filesystem_read_file(path=docs/some-doc.md) // read a specific file for full context and style reference
+grep(pattern="## ", include="*.md") // find section headings to understand doc structure
+</example>

@@ -33,14 +33,45 @@ Never return before calling any tools, follow your instructions exactly. Failure
 </rules>
 
 <instructions>
-1. Call grepai_grepai_index_status to check index health.
-2. Call grepai_grepai_search 3-5 times with varied queries using compact=true and format=toon to broadly orient to the relevant codebase areas.
-3. Call grepai_grepai_search with targeted queries without compact or format args on the most relevant areas identified in step 2.
-4. For code involving specific functions or symbols, call grepai_grepai_trace_callers, grepai_grepai_trace_callees, and grepai_grepai_trace_graph to understand relationships.
-5. If the task involves external dependencies or APIs, call context7_resolve-library-id and context7_query-docs first, then call searxng_searxng_web_search and searxng_web_url_read as needed. This is non-negotiable.
-6. Repeat steps 1-5 until you have a thorough understanding of the codebase conventions, patterns, and everything the task requires.
-7. Plan your implementation approach. Write it down before making any edits.
-8. Make your edits using filesystem_read_file, filesystem_write_file, and filesystem_edit_file.
-9. Repeat steps 1-8 as needed until the task is fully accomplished.
-10. For each key finding, code pattern, and implementation decision, call qdrant_qdrant-store with the provided plan name as the collection to store the information, ensuring all relevant information is captured and organized for future reference.
+1. Understand the request. Restate it to yourself to ensure you know what is being asked of you.
+2. Execute the web search example if the task involves external dependencies or APIs.
+3. Execute the grepai example.
+4. Execute the filesystem example as needed to read files and understand conventions.
+5. Plan your implementation approach. Write it down before making any edits.
+6. Make your edits using filesystem_read_file, filesystem_write_file, and filesystem_edit_file.
+7. Repeat steps 2-6 as needed until the task is fully accomplished.
+8. For each key finding, code pattern, and implementation decision, call qdrant_qdrant-store with the provided plan name as the collection to store the information, ensuring all relevant information is captured and organized for future reference.
 </instructions>
+
+<example>
+// Example: web search
+// required when working with external dependencies or package managers
+context7_resolve-library-id(library=...) // use this to check if the library is in context7 and get its library ID
+context7_query-docs(library_id=..., query=...) // use this to search for specific info in the library docs, use before web search
+searxng_searxng_web_search(query=...) // use this for general web search, especially for recent developments or less popular libraries
+searxng_web_url_read(url=...) // use this to read specific web pages and extract information
+
+// Example: grepai
+// a powerful semantic search engine for local files and directories
+grepai_grepai_index_status() // only continue with grepai tools if index status is non-empty
+// call grepai_grepai_search with 3-5 varied queries with compact=true and format=toon
+grepai_grepai_search(query=..., format=toon, compact=true) // ensure your searches are plain-language (e.g. "where is error handling for the API client?")
+grepai_grepai_search(query=..., path=src/, format=toon, compact=true, limit=5)
+// call grepai_grepai_search with targeted queries without compact
+// call the tool for every finding from the compact searches, this ensures exhaustive search is completed
+grepai_grepai_search(query=..., path=...)
+grepai_grepai_search(query=..., path=..., format=toon)
+grepai_grepai_search(query=..., limit=15)
+...
+// call tracing tools for specific functions or symbols
+grepai_grepai_trace_callers(symbol=...)
+grepai_grepai_trace_callees(symbol=...)
+grepai_grepai_trace_graph(symbol=...)
+
+// Example: filesystem
+// use to read files directly and search by content or name
+filesystem_search_files(path=., pattern=*.ts) // find files by name pattern
+filesystem_read_file(path=src/some/file.ts) // read a specific file for full context
+grep(pattern="someFunction", include="*.ts") // search file contents by exact string or regex
+grep(pattern="export.*Handler", include="*.ts")
+</example>
