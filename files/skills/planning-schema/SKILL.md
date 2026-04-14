@@ -46,13 +46,13 @@ Researches, implements, and verifies a goal. Includes automatic retries on failu
 id = "phase-id"                            # unique descriptive identifier (required)
 type = "work"                              # phase type (required)
 from = ["parent-id"]                       # parent phase ids (optional) -- omit for entry phase
-goal = "..."                               # what to implement (required)
 work-type = "code"                         # implementation type (required) -- "code" or "docs"
-verify-description = "..."                 # success criteria (required)
 project-survey-topics = ["...", ...]       # codebase areas to survey before work (required)
 internal-research-questions = ["...", ...] # codebase questions to answer before work (required)
 external-research-questions = ["...", ...] # external questions to answer before work (optional) -- required if work involves external dependencies
-pre-work-project-setup = ["...", ...]      # setup to run before work (optional) -- dependencies, scaffolding, env config
+pre-work-project-setup = ["...", ...]      # setup to run before work (optional) -- delegates to tailwrench to setup dependencies, scaffolding, env config
+goal = "..."                               # what to implement (required) -- implementation goal, this is what gets delegated to junior-dev or documentation-expert
+verify-description = "..."                 # success criteria (required) -- ensures the work was completed successfully via tailwrench, includes compilation, running tests, visual checks, etc.
 commit = false                             # commit after successful verify (optional) -- default false
 ```
 
