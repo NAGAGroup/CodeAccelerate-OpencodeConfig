@@ -1,27 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "provider": {
-    "anthropic": {
-      "models": {
-        "claude-sonnet-4-6": {
-          "variants": {
-            "default": {
-              "reasoning": false,
-              "reasoningEffort": "medium"
-            }
-          }
-        },
-        "claude-haiku-4-5": {
-          "variants": {
-            "default": {
-              "reasoning": false,
-              "reasoningEffort": "medium"
-            }
-          }
-        }
-      }
-    }
-  },
   "autoupdate": false,
   "small_model": "opencode/big-pickle",
   "plugin": ["file://{env:HOME}/.config/opencode/plugins/planning-enforcement.js"],
@@ -76,10 +54,18 @@
       "model": "anthropic/claude-sonnet-4-6"
     },
     "compaction": {
-      "model": "anthropic/claude-haiku-4-5"
+      "model": "anthropic/claude-opus-4-6"
     }
   },
   "mcp": {
+    // File operations: read, write, edit, create directories, move files, search files by name.
+    // Replaces built-in read/write/edit/glob tools for subagents.
+    // Requires npx. Scoped to the current working directory.
+    "filesystem": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "."],
+      "enabled": true
+    },
     "grepai": {
       "type": "local",
       "command": ["grepai", "mcp-serve"],

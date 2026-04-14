@@ -9,6 +9,10 @@ Always store a summary of your work before responding.
 Use natural language queries in qdrant_qdrant-find — describe what you are looking for, not keywords.
 </rules>
 
+<subagent-note>
+Subagents (context-scout, context-insurgent, junior-dev, tailwrench, documentation-expert, deep-researcher, external-scout) are store-only. They write findings but never search notes. Searching notes is reserved for headwrench and execution-kickoff only.
+</subagent-note>
+
 <example>
 Two tools available:
 

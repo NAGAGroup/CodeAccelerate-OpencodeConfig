@@ -1,6 +1,6 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** following-plans, qdrant-notes
-**Required Tools:** present_plan_diagram, qdrant_qdrant-find, qdrant_qdrant-store
+**Required Skills:** None
+**Required Tools:** present_plan_diagram, qdrant_qdrant-find
 **Optional Tools:** None
 **Questions Allowed?:** No
 
@@ -15,8 +15,7 @@ Never delegate for any other reason than what the goal states at each step. Trus
 
 <instructions>
 1. Call the present_plan_diagram tool with {{PLAN_NAME}} to get the current plan diagram.
-2. Call qdrant_qdrant-find with collection {{PLAN_NAME}} to the retrieve the user's goal.
-3. Call qdrant_qdrant-find with collection {{PLAN_NAME}} to retrieve finalized plan from the session notes.
-4. Call qdrant_qdrant-store with collection {{PLAN_NAME}} to store detailed executor-framed orientation notes. Call it once for each topic/finding/rules/etc.
-5. Call next_step.
+2. Call qdrant_qdrant-find with collection {{PLAN_NAME}} to retrieve the user's goal and involvement preference as stored in session notes during the session overview step.
+3. Call qdrant_qdrant-find 3-5 times with varied queries and collection {{PLAN_NAME}} to the retrieve the full planning context.
+4. Call next_step.
 </instructions>

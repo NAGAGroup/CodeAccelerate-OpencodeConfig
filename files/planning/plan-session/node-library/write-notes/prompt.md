@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** qdrant-notes
+**Required Skills:** None
 **Required Tools:** qdrant_qdrant-store
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -14,7 +14,6 @@ Never write shallow summaries.
 </rules>
 
 <instructions>
-1. Load the qdrant-notes skill.
-2. Store notes to collection {{PLAN_NAME}} covering what was accomplished, decisions made, and any context a future session would need.
-3. Call next_step.
+1. Call qdrant_qdrant-store once for each accomplishment, decisions made and any other contextual items that could be useful for informing later steps.
+2. Call next_step.
 </instructions>

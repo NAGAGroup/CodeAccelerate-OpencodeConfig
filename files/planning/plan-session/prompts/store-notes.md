@@ -1,5 +1,5 @@
 **Plan Name:** {{PLAN_NAME}}
-**Required Skills:** qdrant-notes
+**Required Skills:** None
 **Required Tools:** qdrant_qdrant-store
 **Optional Tools:** None
 **Questions Allowed?:** No
@@ -15,8 +15,6 @@ Never store procedural details — only things that shape plan structure.
 </rules>
 
 <instructions>
-1. Load the qdrant-notes skill. Write down how you will use it to produce quality notes.
-2. Organize findings into distinct, self-contained note items.
-3. Call qdrant_qdrant-store for each note item in the {{PLAN_NAME}} collection.
-4. Call next_step.
+1. Call qdrant_qdrant-store once for each finding and unknown.
+2. Call next_step.
 </instructions>

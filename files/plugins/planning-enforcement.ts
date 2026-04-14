@@ -491,6 +491,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
           const subagentSession = await client.session.create({
             body: {
               parentID: context.sessionID,
+              title: args.description,
             },
           });
 

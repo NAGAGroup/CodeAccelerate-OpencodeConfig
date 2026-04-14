@@ -12,6 +12,7 @@ Draft a complete TOML execution plan based on all investigation findings. This i
 Never use agentic-decision-gate when user input is required — use user-decision-gate.
 Never use user-decision-gate when the executor can decide from evidence — use agentic-decision-gate.
 Always branch immediately from the gate — never defer a branch to a later phase.
+Never treat branches as parallel work. Branches are decisions only, a choice between one of multiple independent execution pathways.
 Always make every leaf a write-notes or early-exit phase.
 </rules>
 

@@ -72,6 +72,14 @@
     }
   },
   "mcp": {
+    // File operations: read, write, edit, create directories, move files, search files by name.
+    // Replaces built-in read/write/edit/glob tools for subagents.
+    // Requires npx. Scoped to the current working directory.
+    "filesystem": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "."],
+      "enabled": true
+    },
     "grepai": {
       "type": "local",
       "command": ["grepai", "mcp-serve"],
