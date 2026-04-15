@@ -609,7 +609,7 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
 
           // Derive children from from fields
           const phaseMap = new Map(phaseList.map((p) => [p.phase, p]));
-          let entryPhaseId = phaseList[0].phase;
+          let entryPhaseId: string;
 
           for (const raw of rawPhases) {
             const fromRaw = raw.from as string[] | undefined;
@@ -626,6 +626,23 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
               }
             }
           }
+
+          // Validate single entry point
+          const entryPhases = rawPhases.filter(
+            (raw) => !raw.from || (raw.from as string[]).length === 0,
+          );
+          if (entryPhases.length === 0) {
+            throw new Error(
+              "Plan has no entry point. Exactly one phase must omit the 'from' field.",
+            );
+          }
+          if (entryPhases.length > 1) {
+            const ids = entryPhases.map((p) => `'${p.id}'`).join(", ");
+            throw new Error(
+              `Plan has ${entryPhases.length} entry points (${ids}). Exactly one phase must omit the 'from' field.`,
+            );
+          }
+          entryPhaseId = entryPhases[0].id as string;
 
           // Validate branching constraints
           for (const phase of phaseList) {

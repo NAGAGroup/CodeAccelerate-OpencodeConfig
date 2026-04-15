@@ -110872,7 +110872,7 @@ Pending Branch Choice: [${choices}]
             });
           }
           const phaseMap = new Map(phaseList.map((p) => [p.phase, p]));
-          let entryPhaseId = phaseList[0].phase;
+          let entryPhaseId;
           for (const raw of rawPhases) {
             const fromRaw = raw.from;
             if (!fromRaw)
@@ -110887,6 +110887,15 @@ Pending Branch Choice: [${choices}]
               }
             }
           }
+          const entryPhases = rawPhases.filter((raw) => !raw.from || raw.from.length === 0);
+          if (entryPhases.length === 0) {
+            throw new Error("Plan has no entry point. Exactly one phase must omit the 'from' field.");
+          }
+          if (entryPhases.length > 1) {
+            const ids = entryPhases.map((p) => `'${p.id}'`).join(", ");
+            throw new Error(`Plan has ${entryPhases.length} entry points (${ids}). Exactly one phase must omit the 'from' field.`);
+          }
+          entryPhaseId = entryPhases[0].id;
           for (const phase of phaseList) {
             if (BRANCHING_PHASE_TYPE_SET.has(phase.phase_type) && phase.children.length < 2) {
               throw new Error(`Phase '${phase.phase}' (${phase.phase_type}) must have at least 2 child phases. Found ${phase.children.length}.`);
