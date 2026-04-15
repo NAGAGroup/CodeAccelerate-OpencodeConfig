@@ -110819,43 +110819,6 @@ Pending Branch Choice: [${choices}]
           return `Plan name set to "${confirmedName}"${dedupeNote}. {{PLAN_NAME}} will be substituted in all subsequent planning prompts automatically.`;
         }
       }),
-      task: tool({
-        description: "Delegate a task to a specialized subagent",
-        args: {
-          subagent: tool.schema.string().describe("The subagent type to use"),
-          description: tool.schema.string().describe("Short 3-5 word description of the task"),
-          prompt: tool.schema.string().describe("The task for the agent to perform"),
-          task_id: tool.schema.string().optional().describe("Resume a previous task session")
-        },
-        async execute(args, context) {
-          const { client: client2 } = _ctx;
-          const created = await client2.session.create({
-            body: {
-              parentID: context.sessionID,
-              title: args.description
-            }
-          });
-          const childId = created.data?.id;
-          context.metadata({
-            title: args.description,
-            metadata: {
-              sessionId: childId,
-              description: args.description
-            }
-          });
-          const result = await client2.session.prompt({
-            path: { id: childId },
-            body: {
-              agent: args.subagent,
-              parts: [{ type: "text", text: args.prompt }]
-            }
-          });
-          const parts = result.data?.parts ?? [];
-          const text = parts.filter((p) => p.type === "text").map((p) => p.text).join(`
-`);
-          return text || `(subagent ${args.subagent} completed with no text output, session: ${childId})`;
-        }
-      }),
       create_plan: tool({
         description: "Compile a TOML phase plan into an executable DAG. Validates the plan, writes it to disk, and compiles it to a node graph ready for activation. Call this after the finalized plan has been reviewed and approved.",
         args: {

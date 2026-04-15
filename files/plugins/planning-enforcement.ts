@@ -470,63 +470,63 @@ export const PlanningEnforcementPlugin: Plugin = async (_ctx) => {
         },
       }),
 
-      task: tool({
-        description: "Delegate a task to a specialized subagent",
-        args: {
-          subagent: tool.schema.string().describe("The subagent type to use"),
-          description: tool.schema
-            .string()
-            .describe("Short 3-5 word description of the task"),
-          prompt: tool.schema
-            .string()
-            .describe("The task for the agent to perform"),
-          task_id: tool.schema
-            .string()
-            .optional()
-            .describe("Resume a previous task session"),
-        },
-        async execute(args, context) {
-          const { client } = _ctx;
-
-          // 1. Resolve or create the child session
-          const created = await client.session.create({
-            body: {
-              parentID: context.sessionID,
-              title: args.description,
-            },
-          });
-          const childId = created.data?.id;
-
-          context.metadata({
-            title: args.description,
-            metadata: {
-              sessionId: childId,
-              description: args.description,
-            },
-          });
-
-          // 2. Prompt the child — awaited, so this blocks until the subagent finishes
-          const result = await client.session.prompt({
-            path: { id: childId },
-            body: {
-              agent: args.subagent,
-              parts: [{ type: "text", text: args.prompt }],
-            },
-          });
-
-          // 3. Extract the assistant's text output from the result promise and return the new promise
-          const parts = result.data?.parts ?? [];
-          const text = parts
-            .filter((p: any) => p.type === "text")
-            .map((p: any) => p.text)
-            .join("\n");
-
-          return (
-            text ||
-            `(subagent ${args.subagent} completed with no text output, session: ${childId})`
-          );
-        },
-      }),
+      // task: tool({
+      //   description: "Delegate a task to a specialized subagent",
+      //   args: {
+      //     subagent: tool.schema.string().describe("The subagent type to use"),
+      //     description: tool.schema
+      //       .string()
+      //       .describe("Short 3-5 word description of the task"),
+      //     prompt: tool.schema
+      //       .string()
+      //       .describe("The task for the agent to perform"),
+      //     task_id: tool.schema
+      //       .string()
+      //       .optional()
+      //       .describe("Resume a previous task session"),
+      //   },
+      //   async execute(args, context) {
+      //     const { client } = _ctx;
+      //
+      //     // 1. Resolve or create the child session
+      //     const created = await client.session.create({
+      //       body: {
+      //         parentID: context.sessionID,
+      //         title: args.description,
+      //       },
+      //     });
+      //     const childId = created.data?.id;
+      //
+      //     context.metadata({
+      //       title: args.description,
+      //       metadata: {
+      //         sessionId: childId,
+      //         description: args.description,
+      //       },
+      //     });
+      //
+      //     // 2. Prompt the child — awaited, so this blocks until the subagent finishes
+      //     const result = await client.session.prompt({
+      //       path: { id: childId },
+      //       body: {
+      //         agent: args.subagent,
+      //         parts: [{ type: "text", text: args.prompt }],
+      //       },
+      //     });
+      //
+      //     // 3. Extract the assistant's text output from the result promise and return the new promise
+      //     const parts = result.data?.parts ?? [];
+      //     const text = parts
+      //       .filter((p: any) => p.type === "text")
+      //       .map((p: any) => p.text)
+      //       .join("\n");
+      //
+      //     return (
+      //       text ||
+      //       `(subagent ${args.subagent} completed with no text output, session: ${childId})`
+      //     );
+      //   },
+      // }),
 
       create_plan: tool({
         description:
