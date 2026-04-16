@@ -1,28 +1,46 @@
-**Plan Name:** {{PLAN_NAME}}
-**Required Skills:** None
-**Required Tools:** qdrant_qdrant-find, qdrant_qdrant-find, task
-**Optional Tools:** None
-**Questions Allowed?:** No
+# Deep Web and Docs Research
 
-<goal>
-Retrieve prior research findings and planning constraints from session memory, then dispatch deep-researcher to conduct comprehensive investigation on a novel, frontier, or insufficiently understood topic that will shape the plan.
-</goal>
+**Subagent:** deep-researcher
+**Goal:** Conduct comprehensive research on: {{DESCRIPTION}}
 
-<rules>
-Never research to solve the user's request — only to inform planning decisions.
-Signal to the deep-researcher that this topic is complex enough to warrant comprehensive, multi-source investigation. The dispatch is a signal that prior research has been insufficient and that thoroughness is required.
-</rules>
+## Hard Rules
 
-<instructions>
-1. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "prior research and internal findings on this topic" to retrieve what prior investigation phases already established about this topic — what is known from earlier research or analysis.
-2. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "planning decisions and constraints relevant to this research area" to retrieve the planning context that will inform what depth and breadth of research is needed.
-3. Compose a structured dispatch prompt for deep-researcher. Include:
-   - The plan name {{PLAN_NAME}}
-   - The specific research topic or question from {{DESCRIPTION}} — the topic requiring comprehensive investigation
-   - Maximum project context (from step 2) — relevant planning constraints, decisions this research will inform, scope limitations, and technical context
-   - What prior nodes already know about this topic (from step 1) — so the researcher builds on existing knowledge rather than starting from zero
-   - What the plan needs from this research — what decision it will inform, at what level of confidence, and why comprehensive investigation is necessary
-   - Signal that this is comprehensive research: the topic is complex, contested among authoritative sources, or insufficient prior understanding for a planning decision
-4. Dispatch deep-researcher using the task tool.
-5. Call next_step.
-</instructions>
+1. Write your prompt as instructions *to* deep-researcher — treat it as a message to another agent.
+2. Call the `task` tool with `subagent_type=deep-researcher`.
+
+## Prepare Delegation
+
+1. Call `qdrant_qdrant-find` with `collection_name={{PLAN_NAME}}` using 3-5 varied queries to retrieve what is already known about this topic and why deep research was flagged as necessary.
+2. Draft a prompt for deep-researcher that includes: the research topic, prior context to build on, project constraints, and reporting requirements — deep-researcher must always surface contradictions and confidence levels.
+
+## Delegation Gate
+
+```toml
+[delegation-gate]
+prompt_addresses_subagent_directly = <true/false>
+prompt_includes_retrieved_context = <true/false>
+prompt_specifies_return_format = <true/false>
+prompt_requires_contradictions_and_confidence = <true/false — prompt explicitly requests both>
+gate_passed = <true/false>
+```
+
+If `gate_passed` is false, revise before delegating. Once it passes, call the `task` tool.
+
+## Note Taking
+
+Categorize the report into distinct notes — one per finding area or contradiction. Call `qdrant_qdrant-store` with `collection_name={{PLAN_NAME}}` once per note.
+
+At minimum, capture: findings per topic with confidence tags, contradictions surfaced, unknowns that remain unresolved.
+
+```toml
+[note-gate]
+notes_stored = <list each note topic>
+contradictions_and_confidence_captured = <true/false>
+gate_passed = <true/false>
+```
+
+If `gate_passed` is false, add missing notes before proceeding.
+
+## How to Proceed
+
+Call `next_step`.

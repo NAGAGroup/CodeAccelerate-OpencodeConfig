@@ -1,29 +1,55 @@
-**Plan Name:** {{PLAN_NAME}}
-**Required Skills:** None
-**Required Tools:** qdrant_qdrant-find, qdrant_qdrant-find, task
-**Optional Tools:** None
-**Questions Allowed?:** No
+# Deep Project Search and Analysis
 
-<goal>
-Retrieve the preceding context-scout's findings and flagged gaps from session memory, then dispatch context-insurgent to analyze specific code mechanisms, logic flows, and deep relationships that the scout identified as needing investigation.
-</goal>
+**Subagent:** context-insurgent
+**Goal:** {{DESCRIPTION}}
 
-<rules>
-Always include the plan name {{PLAN_NAME}} in the dispatch to context-insurgent. Non-negotiable—the insurgent cannot write findings to session memory without it.
-The context-insurgent must start from the scout's findings, not from scratch. Without explicit retrieval and dispatch framing, the insurgent will treat this as a fresh investigation and re-do orientation work the scout already completed. Bridge the phases via Qdrant retrieval and explicit dispatch framing.
-For work-phase pre-work nodes where {{DESCRIPTION}} is a bulleted list of multiple questions, the dispatch must explicitly instruct the insurgent to address all questions in the list.
-</rules>
+## Hard Rules
 
-<instructions>
-1. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "[topic] survey findings and inventory" to retrieve what the preceding context-scout found — the major parts, structure, and overview of the area under investigation.
-2. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "[topic] gaps and mechanisms flagged for deep analysis" to retrieve the specific code paths, mechanisms, relationships, or contradictions the scout identified as needing deeper investigation.
-3. Compose a structured dispatch prompt for context-insurgent. Include:
-   - The plan name {{PLAN_NAME}}
-   - The specific question or area from {{DESCRIPTION}} (identical to what the scout received) — the question this analysis will answer
-   - The scout's key findings (retrieved in step 1) — so the insurgent starts from the scout's inventory, not from scratch
-   - The specific mechanisms, code paths, or gaps the scout flagged (retrieved in step 2) — the exact follow-up work needed
-   - What the downstream node or gate will need from this analysis — framed as success criteria (what decisions will this answer enable?)
-   - If {{DESCRIPTION}} is a bulleted list, explicitly instruct the insurgent to address all questions in the list
-4. Dispatch context-insurgent using the task tool.
-5. Call next_step.
-</instructions>
+1. Write your prompt as instructions *to* context-insurgent — treat it as a message to another agent.
+2. Call the `task` tool with `subagent_type=context-insurgent`.
+3. Context-insurgent only has access to project source files — do not ask it to search the web or reference external knowledge.
+
+## Preflight
+
+```toml
+[preflight]
+topics_and_questions = <translate the goals in {{DESCRIPTION}} into a list of specific questions and symbols to investigate>
+planned_queries = <3-5 varied plain-language queries to include in your prompt to context-insurgent>
+```
+
+## Prepare Delegation
+
+1. Call `qdrant_qdrant-find` with `collection_name={{PLAN_NAME}}` using 5-7 varied queries to retrieve prior survey findings, planning context, and anything that scopes or motivates this analysis.
+2. Draft a prompt for context-insurgent that includes: the specific questions to answer, any prior findings context-insurgent should build on (not re-derive), and clear reporting requirements.
+
+## Delegation Gate
+
+```toml
+[delegation-gate]
+prompt_addresses_subagent_directly = <true/false>
+prompt_includes_retrieved_context = <true/false>
+prompt_specifies_return_format = <true/false>
+prompt_stays_within_project_source = <true/false — prompt does not ask for web search or external knowledge>
+gate_passed = <true/false>
+```
+
+If `gate_passed` is false, revise before delegating. Once it passes, call the `task` tool.
+
+## Note Taking
+
+Categorize the report into distinct notes. Call `qdrant_qdrant-store` with `collection_name={{PLAN_NAME}}` once per note.
+
+At minimum, capture: mechanism explained with files and symbols, call graph summary, unresolved gaps.
+
+```toml
+[note-gate]
+notes_stored = <list each note topic>
+mechanism_and_gaps_captured = <true/false>
+gate_passed = <true/false>
+```
+
+If `gate_passed` is false, add missing notes before proceeding.
+
+## How to Proceed
+
+Call `next_step`.

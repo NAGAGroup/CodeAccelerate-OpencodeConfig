@@ -47,11 +47,12 @@ function loadNodeSpec(componentType: string): NodeSpec {
 function makeNode(
   id: string,
   componentType: string,
-  description: string,
+  inject: Record<string, string>,
   children: string[] = [],
 ): DagNodeV3 {
   const { enforcement, promptPath } = loadNodeSpec(componentType);
-  const node: DagNodeV3 = { id, prompt: promptPath, enforcement, description, component: componentType };
+  const node: DagNodeV3 = { id, prompt: promptPath, enforcement, component: componentType };
+  if (Object.keys(inject).length > 0) node.inject = inject;
   if (children.length > 0) node.children = children;
   return node;
 }
@@ -70,63 +71,46 @@ interface PhaseExpansion {
 
 // ─── Individual phase expanders ───────────────────────────────────────────────
 
+function bullets(items: string[]): string {
+  return items.map((q) => `- ${q}`).join("\n");
+}
+
 function expandExternalResearch(phase: PhaseRecord): PhaseExpansion {
   const questions = phase.phase_options.questions as string[];
   const researchType = (phase.phase_options["research-type"] as string) ?? "standard";
   const component = researchType === "deep" ? "deep-research" : "external-scout";
-  const nodes: DagNodeV3[] = [];
-
-  for (let i = 0; i < questions.length; i++) {
-    const nodeId = `${phase.phase}-${i + 1}`;
-    const nextId = i < questions.length - 1 ? `${phase.phase}-${i + 2}` : EXIT;
-    nodes.push(makeNode(nodeId, component, questions[i], [nextId]));
-  }
-
-  const lastId = `${phase.phase}-${questions.length}`;
+  const nodeId = `${phase.phase}`;
+  const node = makeNode(nodeId, component, { DESCRIPTION: `Running external research for the following questions:\n\n${bullets(questions)}` }, [EXIT]);
   return {
-    entryNodeId: `${phase.phase}-1`,
-    nodes,
-    exitSlots: [{ nodeId: lastId, childIndex: 0 }],
+    entryNodeId: nodeId,
+    nodes: [node],
+    exitSlots: [{ nodeId, childIndex: 0 }],
   };
 }
 
 function expandInternalResearch(phase: PhaseRecord): PhaseExpansion {
   const questions = phase.phase_options.questions as string[];
-  const nodes: DagNodeV3[] = [];
-
-  for (let i = 0; i < questions.length; i++) {
-    const scoutId = `${phase.phase}-scout-${i + 1}`;
-    const insurgentId = `${phase.phase}-insurgent-${i + 1}`;
-    const nextScoutId = i < questions.length - 1 ? `${phase.phase}-scout-${i + 2}` : null;
-    nodes.push(makeNode(scoutId, "context-scout", questions[i], [insurgentId]));
-    nodes.push(
-      makeNode(insurgentId, "context-insurgent", questions[i], nextScoutId ? [nextScoutId] : [EXIT]),
-    );
-  }
-
-  const lastInsurgentId = `${phase.phase}-insurgent-${questions.length}`;
+  const scoutId = `${phase.phase}-scout`;
+  const insurgentId = `${phase.phase}-insurgent`;
+  const nodes: DagNodeV3[] = [
+    makeNode(scoutId, "context-scout", { DESCRIPTION: `Surveying the following topics:\n\n${bullets(questions)}` }, [insurgentId]),
+    makeNode(insurgentId, "context-insurgent", { DESCRIPTION: `Investigating the following questions:\n\n${bullets(questions)}` }, [EXIT]),
+  ];
   return {
-    entryNodeId: `${phase.phase}-scout-1`,
+    entryNodeId: scoutId,
     nodes,
-    exitSlots: [{ nodeId: lastInsurgentId, childIndex: 0 }],
+    exitSlots: [{ nodeId: insurgentId, childIndex: 0 }],
   };
 }
 
 function expandProjectSurvey(phase: PhaseRecord): PhaseExpansion {
   const topics = phase.phase_options.topics as string[];
-  const nodes: DagNodeV3[] = [];
-
-  for (let i = 0; i < topics.length; i++) {
-    const nodeId = `${phase.phase}-${i + 1}`;
-    const nextId = i < topics.length - 1 ? `${phase.phase}-${i + 2}` : EXIT;
-    nodes.push(makeNode(nodeId, "context-scout", topics[i], [nextId]));
-  }
-
-  const lastId = `${phase.phase}-${topics.length}`;
+  const nodeId = `${phase.phase}`;
+  const node = makeNode(nodeId, "context-scout", { DESCRIPTION: `Surveying the following topics:\n\n${bullets(topics)}` }, [EXIT]);
   return {
-    entryNodeId: `${phase.phase}-1`,
-    nodes,
-    exitSlots: [{ nodeId: lastId, childIndex: 0 }],
+    entryNodeId: nodeId,
+    nodes: [node],
+    exitSlots: [{ nodeId, childIndex: 0 }],
   };
 }
 
@@ -138,11 +122,13 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
   const commit = (phase.phase_options.commit as boolean) ?? false;
   const workComponent =
     workType === "docs" ? "documentation-expert-work-item" : "junior-dev-work-item";
+  const fixComponent =
+    workType === "docs" ? "documentation-expert-fix-item" : "junior-dev-fix-item";
 
   // Embedded pre-work research/setup fields
   const surveyTopics = (phase.phase_options["project-survey-topics"] as string[]) ?? [];
-  const externalQuestions = (phase.phase_options["external-research-questions"] as string[]) ?? [];
-  const internalQuestions = (phase.phase_options["internal-research-questions"] as string[]) ?? [];
+  const externalQuestions = (phase.phase_options["web-search-questions"] as string[]) ?? [];
+  const internalQuestions = (phase.phase_options["deep-search-questions"] as string[]) ?? [];
   const setupGoals = (phase.phase_options["pre-work-project-setup"] as string[]) ?? [];
 
   const nodes: DagNodeV3[] = [];
@@ -152,32 +138,24 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
   // Each group collapses to a single node with a bulleted description
   const preWorkIds: string[] = [];
 
-  function bullets(items: string[]): string {
-    return items.map((q) => `- ${q}`).join("\n");
-  }
-
   if (surveyTopics.length > 0) {
     const id = `${phase.phase}-survey`;
-    const desc = `Surveying the following topics:\n\n${bullets(surveyTopics)}`;
-    nodes.push(makeNode(id, "context-scout", desc, []));
+    nodes.push(makeNode(id, "context-scout", { DESCRIPTION: `Surveying the following topics:\n\n${bullets(surveyTopics)}` }, []));
     preWorkIds.push(id);
   }
   if (externalQuestions.length > 0) {
     const id = `${phase.phase}-ext`;
-    const desc = `Running external research for the following questions:\n\n${bullets(externalQuestions)}`;
-    nodes.push(makeNode(id, "external-scout", desc, []));
+    nodes.push(makeNode(id, "external-scout", { DESCRIPTION: `Running external research for the following questions:\n\n${bullets(externalQuestions)}` }, []));
     preWorkIds.push(id);
   }
   if (internalQuestions.length > 0) {
     const id = `${phase.phase}-internal`;
-    const desc = `Investigating the following questions:\n\n${bullets(internalQuestions)}`;
-    nodes.push(makeNode(id, "context-insurgent", desc, []));
+    nodes.push(makeNode(id, "context-insurgent", { DESCRIPTION: `Investigating the following questions:\n\n${bullets(internalQuestions)}` }, []));
     preWorkIds.push(id);
   }
   if (setupGoals.length > 0) {
     const id = `${phase.phase}-presetup`;
-    const desc = `Running the following setup steps:\n\n${bullets(setupGoals)}`;
-    nodes.push(makeNode(id, "project-setup", desc, []));
+    nodes.push(makeNode(id, "project-setup", { DESCRIPTION: `Running the following setup steps:\n\n${bullets(setupGoals)}` }, []));
     preWorkIds.push(id);
   }
 
@@ -194,9 +172,9 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
 
   // Initial verify branches: success → EXIT, fail → triage-1
   const triage1Id = `${phase.phase}-triage-1`;
-  nodes.push(makeNode(workId, workComponent, goal, [initialVerifyId]));
+  nodes.push(makeNode(workId, workComponent, { GOAL: goal, VERIFY_DESCRIPTION: verifyDescription }, [initialVerifyId]));
   nodes.push(
-    makeNode(initialVerifyId, "verify-work-item", verifyDescription, [EXIT, triage1Id]),
+    makeNode(initialVerifyId, "verify-work-item", { GOAL: goal, VERIFY_DESCRIPTION: verifyDescription }, [EXIT, triage1Id]),
   );
   exitSlots.push({ nodeId: initialVerifyId, childIndex: 0 }); // success branch
 
@@ -206,22 +184,19 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
     const fixId = `${phase.phase}-fix-${r}`;
     const verifyRId = `${phase.phase}-verify-${r}`;
 
-    const triageDesc = `Something is broken. Re-run the failed commands to reproduce the failure, apply any project-level fixes (dependencies, config, environment), then identify the root cause from the actual output.`;
-    const fixDesc = `Using the findings from triage and all previous failed attempts, address every identified issue to satisfy the original goal: ${goal}`;
-
-    nodes.push(makeNode(triageId, "verify-triage", triageDesc, [fixId]));
-    nodes.push(makeNode(fixId, workComponent, fixDesc, [verifyRId]));
+    nodes.push(makeNode(triageId, "verify-triage", { GOAL: goal, VERIFY_DESCRIPTION: verifyDescription }, [fixId]));
+    nodes.push(makeNode(fixId, fixComponent, { GOAL: goal, VERIFY_DESCRIPTION: verifyDescription }, [verifyRId]));
 
     if (r < retries) {
       // Non-final retry verify: branches to [EXIT, next-triage]
       const nextTriageId = `${phase.phase}-triage-${r + 1}`;
       nodes.push(
-        makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT, nextTriageId]),
+        makeNode(verifyRId, "verify-work-item", { GOAL: goal, VERIFY_DESCRIPTION: verifyDescription }, [EXIT, nextTriageId]),
       );
       exitSlots.push({ nodeId: verifyRId, childIndex: 0 }); // success branch
     } else {
       // Final retry verify: linear (both outcomes go forward)
-      nodes.push(makeNode(verifyRId, "verify-work-item", verifyDescription, [EXIT]));
+      nodes.push(makeNode(verifyRId, "verify-work-item", { GOAL: goal, VERIFY_DESCRIPTION: verifyDescription }, [EXIT]));
       exitSlots.push({ nodeId: verifyRId, childIndex: 0 });
     }
   }
@@ -230,7 +205,7 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
   // All exit slots → commit → exit destination
   if (commit) {
     const commitId = `${phase.phase}-commit`;
-    nodes.push(makeNode(commitId, "commit", `Commit checkpoint`, [EXIT]));
+    nodes.push(makeNode(commitId, "commit", {}, [EXIT]));
     // Redirect all current exit slots to the commit node
     for (const slot of exitSlots) {
       const node = nodes.find((n) => n.id === slot.nodeId)!;
@@ -249,32 +224,24 @@ function expandWork(phase: PhaseRecord): PhaseExpansion {
 function expandProjectCommands(phase: PhaseRecord): PhaseExpansion {
   const goals = phase.phase_options.goals as string[];
   const commit = (phase.phase_options.commit as boolean) ?? false;
-  const nodes: DagNodeV3[] = [];
-
-  // One project-setup node per goal, chained sequentially
-  for (let i = 0; i < goals.length; i++) {
-    const nodeId = `${phase.phase}-${i + 1}`;
-    const nextId = i < goals.length - 1 ? `${phase.phase}-${i + 2}` : EXIT;
-    nodes.push(makeNode(nodeId, "project-setup", goals[i], [nextId]));
-  }
-
-  const lastId = `${phase.phase}-${goals.length}`;
+  const nodeId = `${phase.phase}`;
+  const nodes: DagNodeV3[] = [makeNode(nodeId, "project-setup", { DESCRIPTION: `Running the following setup steps:\n\n${bullets(goals)}` }, [EXIT])];
 
   if (commit) {
     const commitId = `${phase.phase}-commit`;
-    nodes.find((n) => n.id === lastId)!.children = [commitId];
-    nodes.push(makeNode(commitId, "commit", `Commit checkpoint after setup`, [EXIT]));
+    nodes[0].children = [commitId];
+    nodes.push(makeNode(commitId, "commit", {}, [EXIT]));
     return {
-      entryNodeId: `${phase.phase}-1`,
+      entryNodeId: nodeId,
       nodes,
       exitSlots: [{ nodeId: commitId, childIndex: 0 }],
     };
   }
 
   return {
-    entryNodeId: `${phase.phase}-1`,
+    entryNodeId: nodeId,
     nodes,
-    exitSlots: [{ nodeId: lastId, childIndex: 0 }],
+    exitSlots: [{ nodeId, childIndex: 0 }],
   };
 }
 
@@ -283,7 +250,7 @@ function expandUserDiscussion(phase: PhaseRecord): PhaseExpansion {
   const discussionId = `${phase.phase}-discussion`;
   const nodes: DagNodeV3[] = [];
 
-  nodes.push(makeNode(discussionId, "user-discussion", topic, [EXIT]));
+  nodes.push(makeNode(discussionId, "user-discussion", { DESCRIPTION: topic }, [EXIT]));
   return {
     entryNodeId: discussionId,
     nodes,
@@ -298,7 +265,7 @@ function expandUserDecisionGate(phase: PhaseRecord): PhaseExpansion {
   const nodes: DagNodeV3[] = [];
 
   const gateChildren = new Array(phase.children.length).fill(EXIT);
-  nodes.push(makeNode(gateId, "user-decision-gate", gateDesc, gateChildren));
+  nodes.push(makeNode(gateId, "user-decision-gate", { DESCRIPTION: gateDesc }, gateChildren));
 
   const branchMap = new Map<string, number>();
   phase.children.forEach((childId, i) => branchMap.set(childId, i));
@@ -320,7 +287,7 @@ function expandAgenticDecisionGate(phase: PhaseRecord): PhaseExpansion {
 
   // Gate children placeholders — one per branch child phase
   const gateChildren = new Array(phase.children.length).fill(EXIT);
-  nodes.push(makeNode(gateId, "decision-gate", gateDesc, gateChildren));
+  nodes.push(makeNode(gateId, "decision-gate", { DESCRIPTION: gateDesc }, gateChildren));
 
   const branchMap = new Map<string, number>();
   phase.children.forEach((childId, i) => branchMap.set(childId, i));
@@ -338,7 +305,7 @@ function expandWriteNotes(phase: PhaseRecord): PhaseExpansion {
   const context = phase.phase_options.context as string | undefined;
   const noteId = `${phase.phase}-notes`;
   const desc = context ?? "Document findings, decisions, and context for future reference.";
-  const node = makeNode(noteId, "write-notes", desc, [EXIT]);
+  const node = makeNode(noteId, "write-notes", { DESCRIPTION: desc }, [EXIT]);
   return {
     entryNodeId: noteId,
     nodes: [node],
@@ -350,7 +317,7 @@ function expandEarlyExit(phase: PhaseRecord): PhaseExpansion {
   const reason = phase.phase_options.reason as string | undefined;
   const exitId = `${phase.phase}-exit`;
   const desc = reason ?? "Early exit — document context, reasoning, and any follow-up work for future sessions.";
-  const node = makeNode(exitId, "write-notes", desc, [EXIT]);
+  const node = makeNode(exitId, "write-notes", { DESCRIPTION: desc }, [EXIT]);
   return {
     entryNodeId: exitId,
     nodes: [node],
@@ -360,8 +327,8 @@ function expandEarlyExit(phase: PhaseRecord): PhaseExpansion {
 
 function expandPhase(phase: PhaseRecord): PhaseExpansion {
   switch (phase.phase_type) {
-    case "external-research":  return expandExternalResearch(phase);
-    case "internal-research":  return expandInternalResearch(phase);
+    case "web-search":                       return expandExternalResearch(phase);
+    case "deep-project-search-and-analysis": return expandInternalResearch(phase);
     case "project-survey":     return expandProjectSurvey(phase);
     case "work":               return expandWork(phase);
     case "project-setup":   return expandProjectCommands(phase);
@@ -380,7 +347,7 @@ function expandPhase(phase: PhaseRecord): PhaseExpansion {
 function makeAutoExitNote(phase: PhaseRecord): DagNodeV3 {
   const noteId = `${phase.phase}-auto-exit`;
   const desc = `Execution of phase "${phase.phase}" complete. Document what was accomplished, any deferred items, and context for future sessions.`;
-  return makeNode(noteId, "write-notes", desc);
+  return makeNode(noteId, "write-notes", { DESCRIPTION: desc });
 }
 
 // ─── Main compiler ────────────────────────────────────────────────────────────
@@ -465,7 +432,6 @@ export function compilePhasesToNodes(
     id: "execution-kickoff",
     prompt: kickoffSpec.promptPath,
     enforcement: kickoffSpec.enforcement,
-    description: "Orient to the plan and retrieve planning context before execution begins.",
     component: "execution-kickoff",
     children: [entryExp.entryNodeId],
   };

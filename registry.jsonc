@@ -55,8 +55,12 @@
         // Node library: work nodes
         "planning/plan-session/node-library/junior-dev-work-item/node-spec.json",
         "planning/plan-session/node-library/junior-dev-work-item/prompt.md",
+        "planning/plan-session/node-library/junior-dev-fix-item/node-spec.json",
+        "planning/plan-session/node-library/junior-dev-fix-item/prompt.md",
         "planning/plan-session/node-library/documentation-expert-work-item/node-spec.json",
         "planning/plan-session/node-library/documentation-expert-work-item/prompt.md",
+        "planning/plan-session/node-library/documentation-expert-fix-item/node-spec.json",
+        "planning/plan-session/node-library/documentation-expert-fix-item/prompt.md",
         // Node library: branching nodes
         "planning/plan-session/node-library/verify-work-item/node-spec.json",
         "planning/plan-session/node-library/verify-work-item/prompt.md",

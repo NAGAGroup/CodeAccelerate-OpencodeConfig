@@ -1,8 +1,8 @@
 // === Phase-based plan format (JSONL, schema_version "4.0") ===
 
 export type PhaseType =
-  | "external-research"
-  | "internal-research"
+  | "web-search"
+  | "deep-project-search-and-analysis"
   | "project-survey"
   | "work"
   | "project-setup"
@@ -37,7 +37,7 @@ export interface DagNodeV3 {
   prompt: string;
   enforcement: string[];
   children?: string[]; // absent/empty = terminal, length 1 = linear, length 2+ = branching
-  description?: string; // planner-authored context for what this specific node should accomplish
+  inject?: Record<string, string>; // placeholder → value substitutions applied to the prompt at runtime
   component?: string; // component type from node library (e.g., 'work-item', 'write-notes')
 }
 
@@ -53,7 +53,7 @@ export interface FlatNode {
   prompt: string;
   enforcement: string[];
   children?: string[];
-  description?: string;
+  inject?: Record<string, string>;
 }
 
 export interface DecisionEntry {

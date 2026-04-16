@@ -206,7 +206,8 @@ export function flattenTreeV3(
     };
     if (node.children && node.children.length > 0)
       flat.children = node.children;
-    if (node.description) flat.description = node.description;
+    if (node.inject && Object.keys(node.inject).length > 0)
+      flat.inject = node.inject;
     map[node.id] = flat;
   }
   return map;

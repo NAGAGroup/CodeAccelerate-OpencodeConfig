@@ -1,25 +1,47 @@
-**Plan Name:** {{PLAN_NAME}}
-**Required Skills:** None
-**Required Tools:** qdrant_qdrant-find, qdrant_qdrant-find, task
-**Optional Tools:** None
-**Questions Allowed?:** No
+# Commit
 
-<goal>
-Commit the following verified work:
+**Subagent:** tailwrench
+**Goal:** Stage and commit the verified work from this phase.
 
-{{DESCRIPTION}}
-</goal>
+## Hard Rules
 
-<rules>
-Always commit only the specific files retrieved from session notes — not all changed files.
-Never stage or commit unrelated changes.
-Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
-</rules>
+1. Write your prompt as instructions *to* tailwrench — treat it as a message to another agent.
+2. Call the `task` tool with `subagent_type=tailwrench`.
+3. Stage only the specific files changed in this work phase — never all changed files indiscriminately.
 
-<instructions>
-1. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "user goal and work accomplished in this phase" to retrieve the original user request and a summary of what was implemented or documented.
-2. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "files changed and edit summary for this work phase" to retrieve the specific list of files modified, what changed in each, and what was verified as correct.
-3. Compose a structured dispatch prompt. Include: the plan name {{PLAN_NAME}}, the specific files to stage from step 2 (tailwrench stages only these files, not all changed files), a commit message grounded in the user goal from step 1 and the work done, and the constraint that only the listed files should be staged.
-4. Dispatch tailwrench using the task tool.
-5. Call next_step.
-</instructions>
+## Prepare Delegation
+
+1. Call `qdrant_qdrant-find` with `collection_name={{PLAN_NAME}}` using 3-5 varied queries to retrieve the implementation summary, files changed, and the goal this work implemented.
+2. Draft a prompt for tailwrench that includes: the specific files to stage (by name), a commit message reflecting what was done and why, and the constraint that only those files should be staged.
+
+## Delegation Gate
+
+```toml
+[delegation-gate]
+prompt_addresses_subagent_directly = <true/false>
+prompt_includes_retrieved_context = <true/false>
+prompt_specifies_return_format = <true/false>
+specific_files_listed = <true/false — prompt names specific files to stage, not "stage all changes">
+gate_passed = <true/false>
+```
+
+If `gate_passed` is false, revise before delegating. Once it passes, call the `task` tool.
+
+## Note Taking
+
+Call `qdrant_qdrant-store` with `collection_name={{PLAN_NAME}}`.
+
+At minimum, capture: whether the commit succeeded, the commit message used, the files staged.
+
+```toml
+[note-gate]
+notes_stored = <list each note topic>
+commit_confirmed = <true/false>
+gate_passed = <true/false>
+```
+
+If `gate_passed` is false, correct that before proceeding.
+
+## How to Proceed
+
+Call `next_step`.

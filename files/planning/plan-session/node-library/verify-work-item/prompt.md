@@ -1,26 +1,53 @@
-**Plan Name:** {{PLAN_NAME}}
-**Required Skills:** None
-**Required Tools:** qdrant_qdrant-find, qdrant_qdrant-find, task, get_branch_options
-**Optional Tools:** None
-**Questions Allowed?:** No
+# Verify Work
 
-<goal>
-Retrieve what was implemented and any prior failure history, then dispatch tailwrench to verify the work against {{DESCRIPTION}}.
-</goal>
+**Subagent:** tailwrench
+**Goal:** {{GOAL}}
+**Success criteria:** {{VERIFY_DESCRIPTION}}
 
-<rules>
-Always produce a clear pass or fail outcome.
-Always surface findings before routing so the branch decision is evidence-based.
-Never instruct tailwrench on how to verify — that is tailwrench's own protocol.
-Never ask tailwrench to make edits to source code or documentation. The tailwrench subagent can only edit config files and build system config files.
-Always provide the plan name {{PLAN_NAME}} in your prompt to the subagent.
-</rules>
+## Hard Rules
 
-<instructions>
-1. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "implementation work completed files changed and approach" — retrieve what was implemented: the changes made and the approach taken.
-2. Call qdrant_qdrant-find with collection {{PLAN_NAME}}, query "failed attempts verification failures triage findings and fix attempts" — retrieve failure history and prior triage context. If this is the first verification attempt, this query may return nothing — that is expected.
-3. Compose a dispatch prompt for tailwrench. Include: plan name {{PLAN_NAME}}, the success criteria from {{DESCRIPTION}}, what was implemented from step 1, and — if step 2 returned results — the full failure history, triage findings, and what the fix addressed.
-4. Dispatch tailwrench using the task tool.
-5. Call get_branch_options to retrieve the available branch node IDs.
-6. Call next_step with the appropriate branch based on tailwrench's pass or fail verdict.
-</instructions>
+1. Write your prompt as instructions *to* tailwrench — treat it as a message to another agent.
+2. Call the `task` tool with `subagent_type=tailwrench`.
+3. Tailwrench can only run shell commands and edit config and build system files — never source code or documentation.
+
+## Prepare Delegation
+
+1. Call `qdrant_qdrant-find` with `collection_name={{PLAN_NAME}}` using 3-5 varied queries to retrieve the implementation summary, files changed, and any prior verification failure output.
+2. Draft a prompt for tailwrench that includes: what was implemented (files changed, approach taken), the success criteria to verify against, any prior failures to context-set, and a requirement to report a clear pass/fail verdict with full command output.
+
+## Delegation Gate
+
+```toml
+[delegation-gate]
+prompt_addresses_subagent_directly = <true/false>
+prompt_includes_retrieved_context = <true/false>
+prompt_specifies_return_format = <true/false>
+prompt_no_source_edits = <true/false — prompt does not ask tailwrench to edit source code or documentation>
+gate_passed = <true/false>
+```
+
+If `gate_passed` is false, revise before delegating. Once it passes, call the `task` tool.
+
+## Note Taking
+
+Call `qdrant_qdrant-store` with `collection_name={{PLAN_NAME}}`.
+
+At minimum, capture: verdict (pass/fail), command output, and on failure the exact error output and failed commands.
+
+```toml
+[note-gate]
+notes_stored = <list each note topic>
+failure_details_captured = <true/false — on failure: exact error output and failed commands stored>
+gate_passed = <true/false>
+```
+
+If `gate_passed` is false, store missing details before proceeding.
+
+## How to Proceed
+
+Call `get_branch_options` to retrieve the available branch node IDs.
+
+- **If verdict is FAIL:** Call `next_step` with the triage branch node ID.
+- **If verdict is PASS:** Call `next_step` with the other branch node ID.
+
+Both outcomes require a branch argument — `next_step` cannot be called without one.

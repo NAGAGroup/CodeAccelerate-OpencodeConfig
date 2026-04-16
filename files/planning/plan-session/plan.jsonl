@@ -3,4 +3,4 @@
 {"id":"orientation-scout","prompt":"orientation-scout.md","enforcement":["task"],"children":["external-research"]}
 {"id":"external-research","prompt":"external-research.md","enforcement":["task"],"children":["draft-plan"]}
 {"id":"draft-plan","prompt":"draft-plan.md","enforcement":["create_plan"],"children":["plan-success"]}
-{"id":"plan-success","prompt":"plan-success.md","enforcement":["present_plan_diagram","question"],"children":[]}
+{"id":"plan-success","prompt":"plan-success.md","enforcement":["present_plan_diagram","question","optional:activate_plan"],"children":[]}
