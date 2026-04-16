@@ -1,3 +1,6 @@
+> [!NOTE]
+> This has been archived, the new project is in https://github.com/NAGAGroup/CodeAccelerate-PicoCode
+
 # CodeAccelerate-OpencodeConfig
 
 A multi-agent development system for [OpenCode](https://opencode.ai/) that plans, debugs, researches, and writes code as a coordinated team — not a single general-purpose assistant.
